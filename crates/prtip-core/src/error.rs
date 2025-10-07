@@ -53,6 +53,10 @@ pub enum Error {
     /// Serialization error
     #[error("Serialization error: {0}")]
     Serialization(String),
+
+    /// Scanner error
+    #[error("Scanner error: {0}")]
+    Scanner(String),
 }
 
 impl From<AddrParseError> for Error {

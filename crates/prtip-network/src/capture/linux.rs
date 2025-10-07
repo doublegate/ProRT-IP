@@ -112,9 +112,9 @@ impl PacketCapture for LinuxCapture {
             )));
         }
 
-        let _ = tx.send_to(packet, None).ok_or_else(|| {
-            Error::Network("Failed to send packet".to_string())
-        })?;
+        let _ = tx
+            .send_to(packet, None)
+            .ok_or_else(|| Error::Network("Failed to send packet".to_string()))?;
         Ok(())
     }
 

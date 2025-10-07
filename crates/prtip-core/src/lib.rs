@@ -26,6 +26,6 @@ pub mod error;
 pub mod types;
 
 // Re-export commonly used types
-pub use config::{Config, OutputFormat, PerformanceConfig, ScanConfig};
+pub use config::{Config, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig};
 pub use error::{Error, Result};
 pub use types::{PortRange, PortState, ScanResult, ScanTarget, ScanType, TimingTemplate};

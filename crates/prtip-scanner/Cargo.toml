@@ -8,4 +8,42 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-# Placeholder - will be implemented in Session 2
+prtip-core = { path = "../prtip-core" }
+prtip-network = { path = "../prtip-network" }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Networking
+pnet = { workspace = true }
+pnet_packet = { workspace = true }
+socket2 = { workspace = true }
+etherparse = { workspace = true }
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "chrono"] }
+
+# Concurrency
+crossbeam = { workspace = true }
+
+# Rate limiting
+governor = { workspace = true }
+nonzero_ext = "0.3"
+
+# Logging
+tracing = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Time
+chrono = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+tempfile = "3.8"

@@ -85,7 +85,6 @@ impl Config {
     }
 }
 
-
 /// Scan-specific configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScanConfig {
@@ -122,7 +121,6 @@ pub struct NetworkConfig {
     /// Source port to use (None = random)
     pub source_port: Option<u16>,
 }
-
 
 /// Output configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]

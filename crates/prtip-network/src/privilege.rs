@@ -137,12 +137,10 @@ fn unix_drop_privileges(user: &str, group: &str) -> Result<()> {
         .ok_or_else(|| Error::Privilege(format!("Group not found: {}", group)))?;
 
     // Drop group privileges first
-    setgid(group_info.gid)
-        .map_err(|e| Error::Privilege(format!("Failed to setgid: {}", e)))?;
+    setgid(group_info.gid).map_err(|e| Error::Privilege(format!("Failed to setgid: {}", e)))?;
 
     // Drop user privileges
-    setuid(user_info.uid)
-        .map_err(|e| Error::Privilege(format!("Failed to setuid: {}", e)))?;
+    setuid(user_info.uid).map_err(|e| Error::Privilege(format!("Failed to setuid: {}", e)))?;
 
     // Verify we cannot regain root privileges
     if setuid(Uid::from_raw(0)).is_ok() {

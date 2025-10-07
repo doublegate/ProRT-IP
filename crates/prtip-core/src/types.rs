@@ -449,6 +449,36 @@ impl ScanResult {
         self.service = Some(service);
         self
     }
+
+    /// Get target IP
+    pub fn target_ip(&self) -> IpAddr {
+        self.target_ip
+    }
+
+    /// Get port
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    /// Get state
+    pub fn state(&self) -> PortState {
+        self.state
+    }
+
+    /// Get response time
+    pub fn response_time(&self) -> Duration {
+        self.response_time
+    }
+
+    /// Get service name
+    pub fn service(&self) -> Option<&str> {
+        self.service.as_deref()
+    }
+
+    /// Get banner
+    pub fn banner(&self) -> Option<&str> {
+        self.banner.as_deref()
+    }
 }
 
 impl fmt::Display for ScanResult {

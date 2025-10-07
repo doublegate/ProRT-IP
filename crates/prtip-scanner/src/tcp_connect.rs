@@ -374,7 +374,7 @@ mod tests {
             .scan_ports(IpAddr::V4(Ipv4Addr::LOCALHOST), ports.clone(), 3)
             .await
             .unwrap();
-        let elapsed = start.elapsed();
+        let _elapsed = start.elapsed();
 
         // With max_concurrent=3 and 10 ports, should take at least 4 batches
         // Each batch takes ~50ms, so total should be >150ms

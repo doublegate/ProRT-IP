@@ -12,4 +12,46 @@ name = "prtip"
 path = "src/main.rs"
 
 [dependencies]
-# Placeholder - will be implemented in Session 3
+prtip-core = { path = "../prtip-core" }
+prtip-network = { path = "../prtip-network" }
+prtip-scanner = { path = "../prtip-scanner" }
+
+# Async runtime
+tokio = { workspace = true }
+
+# CLI
+clap = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# XML output
+quick-xml = { version = "0.31", features = ["serialize"] }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Time
+chrono = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+
+# Terminal colors
+colored = "2.1"
+
+# Progress bar
+indicatif = "0.17"
+
+# Utilities
+num_cpus = { workspace = true }
+
+# Platform-specific
+libc = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.8"
+assert_cmd = "2.0"
+predicates = "3.0"

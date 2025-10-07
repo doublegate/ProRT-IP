@@ -339,7 +339,8 @@ impl ScanScheduler {
 mod tests {
     use super::*;
     use prtip_core::{
-        NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig, ScanType, TimingTemplate,
+        NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig, ScanType,
+        TimingTemplate,
     };
 
     async fn create_test_config() -> Config {

@@ -63,7 +63,9 @@ impl RateLimiter {
     pub fn new(max_rate: Option<u32>) -> Self {
         let limiter = max_rate.and_then(|rate| {
             NonZeroU32::new(rate).map(|nz_rate| {
-                let quota = Quota::per_second(nz_rate);
+                // Use burst size of 1 to enforce strict rate limiting without bursts
+                // This ensures predictable timing for network scanning
+                let quota = Quota::per_second(nz_rate).allow_burst(NonZeroU32::new(1).unwrap());
                 Arc::new(GovernorRateLimiter::direct(quota))
             })
         });

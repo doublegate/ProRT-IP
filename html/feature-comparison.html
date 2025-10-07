@@ -3,105 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProRT-IP WarScan Feature Comparison</title>
+    <title>Network Scanner Feature Comparison</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        h1 {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .subtitle {
+            text-align: center;
+            background: #4a5568;
+            color: #e2e8f0;
+            padding: 15px;
+            font-size: 1.1em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        th {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.3em;
+            font-weight: 600;
+            border-bottom: 3px solid #2c5282;
+        }
+        th:first-child {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            width: 200px;
+        }
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 1.05em;
+        }
+        tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        tr:hover {
+            background-color: #edf2f7;
+        }
+        td:first-child {
+            font-weight: 600;
+            background-color: #edf2f7;
+            color: #2d3748;
+        }
+        .excellent {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .yes {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .no {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .partial {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        .planned {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .phase {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 700;
+            color: #1e40af;
+            margin-left: 5px;
+            display: inline-block;
+        }
+        .rust {
+            color: #ce422b;
+            font-weight: 600;
+        }
+        .c-cpp {
+            color: #659ad2;
+            font-weight: 600;
+        }
+        .footer {
+            background: #f7fafc;
+            padding: 20px;
+            text-align: center;
+            color: #4a5568;
+            font-size: 0.95em;
+            border-top: 2px solid #e2e8f0;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+        }
+        .legend-symbol {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+    </style>
 </head>
 <body>
-<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; margin: 20px 0;">
-    <div style="max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;">
-        <h4 style="background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; text-align: center; padding: 30px; margin: 0; font-size: 2em; font-weight: 700;">🔍 Network Scanner Feature Comparison</h4>
-        <div style="text-align: center; background: #4a5568; color: #e2e8f0; padding: 15px; font-size: 1.1em;">Planned Capabilities vs Existing Tools</div>
+    <div class="container">
+        <h1>🔍 Network Scanner Feature Comparison</h1>
+        <div class="subtitle">Planned Capabilities vs Existing Tools</div>
 
-        <div style="display: flex; justify-content: center; gap: 30px; padding: 20px; background: #f7fafc; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #22c55e;">✓</span> <span>Fully Supported</span>
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-symbol excellent">✓</span> <span>Fully Supported</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #ef4444;">✗</span> <span>Not Supported</span>
+            <div class="legend-item">
+                <span class="legend-symbol no">✗</span> <span>Not Supported</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #f59e0b;">⚠</span> <span>Partial Support</span>
+            <div class="legend-item">
+                <span class="legend-symbol partial">⚠</span> <span>Partial Support</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #3b82f6;">⟳</span> <span>Planned Feature</span>
+            <div class="legend-item">
+                <span class="legend-symbol planned">⟳</span> <span>Planned Feature</span>
             </div>
         </div>
 
-        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+        <table>
             <thead>
                 <tr>
-                    <th style="background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282; width: 200px;">Feature</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">Nmap</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">Masscan</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">RustScan</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">ProRT-IP (Target)</th>
+                    <th>Feature</th>
+                    <th>Nmap</th>
+                    <th>Masscan</th>
+                    <th>RustScan</th>
+                    <th>ProRT-IP (Target)</th>
                 </tr>
             </thead>
             <tbody>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Speed (max pps)</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">~10K</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>10M+</strong></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">~10K</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>1M+</strong> (stateless)</td>
+                <tr>
+                    <td>Speed (max pps)</td>
+                    <td>~10K</td>
+                    <td><strong>10M+</strong></td>
+                    <td>~10K</td>
+                    <td><strong>1M+</strong> (stateless)</td>
                 </tr>
                 <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">OS Fingerprinting</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Excellent</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 3</span></td>
-                </tr>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Service Detection</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Excellent</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Via Nmap</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 3</span></td>
+                    <td>OS Fingerprinting</td>
+                    <td><span class="excellent">✓ Excellent</span></td>
+                    <td><span class="no">✗ No</span></td>
+                    <td><span class="no">✗ No</span></td>
+                    <td><span class="planned">✓ Planned</span> <span class="phase">Phase 3</span></td>
                 </tr>
                 <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Stealth Scans</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Yes</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ SYN only</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Limited</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 2</span></td>
-                </tr>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">IPv6 Support</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Full</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Basic</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Basic</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 8</span></td>
+                    <td>Service Detection</td>
+                    <td><span class="excellent">✓ Excellent</span></td>
+                    <td><span class="no">✗ No</span></td>
+                    <td><span class="partial">⚠ Via Nmap</span></td>
+                    <td><span class="planned">✓ Planned</span> <span class="phase">Phase 3</span></td>
                 </tr>
                 <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Lua Scripting</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ NSE</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 5</span></td>
-                </tr>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Memory Safety</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ C/C++</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ C</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Rust</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Rust</span></td>
+                    <td>Stealth Scans</td>
+                    <td><span class="yes">✓ Yes</span></td>
+                    <td><span class="partial">⚠ SYN only</span></td>
+                    <td><span class="partial">⚠ Limited</span></td>
+                    <td><span class="planned">✓ Planned</span> <span class="phase">Phase 2</span></td>
                 </tr>
                 <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">License</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">NPSL/GPLv2</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">AGPL-3.0</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">GPL-3.0</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>GPLv3</strong></td>
+                    <td>IPv6 Support</td>
+                    <td><span class="yes">✓ Full</span></td>
+                    <td><span class="partial">⚠ Basic</span></td>
+                    <td><span class="partial">⚠ Basic</span></td>
+                    <td><span class="planned">✓ Planned</span> <span class="phase">Phase 8</span></td>
+                </tr>
+                <tr>
+                    <td>Lua Scripting</td>
+                    <td><span class="excellent">✓ NSE</span></td>
+                    <td><span class="no">✗ No</span></td>
+                    <td><span class="no">✗ No</span></td>
+                    <td><span class="planned">✓ Planned</span> <span class="phase">Phase 5</span></td>
+                </tr>
+                <tr>
+                    <td>Memory Safety</td>
+                    <td><span class="partial">⚠ C/C++</span></td>
+                    <td><span class="partial">⚠ C</span></td>
+                    <td><span class="yes">✓ Rust</span></td>
+                    <td><span class="yes">✓ Rust</span></td>
+                </tr>
+                <tr>
+                    <td>License</td>
+                    <td>NPSL/GPLv2</td>
+                    <td>AGPL-3.0</td>
+                    <td>GPL-3.0</td>
+                    <td><strong>GPLv3</strong></td>
                 </tr>
             </tbody>
         </table>
 
-        <div style="background: #f7fafc; padding: 20px; text-align: center; color: #4a5568; font-size: 0.95em; border-top: 2px solid #e2e8f0;">
+        <div class="footer">
             <strong>ProRT-IP Development Roadmap:</strong><br>
             Phase 2: Stealth Scans • Phase 3: OS Fingerprinting & Service Detection •
             Phase 5: Lua Scripting Engine • Phase 8: Full IPv6 Support
         </div>
     </div>
-</div>
 </body>
 </html>

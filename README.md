@@ -1,10 +1,10 @@
 # ProRT-IP WarScan
 
-**Modern Network Scanner and War Dialer for IP Networks**
+## Modern Network Scanner and War Dialer for IP Networks
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
-[![Status](https://img.shields.io/badge/status-pre--development-yellow.svg)]()
+[![Status](https://img.shields.io/badge/status-pre--development-yellow.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -66,103 +66,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ### Feature Comparison
 
-<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; margin: 20px 0;">
-    <div style="max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;">
-        <h4 style="background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; text-align: center; padding: 30px; margin: 0; font-size: 2em; font-weight: 700;">🔍 Network Scanner Feature Comparison</h4>
-        <div style="text-align: center; background: #4a5568; color: #e2e8f0; padding: 15px; font-size: 1.1em;">Planned Capabilities vs Existing Tools</div>
-
-        <div style="display: flex; justify-content: center; gap: 30px; padding: 20px; background: #f7fafc; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #22c55e;">✓</span> <span>Fully Supported</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #ef4444;">✗</span> <span>Not Supported</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #f59e0b;">⚠</span> <span>Partial Support</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                <span style="font-weight: 700; font-size: 1.1em; color: #3b82f6;">⟳</span> <span>Planned Feature</span>
-            </div>
-        </div>
-
-        <table style="width: 100%; border-collapse: collapse; margin: 0;">
-            <thead>
-                <tr>
-                    <th style="background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282; width: 200px;">Feature</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">Nmap</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">Masscan</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">RustScan</th>
-                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">ProRT-IP (Target)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Speed (max pps)</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">~10K</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>10M+</strong></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">~10K</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>1M+</strong> (stateless)</td>
-                </tr>
-                <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">OS Fingerprinting</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Excellent</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 3</span></td>
-                </tr>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Service Detection</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Excellent</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Via Nmap</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 3</span></td>
-                </tr>
-                <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Stealth Scans</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Yes</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ SYN only</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Limited</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 2</span></td>
-                </tr>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">IPv6 Support</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Full</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Basic</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Basic</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 8</span></td>
-                </tr>
-                <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Lua Scripting</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ NSE</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 5</span></td>
-                </tr>
-                <tr style="background-color: #f7fafc;">
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Memory Safety</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ C/C++</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ C</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Rust</span></td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Rust</span></td>
-                </tr>
-                <tr>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">License</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">NPSL/GPLv2</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">AGPL-3.0</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">GPL-3.0</td>
-                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>GPLv3</strong></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div style="background: #f7fafc; padding: 20px; text-align: center; color: #4a5568; font-size: 0.95em; border-top: 2px solid #e2e8f0;">
-            <strong>ProRT-IP Development Roadmap:</strong><br>
-            Phase 2: Stealth Scans • Phase 3: OS Fingerprinting & Service Detection •
-            Phase 5: Lua Scripting Engine • Phase 8: Full IPv6 Support
-        </div>
-    </div>
-</div>
+See the interactive feature comparison table: [html/feature-comparison.html](html/feature-comparison.html)
 
 ---
 
@@ -191,6 +95,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 This project is in the planning and specification phase. Comprehensive documentation is complete and development is ready to begin.
 
 **Progress:**
+
 - ✅ Architecture design complete
 - ✅ Technical specifications complete
 - ✅ Development roadmap established (8 phases, 20 weeks)
@@ -283,7 +188,7 @@ prtip -sS -sV -O -p- --output json target.com
 
 ## Development Roadmap
 
-**8 Phases | 20 Weeks | 122+ Tasks**
+### 8 Phases | 20 Weeks | 122+ Tasks
 
 ### Quick Overview
 
@@ -318,18 +223,21 @@ prtip -sS -sV -O -p- --output json target.com
 ### System Requirements
 
 **Minimum:**
+
 - CPU: 2 cores @ 2.0 GHz
 - RAM: 2 GB
 - Storage: 100 MB
 - Network: 100 Mbps
 
 **Recommended:**
+
 - CPU: 8+ cores @ 3.0 GHz
 - RAM: 16 GB
 - Storage: 1 GB SSD
 - Network: 1 Gbps+
 
 **High-Performance:**
+
 - CPU: 16+ cores @ 3.5+ GHz
 - RAM: 32+ GB
 - Storage: 10+ GB NVMe SSD
@@ -346,11 +254,13 @@ prtip -sS -sV -O -p- --output json target.com
 ## Building from Source
 
 **Prerequisites:**
+
 - Rust 1.70 or later
 - libpcap (Linux/macOS) or Npcap (Windows)
 - OpenSSL development libraries
 
 **Linux:**
+
 ```bash
 # Install dependencies
 sudo apt install libpcap-dev libssl-dev pkg-config  # Debian/Ubuntu
@@ -410,7 +320,7 @@ See [Contributing](CONTRIBUTING.md) for complete details.
 
 Need help? We're here to assist!
 
-### Documentation
+### Documentation Resources
 
 - **FAQ**: [FAQ](docs/09-FAQ.md)
 - **Troubleshooting**: [Dev Setup](docs/03-DEV-SETUP.md)
@@ -456,12 +366,14 @@ See [Security](SECURITY.md) for full security policy and best practices.
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 **GPLv3** allows you to:
+
 - ✅ Use the software for any purpose
 - ✅ Study and modify the source code
 - ✅ Distribute copies
 - ✅ Distribute modified versions
 
 **Under the conditions:**
+
 - ⚠️ Disclose source code of modifications
 - ⚠️ License modifications under GPLv3
 - ⚠️ State changes made to the code
@@ -476,6 +388,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ProRT-IP WarScan is developed and maintained by security researchers and Rust developers passionate about creating safe, high-performance security tools.
 
 See [Authors](AUTHORS.md) for:
+
 - Complete contributor list
 - Acknowledgments to inspirational projects
 - Recognition of Rust ecosystem contributors
@@ -500,11 +413,13 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 **IMPORTANT:** This tool is for authorized security testing only.
 
 **You must have explicit permission to scan networks you do not own.** Unauthorized network scanning may violate:
+
 - Computer Fraud and Abuse Act (US)
 - Computer Misuse Act (UK)
 - Similar laws in your jurisdiction
 
 **Legitimate use cases:**
+
 - Your own networks and systems
 - Authorized penetration testing engagements
 - Bug bounty programs (with explicit network scanning permission)
@@ -528,10 +443,10 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ## Links
 
-- **GitHub Repository**: https://github.com/doublegate/ProRT-IP
-- **Issues**: https://github.com/doublegate/ProRT-IP/issues
-- **Discussions**: https://github.com/doublegate/ProRT-IP/discussions
-- **Security Advisories**: https://github.com/doublegate/ProRT-IP/security/advisories
+- **GitHub Repository**: <https://github.com/doublegate/ProRT-IP>
+- **Issues**: <https://github.com/doublegate/ProRT-IP/issues>
+- **Discussions**: <https://github.com/doublegate/ProRT-IP/discussions>
+- **Security Advisories**: <https://github.com/doublegate/ProRT-IP/security/advisories>
 
 ---
 

@@ -239,7 +239,8 @@ async fn test_port_range_iteration() {
 #[tokio::test]
 async fn test_scheduler_config_validation() {
     use prtip_core::{
-        NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig, ScanType, TimingTemplate,
+        NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig, ScanType,
+        TimingTemplate,
     };
 
     let mut config = Config {

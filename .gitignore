@@ -54,8 +54,12 @@ flamegraph.svg
 
 # Database files
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal
 
 # PCAP files
 *.pcap

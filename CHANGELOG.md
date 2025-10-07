@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - 2025-10-07
+
+#### Root-Level Documentation
+- **CONTRIBUTING.md** (10 KB): Comprehensive contribution guidelines
+  - Code of conduct reference
+  - Development setup and workflow
+  - Coding standards (rustfmt, clippy)
+  - Testing requirements (>80% coverage)
+  - Security guidelines and best practices
+  - Pull request process and checklist
+  - Commit message conventions (Conventional Commits)
+  - Branch naming conventions
+  - Code review criteria
+  - 11 detailed sections with examples
+
+- **SECURITY.md** (9 KB): Security policy and vulnerability reporting
+  - Supported versions table
+  - Private vulnerability reporting process
+  - Security disclosure timeline (coordinated 14-30 day)
+  - Responsible use guidelines (authorized testing only)
+  - Operational security best practices
+  - Network safety recommendations
+  - Implementation security reference
+  - Security hardening recommendations (Docker, AppArmor, capabilities)
+  - Compliance and certification roadmap
+  - Legal disclaimer about authorized use
+
+- **SUPPORT.md** (9 KB): Support resources and community help
+  - Complete documentation index with descriptions
+  - Quick start guides (users, developers, security researchers)
+  - GitHub Discussions and Issues guidance
+  - Bug report and feature request templates
+  - FAQ cross-reference
+  - Response time expectations
+  - Commercial support plans (future)
+  - External resource links
+
+- **AUTHORS.md** (8 KB): Contributors and acknowledgments
+  - Contribution recognition policy
+  - Acknowledgments to Nmap, Masscan, RustScan, ZMap
+  - Rust ecosystem contributors (Tokio, pnet, etherparse, clap, etc.)
+  - Individual recognition (Fyodor Lyon, Robert Graham, Rust team)
+  - Contribution categories and levels
+  - Full dependency credits table
+  - License agreement statement
+
+- **ROADMAP.md** (8 KB): High-level development roadmap
+  - Project vision and goals
+  - Current status (Genesis phase complete)
+  - 8-phase overview with timelines
+  - Performance targets table
+  - Feature comparison vs Nmap/Masscan/RustScan
+  - Technology stack summary
+  - Release strategy (0.x → 1.0 → 2.0+)
+  - Community goals (short/mid/long-term)
+  - Risk management
+  - Success metrics
+  - Timeline summary
+
+#### Enhanced Root README
+- **README.md** updated with comprehensive sections:
+  - Table of Contents with all major sections
+  - Root documentation table (6 files)
+  - Technical documentation table (12 files in docs/)
+  - Quick Start guides (users, developers, security researchers)
+  - Enhanced roadmap overview with phase table
+  - Expanded Contributing section with guidelines
+  - New Support section with resources
+  - New Security section with vulnerability reporting
+  - New Authors & Acknowledgments section
+  - Updated project statistics (478 KB total docs)
+  - Links section with GitHub URLs
+  - Current status badges and last updated date
+
+### Changed - 2025-10-07
+
+#### Repository Metadata
+- **Total documentation**: Now 478 KB (237 KB docs/ + 241 KB ref-docs/)
+- **Root documents**: 6 files (ROADMAP, CONTRIBUTING, SECURITY, SUPPORT, AUTHORS, CHANGELOG)
+- **GitHub repository**: Complete with all standard community health files
+- **Repository structure**: Professional open-source project layout
+
+---
+
 ### Phase 1: Core Infrastructure (Target: Weeks 1-3)
 - Workspace setup and crate organization
 - Packet capture abstraction layer (Linux/Windows/macOS)

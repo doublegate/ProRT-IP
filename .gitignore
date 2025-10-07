@@ -7,10 +7,16 @@ Cargo.lock
 # IDE
 .idea/
 .vscode/
+.fleet/
+.helix/
 *.swp
 *.swo
 *~
 .DS_Store
+*.iml
+.project
+.classpath
+.settings/
 
 # Build artifacts
 *.o
@@ -28,6 +34,18 @@ Cargo.lock
 /coverage/
 *.profraw
 *.profdata
+/fuzz/corpus/
+/fuzz/artifacts/
+
+# Performance profiling
+perf.data
+perf.data.old
+*.svg
+flamegraph.svg
+*.folded
+
+# Benchmark outputs
+/target/criterion/
 
 # Temporary files
 /tmp/

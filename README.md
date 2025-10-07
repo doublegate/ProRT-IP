@@ -5,6 +5,26 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
 [![Status](https://img.shields.io/badge/status-pre--development-yellow.svg)]()
+[![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Project Status](#project-status)
+- [Documentation](#documentation)
+- [Quick Start](#quick-start)
+- [Planned Usage](#planned-usage)
+- [Development Roadmap](#development-roadmap)
+- [Technical Specifications](#technical-specifications)
+- [Building from Source](#building-from-source)
+- [Contributing](#contributing)
+- [Support](#support)
+- [Security](#security)
+- [License](#license)
+- [Authors & Acknowledgments](#authors--acknowledgments)
+- [Legal Notice](#legal-notice)
 
 ---
 
@@ -47,12 +67,25 @@ This project is in the planning and specification phase. Comprehensive documenta
 
 ## Documentation
 
-Complete documentation is available in the [`docs/`](docs/) directory:
+### Root Documentation
+
+| Document | Description |
+|----------|-------------|
+| **[ROADMAP.md](ROADMAP.md)** | High-level development roadmap and vision |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines and development process |
+| **[SECURITY.md](SECURITY.md)** | Security policy and vulnerability reporting |
+| **[SUPPORT.md](SUPPORT.md)** | Support resources and help |
+| **[AUTHORS.md](AUTHORS.md)** | Contributors and acknowledgments |
+| **[CHANGELOG.md](CHANGELOG.md)** | Version history and release notes |
+
+### Technical Documentation (`docs/`)
+
+Complete technical documentation is available in the [`docs/`](docs/) directory:
 
 | Document | Description |
 |----------|-------------|
 | [00-ARCHITECTURE](docs/00-ARCHITECTURE.md) | System architecture and design patterns |
-| [01-ROADMAP](docs/01-ROADMAP.md) | Development phases and timeline |
+| [01-ROADMAP](docs/01-ROADMAP.md) | Detailed development phases and timeline |
 | [02-TECHNICAL-SPECS](docs/02-TECHNICAL-SPECS.md) | Protocol specifications and data formats |
 | [03-DEV-SETUP](docs/03-DEV-SETUP.md) | Development environment setup |
 | [04-IMPLEMENTATION-GUIDE](docs/04-IMPLEMENTATION-GUIDE.md) | Code structure and patterns |
@@ -64,6 +97,29 @@ Complete documentation is available in the [`docs/`](docs/) directory:
 | [10-PROJECT-STATUS](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
 
 **Quick Start:** See [docs/README.md](docs/README.md) for navigation guide.
+
+---
+
+## Quick Start
+
+### For Users
+
+1. **Check project status**: [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md)
+2. **Read FAQ**: [docs/09-FAQ.md](docs/09-FAQ.md)
+3. **Get support**: [SUPPORT.md](SUPPORT.md)
+
+### For Developers
+
+1. **Understand architecture**: [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md)
+2. **Set up environment**: [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md)
+3. **Review roadmap**: [ROADMAP.md](ROADMAP.md) and [docs/01-ROADMAP.md](docs/01-ROADMAP.md)
+4. **Start contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+### For Security Researchers
+
+1. **Read security policy**: [SECURITY.md](SECURITY.md)
+2. **Review implementation**: [docs/08-SECURITY.md](docs/08-SECURITY.md)
+3. **Report vulnerabilities**: See [SECURITY.md](SECURITY.md#reporting-security-vulnerabilities)
 
 ---
 
@@ -92,39 +148,33 @@ prtip -sS -sV -O -p- --output json target.com
 
 ## Development Roadmap
 
-### Phase 1: Core Infrastructure (Weeks 1-3)
-- Packet capture abstraction (Linux/Windows/macOS)
-- Basic TCP connect scanning
-- CLI argument parsing
-- Privilege management
+**8 Phases | 20 Weeks | 122+ Tasks**
 
-### Phase 2: Advanced Scanning (Weeks 4-6)
-- TCP SYN scanning with raw sockets
-- UDP scanning with protocol-specific probes
-- Stealth scans (FIN, NULL, Xmas)
-- Timing templates and rate control
+### Quick Overview
 
-### Phase 3: Detection Systems (Weeks 7-10)
-- OS fingerprinting (16-probe sequence)
-- Service version detection
-- Banner grabbing with SSL/TLS
+| Phase | Timeline | Focus Area | Status |
+|-------|----------|------------|--------|
+| **Phase 1** | Weeks 1-3 | Core Infrastructure | Ready to begin |
+| **Phase 2** | Weeks 4-6 | Advanced Scanning | Planned |
+| **Phase 3** | Weeks 7-10 | Detection Systems | Planned |
+| **Phase 4** | Weeks 11-13 | Performance Optimization | Planned |
+| **Phase 5** | Weeks 14-16 | Advanced Features | Planned |
+| **Phase 6** | Weeks 17-18 | User Interfaces | Planned |
+| **Phase 7** | Weeks 19-20 | Release Preparation | Planned |
+| **Phase 8** | Beyond | Post-Release Features | Future |
 
-### Phase 4: Performance Optimization (Weeks 11-13)
-- Lock-free architecture
-- Stateless scanning mode
-- NUMA optimization
+### Key Milestones
 
-### Phase 5: Advanced Features (Weeks 14-16)
-- Idle (zombie) scanning
-- Packet fragmentation and decoys
-- Lua plugin system
+- **M0**: Documentation Complete ✅ (2025-10-07)
+- **M1**: Basic Scanning Capability (Phase 1)
+- **M2**: Production-Ready Scanning (Phase 2)
+- **M3**: Comprehensive Detection (Phase 3)
+- **M4**: High-Performance Scanning (Phase 4)
+- **M5**: Enterprise Features (Phase 5)
+- **M6**: Enhanced Usability (Phase 6)
+- **M7**: Version 1.0 Release (Phase 7)
 
-### Phase 6-7: UI and Release (Weeks 17-20)
-- TUI interface
-- Documentation completion
-- v1.0 release
-
-**See [docs/01-ROADMAP.md](docs/01-ROADMAP.md) for complete timeline.**
+**Full Details**: See [ROADMAP.md](ROADMAP.md) and [docs/01-ROADMAP.md](docs/01-ROADMAP.md)
 
 ---
 
@@ -172,8 +222,8 @@ sudo apt install libpcap-dev libssl-dev pkg-config  # Debian/Ubuntu
 sudo dnf install libpcap-devel openssl-devel        # Fedora
 
 # Clone repository
-git clone https://github.com/YOUR_ORG/prtip-warscan.git
-cd prtip-warscan
+git clone https://github.com/doublegate/ProRT-IP.git
+cd ProRT-IP
 
 # Build
 cargo build --release
@@ -191,22 +241,78 @@ sudo setcap cap_net_raw,cap_net_admin=eip target/release/prtip
 
 ## Contributing
 
-Contributions are welcome! This project is in early development.
+We welcome contributions of all kinds! ProRT-IP WarScan is in early development and there are many opportunities to contribute.
+
+### How to Contribute
+
+- 🐛 **Report Bugs**: [Open an issue](https://github.com/doublegate/ProRT-IP/issues)
+- 💡 **Suggest Features**: [Start a discussion](https://github.com/doublegate/ProRT-IP/discussions)
+- 📖 **Improve Documentation**: Submit PRs for typos, clarifications, examples
+- 💻 **Write Code**: Check [good first issues](https://github.com/doublegate/ProRT-IP/labels/good-first-issue)
+- 🧪 **Write Tests**: Help us reach >90% coverage
+- 🔍 **Review Code**: Help review pull requests
 
 ### Getting Started
 
-1. Read [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) - understand the design
-2. Review [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md) - find available tasks
-3. Follow [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md) - set up your environment
-4. Check [docs/08-SECURITY.md](docs/08-SECURITY.md) - follow security practices
-5. See [docs/06-TESTING.md](docs/06-TESTING.md) - write tests for your code
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines
+2. Review [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) for system design
+3. Check [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md) for available tasks
+4. Set up your environment: [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md)
 
-### Development Process
+### Development Standards
 
-- **Code style:** `cargo fmt` and `cargo clippy`
-- **Testing:** All PRs must include tests
-- **Security:** Follow secure coding guidelines
-- **Documentation:** Update docs for new features
+- **Code Quality**: Run `cargo fmt` and `cargo clippy -- -D warnings`
+- **Testing**: All PRs must include tests (>80% coverage)
+- **Security**: Follow [docs/08-SECURITY.md](docs/08-SECURITY.md) guidelines
+- **Documentation**: Update docs for new features
+- **Commits**: Use [Conventional Commits](https://www.conventionalcommits.org/) format
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete details.
+
+---
+
+## Support
+
+Need help? We're here to assist!
+
+### Documentation
+
+- **FAQ**: [docs/09-FAQ.md](docs/09-FAQ.md)
+- **Troubleshooting**: [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md)
+- **Full Docs**: [docs/README.md](docs/README.md)
+
+### Community
+
+- **Questions**: [GitHub Discussions](https://github.com/doublegate/ProRT-IP/discussions)
+- **Bug Reports**: [GitHub Issues](https://github.com/doublegate/ProRT-IP/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/doublegate/ProRT-IP/discussions/categories/ideas)
+
+See [SUPPORT.md](SUPPORT.md) for comprehensive support resources.
+
+---
+
+## Security
+
+### Security Policy
+
+ProRT-IP WarScan is a **defensive security tool** for authorized penetration testing. We take security seriously.
+
+### Reporting Vulnerabilities
+
+🔒 **DO NOT** create public issues for security vulnerabilities.
+
+- **Private Reporting**: Use [GitHub Security Advisories](https://github.com/doublegate/ProRT-IP/security/advisories)
+- **Email**: Contact maintainers privately (see [SECURITY.md](SECURITY.md))
+
+### Responsible Use
+
+⚠️ **IMPORTANT**: Only scan networks you own or have explicit written permission to test.
+
+- Unauthorized scanning may violate laws (CFAA, CMA, etc.)
+- Always obtain authorization before testing
+- Use for legitimate security research only
+
+See [SECURITY.md](SECURITY.md) for full security policy and best practices.
 
 ---
 
@@ -225,6 +331,32 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 - ⚠️ License modifications under GPLv3
 - ⚠️ State changes made to the code
 - ⚠️ Include copyright and license notices
+
+---
+
+## Authors & Acknowledgments
+
+### Contributors
+
+ProRT-IP WarScan is developed and maintained by security researchers and Rust developers passionate about creating safe, high-performance security tools.
+
+See [AUTHORS.md](AUTHORS.md) for:
+- Complete contributor list
+- Acknowledgments to inspirational projects
+- Recognition of Rust ecosystem contributors
+
+### Inspirations
+
+This project builds on the pioneering work of:
+
+- **[Nmap](https://nmap.org/)** - Gordon "Fyodor" Lyon
+- **[Masscan](https://github.com/robertdavidgraham/masscan)** - Robert Graham
+- **[RustScan](https://github.com/RustScan/RustScan)** - RustScan Community
+- **[ZMap](https://zmap.io/)** - University of Michigan
+
+Special thanks to the Rust community for excellent libraries (Tokio, pnet, etherparse, clap, and many others).
+
+**Want to be listed?** See [CONTRIBUTING.md](CONTRIBUTING.md) to start contributing!
 
 ---
 
@@ -247,38 +379,29 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ---
 
-## Acknowledgments
-
-This project draws inspiration from:
-
-- **Nmap** - The gold standard for network scanning (https://nmap.org)
-- **Masscan** - Ultra-fast asynchronous scanner (https://github.com/robertdavidgraham/masscan)
-- **ZMap** - Internet-scale network scanner (https://zmap.io)
-- **RustScan** - Fast Rust port scanner (https://github.com/RustScan/RustScan)
-- **Unicornscan** - Asynchronous stateless scanner
-
-Special thanks to the Rust community for excellent networking libraries (pnet, tokio, etc.).
-
----
-
-## Contact
-
-- **Issues:** https://github.com/YOUR_ORG/prtip-warscan/issues
-- **Discussions:** https://github.com/YOUR_ORG/prtip-warscan/discussions
-- **Security:** See [SECURITY.md](SECURITY.md) for reporting vulnerabilities
-
----
-
 ## Project Statistics
 
-- **Documentation:** 237 KB across 13 documents
+- **Total Documentation:** 478 KB (237 KB technical docs + 241 KB reference specs)
+- **Root Documents:** 6 files (ROADMAP, CONTRIBUTING, SECURITY, SUPPORT, AUTHORS, CHANGELOG)
+- **Technical Documents:** 12 files in docs/ directory
 - **Planned Phases:** 8 phases over 20 weeks
 - **Tracked Tasks:** 122+ implementation tasks
-- **Target Performance:** 1M+ packets/second (stateless)
+- **Target Performance:** 1M+ packets/second (stateless), 50K+ pps (stateful)
 - **Code Coverage Goal:** >80% overall, >90% core modules
 
 ---
 
-**Status:** 📝 Documentation Complete | 🚧 Implementation Starting Soon
+## Links
 
-For the latest updates, see [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md).
+- **GitHub Repository**: https://github.com/doublegate/ProRT-IP
+- **Issues**: https://github.com/doublegate/ProRT-IP/issues
+- **Discussions**: https://github.com/doublegate/ProRT-IP/discussions
+- **Security Advisories**: https://github.com/doublegate/ProRT-IP/security/advisories
+
+---
+
+**Current Status**: 📝 Documentation Complete ✅ | 🚧 Phase 1 Ready to Begin
+
+**Last Updated**: 2025-10-07
+
+For the latest project status, see [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md) and [CHANGELOG.md](CHANGELOG.md).

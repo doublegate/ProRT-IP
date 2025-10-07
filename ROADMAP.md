@@ -13,8 +13,8 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 
 ## Current Status
 
-**Phase**: Genesis (Documentation Complete)
-**Version**: 0.0.1 (pre-release)
+**Phase**: Phase 1 COMPLETE ✅ → Phase 2 Starting
+**Version**: 0.1.0
 **Last Updated**: 2025-10-07
 
 ### Completed Milestones
@@ -25,24 +25,36 @@ This document provides a high-level overview of the ProRT-IP WarScan development
   - 8-phase development roadmap with 122+ tracked tasks
   - GitHub repository initialized and public
 
+- ✅ **M1: Basic Scanning Capability** (2025-10-07)
+  - 4 crates implemented (core, network, scanner, cli)
+  - 215 tests passing (100% success rate)
+  - TCP connect scanning fully functional
+  - CLI with JSON/XML/Text output
+  - Cross-platform packet capture abstraction
+  - Rate limiting and host discovery
+  - SQLite storage with async support
+
 ## Development Phases
 
 ### Phase 1: Core Infrastructure
 **Timeline**: Weeks 1-3
-**Status**: Ready to begin
+**Status**: ✅ COMPLETE (2025-10-07)
 
 **Key Deliverables**:
-- Cross-platform packet capture (Linux/Windows/macOS)
-- Basic TCP connect scanning
-- CLI with argument parsing
-- Privilege management (drop after socket creation)
-- SQLite result storage
+- ✅ Cross-platform packet capture (Linux/Windows/macOS)
+- ✅ Basic TCP connect scanning
+- ✅ CLI with argument parsing
+- ✅ Privilege management (drop after socket creation)
+- ✅ SQLite result storage
+- ✅ Rate limiting with token bucket
+- ✅ Host discovery (ICMP, TCP ping)
+- ✅ Multiple output formats (JSON, XML, Text)
 
-**Milestone**: M1 - Basic scanning capability
+**Milestone**: ✅ M1 - Basic scanning capability (Achieved)
 
 ### Phase 2: Advanced Scanning
 **Timeline**: Weeks 4-6
-**Status**: Planned
+**Status**: Starting (Next Phase)
 
 **Key Deliverables**:
 - TCP SYN scanning (stateless)
@@ -252,11 +264,11 @@ We welcome contributions at all stages! See [CONTRIBUTING.md](CONTRIBUTING.md) f
 
 ## Success Metrics
 
-### Phase 1 (Months 1-3)
-- [ ] Packet capture working on all 3 platforms
-- [ ] Basic TCP connect scan completing successfully
-- [ ] 10+ unit tests with >80% coverage
-- [ ] CLI parsing complete with validation
+### Phase 1 (Months 1-3) ✅ COMPLETE
+- [x] Packet capture working on all 3 platforms
+- [x] Basic TCP connect scan completing successfully
+- [x] 215 unit/integration tests with >80% coverage
+- [x] CLI parsing complete with validation
 
 ### Version 1.0 (Month 12)
 - [ ] All 7 phases complete

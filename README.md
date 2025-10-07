@@ -9,9 +9,165 @@
 
 ---
 
+## Overview
+
+**ProRT-IP WarScan** is a modern network scanner written in Rust that combines:
+
+- **Speed:** 1M+ packets/second stateless scanning (comparable to Masscan/ZMap)
+- **Depth:** Comprehensive service detection and OS fingerprinting (like Nmap)
+- **Safety:** Memory-safe Rust implementation prevents entire vulnerability classes
+- **Stealth:** Advanced evasion techniques (timing, decoys, fragmentation, idle scans)
+- **Extensibility:** Plugin system with Lua scripting support
+
+**At a glance:**
+
+- **Multi-Protocol Scanning:** TCP (SYN, Connect, FIN, NULL, Xmas, ACK, Idle), UDP, ICMP
+- **Service Detection:** 500+ protocol probes with version identification
+- **OS Fingerprinting:** 2000+ signatures using 16-probe technique
+- **High Performance:** Asynchronous I/O with lock-free coordination
+- **Cross-Platform:** Linux, Windows, macOS support
+- **Multiple Interfaces:** CLI (v1.0), TUI (planned), Web UI (planned), GUI (planned)
+
+### Introduction
+
+**ProRT-IP WarScan** (Protocol/Port Real-Time IP War Scanner) is a modern equivalent of classic 1980s/1990s war dialers—reimagined for IP networks. Where tools like ToneLoc and THC-Scan systematically dialed phone numbers to find modems/BBSs, WarScan systematically scans IP address ranges, ports, and protocols to discover active hosts and services.
+
+WarScan consolidates and advances the best of today's network scanning and analysis tools, delivering a comprehensive, high-performance, stealth-focused toolkit for penetration testers and red teams. It is implemented in **Rust** for safety and performance, initially released as a **CLI** utility (`prtip`), with a roadmap for **TUI**, **web**, and **desktop GUI** interfaces.
+
+**Key goals and characteristics:**
+
+- **Extensive multi-layer scanning:** From host discovery (ARP/ICMP) up through TCP/UDP scans and application-layer banner grabbing
+- **High performance & efficiency:** Internet-scale scanning inspired by the fastest modern scanners (1M+ packets/second stateless)
+- **Advanced red-team features:** Stealth techniques (randomization, timing dithering, decoys, fragmentation, idle scans) to evade detection
+- **Cross-platform & extensible:** Linux-first with Windows/macOS support via Rust portability; open-source (GPLv3)
+- **Future UI enhancements:** TUI → web → GUI, expanding accessibility without sacrificing power
+
+**In summary**, WarScan aims to be a one-stop, modern war-scanning solution—combining the thoroughness of classic mappers, the speed of internet-scale scanners, the usability of friendly GUIs, the deep packet insight of protocol analyzers, and the raw versatility of low-level network tools.
+
+### Inspiration from Existing Tools
+
+To design WarScan, we surveyed state-of-the-art tools widely used for networking, penetration testing, and packet analysis. Each contributes valuable features and lessons:
+
+- **Nmap (Network Mapper):** The gold standard for discovery, versatile port scan techniques, service/version detection, OS fingerprinting, a powerful scripting engine, and numerous stealth/evasion capabilities. WarScan incorporates multiple scan types (connect, SYN, FIN/NULL/Xmas, UDP), service/OS detection, and similar evasion features in a modernized implementation.
+
+- **Masscan:** Ultra high-speed, asynchronous/stateless internet-scale scanning at extreme packet rates. WarScan borrows the speed/scalability model—highly parallelized, stateless fast modes—then enables deeper follow-up scans on responders.
+
+- **ZMap:** Internet-scale, single-packet rapid scans across huge IP ranges. WarScan includes a comparable "fast scan mode" for breadth-first discovery followed by depth on responsive hosts.
+
+- **RustScan:** Demonstrates Rust's advantages: fast full-port sweeps, adaptive performance learning, and extensibility/scripting. WarScan mirrors this split-phase strategy (fast discovery → detailed enumeration) and evaluates an embedded scripting layer.
+
+- **Unicornscan:** Pioneered asynchronous/stateless techniques and userland TCP/IP stack control for advanced packet crafting, banner grabbing, protocol-specific UDP probes, and OS/app fingerprinting. WarScan builds similar packet-crafting flexibility and export to PCAP/DB.
+
+- **Wireshark:** The model for protocol depth and parsing. WarScan parses responses (e.g., HTTP headers, TLS certs), logs to PCAP, and emphasizes robust protocol coverage.
+
+- **Angry IP Scanner:** Highlights usability, speed via multithreading, cross-platform reach, simple exports, and plugins. WarScan's roadmap includes a friendly TUI/GUI and enriched host info (reverse DNS, ARP/MAC/vendor, NetBIONS/mDNS where possible).
+
+- **Netcat/Ncat:** The "Swiss Army knife" for quick banner grabs and interactive tests. WarScan supports custom payloads and optional interactive follow-ups to validate findings.
+
+### Feature Comparison
+
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; margin: 20px 0;">
+    <div style="max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;">
+        <h4 style="background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; text-align: center; padding: 30px; margin: 0; font-size: 2em; font-weight: 700;">🔍 Network Scanner Feature Comparison</h4>
+        <div style="text-align: center; background: #4a5568; color: #e2e8f0; padding: 15px; font-size: 1.1em;">Planned Capabilities vs Existing Tools</div>
+
+        <div style="display: flex; justify-content: center; gap: 30px; padding: 20px; background: #f7fafc; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
+                <span style="font-weight: 700; font-size: 1.1em; color: #22c55e;">✓</span> <span>Fully Supported</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
+                <span style="font-weight: 700; font-size: 1.1em; color: #ef4444;">✗</span> <span>Not Supported</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
+                <span style="font-weight: 700; font-size: 1.1em; color: #f59e0b;">⚠</span> <span>Partial Support</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
+                <span style="font-weight: 700; font-size: 1.1em; color: #3b82f6;">⟳</span> <span>Planned Feature</span>
+            </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+            <thead>
+                <tr>
+                    <th style="background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282; width: 200px;">Feature</th>
+                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">Nmap</th>
+                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">Masscan</th>
+                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">RustScan</th>
+                    <th style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 20px; text-align: left; font-size: 1.3em; font-weight: 600; border-bottom: 3px solid #2c5282;">ProRT-IP (Target)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #f7fafc;">
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Speed (max pps)</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">~10K</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>10M+</strong></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">~10K</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>1M+</strong> (stateless)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">OS Fingerprinting</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Excellent</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 3</span></td>
+                </tr>
+                <tr style="background-color: #f7fafc;">
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Service Detection</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Excellent</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Via Nmap</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 3</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Stealth Scans</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Yes</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ SYN only</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Limited</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 2</span></td>
+                </tr>
+                <tr style="background-color: #f7fafc;">
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">IPv6 Support</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Full</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Basic</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Basic</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 8</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Lua Scripting</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ NSE</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #ef4444; font-weight: 600;">✗ No</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #3b82f6; font-weight: 600;">✓ Planned</span> <span style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: 700; color: #1e40af; margin-left: 5px; display: inline-block;">Phase 5</span></td>
+                </tr>
+                <tr style="background-color: #f7fafc;">
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">Memory Safety</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ C/C++</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #f59e0b; font-weight: 600;">⚠ C</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Rust</span></td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><span style="color: #22c55e; font-weight: 600;">✓ Rust</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em; font-weight: 600; background-color: #edf2f7; color: #2d3748;">License</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">NPSL/GPLv2</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">AGPL-3.0</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;">GPL-3.0</td>
+                    <td style="padding: 18px 20px; border-bottom: 1px solid #e2e8f0; font-size: 1.05em;"><strong>GPLv3</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="background: #f7fafc; padding: 20px; text-align: center; color: #4a5568; font-size: 0.95em; border-top: 2px solid #e2e8f0;">
+            <strong>ProRT-IP Development Roadmap:</strong><br>
+            Phase 2: Stealth Scans • Phase 3: OS Fingerprinting & Service Detection •
+            Phase 5: Lua Scripting Engine • Phase 8: Full IPv6 Support
+        </div>
+    </div>
+</div>
+
+---
+
 ## Table of Contents
 
-- [Overview](#overview)
 - [Project Status](#project-status)
 - [Documentation](#documentation)
 - [Quick Start](#quick-start)
@@ -25,27 +181,6 @@
 - [License](#license)
 - [Authors & Acknowledgments](#authors--acknowledgments)
 - [Legal Notice](#legal-notice)
-
----
-
-## Overview
-
-ProRT-IP WarScan (Protocol/Port Real-Time IP War Scanner) is a modern network scanner written in Rust that combines:
-
-- **Speed:** 1M+ packets/second stateless scanning (comparable to Masscan/ZMap)
-- **Depth:** Comprehensive service detection and OS fingerprinting (like Nmap)
-- **Safety:** Memory-safe Rust implementation prevents entire vulnerability classes
-- **Stealth:** Advanced evasion techniques (timing, decoys, fragmentation, idle scans)
-- **Extensibility:** Plugin system with Lua scripting support
-
-### Key Features
-
-- **Multi-Protocol Scanning:** TCP (SYN, Connect, FIN, NULL, Xmas, ACK, Idle), UDP, ICMP
-- **Service Detection:** 500+ protocol probes with version identification
-- **OS Fingerprinting:** 2000+ signatures using 16-probe technique
-- **High Performance:** Asynchronous I/O with lock-free coordination
-- **Cross-Platform:** Linux, Windows, macOS support
-- **Multiple Interfaces:** CLI (v1.0), TUI (planned), Web UI (planned), GUI (planned)
 
 ---
 
@@ -71,12 +206,12 @@ This project is in the planning and specification phase. Comprehensive documenta
 
 | Document | Description |
 |----------|-------------|
-| **[ROADMAP.md](ROADMAP.md)** | High-level development roadmap and vision |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines and development process |
-| **[SECURITY.md](SECURITY.md)** | Security policy and vulnerability reporting |
-| **[SUPPORT.md](SUPPORT.md)** | Support resources and help |
-| **[AUTHORS.md](AUTHORS.md)** | Contributors and acknowledgments |
-| **[CHANGELOG.md](CHANGELOG.md)** | Version history and release notes |
+| **[Roadmap](ROADMAP.md)** | High-level development roadmap and vision |
+| **[Contributing](CONTRIBUTING.md)** | Contribution guidelines and development process |
+| **[Security](SECURITY.md)** | Security policy and vulnerability reporting |
+| **[Support](SUPPORT.md)** | Support resources and help |
+| **[Authors](AUTHORS.md)** | Contributors and acknowledgments |
+| **[Changelog](CHANGELOG.md)** | Version history and release notes |
 
 ### Technical Documentation (`docs/`)
 
@@ -84,19 +219,19 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 
 | Document | Description |
 |----------|-------------|
-| [00-ARCHITECTURE](docs/00-ARCHITECTURE.md) | System architecture and design patterns |
-| [01-ROADMAP](docs/01-ROADMAP.md) | Detailed development phases and timeline |
-| [02-TECHNICAL-SPECS](docs/02-TECHNICAL-SPECS.md) | Protocol specifications and data formats |
-| [03-DEV-SETUP](docs/03-DEV-SETUP.md) | Development environment setup |
-| [04-IMPLEMENTATION-GUIDE](docs/04-IMPLEMENTATION-GUIDE.md) | Code structure and patterns |
-| [05-API-REFERENCE](docs/05-API-REFERENCE.md) | Complete API documentation |
-| [06-TESTING](docs/06-TESTING.md) | Testing strategy and coverage |
-| [07-PERFORMANCE](docs/07-PERFORMANCE.md) | Benchmarks and optimization |
-| [08-SECURITY](docs/08-SECURITY.md) | Security implementation guide |
-| [09-FAQ](docs/09-FAQ.md) | Frequently asked questions |
-| [10-PROJECT-STATUS](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
+| [Architecture](docs/00-ARCHITECTURE.md) | System architecture and design patterns |
+| [Roadmap](docs/01-ROADMAP.md) | Detailed development phases and timeline |
+| [Technical Specs](docs/02-TECHNICAL-SPECS.md) | Protocol specifications and data formats |
+| [Dev Setup](docs/03-DEV-SETUP.md) | Development environment setup |
+| [Implementation Guide](docs/04-IMPLEMENTATION-GUIDE.md) | Code structure and patterns |
+| [API Reference](docs/05-API-REFERENCE.md) | Complete API documentation |
+| [Testing](docs/06-TESTING.md) | Testing strategy and coverage |
+| [Performance](docs/07-PERFORMANCE.md) | Benchmarks and optimization |
+| [Security](docs/08-SECURITY.md) | Security implementation guide |
+| [FAQ](docs/09-FAQ.md) | Frequently asked questions |
+| [Project Status](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
 
-**Quick Start:** See [docs/README.md](docs/README.md) for navigation guide.
+**Quick Start:** See [Documentation README](docs/README.md) for navigation guide.
 
 ---
 
@@ -104,22 +239,22 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 
 ### For Users
 
-1. **Check project status**: [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md)
-2. **Read FAQ**: [docs/09-FAQ.md](docs/09-FAQ.md)
-3. **Get support**: [SUPPORT.md](SUPPORT.md)
+1. **Check project status**: [Project Status](docs/10-PROJECT-STATUS.md)
+2. **Read FAQ**: [FAQ](docs/09-FAQ.md)
+3. **Get support**: [Support](SUPPORT.md)
 
 ### For Developers
 
-1. **Understand architecture**: [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md)
-2. **Set up environment**: [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md)
-3. **Review roadmap**: [ROADMAP.md](ROADMAP.md) and [docs/01-ROADMAP.md](docs/01-ROADMAP.md)
-4. **Start contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
+1. **Understand architecture**: [Architecture](docs/00-ARCHITECTURE.md)
+2. **Set up environment**: [Dev Setup](docs/03-DEV-SETUP.md)
+3. **Review roadmap**: [Roadmap](ROADMAP.md) and [Detailed Roadmap](docs/01-ROADMAP.md)
+4. **Start contributing**: [Contributing](CONTRIBUTING.md)
 
 ### For Security Researchers
 
-1. **Read security policy**: [SECURITY.md](SECURITY.md)
-2. **Review implementation**: [docs/08-SECURITY.md](docs/08-SECURITY.md)
-3. **Report vulnerabilities**: See [SECURITY.md](SECURITY.md#reporting-security-vulnerabilities)
+1. **Read security policy**: [Security](SECURITY.md)
+2. **Review implementation**: [Security Implementation](docs/08-SECURITY.md)
+3. **Report vulnerabilities**: See [Security Policy](SECURITY.md#reporting-security-vulnerabilities)
 
 ---
 
@@ -174,7 +309,7 @@ prtip -sS -sV -O -p- --output json target.com
 - **M6**: Enhanced Usability (Phase 6)
 - **M7**: Version 1.0 Release (Phase 7)
 
-**Full Details**: See [ROADMAP.md](ROADMAP.md) and [docs/01-ROADMAP.md](docs/01-ROADMAP.md)
+**Full Details**: See [Roadmap](ROADMAP.md) and [Detailed Roadmap](docs/01-ROADMAP.md)
 
 ---
 
@@ -235,7 +370,7 @@ sudo setcap cap_net_raw,cap_net_admin=eip target/release/prtip
 ./target/release/prtip --help
 ```
 
-**See [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md) for platform-specific instructions.**
+**See [Dev Setup](docs/03-DEV-SETUP.md) for platform-specific instructions.**
 
 ---
 
@@ -254,20 +389,20 @@ We welcome contributions of all kinds! ProRT-IP WarScan is in early development 
 
 ### Getting Started
 
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines
-2. Review [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) for system design
-3. Check [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md) for available tasks
-4. Set up your environment: [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md)
+1. Read [Contributing](CONTRIBUTING.md) for detailed guidelines
+2. Review [Architecture](docs/00-ARCHITECTURE.md) for system design
+3. Check [Project Status](docs/10-PROJECT-STATUS.md) for available tasks
+4. Set up your environment: [Dev Setup](docs/03-DEV-SETUP.md)
 
 ### Development Standards
 
 - **Code Quality**: Run `cargo fmt` and `cargo clippy -- -D warnings`
 - **Testing**: All PRs must include tests (>80% coverage)
-- **Security**: Follow [docs/08-SECURITY.md](docs/08-SECURITY.md) guidelines
+- **Security**: Follow [Security Implementation](docs/08-SECURITY.md) guidelines
 - **Documentation**: Update docs for new features
 - **Commits**: Use [Conventional Commits](https://www.conventionalcommits.org/) format
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for complete details.
+See [Contributing](CONTRIBUTING.md) for complete details.
 
 ---
 
@@ -277,9 +412,9 @@ Need help? We're here to assist!
 
 ### Documentation
 
-- **FAQ**: [docs/09-FAQ.md](docs/09-FAQ.md)
-- **Troubleshooting**: [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md)
-- **Full Docs**: [docs/README.md](docs/README.md)
+- **FAQ**: [FAQ](docs/09-FAQ.md)
+- **Troubleshooting**: [Dev Setup](docs/03-DEV-SETUP.md)
+- **Full Docs**: [Documentation README](docs/README.md)
 
 ### Community
 
@@ -287,7 +422,7 @@ Need help? We're here to assist!
 - **Bug Reports**: [GitHub Issues](https://github.com/doublegate/ProRT-IP/issues)
 - **Feature Requests**: [GitHub Discussions](https://github.com/doublegate/ProRT-IP/discussions/categories/ideas)
 
-See [SUPPORT.md](SUPPORT.md) for comprehensive support resources.
+See [Support](SUPPORT.md) for comprehensive support resources.
 
 ---
 
@@ -302,7 +437,7 @@ ProRT-IP WarScan is a **defensive security tool** for authorized penetration tes
 🔒 **DO NOT** create public issues for security vulnerabilities.
 
 - **Private Reporting**: Use [GitHub Security Advisories](https://github.com/doublegate/ProRT-IP/security/advisories)
-- **Email**: Contact maintainers privately (see [SECURITY.md](SECURITY.md))
+- **Email**: Contact maintainers privately (see [Security](SECURITY.md))
 
 ### Responsible Use
 
@@ -312,7 +447,7 @@ ProRT-IP WarScan is a **defensive security tool** for authorized penetration tes
 - Always obtain authorization before testing
 - Use for legitimate security research only
 
-See [SECURITY.md](SECURITY.md) for full security policy and best practices.
+See [Security](SECURITY.md) for full security policy and best practices.
 
 ---
 
@@ -340,7 +475,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ProRT-IP WarScan is developed and maintained by security researchers and Rust developers passionate about creating safe, high-performance security tools.
 
-See [AUTHORS.md](AUTHORS.md) for:
+See [Authors](AUTHORS.md) for:
 - Complete contributor list
 - Acknowledgments to inspirational projects
 - Recognition of Rust ecosystem contributors
@@ -356,7 +491,7 @@ This project builds on the pioneering work of:
 
 Special thanks to the Rust community for excellent libraries (Tokio, pnet, etherparse, clap, and many others).
 
-**Want to be listed?** See [CONTRIBUTING.md](CONTRIBUTING.md) to start contributing!
+**Want to be listed?** See [Contributing](CONTRIBUTING.md) to start contributing!
 
 ---
 
@@ -404,4 +539,4 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 **Last Updated**: 2025-10-07
 
-For the latest project status, see [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md) and [CHANGELOG.md](CHANGELOG.md).
+For the latest project status, see [Project Status](docs/10-PROJECT-STATUS.md) and [Changelog](CHANGELOG.md).

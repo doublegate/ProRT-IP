@@ -67,7 +67,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ### Feature Comparison
 
-See the interactive feature comparison table: [html/feature-comparison.html](html/feature-comparison.html)
+![Network Scanner Feature Comparison](images/scanner_comparison.jpg)
+
+*Comparison of ProRT-IP WarScan with leading network scanning tools (Nmap, Masscan, ZMap, RustScan)*
 
 ---
 

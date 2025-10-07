@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ProRT-IP WarScan** is a modern network scanner and "war dialer" for IP networks, implemented in **Rust**. The project aims to combine the speed of Masscan/ZMap (1M+ packets/second stateless) with the depth of Nmap's service detection and OS fingerprinting.
 
-**Current Status:** Documentation complete (237 KB across 12 documents). Ready to begin Phase 1: Core Infrastructure implementation.
+**Current Status:** Documentation complete (478 KB total: 237 KB technical docs, 241 KB reference, 44 KB root files). GitHub repository fully configured with community health files. Ready to begin Phase 1: Core Infrastructure implementation.
 
 **Repository:** https://github.com/doublegate/ProRT-IP
 
@@ -280,9 +280,23 @@ prtip -T2 -sF -p 80,443 --scan-delay 100ms target.com
 
 ## Documentation Structure
 
+### Root-Level Documentation
+
+The project includes comprehensive GitHub community health files:
+
+| Document | Description | Use When |
+|----------|-------------|----------|
+| **README.md** (14 KB) | Project overview, quick start, navigation | First-time visitors, project introduction |
+| **ROADMAP.md** (8 KB) | Development phases, timelines, success metrics | Understanding project direction, planning |
+| **CONTRIBUTING.md** (10 KB) | Contribution guidelines, code standards, PR process | Contributing code, submitting issues |
+| **SECURITY.md** (9 KB) | Vulnerability reporting, responsible use, hardening | Security researchers, ethical usage |
+| **SUPPORT.md** (9 KB) | Documentation index, quick starts, community channels | Getting help, finding resources |
+| **AUTHORS.md** (8 KB) | Contributors, acknowledgments, Rust ecosystem credits | Recognition, attribution |
+| **CHANGELOG.md** | Version history, release notes | Tracking changes, release information |
+
 ### Comprehensive Documentation Suite (`docs/`)
 
-The project has complete documentation (237 KB across 12 documents):
+The project has complete technical documentation (237 KB across 12 documents):
 
 | Document | Description | Use When |
 |----------|-------------|----------|

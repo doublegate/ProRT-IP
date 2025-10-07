@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed - 2025-10-07
+
+#### Security
+- **Upgraded sqlx from 0.7.4 to 0.8.6** - Fixes RUSTSEC-2024-0363 (Binary Protocol Misinterpretation)
+- Configured governor rate limiter with `burst=1` for strict linear rate limiting
+- Fixed 7 test failures after sqlx upgrade:
+  - Rate limiter tests: Burst capacity configuration issue
+  - Discovery tests: Network-agnostic test improvements
+
+#### Test Suite
+- All 215 tests passing across workspace
+- Updated discovery tests to handle varying network configurations
+- Made tests more robust for different routing setups
+
+### Added - 2025-10-07
+
+#### Phase 1: Core Infrastructure (COMPLETE ✅)
+
+**prtip-core crate**:
+- Core types: `ScanTarget`, `ScanResult`, `PortState`, `PortRange`
+- Configuration: `Config`, `ScanConfig`, `NetworkConfig`, `OutputConfig`, `PerformanceConfig`
+- Enums: `ScanType`, `TimingTemplate`, `OutputFormat`
+- CIDR notation parsing with `ipnetwork` crate
+- Port range parsing (single: `80`, list: `80,443`, range: `1-1000`)
+- 49 unit tests with comprehensive coverage
+
+**prtip-network crate**:
+- Cross-platform packet capture abstraction
+- Platform-specific implementations (Linux/Windows/macOS)
+- Privilege checking: `check_privileges()`, `drop_privileges()`
+- Capability detection (Linux CAP_NET_RAW)
+- 29 unit tests
+
+**prtip-scanner crate**:
+- TCP connect scanner with full 3-way handshake
+- Rate limiting with governor (token bucket algorithm)
+- Host discovery engine (TCP SYN ping)
+- Scan scheduler with async orchestration
+- SQLite result storage with indexing
+- Concurrent scanning with semaphore-based parallelism
+- Retry mechanism with exponential backoff
+- 62 unit tests + 14 integration tests
+
+**prtip-cli crate**:
+- Complete CLI with clap argument parsing
+- Output formatters: Text (colorized), JSON, XML
+- Progress reporting with colored terminal output
+- Database integration for result storage
+- Scan summary with statistics
+- 49 tests including args validation and output formatting
+
+### Changed - 2025-10-07
+
+#### Dependencies
+- **sqlx**: 0.7.4 → 0.8.6 (security fix)
+- **Cargo.lock**: Updated with 322 dependencies
+- **Rate limiter**: Configured with strict burst=1 for predictable timing
+
 ### Added - 2025-10-07
 
 #### Root-Level Documentation

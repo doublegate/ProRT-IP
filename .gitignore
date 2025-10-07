@@ -1,0 +1,52 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Development
+.env
+.env.local
+*.log
+
+# Test artifacts
+/coverage/
+*.profraw
+*.profdata
+
+# Temporary files
+/tmp/
+*.tmp
+*.bak
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# PCAP files
+*.pcap
+*.pcapng
+
+# Documentation build
+/docs/book/
+/target/doc/
+
+# OS
+.DS_Store
+Thumbs.db

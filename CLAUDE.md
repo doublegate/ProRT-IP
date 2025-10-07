@@ -4,11 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**ProRT-IP WarScan** is a modern network scanner and "war dialer" for IP networks, implemented in **Rust**. The project aims to combine the speed of Masscan/ZMap (10+ million packets/second) with the depth of Nmap's service detection and OS fingerprinting.
+**ProRT-IP WarScan** is a modern network scanner and "war dialer" for IP networks, implemented in **Rust**. The project aims to combine the speed of Masscan/ZMap (1M+ packets/second stateless) with the depth of Nmap's service detection and OS fingerprinting.
 
-**Current Status:** Planning/specification phase. Reference documentation complete; no source code yet.
+**Current Status:** Documentation complete (237 KB across 12 documents). Ready to begin Phase 1: Core Infrastructure implementation.
+
+**Repository:** https://github.com/doublegate/ProRT-IP
 
 **License:** GPLv3
+
+**Last Updated:** 2025-10-07
 
 ## Architecture and Design Philosophy
 
@@ -274,18 +278,56 @@ prtip -T2 -sF -p 80,443 --scan-delay 100ms target.com
 - **PCAPNG:** Full packet capture with metadata
 - **SQLite/PostgreSQL:** Direct database export
 
-## Reference Documentation
+## Documentation Structure
 
-The `ref-docs/` directory contains comprehensive technical specifications:
+### Comprehensive Documentation Suite (`docs/`)
 
+The project has complete documentation (237 KB across 12 documents):
+
+| Document | Description | Use When |
+|----------|-------------|----------|
+| **00-ARCHITECTURE.md** (23 KB) | System architecture, design patterns, component overview | Understanding system design, planning features |
+| **01-ROADMAP.md** (18 KB) | 8 phases, 20 weeks, 122+ tracked tasks | Sprint planning, timeline estimation |
+| **02-TECHNICAL-SPECS.md** (22 KB) | Protocol specs, packet formats, data structures | Implementing networking code, packet parsing |
+| **03-DEV-SETUP.md** (14 KB) | Environment setup for Linux/Windows/macOS | Initial setup, troubleshooting builds |
+| **04-IMPLEMENTATION-GUIDE.md** (24 KB) | Code structure, 500+ lines of examples | Writing new modules, following patterns |
+| **05-API-REFERENCE.md** (20 KB) | 50+ documented APIs with examples | Using scanner APIs, writing plugins |
+| **06-TESTING.md** (17 KB) | Testing strategy, 5 test levels, coverage targets | Writing tests (TDD), setting up CI |
+| **07-PERFORMANCE.md** (17 KB) | Benchmarks, optimization techniques | Profiling, optimizing hot paths |
+| **08-SECURITY.md** (20 KB) | Security implementation, audit checklist | Privilege handling, input validation |
+| **09-FAQ.md** (12 KB) | 30+ FAQs, troubleshooting | Common issues, user questions |
+| **10-PROJECT-STATUS.md** (19 KB) | Task tracking with checkboxes | Finding next task, tracking progress |
+| **README.md** (14 KB) | Documentation navigation guide | Finding relevant documentation |
+
+**Quick Start for Development:**
+1. Read `00-ARCHITECTURE.md` - understand the system design
+2. Follow `03-DEV-SETUP.md` - set up environment
+3. Check `10-PROJECT-STATUS.md` - find next task in current sprint
+4. Consult `04-IMPLEMENTATION-GUIDE.md` - see code patterns and examples
+5. Review `08-SECURITY.md` - ensure secure implementation
+
+### Reference Documentation (`ref-docs/`)
+
+Original technical specifications (241 KB total):
 - `ProRT-IP_Overview.md`: High-level feature blueprint and project goals
-- `ProRT-IP_WarScan_Technical_Specification-v2.md`: Complete implementation guide with code examples, performance benchmarks, and architectural patterns
+- `ProRT-IP_WarScan_Technical_Specification.md` (190 KB): Comprehensive implementation details
+- `ProRT-IP_WarScan_Technical_Specification-v2.md` (36 KB): Condensed technical guide
 
 **Key Insights from References:**
 - ZMap hit rates: 97% at 4Mpps, 63% at 14.23Mpps (network congestion limits)
 - Tokio scheduler redesign: 10x performance improvement via work-stealing and LIFO slots
 - Nmap's weighted OS fingerprinting: 2,600+ fingerprint database
 - Masscan's stateless design: SYN cookies in source ports, encrypted index for randomization
+
+### Local Memory Bank
+
+**CLAUDE.local.md** - Living document tracking:
+- Current development status and phase
+- Recent session summaries
+- Decision log with rationales
+- Next immediate actions
+- Known issues and blockers
+- Quick reference commands
 
 ## Important Notes
 

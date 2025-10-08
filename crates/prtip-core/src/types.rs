@@ -384,6 +384,18 @@ impl TimingTemplate {
             TimingTemplate::Insane => 10000,
         }
     }
+
+    /// Get maximum retries for this timing
+    pub fn max_retries(&self) -> Option<u8> {
+        match self {
+            TimingTemplate::Paranoid => Some(5),
+            TimingTemplate::Sneaky => Some(5),
+            TimingTemplate::Polite => Some(5),
+            TimingTemplate::Normal => Some(2),
+            TimingTemplate::Aggressive => Some(6),
+            TimingTemplate::Insane => Some(2),
+        }
+    }
 }
 
 impl fmt::Display for TimingTemplate {

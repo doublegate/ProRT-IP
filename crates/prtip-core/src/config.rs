@@ -83,6 +83,11 @@ impl Config {
 
         Ok(())
     }
+
+    /// Get reference to timing template
+    pub fn timing(&self) -> &TimingTemplate {
+        &self.scan.timing_template
+    }
 }
 
 /// Scan-specific configuration

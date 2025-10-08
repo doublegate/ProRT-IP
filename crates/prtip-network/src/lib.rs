@@ -28,8 +28,12 @@
 //! ```
 
 pub mod capture;
+pub mod packet_builder;
 pub mod privilege;
+pub mod protocol_payloads;
 
 // Re-export commonly used items
 pub use capture::{create_capture, PacketCapture};
+pub use packet_builder::{TcpFlags, TcpOption, TcpPacketBuilder, UdpPacketBuilder};
 pub use privilege::{check_privileges, drop_privileges, has_raw_socket_capability};
+pub use protocol_payloads::get_udp_payload;

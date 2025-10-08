@@ -327,8 +327,11 @@ mod tests {
         // This makes the test more robust across different network configs
         if alive {
             // If host was detected as alive, it should have been quick
-            assert!(elapsed < Duration::from_millis(500),
-                "Host detection took too long: {:?}", elapsed);
+            assert!(
+                elapsed < Duration::from_millis(500),
+                "Host detection took too long: {:?}",
+                elapsed
+            );
         }
         // If not alive, test passes (expected behavior)
     }
@@ -395,8 +398,11 @@ mod tests {
         // 20 targets with 100ms timeout each would take 2 seconds sequential
         // With concurrency of 10, should take much less
         // Allow 2 seconds to account for varying network conditions
-        assert!(elapsed < Duration::from_secs(2),
-            "Concurrent scan took too long: {:?}", elapsed);
+        assert!(
+            elapsed < Duration::from_secs(2),
+            "Concurrent scan took too long: {:?}",
+            elapsed
+        );
 
         // Number of live hosts is network-dependent, just verify it's <= total targets
         assert!(live_hosts.len() <= targets.len());
@@ -455,8 +461,10 @@ mod tests {
         let live_hosts = engine.discover_hosts(targets.clone(), 5).await.unwrap();
 
         // Localhost should always be detected as alive
-        assert!(live_hosts.contains(&IpAddr::V4(Ipv4Addr::LOCALHOST)),
-            "Localhost should be detected as alive");
+        assert!(
+            live_hosts.contains(&IpAddr::V4(Ipv4Addr::LOCALHOST)),
+            "Localhost should be detected as alive"
+        );
 
         // In permissive network configs, other IPs may also be detected
         // Just verify we got at least localhost

@@ -25,10 +25,14 @@ sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono"] }
 
 # Concurrency
 crossbeam = { workspace = true }
+parking_lot = { workspace = true }
 
 # Rate limiting
 governor = { workspace = true }
 nonzero_ext = "0.3"
+
+# Random
+rand = { workspace = true }
 
 # Logging
 tracing = { workspace = true }

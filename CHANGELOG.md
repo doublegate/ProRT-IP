@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
-#### Enhancement Cycle 4: CLI & Scanner Integration (commit TBD)
+#### Enhancement Cycle 4: CLI & Scanner Integration (commit eec5169)
 
 **Objective:** Integrate resource limits and interface detection modules into CLI and scanner workflows with RustScan-inspired patterns.
 

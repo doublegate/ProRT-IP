@@ -52,46 +52,48 @@ use std::num::Wrapping;
 /// Blackrock shuffling structure for bijective mapping
 ///
 /// Implements a Feistel cipher that shuffles numbers in range [0, range) using
-/// a cryptographically secure pseudorandom permutation. This enables stateless
-/// scanning by converting a linearly incrementing index into a randomized sequence.
+/// a format-preserving encryption technique based on the paper:
+/// "Ciphers with Arbitrary Finite Domains" by Black and Rogaway.
+///
+/// This is the same algorithm used by Masscan for stateless IP randomization.
 ///
 /// # Algorithm
 ///
-/// The range is split into two parts (left/right). Multiple rounds of Feistel
-/// transformation are applied:
+/// The key insight is splitting the domain into two factors a and b such that
+/// a × b > range. The number m is represented as m = a*R + L where:
+/// - L = m mod a (left half)
+/// - R = m div a (right half)
 ///
-/// 1. Split number into left (a_bits) and right (b_bits)
-/// 2. For each round:
-///    - Compute F(right, round_key)
-///    - XOR with left, swap left/right
-/// 3. Recombine to produce shuffled output
+/// Multiple rounds of Feistel transformation are applied:
+/// 1. For odd rounds: L' = (L + F(R, round)) mod a
+/// 2. For even rounds: L' = (L + F(R, round)) mod b
+/// 3. Swap L and R
 ///
-/// The number of rounds affects security (more rounds = stronger mixing):
-/// - 1 round: Fast but weak randomization
-/// - 2 rounds: Balanced (Masscan default)
-/// - 3+ rounds: Stronger mixing for cryptographic applications
+/// After all rounds, recombine based on round parity.
+/// Use cycle-walking to handle values >= range.
 ///
-/// Note: This is a partial implementation. The full Masscan algorithm uses
-/// a different domain splitting approach (a * b > range). This implementation
-/// uses power-of-2 domain splitting which works well for many cases but needs
-/// refinement for optimal bijectivity in all ranges.
+/// # Properties
+///
+/// - Deterministic: Same input always produces same output
+/// - Bijective: Every input maps to exactly one output (no collisions)
+/// - Format-preserving: Output is in same range as input
+/// - Stateless: No memory of which values have been generated
+///
+/// # Rounds
+///
+/// - 2 rounds: Masscan default (good balance of speed and randomization)
+/// - 3 rounds: Better mixing for security-critical applications
+/// - 4 rounds: Strongest mixing (diminishing returns beyond this)
 #[derive(Debug, Clone)]
 pub struct BlackRock {
     /// Size of the range to shuffle (e.g., 256 for /24 network)
     range: u64,
 
-    /// Number of bits for left half
-    #[allow(dead_code)]
-    a_bits: u32,
+    /// Left domain factor (a × b > range)
+    a: u64,
 
-    /// Mask for extracting left half
-    a_mask: u64,
-
-    /// Number of bits for right half
-    b_bits: u32,
-
-    /// Mask for extracting right half
-    b_mask: u64,
+    /// Right domain factor (a × b > range)
+    b: u64,
 
     /// Seed for the shuffle (determines randomization)
     seed: u64,
@@ -103,11 +105,15 @@ pub struct BlackRock {
 impl BlackRock {
     /// Create a new Blackrock shuffler for a given range
     ///
+    /// Calculates domain factors a and b such that a × b > range, following
+    /// the Masscan algorithm. For small ranges (< 9), uses hardcoded values
+    /// for better statistical properties.
+    ///
     /// # Arguments
     ///
     /// * `range` - The size of the range to shuffle (must be > 0)
     /// * `seed` - Random seed (use different seeds for different scan sessions)
-    /// * `rounds` - Number of Feistel rounds (2-4 recommended)
+    /// * `rounds` - Number of Feistel rounds (2-4 recommended, Masscan uses 2)
     ///
     /// # Panics
     ///
@@ -124,31 +130,40 @@ impl BlackRock {
     pub fn new(range: u64, seed: u64, rounds: u32) -> Self {
         assert!(range > 0, "Range must be greater than 0");
 
-        // Calculate number of bits needed for the range
-        let total_bits = 64 - range.leading_zeros();
+        // Calculate a and b such that a × b > range
+        // This algorithm matches Masscan's crypto-blackrock.c
+        let (a, b) = match range {
+            // Small ranges: use hardcoded values for better randomization
+            0 => (0, 0), // Should never happen due to assert
+            1 => (1, 1),
+            2 => (1, 2),
+            3 => (2, 2),
+            4..=6 => (2, 3),
+            7..=8 => (3, 3),
+            _ => {
+                // For larger ranges: a ≈ sqrt(range) - 2, b ≈ sqrt(range) + 3
+                let sqrt = (range as f64).sqrt();
+                let mut a = (sqrt - 2.0) as u64;
+                let mut b = (sqrt + 3.0) as u64;
 
-        // Split bits between left and right halves (as evenly as possible)
-        let a_bits = total_bits / 2;
-        let b_bits = total_bits - a_bits;
+                // Ensure a is at least 1
+                if a == 0 {
+                    a = 1;
+                }
 
-        let a_mask = if a_bits >= 64 {
-            u64::MAX
-        } else {
-            (1u64 << a_bits) - 1
-        };
+                // Increment b until a × b > range
+                while a * b <= range {
+                    b += 1;
+                }
 
-        let b_mask = if b_bits >= 64 {
-            u64::MAX
-        } else {
-            (1u64 << b_bits) - 1
+                (a, b)
+            }
         };
 
         Self {
             range,
-            a_bits,
-            a_mask,
-            b_bits,
-            b_mask,
+            a,
+            b,
             seed,
             rounds,
         }
@@ -158,6 +173,8 @@ impl BlackRock {
     ///
     /// Given an index in [0, range), produces a different number also in [0, range).
     /// This is a bijective mapping - each input maps to exactly one output.
+    ///
+    /// Uses cycle-walking: if encrypted value is >= range, re-encrypt until valid.
     ///
     /// # Arguments
     ///
@@ -176,8 +193,7 @@ impl BlackRock {
     /// let shuffled = br.shuffle(100);
     /// assert!(shuffled < 256);
     /// ```
-    pub fn shuffle(&mut self, index: u64) -> u64 {
-        // Ensure index is within range
+    pub fn shuffle(&self, index: u64) -> u64 {
         debug_assert!(
             index < self.range,
             "Index {} out of range {}",
@@ -189,53 +205,50 @@ impl BlackRock {
             return index % self.range;
         }
 
-        // Use cycle-walking for format-preserving encryption
-        let mut result = index;
-        let mut iterations = 0;
-        const MAX_ITERATIONS: u32 = 10;
-
-        loop {
-            result = self.feistel_encrypt(result);
-
-            // If result is in range, we're done
-            if result < self.range {
-                return result;
-            }
-
-            // Prevent infinite loops (shouldn't happen with proper Feistel)
-            iterations += 1;
-            if iterations >= MAX_ITERATIONS {
-                // Fallback: just modulo (shouldn't reach here)
-                return result % self.range;
-            }
+        // Cycle-walking: re-encrypt until result is in range
+        let mut result = self.encrypt(index);
+        while result >= self.range {
+            result = self.encrypt(result);
         }
+        result
     }
 
-    /// Perform Feistel encryption (internal helper)
-    fn feistel_encrypt(&self, mut value: u64) -> u64 {
-        for round in 0..self.rounds {
-            // Split value into left (a) and right (b) halves
-            let a = (value >> self.b_bits) & self.a_mask;
-            let b = value & self.b_mask;
+    /// Encrypt a value using Feistel network (Masscan algorithm)
+    ///
+    /// This implements the ENCRYPT function from Black and Rogaway's paper.
+    /// The value m is split as m = a*R + L, then transformed through rounds.
+    fn encrypt(&self, m: u64) -> u64 {
+        // Split m = a*R + L
+        let mut left = m % self.a;
+        let mut right = m / self.a;
 
-            // Compute round function F(b, round_key)
-            let round_key = self.seed.wrapping_add(round as u64);
-            let f_output = self.round_function(b, round_key);
-
-            // Swap halves: new_left = old_right, new_right = old_left XOR F(old_right)
-            let new_a = b;
-            let new_b = (a ^ f_output) & self.a_mask;
-
-            // Recombine halves
-            value = (new_a << self.b_bits) | new_b;
+        // Apply rounds
+        for round in 1..=self.rounds {
+            let tmp = if round & 1 == 1 {
+                // Odd round: use modulo a
+                (left + self.round_function(round, right)) % self.a
+            } else {
+                // Even round: use modulo b
+                (left + self.round_function(round, right)) % self.b
+            };
+            left = right;
+            right = tmp;
         }
-        value
+
+        // Recombine based on round parity
+        if self.rounds & 1 == 1 {
+            self.a * left + right
+        } else {
+            self.a * right + left
+        }
     }
 
     /// Unshuffle a value (reverse operation)
     ///
     /// Given a shuffled value, returns the original index. This is the inverse
     /// of the shuffle() operation.
+    ///
+    /// Uses cycle-walking: if decrypted value is >= range, re-decrypt until valid.
     ///
     /// # Arguments
     ///
@@ -255,74 +268,100 @@ impl BlackRock {
     /// let original = br.unshuffle(shuffled);
     /// assert_eq!(original, 100);
     /// ```
-    pub fn unshuffle(&mut self, shuffled: u64) -> u64 {
+    pub fn unshuffle(&self, shuffled: u64) -> u64 {
         debug_assert!(shuffled < self.range);
 
         if shuffled >= self.range {
             return shuffled % self.range;
         }
 
-        // Use cycle-walking for format-preserving decryption
-        let mut result = shuffled;
-        let mut iterations = 0;
-        const MAX_ITERATIONS: u32 = 10;
-
-        loop {
-            result = self.feistel_decrypt(result);
-
-            // If result is in range, we're done
-            if result < self.range {
-                return result;
-            }
-
-            // Prevent infinite loops
-            iterations += 1;
-            if iterations >= MAX_ITERATIONS {
-                // Fallback: just modulo
-                return result % self.range;
-            }
+        // Cycle-walking: re-decrypt until result is in range
+        let mut result = self.decrypt(shuffled);
+        while result >= self.range {
+            result = self.decrypt(result);
         }
+        result
     }
 
-    /// Perform Feistel decryption (internal helper)
-    fn feistel_decrypt(&self, mut value: u64) -> u64 {
-        // Reverse the Feistel rounds (apply in reverse order)
-        for round in (0..self.rounds).rev() {
-            let a = (value >> self.b_bits) & self.a_mask;
-            let b = value & self.b_mask;
+    /// Decrypt a value using Feistel network (Masscan algorithm)
+    ///
+    /// This implements the UNENCRYPT function from Black and Rogaway's paper.
+    /// Reverses the encryption process.
+    fn decrypt(&self, m: u64) -> u64 {
+        // Split based on round parity (opposite of encrypt)
+        let (mut left, mut right) = if self.rounds & 1 == 1 {
+            (m / self.a, m % self.a) // Odd rounds: reverse split
+        } else {
+            (m % self.a, m / self.a) // Even rounds: normal split
+        };
 
-            let round_key = self.seed.wrapping_add(round as u64);
-            let f_output = self.round_function(a, round_key);
+        // Apply rounds in reverse
+        for round in (1..=self.rounds).rev() {
+            let f_value = self.round_function(round, left);
 
-            // Reverse swap: new_left = old_right XOR F(old_left), new_right = old_left
-            let new_a = (b ^ f_output) & self.a_mask;
-            let new_b = a;
+            let tmp = if round & 1 == 1 {
+                // Odd round: subtract mod a
+                if f_value > right {
+                    let diff = f_value - right;
+                    let remainder = diff % self.a;
+                    if remainder == 0 {
+                        0
+                    } else {
+                        self.a - remainder
+                    }
+                } else {
+                    (right - f_value) % self.a
+                }
+            } else {
+                // Even round: subtract mod b
+                if f_value > right {
+                    let diff = f_value - right;
+                    let remainder = diff % self.b;
+                    if remainder == 0 {
+                        0
+                    } else {
+                        self.b - remainder
+                    }
+                } else {
+                    (right - f_value) % self.b
+                }
+            };
 
-            value = (new_a << self.b_bits) | new_b;
+            right = left;
+            left = tmp;
         }
-        value
+
+        // Recombine
+        self.a * right + left
     }
 
     /// Feistel round function
     ///
-    /// Implements F(x, key) = hash(x || key) mod 2^a_bits
-    /// Uses a simple but fast hash function based on multiplications.
+    /// Simplified version inspired by Masscan's READ() function but adapted
+    /// for Rust. Provides good statistical mixing without cryptographic overhead.
     ///
-    /// This is NOT cryptographically secure but provides good statistical
-    /// properties for randomization purposes.
-    fn round_function(&self, value: u64, key: u64) -> u64 {
-        // Combine value and key
-        let mut x = value.wrapping_mul(0x9E3779B97F4A7C15); // Golden ratio prime
-        x = x.wrapping_add(key);
+    /// # Arguments
+    ///
+    /// * `round` - Round number (1-based)
+    /// * `value` - Input value to mix
+    ///
+    /// # Returns
+    ///
+    /// Mixed value
+    fn round_function(&self, round: u32, value: u64) -> u64 {
+        // Combine round, value, and seed
+        let mut x = value;
+        x ^= (self.seed << (round as u64 % 64)) ^ (self.seed >> (64 - (round as u64 % 64)));
 
-        // Mix bits (simple avalanche)
-        x ^= x >> 30;
-        x = x.wrapping_mul(0xBF58476D1CE4E5B9);
-        x ^= x >> 27;
-        x = x.wrapping_mul(0x94D049BB133111EB);
-        x ^= x >> 31;
+        // Mix using golden ratio prime (same as MurmurHash3)
+        x = x.wrapping_mul(0x9E3779B97F4A7C15);
+        x ^= x >> 33;
+        x = x.wrapping_mul(0xFF51AFD7ED558CCD);
+        x ^= x >> 33;
+        x = x.wrapping_mul(0xC4CEB9FE1A85EC53);
+        x ^= x >> 33;
 
-        x & self.a_mask
+        x
     }
 }
 
@@ -456,7 +495,7 @@ mod tests {
 
     #[test]
     fn test_blackrock_bijective() {
-        let mut br = BlackRock::new(256, 0x123456, 2);
+        let br = BlackRock::new(256, 0x123456, 2);
 
         // Verify no collisions in full range
         let mut seen = vec![false; 256];
@@ -477,7 +516,7 @@ mod tests {
 
     #[test]
     fn test_blackrock_unshuffle() {
-        let mut br = BlackRock::new(1000, 0xDEADBEEF, 3);
+        let br = BlackRock::new(1000, 0xDEADBEEF, 3);
 
         for i in 0..1000 {
             let shuffled = br.shuffle(i);
@@ -488,8 +527,8 @@ mod tests {
 
     #[test]
     fn test_blackrock_deterministic() {
-        let mut br1 = BlackRock::new(512, 0xABCDEF, 2);
-        let mut br2 = BlackRock::new(512, 0xABCDEF, 2);
+        let br1 = BlackRock::new(512, 0xABCDEF, 2);
+        let br2 = BlackRock::new(512, 0xABCDEF, 2);
 
         for i in 0..512 {
             assert_eq!(
@@ -503,8 +542,8 @@ mod tests {
 
     #[test]
     fn test_blackrock_different_seeds() {
-        let mut br1 = BlackRock::new(100, 0x1111, 2);
-        let mut br2 = BlackRock::new(100, 0x2222, 2);
+        let br1 = BlackRock::new(100, 0x1111, 2);
+        let br2 = BlackRock::new(100, 0x2222, 2);
 
         let mut differences = 0;
         for i in 0..100 {
@@ -523,7 +562,7 @@ mod tests {
 
     #[test]
     fn test_blackrock_power_of_two() {
-        let mut br = BlackRock::new(1024, 0x777, 2);
+        let br = BlackRock::new(1024, 0x777, 2);
 
         let mut seen = vec![false; 1024];
         for i in 0..1024 {
@@ -536,7 +575,7 @@ mod tests {
 
     #[test]
     fn test_blackrock_non_power_of_two() {
-        let mut br = BlackRock::new(1000, 0x999, 3);
+        let br = BlackRock::new(1000, 0x999, 3);
 
         let mut seen = vec![false; 1000];
         for i in 0..1000 {

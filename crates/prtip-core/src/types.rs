@@ -516,6 +516,171 @@ impl fmt::Display for ScanResult {
     }
 }
 
+/// Port filtering for exclusion/inclusion lists
+///
+/// Provides efficient port filtering using hash sets for O(1) lookups.
+/// Inspired by RustScan and Naabu patterns for port exclusion.
+///
+/// # Examples
+///
+/// ```
+/// use prtip_core::types::{PortFilter, PortRange};
+///
+/// // Create filter excluding common web ports
+/// let filter = PortFilter::exclude(&["80", "443", "8080"]).unwrap();
+/// assert!(!filter.allows(80));
+/// assert!(filter.allows(22));
+///
+/// // Create filter allowing only SSH and HTTP
+/// let filter = PortFilter::include(&["22", "80"]).unwrap();
+/// assert!(filter.allows(22));
+/// assert!(!filter.allows(443));
+/// ```
+#[derive(Debug, Clone)]
+pub struct PortFilter {
+    /// Filter mode: true = whitelist (include only), false = blacklist (exclude)
+    is_whitelist: bool,
+    /// Set of ports to filter
+    ports: std::collections::HashSet<u16>,
+}
+
+impl PortFilter {
+    /// Create a new empty filter (allows all ports)
+    pub fn new() -> Self {
+        Self {
+            is_whitelist: false,
+            ports: std::collections::HashSet::new(),
+        }
+    }
+
+    /// Create a whitelist filter (only allows specified ports)
+    ///
+    /// # Arguments
+    ///
+    /// * `specs` - Port specifications: ["80", "443", "8080-8090"]
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use prtip_core::types::PortFilter;
+    ///
+    /// let filter = PortFilter::include(&["22", "80", "443"]).unwrap();
+    /// assert!(filter.allows(22));
+    /// assert!(!filter.allows(8080));
+    /// ```
+    pub fn include(specs: &[&str]) -> Result<Self> {
+        let mut ports = std::collections::HashSet::new();
+        for spec in specs {
+            let range = PortRange::parse(spec)?;
+            for port in range.iter() {
+                ports.insert(port);
+            }
+        }
+        Ok(Self {
+            is_whitelist: true,
+            ports,
+        })
+    }
+
+    /// Create a blacklist filter (excludes specified ports)
+    ///
+    /// # Arguments
+    ///
+    /// * `specs` - Port specifications: ["80", "443", "8080-8090"]
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use prtip_core::types::PortFilter;
+    ///
+    /// let filter = PortFilter::exclude(&["80", "443"]).unwrap();
+    /// assert!(filter.allows(22));
+    /// assert!(!filter.allows(80));
+    /// ```
+    pub fn exclude(specs: &[&str]) -> Result<Self> {
+        let mut ports = std::collections::HashSet::new();
+        for spec in specs {
+            let range = PortRange::parse(spec)?;
+            for port in range.iter() {
+                ports.insert(port);
+            }
+        }
+        Ok(Self {
+            is_whitelist: false,
+            ports,
+        })
+    }
+
+    /// Check if a port is allowed by this filter
+    ///
+    /// # Arguments
+    ///
+    /// * `port` - Port number to check
+    ///
+    /// # Returns
+    ///
+    /// `true` if port is allowed, `false` if filtered out
+    pub fn allows(&self, port: u16) -> bool {
+        if self.ports.is_empty() {
+            // Empty filter allows all ports
+            return true;
+        }
+
+        if self.is_whitelist {
+            // Whitelist: allow only if in set
+            self.ports.contains(&port)
+        } else {
+            // Blacklist: allow if NOT in set
+            !self.ports.contains(&port)
+        }
+    }
+
+    /// Filter a list of ports, returning only allowed ones
+    ///
+    /// # Arguments
+    ///
+    /// * `ports` - Iterator of ports to filter
+    ///
+    /// # Returns
+    ///
+    /// Iterator of allowed ports
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use prtip_core::types::PortFilter;
+    ///
+    /// let filter = PortFilter::exclude(&["80", "443"]).unwrap();
+    /// let ports = vec![22, 80, 443, 8080];
+    /// let filtered = filter.filter_ports(ports);
+    /// assert_eq!(filtered, vec![22, 8080]);
+    /// ```
+    pub fn filter_ports(&self, ports: Vec<u16>) -> Vec<u16> {
+        ports.into_iter().filter(|&p| self.allows(p)).collect()
+    }
+
+    /// Get the number of filtered ports
+    pub fn count(&self) -> usize {
+        self.ports.len()
+    }
+
+    /// Check if filter is empty (allows all)
+    pub fn is_empty(&self) -> bool {
+        self.ports.is_empty()
+    }
+
+    /// Check if this is a whitelist filter
+    pub fn is_whitelist(&self) -> bool {
+        self.is_whitelist
+    }
+}
+
+impl Default for PortFilter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -650,5 +815,98 @@ mod tests {
         assert_eq!(ScanType::Connect.to_string(), "TCP Connect");
         assert_eq!(ScanType::Syn.to_string(), "TCP SYN");
         assert_eq!(ScanType::Udp.to_string(), "UDP");
+    }
+
+    #[test]
+    fn test_port_filter_empty() {
+        let filter = PortFilter::new();
+        assert!(filter.is_empty());
+        assert!(filter.allows(80));
+        assert!(filter.allows(443));
+        assert!(filter.allows(8080));
+    }
+
+    #[test]
+    fn test_port_filter_exclude_single() {
+        let filter = PortFilter::exclude(&["80"]).unwrap();
+        assert!(!filter.is_whitelist());
+        assert!(!filter.allows(80));
+        assert!(filter.allows(443));
+        assert!(filter.allows(22));
+    }
+
+    #[test]
+    fn test_port_filter_exclude_multiple() {
+        let filter = PortFilter::exclude(&["80", "443", "8080"]).unwrap();
+        assert!(!filter.allows(80));
+        assert!(!filter.allows(443));
+        assert!(!filter.allows(8080));
+        assert!(filter.allows(22));
+        assert!(filter.allows(3389));
+    }
+
+    #[test]
+    fn test_port_filter_exclude_range() {
+        let filter = PortFilter::exclude(&["8000-8090"]).unwrap();
+        assert!(!filter.allows(8000));
+        assert!(!filter.allows(8050));
+        assert!(!filter.allows(8090));
+        assert!(filter.allows(7999));
+        assert!(filter.allows(8091));
+        assert_eq!(filter.count(), 91); // 8000-8090 inclusive
+    }
+
+    #[test]
+    fn test_port_filter_include_single() {
+        let filter = PortFilter::include(&["80"]).unwrap();
+        assert!(filter.is_whitelist());
+        assert!(filter.allows(80));
+        assert!(!filter.allows(443));
+        assert!(!filter.allows(22));
+    }
+
+    #[test]
+    fn test_port_filter_include_multiple() {
+        let filter = PortFilter::include(&["22", "80", "443"]).unwrap();
+        assert!(filter.allows(22));
+        assert!(filter.allows(80));
+        assert!(filter.allows(443));
+        assert!(!filter.allows(8080));
+        assert!(!filter.allows(3389));
+    }
+
+    #[test]
+    fn test_port_filter_include_range() {
+        let filter = PortFilter::include(&["80-85"]).unwrap();
+        assert!(filter.allows(80));
+        assert!(filter.allows(82));
+        assert!(filter.allows(85));
+        assert!(!filter.allows(79));
+        assert!(!filter.allows(86));
+    }
+
+    #[test]
+    fn test_port_filter_mixed_specs() {
+        let filter = PortFilter::exclude(&["80", "443", "8000-8090"]).unwrap();
+        assert!(!filter.allows(80));
+        assert!(!filter.allows(443));
+        assert!(!filter.allows(8050));
+        assert!(filter.allows(22));
+        assert!(filter.allows(9000));
+    }
+
+    #[test]
+    fn test_port_filter_ports() {
+        let filter = PortFilter::exclude(&["80", "443"]).unwrap();
+        let ports = vec![22, 80, 443, 3389, 8080];
+        let filtered = filter.filter_ports(ports);
+        assert_eq!(filtered, vec![22, 3389, 8080]);
+    }
+
+    #[test]
+    fn test_port_filter_default() {
+        let filter = PortFilter::default();
+        assert!(filter.is_empty());
+        assert!(filter.allows(80));
     }
 }

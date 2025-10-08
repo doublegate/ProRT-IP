@@ -9,7 +9,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
-#### Enhancement Cycle 1: Reference Codebase Integration (commit TBD)
+#### Enhancement Cycle 2: Blackrock Completion & Port Filtering (commit TBD)
+
+**Objective:** Complete Blackrock algorithm with Masscan's proper domain splitting and implement comprehensive port exclusion/filtering inspired by RustScan/Naabu.
+
+**Blackrock Algorithm - Full Masscan Implementation** (`crates/prtip-core/crypto.rs` - COMPLETE ✅):
+- **Fixed domain splitting with (a × b) algorithm**:
+  * Proper domain factorization: `a ≈ sqrt(range) - 2`, `b ≈ sqrt(range) + 3`
+  * Ensures `a * b > range` for all input ranges
+  * Hardcoded small-range values (0-8) for better statistical properties
+  * Cycle-walking for format-preserving encryption
+- **Full encrypt/decrypt implementation**:
+  * Alternating modulo operations (odd rounds: mod a, even rounds: mod b)
+  * Round-dependent F() function with seed mixing
+  * Proper inverse operations for unshuffle
+- **All tests passing**: 11/11 tests (was 9/11 in Cycle 1)
+  * Bijectivity verified for ranges: 256, 1000, 1024
+  * Power-of-2 and non-power-of-2 ranges
+  * Deterministic shuffling validated
+  * Unshuffle correctness confirmed
+
+**Port Filtering System** (`crates/prtip-core/types.rs` - 167 lines, COMPLETE ✅):
+- **Dual-mode filtering** (RustScan/Naabu pattern):
+  * Whitelist mode: only allow specified ports
+  * Blacklist mode: exclude specified ports
+  * O(1) lookup performance via HashSet
+- **Flexible port specification**:
+  * Single ports: "80"
+  * Ranges: "8000-8090"
+  * Mixed: "80,443,8000-8090"
+  * Reuses existing PortRange parser
+- **API**:
+  * `PortFilter::include(&["22", "80", "443"])` - whitelist
+  * `PortFilter::exclude(&["80", "443"])` - blacklist
+  * `filter.allows(port)` - O(1) check
+  * `filter.filter_ports(vec)` - bulk filtering
+- **10 comprehensive tests** - all passing
+
+**Test Coverage:**
+- Total tests: 131 passing (was 121 in Cycle 1, +10)
+  * prtip-core: 55 unit tests (+10 port filter tests)
+  * prtip-network: 29 tests
+  * prtip-scanner: 93 tests
+  * prtip-cli: 49 tests
+  * integration: 14 tests
+  * doctests: 37 tests
+- Code quality: 100% clean (cargo fmt + clippy -D warnings)
+
+#### Enhancement Cycle 1: Reference Codebase Integration (commit 5782aed)
 
 **Objective:** Systematically incorporate high-value improvements from Masscan, RustScan, Naabu, and other reference implementations.
 

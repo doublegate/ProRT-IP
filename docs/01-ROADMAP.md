@@ -1,8 +1,8 @@
 # ProRT-IP WarScan: Development Roadmap
 
-**Version:** 1.1
+**Version:** 1.2
 **Last Updated:** 2025-10-08
-**Project Status:** Phase 2 COMPLETE ✅ → Phase 3 Ready
+**Project Status:** Phase 2 COMPLETE ✅ | Enhancement Cycles 1-5 COMPLETE ✅ | Phase 3 Ready
 
 ---
 
@@ -28,12 +28,13 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 |-------|----------|-------|------------------|--------|
 | Phase 1 | Weeks 1-3 | Core Infrastructure | Packet capture, TCP connect scan, privilege management | ✅ COMPLETE |
 | Phase 2 | Weeks 4-6 | Advanced Scanning | SYN/UDP/stealth scans, timing templates | ✅ COMPLETE |
+| **Enhancement Cycles** | **Post-Phase 2** | **Reference Optimizations** | **Crypto, filtering, resources, progress, errors** | **✅ COMPLETE** |
 | Phase 3 | Weeks 7-10 | Detection Systems | OS fingerprinting, service detection, banner grabbing | Ready |
-| Phase 4 | Weeks 11-13 | Performance | Lock-free structures, rate limiting, NUMA optimization |
-| Phase 5 | Weeks 14-16 | Advanced Features | Idle scan, decoys, fragmentation, plugins |
-| Phase 6 | Weeks 17-18 | TUI Interface | Interactive terminal dashboard |
-| Phase 7 | Weeks 19-20 | Polish & Release | Documentation, packaging, v1.0 release |
-| Phase 8 | Post-v1.0 | Future Enhancements | Web UI, desktop GUI, distributed scanning |
+| Phase 4 | Weeks 11-13 | Performance | Lock-free structures, rate limiting, NUMA optimization | Planned |
+| Phase 5 | Weeks 14-16 | Advanced Features | Idle scan, decoys, fragmentation, plugins | Planned |
+| Phase 6 | Weeks 17-18 | TUI Interface | Interactive terminal dashboard | Planned |
+| Phase 7 | Weeks 19-20 | Polish & Release | Documentation, packaging, v1.0 release | Planned |
+| Phase 8 | Post-v1.0 | Future Enhancements | Web UI, desktop GUI, distributed scanning | Planned |
 
 ### Development Methodology
 
@@ -157,6 +158,51 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 - [x] Masscan-inspired adaptive rate limiter with circular buffer tracking
 - [x] RustScan-inspired connection pool with FuturesUnordered
 - [x] Reference code analysis across 7+ leading scanners (Masscan, RustScan, Naabu, Nmap, etc.)
+
+---
+
+### Enhancement Cycles (Post-Phase 2) ✅ COMPLETE
+
+Following Phase 2 completion, systematic enhancement cycles incorporated optimization patterns from reference implementations. **All cycles complete.**
+
+#### Cycle 1: Cryptographic Foundation (commit 5782aed) ✅
+- SipHash-2-4 implementation (584 lines, 9/9 tests)
+- Blackrock shuffling partial (7/9 tests, completed in Cycle 2)
+- Concurrent scanner with FuturesUnordered (380 lines, 6/6 tests)
+- **Statistics:** Tests 100 → 121 (+21), ~1,074 lines
+
+#### Cycle 2: Complete Crypto + Filtering (commit f5be9c4) ✅
+- Blackrock algorithm completion (11/11 tests)
+- Port filtering system (~200 lines, 10 tests)
+- **Statistics:** Tests 121 → 131 (+10), ~250 lines
+
+#### Cycle 3: Resource Management (commits 38b4f3e, 781e880) ✅
+- Resource limits module (363 lines, 11 tests)
+- Interface detection module (406 lines, 13 tests)
+- **Statistics:** Tests 131 → 345 (+214), 769 lines, +1 dependency (rlimit)
+
+#### Cycle 4: CLI Integration (commits eec5169, e4e5d54) ✅
+- CLI flags (--batch-size, --ulimit, --interface-list, 7 tests)
+- Scanner ulimit-aware integration
+- Main CLI logic enhancements (62 lines)
+- **Statistics:** Tests 345 → 352 (+7), ~200 lines
+
+#### Cycle 5: User Feedback (commits d7f7f38, c1aa10e) ✅
+- Progress tracking module (428 lines, 11 tests)
+- Error categorization module (209 lines, 9 tests)
+- CLI integration (4 new flags, 7 tests)
+- **Statistics:** Tests 352 → 391 (+39), ~637 lines, +1 dependency (indicatif)
+
+**Overall Enhancement Impact:**
+- **Tests:** 100 → 391 (+291, +291% growth)
+- **Lines:** ~2,930 across 5 cycles
+- **Modules:** 6 new production modules
+- **Dependencies:** +2 (rlimit 0.10.2, indicatif 0.17)
+- **Quality:** 100% pass rate, MSRV maintained
+
+**Production Readiness:** Cryptographic foundation, concurrent patterns, filtering, resource awareness, progress tracking, error categorization
+
+**Status:** All enhancement cycles complete. Ready for Phase 3: Detection Systems.
 
 ---
 

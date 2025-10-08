@@ -28,6 +28,7 @@
 //! ```
 
 pub mod capture;
+pub mod interface;
 pub mod packet_builder;
 pub mod privilege;
 pub mod protocol_payloads;

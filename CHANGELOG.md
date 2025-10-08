@@ -9,7 +9,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
-#### Enhancement Cycle 2: Blackrock Completion & Port Filtering (commit TBD)
+#### Enhancement Cycle 3: Resource Limits & Interface Detection (commit TBD)
+
+**Objective:** Implement production-critical resource management and network interface detection from RustScan/Naabu reference codebases.
+
+**Resource Limits Module** (`crates/prtip-core/resource_limits.rs` - 363 lines, COMPLETE ✅):
+- **Cross-platform ulimit detection**:
+  * Uses `rlimit` crate (0.10.2) for Unix systems
+  * Graceful Windows stub (conservative 2048 default)
+  * Get/set file descriptor limits (RLIMIT_NOFILE)
+  * MSRV compatible with Rust 1.70+
+- **Intelligent batch size calculation** (RustScan pattern):
+  * `calculate_optimal_batch_size()` - adapts to system limits
+  * Low limits (<3000): use half of ulimit
+  * Moderate limits (3000-8000): use ulimit - 100
+  * High limits: use desired batch size
+  * Prevents "too many open files" errors
+- **Convenience APIs**:
+  * `adjust_and_get_limit(requested_limit)` - set and return current limit
+  * `get_recommended_batch_size(desired, requested_limit)` - one-shot calculation
+  * Proper error handling with `ResourceLimitError`
+- **11 comprehensive tests** - all passing
+
+**Interface Detection Module** (`crates/prtip-network/interface.rs` - 406 lines, COMPLETE ✅):
+- **Network interface enumeration** (naabu pattern):
+  * Uses `pnet::datalink` for cross-platform support
+  * Extract IPv4/IPv6 addresses per interface
+  * MAC address, MTU, up/down status detection
+  * Filter link-local IPv6 (fe80::/10) for routing
+- **Smart routing logic**:
+  * `find_interface_for_target(ip)` - select best interface
+  * Prefer non-loopback interfaces
+  * Match IPv4/IPv6 address families
+  * Fallback to loopback if needed
+- **Source IP selection**:
+  * `get_source_ip_for_target(target)` - automatic source IP
+  * `find_interface_by_name(name)` - manual interface selection
+  * Proper address family matching (IPv4 to IPv4, IPv6 to IPv6)
+- **13 comprehensive tests** - all passing (Unix-only tests)
+
+**Dependencies Added:**
+- `rlimit = "0.10.2"` - cross-platform resource limit management
+
+**Test Coverage:**
+- Total tests: **345 passing** (was 317 baseline, +28 new tests)
+  * prtip-core: 66 tests (+11 for resource_limits)
+  * prtip-network: 35 tests (+13 for interface)
+  * All doc tests passing (+4 new doc tests)
+- Code quality: 100% clippy clean, formatted
+
+**Reference Code Analysis:**
+- `/home/parobek/Code/ProRT-IP/code_ref/RustScan/src/main.rs` - ulimit patterns (lines 225-287)
+- `/home/parobek/Code/ProRT-IP/code_ref/naabu/pkg/routing/router.go` - interface routing
+- `/home/parobek/Code/ProRT-IP/code_ref/naabu/pkg/runner/banners.go` - interface enumeration
+
+---
+
+#### Enhancement Cycle 2: Blackrock Completion & Port Filtering (commit f5be9c4)
 
 **Objective:** Complete Blackrock algorithm with Masscan's proper domain splitting and implement comprehensive port exclusion/filtering inspired by RustScan/Naabu.
 

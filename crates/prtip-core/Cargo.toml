@@ -16,6 +16,7 @@ anyhow = { workspace = true }
 ipnetwork = { workspace = true }
 chrono = { workspace = true }
 tracing = { workspace = true }
+rlimit = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

@@ -24,6 +24,7 @@
 pub mod config;
 pub mod crypto;
 pub mod error;
+pub mod resource_limits;
 pub mod types;
 
 // Re-export commonly used types

@@ -11,32 +11,42 @@ use std::path::PathBuf;
 ///
 /// A high-performance network scanner written in Rust, combining the speed
 /// of Masscan with the depth of Nmap.
-///
-/// # Examples
-///
-/// Basic scan:
-///   prtip -p 80,443 192.168.1.1
-///
-/// Scan with JSON output:
-///   prtip -p 1-1000 -o json --output-file=results.json 192.168.1.0/24
-///
-/// Aggressive timing:
-///   prtip -T 4 -p 1-65535 target.com
 #[derive(Parser, Debug)]
-#[command(name = "prtip")]
-#[command(version, about, long_about = None)]
-#[command(author = "ProRT-IP Contributors")]
+#[command(
+    name = "prtip",
+    version,
+    about = "Modern network scanner and war dialer for IP networks",
+    long_about = "ProRT-IP WarScan combines Masscan-speed scanning with Nmap-depth detection.\n\
+                  Supports OS fingerprinting, service detection, and comprehensive port scanning.",
+    after_help = "EXAMPLES:\n  \
+                  prtip -s syn -p 1-1000 192.168.1.0/24           # SYN scan common ports\n  \
+                  prtip -O --sV -p- 10.0.0.1                      # Full scan with OS/service detection\n  \
+                  prtip -T 4 -p 80,443 --banner-grab target.com   # Fast scan with banners\n  \
+                  prtip --interface-list                           # Show network interfaces\n\n\
+                  For more information: https://github.com/doublegate/ProRT-IP",
+    author = "ProRT-IP Contributors"
+)]
 pub struct Args {
     /// Target specification (IP, CIDR, hostname)
     ///
     /// Examples: 192.168.1.1, 10.0.0.0/24, example.com
-    #[arg(value_name = "TARGET", required = true)]
+    #[arg(
+        value_name = "TARGET",
+        required = true,
+        help_heading = "TARGET SPECIFICATION"
+    )]
     pub targets: Vec<String>,
 
     /// Port specification
     ///
-    /// Examples: 80, 1-1000, 80,443,8080
-    #[arg(short = 'p', long, value_name = "PORTS", default_value = "1-1000")]
+    /// Examples: 80, 1-1000, 80,443,8080, - (all ports)
+    #[arg(
+        short = 'p',
+        long,
+        value_name = "PORTS",
+        default_value = "1-1000",
+        help_heading = "PORT SPECIFICATION"
+    )]
     pub ports: String,
 
     /// Scan type
@@ -45,123 +55,152 @@ pub struct Args {
         long,
         value_name = "TYPE",
         value_enum,
-        default_value = "connect"
+        default_value = "connect",
+        help_heading = "SCAN TECHNIQUES"
     )]
     pub scan_type: ScanTypeArg,
 
-    /// Timing template (0-5)
-    ///
-    /// 0 = Paranoid, 1 = Sneaky, 2 = Polite, 3 = Normal, 4 = Aggressive, 5 = Insane
-    #[arg(short = 'T', long, value_name = "0-5", value_parser = parse_timing, default_value = "3")]
+    /// Timing template (0-5): 0=paranoid, 3=normal, 5=insane
+    #[arg(short = 'T', long, value_name = "0-5", value_parser = parse_timing, default_value = "3", help_heading = "TIMING AND PERFORMANCE")]
     pub timing: u8,
 
     /// Connection timeout in milliseconds
-    #[arg(long, value_name = "MS", default_value = "3000")]
+    #[arg(
+        long,
+        value_name = "MS",
+        default_value = "3000",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
     pub timeout: u64,
 
     /// Max packets per second
-    #[arg(long, value_name = "RATE")]
+    #[arg(long, value_name = "RATE", help_heading = "TIMING AND PERFORMANCE")]
     pub max_rate: Option<u32>,
 
     /// Maximum concurrent connections
-    #[arg(long, value_name = "NUM")]
+    #[arg(long, value_name = "NUM", help_heading = "TIMING AND PERFORMANCE")]
     pub max_concurrent: Option<usize>,
 
     /// Batch size for connection pooling
-    ///
-    /// Overrides automatic batch size calculation based on ulimit.
-    /// Use with caution - setting too high may exhaust file descriptors.
-    #[arg(short = 'b', long, value_name = "SIZE")]
+    #[arg(
+        short = 'b',
+        long,
+        value_name = "SIZE",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
     pub batch_size: Option<usize>,
 
     /// Adjust file descriptor limit (Unix only)
-    ///
-    /// Attempts to increase ulimit to the specified value.
-    /// Requires appropriate privileges. Inspired by RustScan.
-    #[arg(long, value_name = "LIMIT")]
+    #[arg(long, value_name = "LIMIT", help_heading = "TIMING AND PERFORMANCE")]
     pub ulimit: Option<u64>,
 
     /// List available network interfaces and exit
-    #[arg(long)]
+    #[arg(long, help_heading = "NETWORK")]
     pub interface_list: bool,
 
-    /// Output format
+    /// Enable OS detection (requires open and closed ports)
+    #[arg(short = 'O', long, help_heading = "DETECTION")]
+    pub os_detection: bool,
+
+    /// Enable service version detection
+    #[arg(long = "sV", help_heading = "DETECTION")]
+    pub service_detection: bool,
+
+    /// Service detection intensity (0-9, default: 7)
+    #[arg(
+        long,
+        value_name = "0-9",
+        default_value = "7",
+        help_heading = "DETECTION"
+    )]
+    pub version_intensity: u8,
+
+    /// Only OS detect hosts with at least one open port
+    #[arg(long, help_heading = "DETECTION")]
+    pub osscan_limit: bool,
+
+    /// Enable banner grabbing for open ports
+    #[arg(long, help_heading = "DETECTION")]
+    pub banner_grab: bool,
+
+    /// Enable host discovery before scanning
+    #[arg(short = 'P', long, help_heading = "DETECTION")]
+    pub host_discovery: bool,
+
+    /// Network interface to use
+    #[arg(long, value_name = "IFACE", help_heading = "NETWORK")]
+    pub interface: Option<String>,
+
+    /// Number of scan retries
+    #[arg(
+        long,
+        value_name = "NUM",
+        default_value = "0",
+        help_heading = "SCAN OPTIONS"
+    )]
+    pub retries: u32,
+
+    /// Scan delay in milliseconds between probes
+    #[arg(
+        long,
+        value_name = "MS",
+        default_value = "0",
+        help_heading = "SCAN OPTIONS"
+    )]
+    pub scan_delay: u64,
+
+    /// Output format: text, json, xml
     #[arg(
         short = 'o',
         long,
         value_name = "FORMAT",
         value_enum,
-        default_value = "text"
+        default_value = "text",
+        help_heading = "OUTPUT"
     )]
     pub output_format: OutputFormatArg,
 
     /// Output file (defaults to stdout)
-    #[arg(long, value_name = "FILE")]
+    #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
     pub output_file: Option<PathBuf>,
 
     /// SQLite database for results
-    #[arg(long, value_name = "FILE", default_value = "scan_results.db")]
+    #[arg(
+        long,
+        value_name = "FILE",
+        default_value = "scan_results.db",
+        help_heading = "OUTPUT"
+    )]
     pub database: String,
 
-    /// Enable host discovery before scanning
-    #[arg(short = 'P', long)]
-    pub host_discovery: bool,
-
     /// Verbose output (-v, -vv, -vvv)
-    #[arg(short, long, action = clap::ArgAction::Count)]
+    #[arg(short, long, action = clap::ArgAction::Count, help_heading = "OUTPUT")]
     pub verbose: u8,
 
-    /// Network interface to use
-    #[arg(long, value_name = "IFACE")]
-    pub interface: Option<String>,
-
-    /// Number of scan retries
-    #[arg(long, value_name = "NUM", default_value = "0")]
-    pub retries: u32,
-
-    /// Scan delay in milliseconds between probes
-    #[arg(long, value_name = "MS", default_value = "0")]
-    pub scan_delay: u64,
+    /// Quiet mode (suppress banner and non-essential output)
+    #[arg(short = 'q', long, help_heading = "OUTPUT")]
+    pub quiet: bool,
 
     /// Show progress bar during scan
-    #[arg(long)]
+    #[arg(long, help_heading = "OUTPUT")]
     pub progress: bool,
 
     /// Disable progress output
-    #[arg(long)]
+    #[arg(long, help_heading = "OUTPUT")]
     pub no_progress: bool,
 
     /// Statistics update interval in seconds
-    #[arg(long, value_name = "SECS", default_value = "1")]
+    #[arg(
+        long,
+        value_name = "SECS",
+        default_value = "1",
+        help_heading = "OUTPUT"
+    )]
     pub stats_interval: u64,
 
     /// Write final statistics to JSON file
-    #[arg(long, value_name = "FILE")]
+    #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
     pub stats_file: Option<PathBuf>,
-
-    /// Enable OS detection (requires open and closed ports)
-    #[arg(short = 'O', long)]
-    pub os_detection: bool,
-
-    /// Enable service version detection
-    #[arg(long = "sV")]
-    pub service_detection: bool,
-
-    /// Service detection intensity (0-9, default: 7)
-    ///
-    /// 0 = Light (registered only)
-    /// 7 = Default (balanced)
-    /// 9 = All probes (comprehensive)
-    #[arg(long, value_name = "0-9", default_value = "7")]
-    pub version_intensity: u8,
-
-    /// Only OS detect hosts with at least one open port
-    #[arg(long)]
-    pub osscan_limit: bool,
-
-    /// Enable banner grabbing for open ports
-    #[arg(long)]
-    pub banner_grab: bool,
 }
 
 impl Args {

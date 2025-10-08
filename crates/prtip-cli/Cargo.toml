@@ -40,10 +40,10 @@ chrono = { workspace = true }
 anyhow = { workspace = true }
 
 # Terminal colors
-colored = "2.1"
+colored = { workspace = true }
 
 # Progress bar
-indicatif = "0.17"
+indicatif = { workspace = true }
 
 # Utilities
 num_cpus = { workspace = true }

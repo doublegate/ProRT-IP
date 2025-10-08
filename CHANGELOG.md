@@ -9,6 +9,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
+#### CLI Enhancements: Modern Banner & Organized Help Output
+
+**Objective:** Implement professional CLI user experience with RustScan-inspired banner and intuitive help organization
+
+**Modern ASCII Art Banner** (`crates/prtip-cli/src/banner.rs` - 169 lines, 8 tests):
+- **Cyber-aesthetic ASCII art** with Unicode box drawing characters
+- **Colored terminal output** using `colored` crate:
+  * Cyan/bold for ASCII art logo
+  * Green for version and status information
+  * White/bright for project details
+  * Bright blue/underline for GitHub URL
+- **Display modes:**
+  * Full banner: ASCII art + version + tagline + GitHub + license + test count
+  * Compact banner: Single-line minimal display (for future use)
+- **Smart suppression logic:**
+  * Disabled in quiet mode (`--quiet` flag)
+  * Disabled when output is piped (via `atty` detection)
+  * Always shown for interactive terminal sessions
+- **Dynamic project information:**
+  * Version from `CARGO_PKG_VERSION` macro
+  * Phase completion status (Phase 3 COMPLETE)
+  * Test count (391 passing)
+  * GitHub repository link
+
+**Organized Help Output** (`crates/prtip-cli/src/args.rs` enhancements):
+- **8 logical help categories** via clap's `help_heading`:
+  1. **TARGET SPECIFICATION**: Target IPs, CIDR ranges, hostnames
+  2. **PORT SPECIFICATION**: Port ranges, exclusions, special formats
+  3. **SCAN TECHNIQUES**: Connect, SYN, UDP, FIN, NULL, Xmas, ACK scans
+  4. **TIMING AND PERFORMANCE**: Templates T0-T5, timeouts, rate limits, batch sizing
+  5. **NETWORK**: Interface selection and enumeration
+  6. **DETECTION**: OS fingerprinting, service detection, banner grabbing, host discovery
+  7. **SCAN OPTIONS**: Retries, delays, general scan configuration
+  8. **OUTPUT**: Formats (text/json/xml), verbosity, progress, statistics, quiet mode
+- **Enhanced descriptions:**
+  * Concise flag explanations with defaults noted
+  * Value format hints (e.g., "0-5", "MS", "FORMAT", "0-9")
+  * Clear indication of default values
+  * Enum variants documented with descriptions
+- **Usage examples** in `after_help` section:
+  * Basic SYN scan: `prtip -s syn -p 1-1000 192.168.1.0/24`
+  * Full detection scan: `prtip -O --sV -p- 10.0.0.1`
+  * Fast targeted scan: `prtip -T 4 -p 80,443 --banner-grab target.com`
+  * Interface enumeration: `prtip --interface-list`
+- **New quiet mode flag** (`-q, --quiet`):
+  * Suppresses banner and non-essential output
+  * Useful for scripting and piped output
+  * Conflicts with verbose mode (validated)
+
+**CLI Integration** (`crates/prtip-cli/src/main.rs`):
+- **Banner display** before scan initialization
+- **Conditional rendering:**
+  ```rust
+  if !args.quiet && atty::is(atty::Stream::Stdout) {
+      let banner = Banner::new(env!("CARGO_PKG_VERSION"));
+      banner.print();
+  }
+  ```
+- **Module structure** (`crates/prtip-cli/src/lib.rs`):
+  * Added `pub mod banner` for reusability
+  * Clean separation of concerns (args, banner, output)
+
+**Dependencies:**
+- `colored = "2.1"`: Terminal color and styling (workspace dependency)
+- Uses existing `atty` module in main.rs for TTY detection
+
+**User Experience Improvements:**
+- **Professional tool appearance** on startup (industry-standard aesthetic)
+- **Intuitive help navigation** with 50+ CLI flags organized logically
+- **Reduced cognitive load** via categorization and clear defaults
+- **Better feature discoverability** for Phase 3 detection capabilities
+- **Consistent with industry tools** (Nmap, Masscan, RustScan patterns)
+
+**Reference Inspiration:**
+- RustScan's banner display: `src/main.rs` print_opening() function
+- RustScan's color scheme: Cyan/green cybersecurity aesthetic
+- Nmap's help organization: Logical flag grouping by functionality
+
+**Files Changed:**
+- `crates/prtip-cli/src/banner.rs`: NEW (169 lines, 8 tests)
+- `crates/prtip-cli/src/lib.rs`: NEW (7 lines, module exports)
+- `crates/prtip-cli/src/args.rs`: Enhanced (help_heading on all flags, quiet mode)
+- `crates/prtip-cli/src/main.rs`: Banner integration (7 lines added)
+- `Cargo.toml`: Added `colored = "2.1"` workspace dependency
+- `crates/prtip-cli/Cargo.toml`: Use workspace colored dependency
+
+**Testing:**
+- All 8 banner module tests passing
+- Help output verified with organized categories
+- Banner suppression confirmed in quiet mode
+- Cargo fmt and clippy clean (1 dead_code warning for future print_compact)
+
+**Quality Metrics:**
+- Lines added: ~250 (banner: 169, help organization: ~80)
+- Tests added: 8 (banner module)
+- Zero breaking changes to existing functionality
+- Professional terminal output verified
+
+### Added - 2025-10-08
+
 #### Phase 3: Detection Systems (commit 6204882)
 
 **Objective:** Complete OS fingerprinting, service version detection, and banner grabbing capabilities

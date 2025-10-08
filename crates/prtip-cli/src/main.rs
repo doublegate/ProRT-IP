@@ -3,10 +3,12 @@
 //! Command-line interface for the ProRT-IP network scanner.
 
 mod args;
+mod banner;
 mod output;
 
 use anyhow::{Context, Result};
 use args::Args;
+use banner::Banner;
 use clap::Parser;
 use prtip_core::resource_limits::{adjust_and_get_limit, get_recommended_batch_size};
 use prtip_core::{PortRange, ScanTarget};
@@ -39,6 +41,12 @@ async fn main() {
 async fn run() -> Result<()> {
     // Parse arguments
     let args = Args::parse();
+
+    // Print banner unless quiet mode or piped output
+    if !args.quiet && atty::is(atty::Stream::Stdout) {
+        let banner = Banner::new(env!("CARGO_PKG_VERSION"));
+        banner.print();
+    }
 
     // Handle --interface-list flag
     if args.interface_list {

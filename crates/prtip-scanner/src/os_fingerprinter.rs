@@ -25,10 +25,10 @@
 //! # }
 //! ```
 
+use crate::os_probe::OsProbeEngine;
+use prtip_core::{Error, OsFingerprint, OsFingerprintDb};
 use std::net::Ipv4Addr;
 use std::sync::Arc;
-use prtip_core::{Error, OsFingerprint, OsFingerprintDb};
-use crate::os_probe::OsProbeEngine;
 
 /// OS fingerprinting engine
 pub struct OsFingerprinter {
@@ -54,9 +54,7 @@ pub struct OsDetectionResult {
 impl OsFingerprinter {
     /// Create new OS fingerprinter with database
     pub fn new(db: OsFingerprintDb) -> Self {
-        Self {
-            db: Arc::new(db),
-        }
+        Self { db: Arc::new(db) }
     }
 
     /// Fingerprint target OS

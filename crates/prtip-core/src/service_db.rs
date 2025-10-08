@@ -20,9 +20,9 @@
 //! # Ok::<(), prtip_core::Error>(())
 //! ```
 
-use std::collections::HashMap;
-use regex::Regex;
 use crate::{Error, Protocol};
+use regex::Regex;
+use std::collections::HashMap;
 
 /// Service probe database
 #[derive(Debug, Clone)]
@@ -80,15 +80,15 @@ pub struct ServiceMatch {
 // Manual PartialEq implementation (Regex doesn't implement PartialEq)
 impl PartialEq for ServiceMatch {
     fn eq(&self, other: &Self) -> bool {
-        self.service == other.service &&
-        self.pattern.as_str() == other.pattern.as_str() &&
-        self.product == other.product &&
-        self.version == other.version &&
-        self.info == other.info &&
-        self.hostname == other.hostname &&
-        self.os_type == other.os_type &&
-        self.device_type == other.device_type &&
-        self.cpe == other.cpe
+        self.service == other.service
+            && self.pattern.as_str() == other.pattern.as_str()
+            && self.product == other.product
+            && self.version == other.version
+            && self.info == other.info
+            && self.hostname == other.hostname
+            && self.os_type == other.os_type
+            && self.device_type == other.device_type
+            && self.cpe == other.cpe
     }
 }
 
@@ -121,7 +121,9 @@ impl ServiceProbeDb {
                     db.add_probe(probe);
                 }
 
-                if let Some((protocol_name, rest)) = line.strip_prefix("Probe ").unwrap_or("").split_once(' ') {
+                if let Some((protocol_name, rest)) =
+                    line.strip_prefix("Probe ").unwrap_or("").split_once(' ')
+                {
                     let protocol = match protocol_name {
                         "TCP" => Protocol::Tcp,
                         "UDP" => Protocol::Udp,
@@ -205,7 +207,10 @@ impl ServiceProbeDb {
 
         // Index by ports
         for &port in &probe.ports {
-            self.port_index.entry(port).or_insert_with(Vec::new).push(probe_idx);
+            self.port_index
+                .entry(port)
+                .or_insert_with(Vec::new)
+                .push(probe_idx);
         }
 
         self.probes.push(probe);
@@ -248,9 +253,7 @@ impl ServiceProbeDb {
 
     /// Parse comma-separated port list
     fn parse_port_list(s: &str) -> Vec<u16> {
-        s.split(',')
-            .filter_map(|p| p.trim().parse().ok())
-            .collect()
+        s.split(',').filter_map(|p| p.trim().parse().ok()).collect()
     }
 
     /// Parse match or softmatch line
@@ -289,17 +292,35 @@ impl ServiceProbeDb {
                 // Simple extraction of p/.../ v/.../ etc.
                 for field in rest.split_whitespace() {
                     if field.starts_with("p/") {
-                        product = field.strip_prefix("p/").and_then(|s| s.strip_suffix('/')).map(String::from);
+                        product = field
+                            .strip_prefix("p/")
+                            .and_then(|s| s.strip_suffix('/'))
+                            .map(String::from);
                     } else if field.starts_with("v/") {
-                        version = field.strip_prefix("v/").and_then(|s| s.strip_suffix('/')).map(String::from);
+                        version = field
+                            .strip_prefix("v/")
+                            .and_then(|s| s.strip_suffix('/'))
+                            .map(String::from);
                     } else if field.starts_with("i/") {
-                        info = field.strip_prefix("i/").and_then(|s| s.strip_suffix('/')).map(String::from);
+                        info = field
+                            .strip_prefix("i/")
+                            .and_then(|s| s.strip_suffix('/'))
+                            .map(String::from);
                     } else if field.starts_with("h/") {
-                        hostname = field.strip_prefix("h/").and_then(|s| s.strip_suffix('/')).map(String::from);
+                        hostname = field
+                            .strip_prefix("h/")
+                            .and_then(|s| s.strip_suffix('/'))
+                            .map(String::from);
                     } else if field.starts_with("o/") {
-                        os_type = field.strip_prefix("o/").and_then(|s| s.strip_suffix('/')).map(String::from);
+                        os_type = field
+                            .strip_prefix("o/")
+                            .and_then(|s| s.strip_suffix('/'))
+                            .map(String::from);
                     } else if field.starts_with("d/") {
-                        device_type = field.strip_prefix("d/").and_then(|s| s.strip_suffix('/')).map(String::from);
+                        device_type = field
+                            .strip_prefix("d/")
+                            .and_then(|s| s.strip_suffix('/'))
+                            .map(String::from);
                     } else if field.starts_with("cpe:") {
                         cpe.push(field.to_string());
                     }
@@ -354,7 +375,8 @@ impl ServiceProbeDb {
 
     /// Get all probes for a protocol up to a certain intensity level
     pub fn probes_for_intensity(&self, protocol: Protocol, intensity: u8) -> Vec<&ServiceProbe> {
-        self.probes.iter()
+        self.probes
+            .iter()
             .filter(|p| p.protocol == protocol && p.rarity <= intensity)
             .collect()
     }

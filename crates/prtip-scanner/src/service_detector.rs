@@ -22,10 +22,10 @@
 //! # }
 //! ```
 
+use prtip_core::{Error, Protocol, ServiceMatch, ServiceProbe, ServiceProbeDb};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
-use prtip_core::{Error, Protocol, ServiceMatch, ServiceProbe, ServiceProbeDb};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::timeout;
@@ -112,7 +112,11 @@ impl ServiceDetector {
     }
 
     /// Try a specific probe
-    async fn try_probe(&self, target: SocketAddr, probe: &ServiceProbe) -> Result<ServiceInfo, Error> {
+    async fn try_probe(
+        &self,
+        target: SocketAddr,
+        probe: &ServiceProbe,
+    ) -> Result<ServiceInfo, Error> {
         // Connect to target
         let mut stream = timeout(self.timeout, TcpStream::connect(target))
             .await
@@ -121,7 +125,9 @@ impl ServiceDetector {
 
         // Send probe (if not NULL)
         if !probe.probe_string.is_empty() {
-            stream.write_all(&probe.probe_string).await
+            stream
+                .write_all(&probe.probe_string)
+                .await
                 .map_err(|e| Error::Network(format!("Write failed: {}", e)))?;
         }
 
@@ -163,17 +169,20 @@ impl ServiceDetector {
         // Check if pattern matches
         if let Some(captures) = service_match.pattern.captures(&response_str) {
             // Extract version info using capture groups
-            let product = service_match.product.as_ref().map(|p| {
-                Self::substitute_captures(p, &captures)
-            });
+            let product = service_match
+                .product
+                .as_ref()
+                .map(|p| Self::substitute_captures(p, &captures));
 
-            let version = service_match.version.as_ref().map(|v| {
-                Self::substitute_captures(v, &captures)
-            });
+            let version = service_match
+                .version
+                .as_ref()
+                .map(|v| Self::substitute_captures(v, &captures));
 
-            let extra_info = service_match.info.as_ref().map(|i| {
-                Self::substitute_captures(i, &captures)
-            });
+            let extra_info = service_match
+                .info
+                .as_ref()
+                .map(|i| Self::substitute_captures(i, &captures));
 
             return Some(ServiceInfo {
                 service: service_match.service.clone(),

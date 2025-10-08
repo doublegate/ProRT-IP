@@ -19,9 +19,9 @@
 //! # }
 //! ```
 
+use prtip_core::Error;
 use std::net::SocketAddr;
 use std::time::Duration;
-use prtip_core::Error;
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::time::timeout;
@@ -80,7 +80,9 @@ impl BannerGrabber {
             target.ip()
         );
 
-        stream.write_all(request.as_bytes()).await
+        stream
+            .write_all(request.as_bytes())
+            .await
             .map_err(|e| Error::Network(format!("Write failed: {}", e)))?;
 
         self.read_banner(stream).await
@@ -134,7 +136,9 @@ impl BannerGrabber {
 
         // Send EHLO to get more info
         let ehlo = format!("EHLO {}\r\n", target.ip());
-        stream.write_all(ehlo.as_bytes()).await
+        stream
+            .write_all(ehlo.as_bytes())
+            .await
             .map_err(|e| Error::Network(format!("Write failed: {}", e)))?;
 
         let ehlo_response = self.read_banner_from(&mut stream).await?;
@@ -209,7 +213,12 @@ impl BannerParser {
     pub fn parse_http_banner(banner: &str) -> Option<String> {
         for line in banner.lines() {
             if line.starts_with("Server:") {
-                return Some(line.strip_prefix("Server:").unwrap_or("").trim().to_string());
+                return Some(
+                    line.strip_prefix("Server:")
+                        .unwrap_or("")
+                        .trim()
+                        .to_string(),
+                );
             }
         }
         None
@@ -264,7 +273,10 @@ mod tests {
     fn test_parse_ssh_banner() {
         let banner = "SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.5";
         let version = BannerParser::parse_ssh_banner(banner);
-        assert_eq!(version, Some("SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.5".to_string()));
+        assert_eq!(
+            version,
+            Some("SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.5".to_string())
+        );
     }
 
     #[test]

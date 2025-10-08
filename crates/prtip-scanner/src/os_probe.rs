@@ -25,11 +25,11 @@
 //! # }
 //! ```
 
+use prtip_core::{Error, ProbeResults};
+use prtip_network::packet_builder::{TcpFlags, TcpOption, TcpPacketBuilder, UdpPacketBuilder};
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr};
 use std::time::{Duration, Instant, SystemTime};
-use prtip_core::{Error, ProbeResults};
-use prtip_network::packet_builder::{TcpFlags, TcpOption, TcpPacketBuilder, UdpPacketBuilder};
 use tokio::time::sleep;
 
 /// OS probe engine for sending 16-probe sequence
@@ -138,7 +138,7 @@ impl OsProbeEngine {
         let t5_probe = self.build_t5_probe()?; // SYN to closed port
         let t6_probe = self.build_t6_probe()?; // ACK to closed port
         let t7_probe = self.build_t7_probe()?; // FIN+PSH+URG to closed port
-        // TODO: Send and capture
+                                               // TODO: Send and capture
 
         results.t2 = Some(HashMap::new());
         results.t3 = Some(HashMap::new());
@@ -170,20 +170,28 @@ impl OsProbeEngine {
         // Different TCP options for each probe
         match seq_num {
             0 => {
-                builder = builder.add_option(TcpOption::Mss(1460))
+                builder = builder
+                    .add_option(TcpOption::Mss(1460))
                     .add_option(TcpOption::Nop)
                     .add_option(TcpOption::WindowScale(10))
                     .add_option(TcpOption::Nop)
                     .add_option(TcpOption::Nop)
-                    .add_option(TcpOption::Timestamp { tsval: rand::random(), tsecr: 0 });
+                    .add_option(TcpOption::Timestamp {
+                        tsval: rand::random(),
+                        tsecr: 0,
+                    });
             }
             1 => {
                 builder = builder.add_option(TcpOption::Mss(1400));
             }
             2 => {
-                builder = builder.add_option(TcpOption::Nop)
+                builder = builder
                     .add_option(TcpOption::Nop)
-                    .add_option(TcpOption::Timestamp { tsval: rand::random(), tsecr: 0 });
+                    .add_option(TcpOption::Nop)
+                    .add_option(TcpOption::Timestamp {
+                        tsval: rand::random(),
+                        tsecr: 0,
+                    });
             }
             3 => {
                 builder = builder.add_option(TcpOption::WindowScale(7));
@@ -293,9 +301,7 @@ impl OsProbeEngine {
 
     /// Build T7 probe (FIN+PSH+URG to closed port)
     fn build_t7_probe(&self) -> Result<Vec<u8>, Error> {
-        let flags = TcpFlags::FIN
-            .combine(TcpFlags::PSH)
-            .combine(TcpFlags::URG);
+        let flags = TcpFlags::FIN.combine(TcpFlags::PSH).combine(TcpFlags::URG);
 
         Ok(TcpPacketBuilder::new()
             .source_ip(self.source_ip)
@@ -340,12 +346,18 @@ impl OsProbeEngine {
 
         // Calculate ISN rate (ISR)
         if results.len() >= 2 {
-            let time_diff = results.last().unwrap().timestamp
+            let time_diff = results
+                .last()
+                .unwrap()
+                .timestamp
                 .duration_since(results.first().unwrap().timestamp)
                 .as_secs_f64();
 
             if time_diff > 0.0 {
-                let isn_diff = results.last().unwrap().isn
+                let isn_diff = results
+                    .last()
+                    .unwrap()
+                    .isn
                     .wrapping_sub(results.first().unwrap().isn);
                 let isr = (isn_diff as f64 / time_diff) as u32;
                 seq_data.insert("ISR".to_string(), format!("{:X}", isr));
@@ -451,11 +463,7 @@ mod tests {
 
     #[test]
     fn test_build_seq_probe() {
-        let engine = OsProbeEngine::new(
-            Ipv4Addr::new(192, 168, 1, 1),
-            80,
-            9999
-        );
+        let engine = OsProbeEngine::new(Ipv4Addr::new(192, 168, 1, 1), 80, 9999);
 
         let probe = engine.build_seq_probe(0).unwrap();
         assert!(!probe.is_empty());
@@ -463,11 +471,7 @@ mod tests {
 
     #[test]
     fn test_build_ecn_probe() {
-        let engine = OsProbeEngine::new(
-            Ipv4Addr::new(192, 168, 1, 1),
-            80,
-            9999
-        );
+        let engine = OsProbeEngine::new(Ipv4Addr::new(192, 168, 1, 1), 80, 9999);
 
         let probe = engine.build_ecn_probe().unwrap();
         assert!(!probe.is_empty());
@@ -475,11 +479,7 @@ mod tests {
 
     #[test]
     fn test_build_unusual_probes() {
-        let engine = OsProbeEngine::new(
-            Ipv4Addr::new(192, 168, 1, 1),
-            80,
-            9999
-        );
+        let engine = OsProbeEngine::new(Ipv4Addr::new(192, 168, 1, 1), 80, 9999);
 
         assert!(engine.build_t2_probe().is_ok()); // NULL
         assert!(engine.build_t3_probe().is_ok()); // SYN+FIN+URG+PSH
@@ -491,11 +491,7 @@ mod tests {
 
     #[test]
     fn test_build_u1_probe() {
-        let engine = OsProbeEngine::new(
-            Ipv4Addr::new(192, 168, 1, 1),
-            80,
-            9999
-        );
+        let engine = OsProbeEngine::new(Ipv4Addr::new(192, 168, 1, 1), 80, 9999);
 
         let probe = engine.build_u1_probe().unwrap();
         assert!(!probe.is_empty());

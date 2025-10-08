@@ -19,8 +19,8 @@
 //! # Ok::<(), prtip_core::Error>(())
 //! ```
 
-use std::collections::HashMap;
 use crate::Error;
+use std::collections::HashMap;
 
 /// OS fingerprint database containing signatures for thousands of operating systems
 #[derive(Debug, Clone)]
@@ -166,7 +166,8 @@ impl OsFingerprintDb {
             if let Some(ref mut fp) = current_fingerprint {
                 // Parse Class line
                 if line.starts_with("Class ") {
-                    let parts: Vec<&str> = line.strip_prefix("Class ")
+                    let parts: Vec<&str> = line
+                        .strip_prefix("Class ")
                         .unwrap_or("")
                         .split('|')
                         .map(|s| s.trim())
@@ -279,13 +280,21 @@ impl OsFingerprintDb {
         // Compare SEQ test
         if let (Some(fp_seq), Some(res_seq)) = (&fp.tests.seq, &results.seq) {
             for (key, fp_val) in fp_seq {
-                max_score += self.match_points.weights.get(&format!("SEQ.{}", key))
-                    .copied().unwrap_or(10) as f64;
+                max_score += self
+                    .match_points
+                    .weights
+                    .get(&format!("SEQ.{}", key))
+                    .copied()
+                    .unwrap_or(10) as f64;
 
                 if let Some(res_val) = res_seq.get(key) {
                     if Self::values_match(fp_val, res_val) {
-                        total_score += self.match_points.weights.get(&format!("SEQ.{}", key))
-                            .copied().unwrap_or(10) as f64;
+                        total_score += self
+                            .match_points
+                            .weights
+                            .get(&format!("SEQ.{}", key))
+                            .copied()
+                            .unwrap_or(10) as f64;
                     }
                 }
             }
@@ -313,7 +322,7 @@ impl OsFingerprintDb {
             if let Some((min, max)) = pattern.split_once('-') {
                 if let (Ok(min_val), Ok(max_val)) = (
                     u32::from_str_radix(min, 16).or_else(|_| min.parse()),
-                    u32::from_str_radix(max, 16).or_else(|_| max.parse())
+                    u32::from_str_radix(max, 16).or_else(|_| max.parse()),
                 ) {
                     if let Ok(val) = u32::from_str_radix(value, 16).or_else(|_| value.parse()) {
                         return val >= min_val && val <= max_val;

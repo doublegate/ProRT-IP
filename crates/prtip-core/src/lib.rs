@@ -25,8 +25,10 @@ pub mod config;
 pub mod crypto;
 pub mod error;
 pub mod errors;
+pub mod os_db;
 pub mod progress;
 pub mod resource_limits;
+pub mod service_db;
 pub mod types;
 
 // Re-export commonly used types
@@ -35,5 +37,7 @@ pub use config::{
 };
 pub use error::{Error, Result};
 pub use errors::{ScanError, ScanErrorKind};
+pub use os_db::{OsFingerprint, OsFingerprintDb, ProbeResults};
 pub use progress::{ErrorCategory, ScanProgress};
-pub use types::{PortRange, PortState, ScanResult, ScanTarget, ScanType, TimingTemplate};
+pub use service_db::{ServiceMatch, ServiceProbe, ServiceProbeDb};
+pub use types::{PortRange, PortState, Protocol, ScanResult, ScanTarget, ScanType, TimingTemplate};

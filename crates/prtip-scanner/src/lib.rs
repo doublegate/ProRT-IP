@@ -46,11 +46,15 @@
 //! ```
 
 pub mod adaptive_rate_limiter;
+pub mod banner_grabber;
 pub mod concurrent_scanner;
 pub mod connection_pool;
 pub mod discovery;
+pub mod os_fingerprinter;
+pub mod os_probe;
 pub mod rate_limiter;
 pub mod scheduler;
+pub mod service_detector;
 pub mod stealth_scanner;
 pub mod storage;
 pub mod syn_scanner;
@@ -59,11 +63,15 @@ pub mod timing;
 pub mod udp_scanner;
 
 pub use adaptive_rate_limiter::{AdaptiveRateLimiter as AdaptiveRateLimiterV2, RateLimiterStats};
+pub use banner_grabber::{BannerGrabber, BannerParser};
 pub use concurrent_scanner::ConcurrentScanner;
 pub use connection_pool::ConnectionPool;
 pub use discovery::{DiscoveryEngine, DiscoveryMethod};
+pub use os_fingerprinter::{OsDetectionResult, OsFingerprinter};
+pub use os_probe::OsProbeEngine;
 pub use rate_limiter::RateLimiter;
 pub use scheduler::ScanScheduler;
+pub use service_detector::{ServiceDetector, ServiceInfo};
 pub use stealth_scanner::{StealthScanType, StealthScanner};
 pub use storage::ScanStorage;
 pub use syn_scanner::SynScanner;

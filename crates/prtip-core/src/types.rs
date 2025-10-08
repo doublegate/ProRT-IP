@@ -295,6 +295,27 @@ impl fmt::Display for PortState {
     }
 }
 
+/// Network protocol
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Protocol {
+    /// TCP protocol
+    Tcp,
+    /// UDP protocol
+    Udp,
+    /// ICMP protocol
+    Icmp,
+}
+
+impl fmt::Display for Protocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Protocol::Tcp => write!(f, "TCP"),
+            Protocol::Udp => write!(f, "UDP"),
+            Protocol::Icmp => write!(f, "ICMP"),
+        }
+    }
+}
+
 /// Type of scan to perform
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ScanType {

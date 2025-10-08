@@ -57,6 +57,10 @@ pub enum Error {
     /// Scanner error
     #[error("Scanner error: {0}")]
     Scanner(String),
+
+    /// Detection error (OS fingerprinting, service detection)
+    #[error("Detection error: {0}")]
+    Detection(String),
 }
 
 impl From<AddrParseError> for Error {

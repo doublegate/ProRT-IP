@@ -138,6 +138,30 @@ pub struct Args {
     /// Write final statistics to JSON file
     #[arg(long, value_name = "FILE")]
     pub stats_file: Option<PathBuf>,
+
+    /// Enable OS detection (requires open and closed ports)
+    #[arg(short = 'O', long)]
+    pub os_detection: bool,
+
+    /// Enable service version detection
+    #[arg(long = "sV")]
+    pub service_detection: bool,
+
+    /// Service detection intensity (0-9, default: 7)
+    ///
+    /// 0 = Light (registered only)
+    /// 7 = Default (balanced)
+    /// 9 = All probes (comprehensive)
+    #[arg(long, value_name = "0-9", default_value = "7")]
+    pub version_intensity: u8,
+
+    /// Only OS detect hosts with at least one open port
+    #[arg(long)]
+    pub osscan_limit: bool,
+
+    /// Enable banner grabbing for open ports
+    #[arg(long)]
+    pub banner_grab: bool,
 }
 
 impl Args {
@@ -194,6 +218,10 @@ impl Args {
             if batch > 100_000 {
                 anyhow::bail!("Batch size cannot exceed 100,000");
             }
+        }
+
+        if self.version_intensity > 9 {
+            anyhow::bail!("Version intensity must be 0-9");
         }
 
         if let Some(ulimit) = self.ulimit {

@@ -2,20 +2,26 @@
 /target/
 **/*.rs.bk
 *.pdb
+Cargo.lock.bak
+audit.toml.lock
+.cargo/
 
 # IDE
 .idea/
 .vscode/
 .fleet/
 .helix/
+.zed/
 *.swp
 *.swo
+*.kate-swp
 *~
 .DS_Store
 *.iml
 .project
 .classpath
 .settings/
+*.code-workspace
 
 # Build artifacts
 *.o
@@ -28,6 +34,19 @@
 .env
 .env.local
 *.log
+.gdb_history
+core
+core.*
+
+# Security/Testing
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.pfx
+test-certs/
+secrets/
 
 # Test artifacts
 /coverage/
@@ -50,6 +69,11 @@ flamegraph.svg
 /tmp/
 *.tmp
 *.bak
+*.orig
+*.rej
+.#*
+\#*\#
+Session.vim
 
 # Database files
 *.db
@@ -64,13 +88,26 @@ flamegraph.svg
 *.pcap
 *.pcapng
 
+# Scan output files
+/results/
+/output/
+/scans/
+*-scan-results.*
+
 # Reference files
 /code_ref/
+
+# Local memory banks (keep private, don't sync to remote)
+CLAUDE.local.md
+*.local.md
+.claude-session
+.claude/
 
 # Documentation build
 /docs/book/
 /target/doc/
 
 # OS
-.DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini

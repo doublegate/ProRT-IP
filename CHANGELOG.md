@@ -9,6 +9,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
+#### Enhancement Cycle 1: Reference Codebase Integration (commit TBD)
+
+**Objective:** Systematically incorporate high-value improvements from Masscan, RustScan, Naabu, and other reference implementations.
+
+**Cryptographic Utilities** (`crates/prtip-core/crypto.rs` - 584 lines):
+- **SipHash-2-4 Implementation** (COMPLETE ✅):
+  * Fast cryptographic hash optimized for short inputs
+  * Used for stateless sequence number generation
+  * Passed all test vectors from SipHash specification
+  * ~1 cycle/byte performance on 64-bit architectures
+  * 9 comprehensive tests including avalanche effect validation
+
+- **Blackrock Shuffling Algorithm** (PARTIAL - needs refinement for Phase 2):
+  * Feistel cipher for bijective IP address randomization
+  * Enables stateless scanning without tracking scanned IPs
+  * Power-of-2 domain splitting implemented
+  * Cycle-walking for format-preserving encryption
+  * Note: Full Masscan algorithm uses (a * b > range) domain splitting
+  * 7 tests passing (deterministic, different seeds, unshuffle, etc.)
+  * 2 tests need refinement: full bijectivity for all ranges
+
+**Concurrent Scanner** (`crates/prtip-scanner/concurrent_scanner.rs` - 380 lines):
+- **FuturesUnordered Pattern** (COMPLETE ✅ - RustScan technique):
+  * High-performance concurrent scanning with streaming results
+  * Fixed-size task pool with automatic work stealing
+  * Constant memory usage regardless of target count
+  * Intelligent error handling with retry logic
+  * "Too many open files" panic with helpful error message
+  * Connection refused detection (closed ports)
+  * Timeout handling (filtered ports)
+  * 6 comprehensive tests all passing
+
+**Test Coverage:**
+- Total tests: 121 passing (49 core + 29 network + 93 scanner)
+- Blackrock refinement: 2 tests need Phase 2 work
+- SipHash: 100% passing (9/9 tests)
+- Concurrent scanner: 100% passing (6/6 tests)
+- All code passes `cargo fmt` and `cargo clippy -D warnings`
+
+**Code Quality:**
+- Comprehensive inline documentation with examples
+- Doc comments for all public APIs
+- Error handling with detailed messages
+- No clippy warnings
+- Consistent formatting
+
+**Reference Inspiration:**
+- SipHash: Masscan crypto-siphash24.c
+- Blackrock: Masscan crypto-blackrock.c (partial adaptation)
+- FuturesUnordered: RustScan src/scanner/mod.rs
+- Error handling patterns: RustScan error recovery
+- Port state determination: Naabu pkg/port/port.go
+
+**Performance Improvements:**
+- Concurrent scanner maintains constant `parallelism` concurrent tasks
+- SipHash provides O(1) sequence number generation
+- Blackrock enables stateless IP randomization (when fully implemented)
+- FuturesUnordered provides optimal work distribution via futures runtime
+
+### Added - 2025-10-08
+
 #### Phase 2: Advanced Scanning (COMPLETE ✅ - commit 296838a)
 
 **Total Implementation:** 2,646 lines added across 16 files

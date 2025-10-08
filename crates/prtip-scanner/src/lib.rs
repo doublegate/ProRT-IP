@@ -46,6 +46,7 @@
 //! ```
 
 pub mod adaptive_rate_limiter;
+pub mod concurrent_scanner;
 pub mod connection_pool;
 pub mod discovery;
 pub mod rate_limiter;
@@ -58,6 +59,7 @@ pub mod timing;
 pub mod udp_scanner;
 
 pub use adaptive_rate_limiter::{AdaptiveRateLimiter as AdaptiveRateLimiterV2, RateLimiterStats};
+pub use concurrent_scanner::ConcurrentScanner;
 pub use connection_pool::ConnectionPool;
 pub use discovery::{DiscoveryEngine, DiscoveryMethod};
 pub use rate_limiter::RateLimiter;

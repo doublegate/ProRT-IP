@@ -119,6 +119,12 @@ impl TcpOption {
         }
     }
 
+    /// Check if option is empty (always false - all options have data)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
     /// Serialize this option to bytes
     pub fn to_bytes(&self) -> Vec<u8> {
         match self {
@@ -346,7 +352,7 @@ impl TcpPacketBuilder {
             let buffer_len = buffer.len(); // Capture before mutable borrow
 
             let mut eth_packet = MutableEthernetPacket::new(&mut buffer[offset..offset + 14])
-                .ok_or_else(|| PacketBuilderError::BufferTooSmall {
+                .ok_or(PacketBuilderError::BufferTooSmall {
                     needed: 14,
                     available: buffer_len,
                 })?;
@@ -361,11 +367,12 @@ impl TcpPacketBuilder {
         // Build IPv4 header
         {
             let buffer_len = buffer.len(); // Capture before mutable borrow
-            let mut ip_packet = MutableIpv4Packet::new(&mut buffer[offset..offset + 20])
-                .ok_or_else(|| PacketBuilderError::BufferTooSmall {
+            let mut ip_packet = MutableIpv4Packet::new(&mut buffer[offset..offset + 20]).ok_or(
+                PacketBuilderError::BufferTooSmall {
                     needed: 20,
                     available: buffer_len - offset,
-                })?;
+                },
+            )?;
 
             ip_packet.set_version(4);
             ip_packet.set_header_length(5); // 5 * 4 = 20 bytes
@@ -392,7 +399,7 @@ impl TcpPacketBuilder {
             let tcp_size = tcp_header_size + self.payload.len();
             let buffer_len = buffer.len(); // Capture before mutable borrow
             let mut tcp_packet = MutableTcpPacket::new(&mut buffer[offset..offset + tcp_size])
-                .ok_or_else(|| PacketBuilderError::BufferTooSmall {
+                .ok_or(PacketBuilderError::BufferTooSmall {
                     needed: tcp_size,
                     available: buffer_len - offset,
                 })?;
@@ -576,7 +583,7 @@ impl UdpPacketBuilder {
             let buffer_len = buffer.len(); // Capture before mutable borrow
 
             let mut eth_packet = MutableEthernetPacket::new(&mut buffer[offset..offset + 14])
-                .ok_or_else(|| PacketBuilderError::BufferTooSmall {
+                .ok_or(PacketBuilderError::BufferTooSmall {
                     needed: 14,
                     available: buffer_len,
                 })?;
@@ -591,11 +598,12 @@ impl UdpPacketBuilder {
         // Build IPv4 header
         {
             let buffer_len = buffer.len(); // Capture before mutable borrow
-            let mut ip_packet = MutableIpv4Packet::new(&mut buffer[offset..offset + 20])
-                .ok_or_else(|| PacketBuilderError::BufferTooSmall {
+            let mut ip_packet = MutableIpv4Packet::new(&mut buffer[offset..offset + 20]).ok_or(
+                PacketBuilderError::BufferTooSmall {
                     needed: 20,
                     available: buffer_len - offset,
-                })?;
+                },
+            )?;
 
             ip_packet.set_version(4);
             ip_packet.set_header_length(5);
@@ -622,7 +630,7 @@ impl UdpPacketBuilder {
             let udp_size = 8 + self.payload.len();
             let buffer_len = buffer.len(); // Capture before mutable borrow
             let mut udp_packet = MutableUdpPacket::new(&mut buffer[offset..offset + udp_size])
-                .ok_or_else(|| PacketBuilderError::BufferTooSmall {
+                .ok_or(PacketBuilderError::BufferTooSmall {
                     needed: udp_size,
                     available: buffer_len - offset,
                 })?;

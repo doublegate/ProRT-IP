@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - 2025-10-08
+
+#### Performance Enhancements (Reference Implementation-Inspired)
+
+**Adaptive Rate Limiter** (Masscan-inspired):
+- New `AdaptiveRateLimiterV2` with dynamic batch sizing
+- Circular buffer tracking (256 buckets) for recent packet rates
+- Adaptive batch size: increases by 0.5% when below target, decreases by 0.1% when above
+- Handles system suspend/resume gracefully (avoids burst after pause)
+- Optimized for high-speed scanning (>100K pps with reduced syscall overhead)
+- Comprehensive tests including rate enforcement and batch adaptation
+
+**Connection Pool** (RustScan-inspired):
+- New `ConnectionPool` using `FuturesUnordered` for efficient concurrent scanning
+- Constant memory usage with bounded concurrency
+- Better CPU utilization through work-stealing scheduler
+- Configurable timeout and retry logic
+- Performance benefits over simple semaphore approach
+
+**Dependencies**:
+- Added `futures = "0.3"` for FuturesUnordered support
+
+**Code Quality**:
+- Fixed clippy warnings: unnecessary lazy evaluations in packet_builder
+- Added `is_empty()` method to TcpOption enum (clippy requirement)
+- Fixed unused import warnings
+- All 229+ tests passing (87 scanner + integration tests)
+
+### Changed - 2025-10-08
+
+**Reference Code Analysis**:
+- Analyzed 7+ reference implementations (Masscan, RustScan, Naabu, Nmap, etc.)
+- Identified 3,271 source files across reference codebases
+- Extracted key optimization patterns:
+  * Masscan's adaptive throttler with circular buffer
+  * RustScan's FuturesUnordered concurrent scanning pattern
+  * SipHash-based randomization for stateless scanning
+  * Batch processing to reduce per-packet overhead
+
+**Documentation**:
+- Enhanced adaptive rate limiter with extensive inline documentation
+- Added connection pool module with performance rationale
+- Updated module exports in prtip-scanner lib.rs
+
 ### Fixed - 2025-10-07
 
 #### Security

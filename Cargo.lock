@@ -1584,6 +1584,7 @@ dependencies = [
  "chrono",
  "crossbeam",
  "etherparse",
+ "futures",
  "governor",
  "nonzero_ext",
  "parking_lot",

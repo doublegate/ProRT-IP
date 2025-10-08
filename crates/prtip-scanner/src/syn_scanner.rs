@@ -49,6 +49,7 @@ use tokio::time::timeout;
 use tracing::{debug, trace, warn};
 
 /// Connection state for tracking SYN scan responses
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 struct ConnectionState {
     /// Target IP address
@@ -176,7 +177,8 @@ impl SynScanner {
                         tokio::time::sleep(backoff).await;
 
                         // Resend SYN
-                        self.send_syn(target, port, src_port, (retry + 1) as u8).await?;
+                        self.send_syn(target, port, src_port, (retry + 1) as u8)
+                            .await?;
                     }
                 }
             }

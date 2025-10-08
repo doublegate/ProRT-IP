@@ -9,6 +9,97 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
+#### Enhancement Cycle 5: Progress Reporting & Error Categorization
+
+**Objective:** Implement production-critical user feedback features with real-time progress tracking and enhanced error categorization.
+
+**Progress Tracking Module** (`crates/prtip-core/src/progress.rs` - 428 lines):
+- **ScanProgress struct** with atomic counters (thread-safe):
+  * Total targets, completed, open/closed/filtered port counts
+  * 7 error category counters (connection refused, timeout, network/host unreachable, permission denied, too many files, other)
+  * Start time tracking with `Instant`
+- **Real-time statistics**:
+  * `rate_per_second()` - ports/sec calculation
+  * `elapsed()` - time since scan start
+  * `eta()` - estimated time to completion
+  * `percentage()` - completion percentage (0-100)
+- **Comprehensive summary**:
+  * `summary()` - formatted text with duration, rate, progress, states, error breakdown
+  * `to_json()` - JSON export for automated analysis
+- **Error category tracking**:
+  * `ErrorCategory` enum: ConnectionRefused, Timeout, NetworkUnreachable, HostUnreachable, PermissionDenied, TooManyOpenFiles, Other
+  * `increment_error()` - thread-safe error counting
+  * `error_count()` - retrieve count by category
+  * `total_errors()` - sum across all categories
+- **11 comprehensive tests** - thread safety, rate calculation, ETA, JSON export
+
+**Error Categorization Module** (`crates/prtip-core/src/errors.rs` - 209 lines):
+- **ScanErrorKind enum** with 7 categories:
+  * ConnectionRefused → "Port is closed or service is not running"
+  * Timeout → "Port may be filtered by firewall, try increasing timeout or using stealth scans"
+  * NetworkUnreachable → "Check network connectivity and routing tables"
+  * HostUnreachable → "Verify target is online and reachable, check firewall rules"
+  * PermissionDenied → "Run with elevated privileges (sudo/root) or use CAP_NET_RAW capability"
+  * TooManyOpenFiles → "Reduce batch size (--batch-size) or increase ulimit (ulimit -n)"
+  * Other → Generic fallback
+- **ScanError struct** with context:
+  * Error kind, target address, detailed message, actionable suggestion
+  * `from_io_error()` - automatic categorization from `std::io::Error`
+  * `user_message()` - formatted message with suggestion
+  * Conversion to `ErrorCategory` for progress tracking
+- **Automatic error mapping**:
+  * `io::ErrorKind::ConnectionRefused` → `ScanErrorKind::ConnectionRefused`
+  * `io::ErrorKind::TimedOut` → `ScanErrorKind::Timeout`
+  * `io::ErrorKind::PermissionDenied` → `ScanErrorKind::PermissionDenied`
+  * Raw OS error codes: 101 (ENETUNREACH), 113 (EHOSTUNREACH), 24/23 (EMFILE/ENFILE)
+- **9 comprehensive tests** - error categorization, user messages, io::Error mapping
+
+**CLI Integration** (`crates/prtip-cli/src/args.rs` - 4 new flags):
+- **Progress control flags**:
+  * `--progress` - Force enable progress bar display
+  * `--no-progress` - Force disable (for piping output)
+  * `--stats-interval SECS` - Update frequency (default: 1, max: 3600)
+  * `--stats-file PATH` - JSON statistics export to file
+- **Validation**:
+  * Conflicting flags check (--progress + --no-progress)
+  * Stats interval: 1-3600 seconds
+- **Auto-detection** (planned):
+  * Enable progress if `isatty(stdout)` and not piped
+  * Disable when output redirected
+- **7 new CLI tests** - flag parsing, validation, conflicts
+
+**Scanner Integration** (`crates/prtip-scanner/src/tcp_connect.rs` - UPDATED):
+- **New method**: `scan_ports_with_progress()`
+  * Accepts optional `&ScanProgress` parameter
+  * Increments completed counter after each scan
+  * Updates port state counters (open/closed/filtered)
+  * Tracks errors by category
+- **Backward compatible**: existing `scan_ports()` calls new method with `None`
+- **Thread-safe updates**: atomic operations on shared progress tracker
+
+**Dependencies Added**:
+- `indicatif = "0.17"` - Progress bar library (workspace + prtip-core)
+
+**Summary Statistics**:
+- **Files Modified:** 7 (2 new modules, args.rs, tcp_connect.rs, lib.rs, 2 Cargo.toml)
+- **Lines Added:** ~637 (progress.rs: 428, errors.rs: 209)
+- **Tests:** 352 → 391 (+39 new tests: 11 progress, 9 errors, 7 CLI, 12 updated)
+- **Pass Rate:** 100% (391/391)
+- **Clippy:** Clean (0 warnings)
+- **Code Quality:** All formatted with cargo fmt
+
+**Reference Inspirations**:
+- RustScan `src/tui.rs`: Progress bar patterns and terminal output
+- RustScan `src/scanner/mod.rs`: Error handling and categorization (lines 105-115)
+- naabu statistics tracking: Real-time rate calculation and reporting
+
+**User Experience Improvements**:
+- **Immediate feedback** for long-running scans (progress bar, ETA)
+- **Error statistics** show what went wrong and where
+- **Actionable suggestions** for common issues (permissions, ulimits, timeouts)
+- **JSON export** for post-scan analysis and automation
+- **Thread-safe** progress tracking for concurrent scanning
+
 #### Enhancement Cycle 4: CLI & Scanner Integration (commit eec5169)
 
 **Objective:** Integrate resource limits and interface detection modules into CLI and scanner workflows with RustScan-inspired patterns.

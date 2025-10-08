@@ -24,6 +24,8 @@
 pub mod config;
 pub mod crypto;
 pub mod error;
+pub mod errors;
+pub mod progress;
 pub mod resource_limits;
 pub mod types;
 
@@ -32,4 +34,6 @@ pub use config::{
     Config, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig,
 };
 pub use error::{Error, Result};
+pub use errors::{ScanError, ScanErrorKind};
+pub use progress::{ErrorCategory, ScanProgress};
 pub use types::{PortRange, PortState, ScanResult, ScanTarget, ScanType, TimingTemplate};

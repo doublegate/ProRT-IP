@@ -15,7 +15,7 @@
 //! TCP connect scans are slower than SYN scans because they complete the full handshake,
 //! but they work without elevated privileges and are compatible with all target systems.
 
-use prtip_core::{Error, PortState, Result, ScanResult};
+use prtip_core::{Error, PortState, Result, ScanProgress, ScanResult};
 use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -204,6 +204,28 @@ impl TcpConnectScanner {
         ports: Vec<u16>,
         max_concurrent: usize,
     ) -> Result<Vec<ScanResult>> {
+        self.scan_ports_with_progress(target, ports, max_concurrent, None)
+            .await
+    }
+
+    /// Scan multiple ports on a target with optional progress tracking
+    ///
+    /// Similar to `scan_ports` but accepts an optional `ScanProgress` tracker
+    /// for real-time progress monitoring and statistics collection.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Target IP address
+    /// * `ports` - Vector of port numbers to scan
+    /// * `max_concurrent` - Maximum concurrent scan operations
+    /// * `progress` - Optional progress tracker for statistics
+    pub async fn scan_ports_with_progress(
+        &self,
+        target: IpAddr,
+        ports: Vec<u16>,
+        max_concurrent: usize,
+        progress: Option<&ScanProgress>,
+    ) -> Result<Vec<ScanResult>> {
         let semaphore = Arc::new(Semaphore::new(max_concurrent));
         let scanner = self.clone();
 
@@ -229,8 +251,28 @@ impl TcpConnectScanner {
         let mut results = Vec::with_capacity(handles.len());
         for handle in handles {
             match handle.await {
-                Ok(Ok(result)) => results.push(result),
-                Ok(Err(e)) => warn!("Scan error: {}", e),
+                Ok(Ok(result)) => {
+                    if let Some(p) = progress {
+                        p.increment_completed();
+                        match result.state {
+                            PortState::Open => p.increment_open(),
+                            PortState::Closed => p.increment_closed(),
+                            PortState::Filtered => p.increment_filtered(),
+                            PortState::Unknown => {} // Don't increment state counters for unknown
+                        }
+                    }
+                    results.push(result);
+                }
+                Ok(Err(e)) => {
+                    if let Some(p) = progress {
+                        p.increment_completed();
+                        // For now, categorize as "Other" - in future we can add
+                        // specific error types to prtip_core::Error
+                        use prtip_core::ErrorCategory;
+                        p.increment_error(ErrorCategory::Other);
+                    }
+                    warn!("Scan error: {}", e);
+                }
                 Err(e) => warn!("Task join error: {}", e),
             }
         }

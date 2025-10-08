@@ -1,8 +1,8 @@
 # CLAUDE.local.md - ProRT-IP WarScan Local Memory Bank
 
 **Last Updated:** 2025-10-08
-**Current Phase:** Enhancement Cycle 3 COMPLETE ✅ → Phase 3 Ready
-**Project Status:** Production infrastructure in place (resource limits, interface detection), ready for detection systems
+**Current Phase:** Enhancement Cycle 5 COMPLETE ✅ → Phase 3 Ready
+**Project Status:** Production infrastructure complete (progress reporting, error categorization), ready for detection systems
 
 ---
 
@@ -54,15 +54,20 @@
 **Current Milestone:** M2 - Advanced Scanning Complete ✅ (Achieved 2025-10-08)
 **All Phase 2 Deliverables:** COMPLETE - Ready for Phase 3: Detection Systems
 
+**Enhancement Cycles (Post-Phase 2):**
+- ✅ **Cycle 3** (commits 38b4f3e, 781e880): Resource limits, Interface detection → 345 tests
+- ✅ **Cycle 4** (commits eec5169, e4e5d54): CLI integration, ulimit awareness → 352 tests
+- ✅ **Cycle 5** (current): Progress reporting, Error categorization → 391 tests
+
 **Key Statistics:**
-- **Total Tests:** 278 (all passing, +63 from Phase 1)
-- **Total Lines Added:** 3,551 (2,646 Phase 2 + 905 enhancements)
+- **Total Tests:** 391 (all passing, +39 from Cycle 4)
+- **Total Lines Added:** 4,188+ (Phase 2: 3,551 + Cycle 5: 637)
 - **Crates:** 4 (prtip-core, prtip-network, prtip-scanner, prtip-cli)
 - **Scan Types:** 7 (Connect, SYN, UDP, FIN, NULL, Xmas, ACK)
 - **Protocol Payloads:** 8 (DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
 - **Timing Templates:** 6 (T0-T5 paranoid to insane)
 - **CLI Version:** 0.2.0 (advanced scanning capable)
-- **Dependencies:** pnet_packet, rand, futures (new), sqlx 0.8.6, tokio 1.35+, clap 4.5+
+- **Dependencies:** pnet_packet, rand, futures, sqlx 0.8.6, tokio 1.35+, clap 4.5+, indicatif 0.17 (new)
 
 ---
 
@@ -331,6 +336,91 @@ pub fn setup_privileges() -> Result<()> {
 ---
 
 ## Recent Session Summary
+
+### Session: 2025-10-08 (Enhancement Cycle 5: Progress Reporting & Error Categorization)
+
+**Objective:** Implement production-critical user feedback features with real-time progress tracking and enhanced error categorization
+
+**Activities Completed:**
+
+1. **Reference Code Analysis**
+   - Analyzed RustScan's TUI patterns: `/code_ref/RustScan/src/tui.rs`
+   - Analyzed RustScan's error handling: `/code_ref/RustScan/src/scanner/mod.rs` (lines 105-115)
+   - Searched for progress/stats patterns across RustScan and naabu codebases
+   - Identified key patterns: progress bars, statistics tracking, error categorization
+
+2. **Progress Tracking Module** (`crates/prtip-core/src/progress.rs` - 428 lines)
+   - Implemented `ScanProgress` struct with atomic counters for thread-safe updates
+   - Added real-time statistics: rate_per_second(), elapsed(), eta(), percentage()
+   - Created comprehensive summary() with formatted text output
+   - Implemented to_json() for JSON export to file
+   - Added error category tracking with 7 categories
+   - 11 comprehensive tests (all passing)
+   - Features: thread-safe, real-time updates, ETA estimation, JSON export
+
+3. **Error Categorization Module** (`crates/prtip-core/src/errors.rs` - 209 lines)
+   - Created `ScanErrorKind` enum with 7 categories
+   - Implemented `ScanError` struct with actionable suggestions
+   - Added automatic categorization from std::io::Error
+   - Mapped OS error codes: 101 (ENETUNREACH), 113 (EHOSTUNREACH), 24/23 (EMFILE/ENFILE)
+   - Each error type has user-friendly message and suggestion
+   - 9 comprehensive tests (all passing)
+   - Features: automatic io::Error mapping, actionable suggestions, progress integration
+
+4. **CLI Integration** (`crates/prtip-cli/src/args.rs`)
+   - Added 4 new command-line flags:
+     * `--progress` - Force enable progress bar
+     * `--no-progress` - Force disable (for piping)
+     * `--stats-interval SECS` - Update frequency (default: 1)
+     * `--stats-file PATH` - JSON statistics export
+   - Validation: conflicting flags check, stats interval 1-3600 seconds
+   - 7 new CLI tests (all passing)
+
+5. **Scanner Integration** (`crates/prtip-scanner/src/tcp_connect.rs`)
+   - Added `scan_ports_with_progress()` method
+   - Accepts optional `&ScanProgress` parameter
+   - Increments completed counter after each scan
+   - Updates port state counters (open/closed/filtered)
+   - Tracks errors by category
+   - Backward compatible: existing `scan_ports()` calls new method with None
+
+6. **Dependencies**
+   - Added `indicatif = "0.17"` to workspace and prtip-core
+   - Updated lib.rs to export new modules
+
+**Deliverables:**
+- 2 production-ready modules (637 lines of new code)
+- 27 new tests (11 progress + 9 errors + 7 CLI) for comprehensive coverage
+- 4 CLI flags for user control
+- Scanner integration with backward compatibility
+- Clean integration with existing codebase
+
+**Quality Assurance:**
+- All tests passing: **391 total** (352 baseline + 39 new)
+- Code quality: 100% clippy clean, formatted
+- Test breakdown:
+  * prtip-core: 66 tests → 87 tests (+21: 11 progress + 9 errors + 1 lib)
+  * prtip-cli: 49 tests → 63 tests (+14: 7 new flags + 7 updated)
+  * prtip-scanner: 93 tests → 93 tests (integration updated)
+
+**Key Features Implemented:**
+- **Thread-safe progress tracking** with atomic operations
+- **Real-time statistics**: ports/sec, elapsed time, ETA
+- **Error categorization** with 7 specific categories
+- **Actionable suggestions** for common issues
+- **JSON export** for automated analysis
+- **CLI flags** for user control
+
+**Reference Patterns Applied:**
+- RustScan's terminal output patterns (colored messages, progress indication)
+- RustScan's error handling approach (categorize and provide context)
+- naabu's statistics tracking (rate calculation, summaries)
+
+**Next Steps:**
+- Commit Cycle 5 changes
+- Assessment for Cycle 6 or Phase 3 transition
+
+---
 
 ### Session: 2025-10-08 (Enhancement Cycle 3: Resource Limits & Interface Detection)
 

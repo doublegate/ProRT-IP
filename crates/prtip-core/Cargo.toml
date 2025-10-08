@@ -17,6 +17,7 @@ ipnetwork = { workspace = true }
 chrono = { workspace = true }
 tracing = { workspace = true }
 rlimit = { workspace = true }
+indicatif = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

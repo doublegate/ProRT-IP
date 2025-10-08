@@ -122,6 +122,22 @@ pub struct Args {
     /// Scan delay in milliseconds between probes
     #[arg(long, value_name = "MS", default_value = "0")]
     pub scan_delay: u64,
+
+    /// Show progress bar during scan
+    #[arg(long)]
+    pub progress: bool,
+
+    /// Disable progress output
+    #[arg(long)]
+    pub no_progress: bool,
+
+    /// Statistics update interval in seconds
+    #[arg(long, value_name = "SECS", default_value = "1")]
+    pub stats_interval: u64,
+
+    /// Write final statistics to JSON file
+    #[arg(long, value_name = "FILE")]
+    pub stats_file: Option<PathBuf>,
 }
 
 impl Args {
@@ -184,6 +200,18 @@ impl Args {
             if ulimit < 100 {
                 anyhow::bail!("Ulimit must be at least 100");
             }
+        }
+
+        if self.progress && self.no_progress {
+            anyhow::bail!("Cannot specify both --progress and --no-progress");
+        }
+
+        if self.stats_interval == 0 {
+            anyhow::bail!("Stats interval must be greater than 0");
+        }
+
+        if self.stats_interval > 3600 {
+            anyhow::bail!("Stats interval cannot exceed 1 hour (3600 seconds)");
         }
 
         Ok(())
@@ -547,17 +575,54 @@ mod tests {
 
     #[test]
     fn test_to_config_with_batch_and_ulimit() {
-        let args = Args::parse_from([
-            "prtip",
-            "-b",
-            "3000",
-            "--ulimit",
-            "8000",
-            "192.168.1.1",
-        ]);
+        let args = Args::parse_from(["prtip", "-b", "3000", "--ulimit", "8000", "192.168.1.1"]);
         let config = args.to_config();
 
         assert_eq!(config.performance.batch_size, Some(3000));
         assert_eq!(config.performance.requested_ulimit, Some(8000));
+    }
+
+    #[test]
+    fn test_progress_flag() {
+        let args = Args::parse_from(["prtip", "--progress", "192.168.1.1"]);
+        assert!(args.progress);
+        assert!(!args.no_progress);
+    }
+
+    #[test]
+    fn test_no_progress_flag() {
+        let args = Args::parse_from(["prtip", "--no-progress", "192.168.1.1"]);
+        assert!(!args.progress);
+        assert!(args.no_progress);
+    }
+
+    #[test]
+    fn test_stats_interval() {
+        let args = Args::parse_from(["prtip", "--stats-interval", "5", "192.168.1.1"]);
+        assert_eq!(args.stats_interval, 5);
+    }
+
+    #[test]
+    fn test_stats_file() {
+        let args = Args::parse_from(["prtip", "--stats-file", "stats.json", "192.168.1.1"]);
+        assert_eq!(args.stats_file, Some(PathBuf::from("stats.json")));
+    }
+
+    #[test]
+    fn test_validate_conflicting_progress() {
+        let args = Args::parse_from(["prtip", "--progress", "--no-progress", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_validate_stats_interval_zero() {
+        let args = Args::parse_from(["prtip", "--stats-interval", "0", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_validate_stats_interval_excessive() {
+        let args = Args::parse_from(["prtip", "--stats-interval", "5000", "192.168.1.1"]);
+        assert!(args.validate().is_err());
     }
 }

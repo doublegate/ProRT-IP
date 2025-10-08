@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
-#### Enhancement Cycle 5: Progress Reporting & Error Categorization
+#### Enhancement Cycle 5: Progress Reporting & Error Categorization (commit d7f7f38)
 
 **Objective:** Implement production-critical user feedback features with real-time progress tracking and enhanced error categorization.
 

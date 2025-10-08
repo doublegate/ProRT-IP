@@ -364,6 +364,8 @@ mod tests {
             performance: PerformanceConfig {
                 max_rate: Some(100),
                 parallelism: 10,
+                batch_size: None,
+                requested_ulimit: None,
             },
         }
     }

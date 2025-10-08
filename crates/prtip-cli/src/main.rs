@@ -8,7 +8,9 @@ mod output;
 use anyhow::{Context, Result};
 use args::Args;
 use clap::Parser;
+use prtip_core::resource_limits::{adjust_and_get_limit, get_recommended_batch_size};
 use prtip_core::{PortRange, ScanTarget};
+use prtip_network::interface::enumerate_interfaces;
 use prtip_network::{check_privileges, drop_privileges};
 use prtip_scanner::{ScanScheduler, ScanStorage};
 use tracing::{info, warn};
@@ -38,6 +40,11 @@ async fn run() -> Result<()> {
     // Parse arguments
     let args = Args::parse();
 
+    // Handle --interface-list flag
+    if args.interface_list {
+        return handle_interface_list();
+    }
+
     // Initialize logging based on verbosity
     init_logging(args.verbose);
 
@@ -46,6 +53,22 @@ async fn run() -> Result<()> {
 
     // Validate arguments
     args.validate().context("Invalid arguments")?;
+
+    // Adjust ulimit if requested (before any other resource operations)
+    if let Some(requested_ulimit) = args.ulimit {
+        match adjust_and_get_limit(Some(requested_ulimit)) {
+            Ok(new_limit) => {
+                info!("Successfully adjusted ulimit to {}", new_limit);
+            }
+            Err(e) => {
+                warn!("Failed to adjust ulimit to {}: {}", requested_ulimit, e);
+                warn!(
+                    "Continuing with current ulimit. You may need to run 'ulimit -n {}' manually.",
+                    requested_ulimit
+                );
+            }
+        }
+    }
 
     // Check privileges (needed for raw sockets in future phases)
     match check_privileges() {
@@ -74,11 +97,43 @@ async fn run() -> Result<()> {
     info!("Scanning {} port(s) per host", ports.count());
 
     // Create config from arguments
-    let config = args.to_config();
+    let mut config = args.to_config();
     info!(
         "Scan configuration: type={:?}, timing={:?}, timeout={}ms",
         config.scan.scan_type, config.scan.timing_template, config.scan.timeout_ms
     );
+
+    // Get recommended batch size based on ulimit
+    let desired_batch = config.performance.batch_size.unwrap_or(1000);
+    match get_recommended_batch_size(desired_batch as u64, config.performance.requested_ulimit) {
+        Ok(recommended) => {
+            if desired_batch as u64 > recommended {
+                warn!(
+                    "Batch size {} exceeds safe limit {} based on file descriptor limits",
+                    desired_batch, recommended
+                );
+                warn!(
+                    "Recommended: Use '-b {}' or increase ulimit with '--ulimit {}'",
+                    recommended,
+                    desired_batch * 2
+                );
+                // Auto-adjust to safe value
+                config.performance.batch_size = Some(recommended as usize);
+                info!("Auto-adjusted batch size to {}", recommended);
+            } else if config.performance.batch_size.is_none() {
+                // Set to recommended if not specified
+                config.performance.batch_size = Some(recommended as usize);
+                info!("Using recommended batch size: {}", recommended);
+            }
+        }
+        Err(e) => {
+            warn!("Failed to calculate recommended batch size: {}", e);
+            if config.performance.batch_size.is_none() {
+                config.performance.batch_size = Some(1000);
+                info!("Using default batch size: 1000");
+            }
+        }
+    }
 
     // Create storage
     let storage = ScanStorage::new(&args.database).await.context(format!(
@@ -275,6 +330,76 @@ fn print_summary(results: &[prtip_core::ScanResult]) {
     println!("Closed Ports:     {}", closed_ports.to_string().red());
     println!("Filtered Ports:   {}", filtered_ports.to_string().yellow());
     println!("{}", "=".repeat(60).bright_cyan());
+}
+
+/// Handle --interface-list flag
+fn handle_interface_list() -> Result<()> {
+    use colored::*;
+
+    println!("\n{}", "Available Network Interfaces".bright_white().bold());
+    println!("{}", "=".repeat(60).bright_cyan());
+
+    let interfaces = enumerate_interfaces().context("Failed to enumerate network interfaces")?;
+
+    if interfaces.is_empty() {
+        println!("{}", "No network interfaces found".yellow());
+        return Ok(());
+    }
+
+    let interface_count = interfaces.len();
+
+    for iface in &interfaces {
+        let status = if iface.is_up {
+            "UP".green()
+        } else {
+            "DOWN".red()
+        };
+
+        let iface_type = if iface.is_loopback {
+            " (loopback)".dimmed()
+        } else {
+            "".normal()
+        };
+
+        println!(
+            "\n{}: {}{}",
+            iface.name.bright_white().bold(),
+            status,
+            iface_type
+        );
+
+        if let Some(mac) = &iface.mac_address {
+            let mac_str = mac
+                .iter()
+                .map(|b| format!("{:02x}", b))
+                .collect::<Vec<_>>()
+                .join(":");
+            println!("  MAC:  {}", mac_str.dimmed());
+        }
+
+        if let Some(mtu) = iface.mtu {
+            println!("  MTU:  {}", mtu.to_string().dimmed());
+        }
+
+        if !iface.ipv4_addresses.is_empty() {
+            println!("  IPv4:");
+            for addr in &iface.ipv4_addresses {
+                println!("    - {}", addr.to_string().cyan());
+            }
+        }
+
+        if !iface.ipv6_addresses.is_empty() {
+            println!("  IPv6:");
+            for addr in &iface.ipv6_addresses {
+                println!("    - {}", addr.to_string().cyan());
+            }
+        }
+    }
+
+    println!("\n{}", "=".repeat(60).bright_cyan());
+    println!("Total: {} interface(s)", interface_count);
+
+    Ok(())
 }
 
 // Add atty dependency for terminal detection

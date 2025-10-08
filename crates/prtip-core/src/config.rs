@@ -176,6 +176,12 @@ pub struct PerformanceConfig {
     pub max_rate: Option<u32>,
     /// Parallelism level (concurrent connections)
     pub parallelism: usize,
+    /// Batch size for connection pooling (None = auto-calculate)
+    #[serde(default)]
+    pub batch_size: Option<usize>,
+    /// Requested ulimit value for file descriptors (None = use current)
+    #[serde(default)]
+    pub requested_ulimit: Option<u64>,
 }
 
 impl Default for PerformanceConfig {
@@ -188,6 +194,8 @@ impl Default for PerformanceConfig {
         Self {
             max_rate: None,
             parallelism,
+            batch_size: None,
+            requested_ulimit: None,
         }
     }
 }

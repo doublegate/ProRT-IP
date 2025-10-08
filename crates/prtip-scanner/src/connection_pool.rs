@@ -31,12 +31,13 @@
 
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use prtip_core::resource_limits::get_recommended_batch_size;
 use prtip_core::{PortState, Result, ScanResult};
 use std::net::SocketAddr;
 use std::time::Duration;
 use tokio::net::TcpStream;
 use tokio::time::timeout;
-use tracing::{debug, trace};
+use tracing::{debug, trace, warn};
 
 /// Connection pool with bounded concurrency
 ///
@@ -57,6 +58,10 @@ pub struct ConnectionPool {
 impl ConnectionPool {
     /// Create a new connection pool
     ///
+    /// Automatically checks system file descriptor limits and adjusts
+    /// concurrency to safe values if needed. Issues warnings when limits
+    /// constrain performance.
+    ///
     /// # Arguments
     ///
     /// * `max_concurrent` - Maximum number of concurrent connections
@@ -69,7 +74,8 @@ impl ConnectionPool {
     /// let pool = ConnectionPool::new(500);
     /// ```
     pub fn new(max_concurrent: usize) -> Self {
-        Self::with_timeout(max_concurrent, Duration::from_secs(3))
+        let actual_concurrent = Self::check_ulimit_and_adjust(max_concurrent);
+        Self::with_timeout(actual_concurrent, Duration::from_secs(3))
     }
 
     /// Create a connection pool with custom timeout
@@ -226,6 +232,40 @@ impl ConnectionPool {
     /// Get retry count
     pub fn retries(&self) -> u32 {
         self.retries
+    }
+
+    /// Check ulimit and adjust concurrency to safe values
+    ///
+    /// Inspired by RustScan's resource management. Warns users when system
+    /// limits constrain performance.
+    fn check_ulimit_and_adjust(requested: usize) -> usize {
+        match get_recommended_batch_size(requested as u64, None) {
+            Ok(recommended) => {
+                let recommended_usize = recommended as usize;
+                if requested > recommended_usize {
+                    warn!(
+                        "Requested concurrency {} exceeds safe limit {} based on file descriptor limits",
+                        requested, recommended_usize
+                    );
+                    warn!(
+                        "Reducing to {}. To increase: run 'ulimit -n {}' (Unix) or use --ulimit flag",
+                        recommended_usize,
+                        requested * 2
+                    );
+                    recommended_usize
+                } else {
+                    requested
+                }
+            }
+            Err(e) => {
+                warn!("Failed to detect file descriptor limits: {}", e);
+                warn!(
+                    "Using requested concurrency {} without validation",
+                    requested
+                );
+                requested
+            }
+        }
     }
 }
 

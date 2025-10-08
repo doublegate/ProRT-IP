@@ -67,6 +67,24 @@ pub struct Args {
     #[arg(long, value_name = "NUM")]
     pub max_concurrent: Option<usize>,
 
+    /// Batch size for connection pooling
+    ///
+    /// Overrides automatic batch size calculation based on ulimit.
+    /// Use with caution - setting too high may exhaust file descriptors.
+    #[arg(short = 'b', long, value_name = "SIZE")]
+    pub batch_size: Option<usize>,
+
+    /// Adjust file descriptor limit (Unix only)
+    ///
+    /// Attempts to increase ulimit to the specified value.
+    /// Requires appropriate privileges. Inspired by RustScan.
+    #[arg(long, value_name = "LIMIT")]
+    pub ulimit: Option<u64>,
+
+    /// List available network interfaces and exit
+    #[arg(long)]
+    pub interface_list: bool,
+
     /// Output format
     #[arg(
         short = 'o',
@@ -153,6 +171,21 @@ impl Args {
             anyhow::bail!("Timing template must be 0-5");
         }
 
+        if let Some(batch) = self.batch_size {
+            if batch == 0 {
+                anyhow::bail!("Batch size must be greater than 0");
+            }
+            if batch > 100_000 {
+                anyhow::bail!("Batch size cannot exceed 100,000");
+            }
+        }
+
+        if let Some(ulimit) = self.ulimit {
+            if ulimit < 100 {
+                anyhow::bail!("Ulimit must be at least 100");
+            }
+        }
+
         Ok(())
     }
 
@@ -212,6 +245,8 @@ impl Args {
             performance: PerformanceConfig {
                 max_rate: self.max_rate,
                 parallelism,
+                batch_size: self.batch_size,
+                requested_ulimit: self.ulimit,
             },
         }
     }
@@ -466,5 +501,63 @@ mod tests {
     fn test_scan_delay_option() {
         let args = Args::parse_from(["prtip", "--scan-delay", "500", "192.168.1.1"]);
         assert_eq!(args.scan_delay, 500);
+    }
+
+    #[test]
+    fn test_batch_size_option() {
+        let args = Args::parse_from(["prtip", "-b", "2000", "192.168.1.1"]);
+        assert_eq!(args.batch_size, Some(2000));
+
+        let args = Args::parse_from(["prtip", "--batch-size", "5000", "192.168.1.1"]);
+        assert_eq!(args.batch_size, Some(5000));
+    }
+
+    #[test]
+    fn test_ulimit_option() {
+        let args = Args::parse_from(["prtip", "--ulimit", "10000", "192.168.1.1"]);
+        assert_eq!(args.ulimit, Some(10000));
+    }
+
+    #[test]
+    fn test_interface_list_flag() {
+        let args = Args::parse_from(["prtip", "--interface-list", "192.168.1.1"]);
+        assert!(args.interface_list);
+
+        let args = Args::parse_from(["prtip", "192.168.1.1"]);
+        assert!(!args.interface_list);
+    }
+
+    #[test]
+    fn test_validate_batch_size_zero() {
+        let args = Args::parse_from(["prtip", "-b", "0", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_validate_batch_size_excessive() {
+        let args = Args::parse_from(["prtip", "-b", "200000", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_validate_ulimit_too_low() {
+        let args = Args::parse_from(["prtip", "--ulimit", "50", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_to_config_with_batch_and_ulimit() {
+        let args = Args::parse_from([
+            "prtip",
+            "-b",
+            "3000",
+            "--ulimit",
+            "8000",
+            "192.168.1.1",
+        ]);
+        let config = args.to_config();
+
+        assert_eq!(config.performance.batch_size, Some(3000));
+        assert_eq!(config.performance.requested_ulimit, Some(8000));
     }
 }

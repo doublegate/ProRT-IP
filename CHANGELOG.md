@@ -9,6 +9,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
+#### Enhancement Cycle 4: CLI & Scanner Integration (commit TBD)
+
+**Objective:** Integrate resource limits and interface detection modules into CLI and scanner workflows with RustScan-inspired patterns.
+
+**CLI Enhancements** (`crates/prtip-cli/src/args.rs` - COMPLETE ✅):
+- **New command-line flags**:
+  * `--batch-size` / `-b SIZE` - Manual batch size control (overrides auto-calculation)
+  * `--ulimit LIMIT` - Adjust file descriptor limits (RustScan pattern, Unix only)
+  * `--interface-list` - Display available network interfaces with details and exit
+  * Validation: batch size 1-100,000, ulimit >= 100
+- **Argument validation**:
+  * Zero batch size rejection
+  * Excessive batch size warnings
+  * Ulimit minimum enforcement
+- **7 new CLI tests** - all passing (batch size, ulimit, interface list flags)
+
+**Main CLI Integration** (`crates/prtip-cli/src/main.rs` - COMPLETE ✅):
+- **Ulimit adjustment on startup**:
+  * Calls `adjust_and_get_limit()` before scanner initialization
+  * Success: info log with new limit
+  * Failure: warning with manual command suggestion
+- **Batch size calculation and warnings**:
+  * Automatic batch size recommendation via `get_recommended_batch_size()`
+  * Warning when requested batch exceeds safe limits
+  * Auto-adjustment to safe values with user notification
+  * Helpful error messages: "Use '-b X' or increase ulimit with '--ulimit Y'"
+- **Interface list handler** (`handle_interface_list()` - 62 lines):
+  * Formatted output with colored status (UP/DOWN)
+  * Display: name, MAC, MTU, IPv4/IPv6 addresses
+  * Loopback interface indication
+  * Total interface count summary
+
+**Scanner Integration** (`crates/prtip-scanner/src/connection_pool.rs` - COMPLETE ✅):
+- **Ulimit-aware connection pooling**:
+  * `check_ulimit_and_adjust()` private method (26 lines)
+  * Automatic concurrency reduction when limits low
+  * Warning messages with actionable fix commands
+  * Graceful degradation on limit detection failure
+- **Integration with resource limits module**:
+  * Uses `get_recommended_batch_size()` for safety checks
+  * Prevents "too many open files" errors
+  * RustScan-inspired error messages
+- **Enhanced documentation**:
+  * Updated docstrings with ulimit awareness
+  * Examples of automatic limit handling
+
+**Configuration Updates** (`crates/prtip-core/src/config.rs` - COMPLETE ✅):
+- **New PerformanceConfig fields**:
+  * `batch_size: Option<usize>` - Manual batch size override
+  * `requested_ulimit: Option<u64>` - User-requested ulimit value
+  * Both fields use `#[serde(default)]` for backward compatibility
+- **Default implementation updated**:
+  * New fields initialize to None (auto-calculate)
+- **All test configs updated** - 4 locations fixed
+
+**Test Updates** (4 files modified, +7 tests):
+- `crates/prtip-cli/src/args.rs`: +7 tests for new CLI arguments
+- `crates/prtip-cli/src/output.rs`: PerformanceConfig struct initialization
+- `crates/prtip-scanner/tests/integration_scanner.rs`: Test config updates
+- `crates/prtip-scanner/src/scheduler.rs`: Test helper updates
+- `crates/prtip-scanner/src/concurrent_scanner.rs`: Test config updates
+
+**Summary Statistics**:
+- **Files Modified:** 8 (args.rs, main.rs, config.rs, connection_pool.rs, + 4 test files)
+- **Lines Added:** ~200 (CLI: 62, connection_pool: 26, config: 4, tests: 60, main: 50+)
+- **Tests:** 345 → 352 (+7 new CLI argument tests)
+- **Pass Rate:** 100%
+- **Clippy:** Clean (0 warnings)
+- **Code Quality:** All formatted with cargo fmt
+
+**Reference Inspirations**:
+- RustScan `src/main.rs` (lines 225-287): ulimit adjustment and batch size inference
+- RustScan `src/scanner/mod.rs` (line 86): batch size usage in FuturesUnordered
+- naabu `pkg/runner/options.go`: CLI flag patterns for interface selection
+- naabu `pkg/routing/router.go`: Interface detection and routing logic
+
+**Integration Flow**:
+1. CLI parses arguments including `--batch-size`, `--ulimit`, `--interface-list`
+2. `--interface-list`: enumerate and display interfaces, exit early
+3. `--ulimit`: attempt to adjust system limit before scanner creation
+4. Config creation: pass batch_size and requested_ulimit to PerformanceConfig
+5. Batch size validation: check against ulimit via `get_recommended_batch_size()`
+6. Auto-adjustment: reduce batch size if exceeds safe limit
+7. Warning messages: inform user of adjustments with fix commands
+8. Connection pool: validates concurrency against ulimit on creation
+9. Scanner: uses adjusted batch size for optimal performance
+
+**User-Facing Improvements**:
+- **Better error messages**: "Run 'ulimit -n 10000' to increase" instead of cryptic errors
+- **Automatic safety**: System prevents resource exhaustion without user intervention
+- **Visibility**: `--interface-list` shows network topology at a glance
+- **Manual control**: Power users can override with `-b` and `--ulimit` flags
+- **Helpful warnings**: Clear guidance when settings are constrained by limits
+
+**Technical Highlights**:
+- MSRV compatibility maintained (Rust 1.70+)
+- Cross-platform support (Unix production, Windows stubs)
+- Zero breaking changes to existing API
+- Follows ProRT-IP architectural patterns
+- Clean separation: CLI → Config → Scanner
+
+---
+
 #### Enhancement Cycle 3: Resource Limits & Interface Detection (commit 38b4f3e)
 
 **Objective:** Implement production-critical resource management and network interface detection from RustScan/Naabu reference codebases.

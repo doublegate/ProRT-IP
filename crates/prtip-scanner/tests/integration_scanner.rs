@@ -263,6 +263,8 @@ async fn test_scheduler_config_validation() {
         performance: PerformanceConfig {
             max_rate: None,
             parallelism: 10,
+            batch_size: None,
+            requested_ulimit: None,
         },
     };
 

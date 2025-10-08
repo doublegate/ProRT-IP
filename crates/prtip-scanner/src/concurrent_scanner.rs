@@ -371,6 +371,8 @@ mod tests {
             performance: prtip_core::PerformanceConfig {
                 parallelism: 10,
                 max_rate: None,
+                batch_size: None,
+                requested_ulimit: None,
             },
             scan: prtip_core::ScanConfig {
                 timeout_ms: 100,

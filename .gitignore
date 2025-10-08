@@ -64,6 +64,9 @@ flamegraph.svg
 *.pcap
 *.pcapng
 
+# Reference files
+/code_ref/
+
 # Documentation build
 /docs/book/
 /target/doc/

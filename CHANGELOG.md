@@ -9,6 +9,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
+#### Phase 2: Advanced Scanning (COMPLETE ✅ - commit 296838a)
+
+**Total Implementation:** 2,646 lines added across 16 files
+
+**Packet Building Infrastructure** (`crates/prtip-network/`):
+- **packet_builder.rs** (790 lines): Complete TCP/UDP packet construction
+  - `TcpPacketBuilder`: TCP header construction with all flags (SYN, FIN, ACK, RST, PSH, URG)
+  - `UdpPacketBuilder`: UDP header construction with checksum calculation
+  - IPv4 header construction with TTL, protocol, fragmentation support
+  - Ethernet frame building for Layer 2 transmission
+  - Checksum calculation including IPv4 pseudo-header for TCP/UDP
+  - TCP options support: MSS, Window Scale, SACK, Timestamp, NOP, EOL
+  - Comprehensive unit tests for all packet types and options
+
+- **protocol_payloads.rs** (199 lines): Protocol-specific UDP payloads
+  - DNS query (port 53): Standard query for root domain
+  - NTP request (port 123): NTPv3 client request (48 bytes)
+  - NetBIOS name query (port 137): Query for *<00><00>
+  - SNMP GetRequest (port 161): SNMPv1 with community "public"
+  - Sun RPC NULL call (port 111): Portmapper query
+  - IKE handshake (port 500): IPSec Main Mode SA payload
+  - SSDP discover (port 1900): UPnP M-SEARCH discovery
+  - mDNS query (port 5353): Multicast DNS for _services._dns-sd._udp.local
+  - Full unit tests for all protocol payloads
+
+**TCP SYN Scanner** (`crates/prtip-scanner/syn_scanner.rs` - 437 lines):
+- Half-open scanning with SYN packets (stealth technique)
+- Connection state tracking with HashMap
+- Sequence number generation and validation
+- Response interpretation:
+  * SYN/ACK → Open port (send RST to complete stealth)
+  * RST → Closed port
+  * No response → Filtered port (timeout)
+- Concurrent scanning with semaphore-based parallelism
+- Retry mechanism with exponential backoff
+- Integration with timing templates for rate control
+- Comprehensive tests including state tracking and response handling
+
+**UDP Scanner** (`crates/prtip-scanner/udp_scanner.rs` - 258 lines):
+- Protocol-specific payload selection (8 protocols)
+- ICMP port unreachable interpretation for closed ports
+- Open|Filtered state handling (UDP characteristic)
+- Timeout-based filtering detection
+- Integration with protocol_payloads module
+- Concurrent scanning with rate limiting
+- Comprehensive tests for payload selection and ICMP handling
+
+**Stealth Scanner** (`crates/prtip-scanner/stealth_scanner.rs` - 388 lines):
+- **FIN scan**: Single FIN flag (RFC 793 exploit)
+- **NULL scan**: No flags set (RFC 793 exploit)
+- **Xmas scan**: FIN + PSH + URG flags (packet "lit up")
+- **ACK scan**: ACK flag for firewall state detection
+- Response interpretation:
+  * No response → Open|Filtered (FIN/NULL/Xmas)
+  * RST → Closed (FIN/NULL/Xmas)
+  * RST → Unfiltered (ACK scan)
+  * No response → Filtered (ACK scan)
+- Platform limitations documented (Windows, Cisco devices send RST regardless)
+- Comprehensive tests for all stealth scan types
+
+**Timing Templates** (`crates/prtip-scanner/timing.rs` - 441 lines):
+- **T0 (Paranoid)**: 5-minute probe delays, serial scanning, IDS evasion
+- **T1 (Sneaky)**: 15-second delays, serial scanning
+- **T2 (Polite)**: 0.4-second delays, bandwidth reduction
+- **T3 (Normal)**: Default balanced behavior (1-second timeout)
+- **T4 (Aggressive)**: Fast/reliable networks (200ms timeout, parallel)
+- **T5 (Insane)**: Maximum speed (50ms timeout, sacrifices accuracy)
+- RTT (Round-Trip Time) estimation with sliding window
+- AIMD (Additive Increase Multiplicative Decrease) congestion control
+- Adaptive timeout calculation based on measured RTT
+- Probe timing with configurable delays
+- Comprehensive tests for all timing templates and RTT estimation
+
+### Added - 2025-10-08
+
 #### Performance Enhancements (Reference Implementation-Inspired)
 
 **Adaptive Rate Limiter** (Masscan-inspired):
@@ -33,7 +108,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed clippy warnings: unnecessary lazy evaluations in packet_builder
 - Added `is_empty()` method to TcpOption enum (clippy requirement)
 - Fixed unused import warnings
-- All 229+ tests passing (87 scanner + integration tests)
+- All 278 tests passing (49 core + 29 network + 114 scanner + 49 cli + 37 integration)
+
+**Dependencies Added**:
+- `pnet_packet` for packet manipulation
+- `rand` for randomization
+- `futures` for FuturesUnordered support
+
+**Configuration Updates** (`crates/prtip-core/`):
+- Added `ScanType` enum variants: Syn, Fin, Null, Xmas, Ack, Udp
+- Added timing template configuration options
+- Added scan delay and retry configuration
+
+**Summary Statistics**:
+- **Phase 2 Implementation:** 2,646 lines (6 core scanning modules)
+- **Performance Enhancements:** 905 lines (2 optimization modules)
+- **Total Added:** 3,551 lines of production code
+- **Test Coverage:** 278 tests across all modules
+- **Scan Types:** 7 (Connect, SYN, UDP, FIN, NULL, Xmas, ACK)
+- **Protocol Payloads:** 8 (DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
+- **Timing Templates:** 6 (T0-T5)
+- **Performance Modules:** 2 (adaptive rate limiter, connection pool)
 
 ### Changed - 2025-10-08
 

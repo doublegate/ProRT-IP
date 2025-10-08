@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-08
 
-#### Enhancement Cycle 3: Resource Limits & Interface Detection (commit TBD)
+#### Enhancement Cycle 3: Resource Limits & Interface Detection (commit 38b4f3e)
 
 **Objective:** Implement production-critical resource management and network interface detection from RustScan/Naabu reference codebases.
 

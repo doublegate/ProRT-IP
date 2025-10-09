@@ -181,6 +181,10 @@ pub struct Args {
     #[arg(short = 'q', long, help_heading = "OUTPUT")]
     pub quiet: bool,
 
+    /// Disable ASCII art banner (show compact version)
+    #[arg(long, help_heading = "OUTPUT")]
+    pub compact_banner: bool,
+
     /// Show progress bar during scan
     #[arg(long, help_heading = "OUTPUT")]
     pub progress: bool,

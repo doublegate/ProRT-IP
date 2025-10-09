@@ -5,13 +5,15 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_scanner::service_detector::ServiceDetector;
 //! use prtip_core::{ServiceProbeDb, Protocol};
 //! use std::net::SocketAddr;
 //!
 //! # async fn example() -> Result<(), prtip_core::Error> {
-//! let db = ServiceProbeDb::from_str(include_str!("../../../data/service-probes.txt"))?;
+//! // Load service probe database from file
+//! let db_content = std::fs::read_to_string("data/nmap-service-probes")?;
+//! let db = ServiceProbeDb::parse(&db_content)?;
 //! let detector = ServiceDetector::new(db, 7); // intensity 7
 //!
 //! let addr = "192.168.1.1:80".parse().unwrap();

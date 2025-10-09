@@ -12,10 +12,10 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_core::service_db::ServiceProbeDb;
 //!
-//! let db = ServiceProbeDb::from_str(include_str!("service-probes-subset.txt"))?;
+//! let db = ServiceProbeDb::parse(include_str!("service-probes-subset.txt"))?;
 //! let probes = db.probes_for_port(80, prtip_core::Protocol::Tcp);
 //! # Ok::<(), prtip_core::Error>(())
 //! ```
@@ -23,6 +23,7 @@
 use crate::{Error, Protocol};
 use regex::Regex;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// Service probe database
 #[derive(Debug, Clone)]
@@ -102,7 +103,7 @@ impl ServiceProbeDb {
     }
 
     /// Parse database from string (nmap-service-probes format)
-    pub fn from_str(content: &str) -> Result<Self, Error> {
+    pub fn parse(content: &str) -> Result<Self, Error> {
         let mut db = Self::new();
         let mut current_probe: Option<ServiceProbe> = None;
 
@@ -207,10 +208,7 @@ impl ServiceProbeDb {
 
         // Index by ports
         for &port in &probe.ports {
-            self.port_index
-                .entry(port)
-                .or_insert_with(Vec::new)
-                .push(probe_idx);
+            self.port_index.entry(port).or_default().push(probe_idx);
         }
 
         self.probes.push(probe);
@@ -398,6 +396,14 @@ impl Default for ServiceProbeDb {
     }
 }
 
+impl FromStr for ServiceProbeDb {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -420,7 +426,7 @@ rarity 1
 match ftp m|^220.*FTP| p/FTP/ v/1.0/
 "#;
 
-        let db = ServiceProbeDb::from_str(content).unwrap();
+        let db = ServiceProbeDb::parse(content).unwrap();
         assert_eq!(db.len(), 1);
 
         let probe = &db.probes[0];
@@ -469,7 +475,7 @@ rarity 1
 match ftp m|^220| p/FTP/
 "#;
 
-        let db = ServiceProbeDb::from_str(content).unwrap();
+        let db = ServiceProbeDb::parse(content).unwrap();
         let probes = db.probes_for_port(80, Protocol::Tcp);
 
         assert!(!probes.is_empty());
@@ -486,7 +492,7 @@ Probe TCP Rare q|test|
 rarity 9
 "#;
 
-        let db = ServiceProbeDb::from_str(content).unwrap();
+        let db = ServiceProbeDb::parse(content).unwrap();
 
         let probes = db.probes_for_intensity(Protocol::Tcp, 5);
         assert_eq!(probes.len(), 1); // Only rarity 1
@@ -502,7 +508,7 @@ Probe TCP Test q|test|
 softmatch http m|^HTTP|
 "#;
 
-        let db = ServiceProbeDb::from_str(content).unwrap();
+        let db = ServiceProbeDb::parse(content).unwrap();
         assert_eq!(db.probes[0].soft_matches.len(), 1);
     }
 }

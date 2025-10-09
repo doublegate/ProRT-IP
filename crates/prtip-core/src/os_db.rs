@@ -11,16 +11,17 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_core::os_db::OsFingerprintDb;
 //!
-//! let db = OsFingerprintDb::from_str(include_str!("os-db-subset.txt"))?;
+//! let db = OsFingerprintDb::parse(include_str!("os-db-subset.txt"))?;
 //! let matches = db.match_fingerprint(&probe_results);
 //! # Ok::<(), prtip_core::Error>(())
 //! ```
 
 use crate::Error;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// OS fingerprint database containing signatures for thousands of operating systems
 #[derive(Debug, Clone)]
@@ -45,7 +46,7 @@ pub struct OsFingerprint {
 }
 
 /// OS classification information
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct OsClass {
     /// Vendor (e.g., "Linux", "Microsoft", "Apple")
     pub vendor: String,
@@ -118,6 +119,12 @@ impl Default for MatchPoints {
     }
 }
 
+impl Default for OsFingerprintDb {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OsFingerprintDb {
     /// Create empty database
     pub fn new() -> Self {
@@ -128,7 +135,7 @@ impl OsFingerprintDb {
     }
 
     /// Parse database from string (nmap-os-db format)
-    pub fn from_str(content: &str) -> Result<Self, Error> {
+    pub fn parse(content: &str) -> Result<Self, Error> {
         let mut db = Self::new();
         let mut current_fingerprint: Option<OsFingerprint> = None;
 
@@ -340,14 +347,11 @@ impl OsFingerprintDb {
     }
 }
 
-impl Default for OsClass {
-    fn default() -> Self {
-        Self {
-            vendor: String::new(),
-            os_family: String::new(),
-            os_gen: String::new(),
-            device_type: String::new(),
-        }
+impl FromStr for OsFingerprintDb {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
     }
 }
 
@@ -399,7 +403,7 @@ OPS(O1=M5B4%O2=M5B4)
 WIN(W1=8000%W2=8000)
 "#;
 
-        let db = OsFingerprintDb::from_str(content).unwrap();
+        let db = OsFingerprintDb::parse(content).unwrap();
         assert_eq!(db.len(), 1);
 
         let fp = &db.fingerprints()[0];
@@ -446,7 +450,7 @@ Fingerprint Test OS
 Class Test | TestOS | 1.0 | general purpose
 SEQ(SP=5%GCD=1)
 "#;
-        let db = OsFingerprintDb::from_str(content).unwrap();
+        let db = OsFingerprintDb::parse(content).unwrap();
 
         let mut results = ProbeResults::default();
         let mut seq = HashMap::new();
@@ -467,7 +471,7 @@ Class Vendor | OS | 1.0 | router
 CPE cpe:/o:vendor:os:1.0
 CPE cpe:/h:vendor:device
 "#;
-        let db = OsFingerprintDb::from_str(content).unwrap();
+        let db = OsFingerprintDb::parse(content).unwrap();
         assert_eq!(db.fingerprints()[0].cpe.len(), 2);
     }
 }

@@ -1,0 +1,305 @@
+   Compiling proc-macro2 v1.0.101
+   Compiling unicode-ident v1.0.19
+   Compiling quote v1.0.41
+   Compiling libc v0.2.176
+   Compiling memchr v2.7.6
+   Compiling cfg-if v1.0.3
+   Compiling serde_core v1.0.228
+   Compiling pin-project-lite v0.2.16
+   Compiling serde v1.0.228
+   Compiling smallvec v1.15.1
+   Compiling futures-core v0.3.31
+   Compiling scopeguard v1.2.0
+   Compiling stable_deref_trait v1.2.0
+   Compiling once_cell v1.21.3
+   Compiling parking_lot_core v0.9.12
+   Compiling version_check v0.9.5
+   Compiling typenum v1.19.0
+   Compiling autocfg v1.5.0
+   Compiling writeable v0.6.1
+   Compiling crossbeam-utils v0.8.21
+   Compiling lock_api v0.4.14
+   Compiling equivalent v1.0.2
+   Compiling litemap v0.8.0
+   Compiling icu_normalizer_data v2.0.0
+   Compiling futures-io v0.3.31
+   Compiling slab v0.4.11
+   Compiling icu_properties_data v2.0.1
+   Compiling futures-task v0.3.31
+   Compiling pin-utils v0.1.0
+   Compiling bytes v1.10.1
+   Compiling hashbrown v0.16.0
+   Compiling regex-syntax v0.8.6
+   Compiling iana-time-zone v0.1.64
+   Compiling serde_json v1.0.145
+   Compiling itoa v1.0.15
+   Compiling generic-array v0.14.7
+   Compiling ryu v1.0.20
+   Compiling percent-encoding v2.3.2
+   Compiling futures-sink v0.3.31
+   Compiling foldhash v0.1.5
+   Compiling num-traits v0.2.19
+   Compiling utf8_iter v1.0.4
+   Compiling form_urlencoded v1.2.2
+   Compiling cpufeatures v0.2.17
+   Compiling shlex v1.3.0
+   Compiling thiserror v2.0.17
+   Compiling parking v2.2.1
+   Compiling find-msvc-tools v0.1.3
+   Compiling allocator-api2 v0.2.21
+   Compiling aho-corasick v1.1.3
+   Compiling tracing-core v0.1.34
+   Compiling vcpkg v0.2.15
+   Compiling pkg-config v0.3.32
+   Compiling crc-catalog v2.4.0
+   Compiling cc v1.2.40
+   Compiling log v0.4.28
+   Compiling indexmap v2.11.4
+   Compiling hashbrown v0.15.5
+   Compiling crc v3.3.0
+   Compiling futures-channel v0.3.31
+   Compiling spin v0.9.8
+   Compiling syn v2.0.106
+   Compiling base64 v0.22.1
+   Compiling no-std-net v0.6.0
+   Compiling zerocopy v0.8.27
+   Compiling concurrent-queue v2.5.0
+   Compiling pnet_base v0.35.0
+   Compiling futures-util v0.3.31
+   Compiling portable-atomic v1.11.1
+   Compiling event-listener v5.4.1
+   Compiling atoi v2.0.0
+   Compiling chrono v0.4.42
+   Compiling crossbeam-queue v0.3.12
+   Compiling bitflags v2.9.4
+   Compiling heck v0.5.0
+   Compiling pnet_macros_support v0.35.0
+   Compiling hashlink v0.10.0
+   Compiling flume v0.11.1
+   Compiling socket2 v0.6.0
+   Compiling mio v1.0.4
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.6
+   Compiling digest v0.10.7
+   Compiling parking_lot v0.12.5
+   Compiling unicode-width v0.2.2
+   Compiling winnow v0.7.13
+   Compiling toml_write v0.1.2
+   Compiling rlimit v0.10.2
+   Compiling thiserror v1.0.69
+   Compiling sha2 v0.10.9
+   Compiling tokio v1.47.1
+   Compiling futures-intrusive v0.5.0
+   Compiling anyhow v1.0.100
+   Compiling signal-hook-registry v1.4.6
+   Compiling getrandom v0.2.16
+   Compiling pnet_sys v0.35.0
+   Compiling libsqlite3-sys v0.30.1
+   Compiling console v0.15.11
+   Compiling rand_core v0.6.4
+   Compiling regex-automata v0.4.11
+   Compiling utf8parse v0.2.2
+   Compiling pnet v0.35.0
+   Compiling dotenvy v0.15.7
+   Compiling number_prefix v0.4.0
+   Compiling hex v0.4.3
+   Compiling indicatif v0.17.11
+   Compiling anstyle-parse v0.2.7
+   Compiling raw-cpuid v11.6.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling colorchoice v1.0.4
+   Compiling hashbrown v0.14.5
+   Compiling arrayvec v0.7.6
+   Compiling lazy_static v1.5.0
+   Compiling anstyle-query v1.1.4
+   Compiling is_terminal_polyfill v1.70.1
+   Compiling anstyle v1.0.13
+   Compiling crossbeam-deque v0.8.6
+   Compiling nix v0.27.1
+   Compiling etherparse v0.15.0
+   Compiling socket2 v0.5.10
+   Compiling ppv-lite86 v0.2.21
+   Compiling anstream v0.6.21
+   Compiling crossbeam-channel v0.5.15
+   Compiling spinning_top v0.3.0
+   Compiling futures-timer v3.0.3
+   Compiling dashmap v5.5.3
+   Compiling no-std-compat v0.4.1
+   Compiling clap_lex v0.7.5
+   Compiling strsim v0.11.1
+   Compiling rand_chacha v0.3.1
+   Compiling nonzero_ext v0.3.0
+   Compiling crossbeam v0.8.4
+   Compiling clap_builder v4.5.48
+   Compiling sharded-slab v0.1.7
+   Compiling tracing-log v0.2.0
+   Compiling thread_local v1.1.9
+   Compiling rand v0.8.5
+   Compiling nu-ansi-term v0.50.1
+   Compiling futures-executor v0.3.31
+   Compiling colored v2.2.0
+   Compiling num_cpus v1.17.0
+   Compiling quanta v0.12.6
+   Compiling regex v1.11.3
+   Compiling synstructure v0.13.2
+   Compiling serde_derive v1.0.228
+   Compiling zerofrom-derive v0.1.6
+   Compiling yoke-derive v0.8.0
+   Compiling zerovec-derive v0.11.1
+   Compiling displaydoc v0.2.5
+   Compiling tracing-attributes v0.1.30
+   Compiling thiserror-impl v2.0.17
+   Compiling futures-macro v0.3.31
+   Compiling tokio-macros v2.5.0
+   Compiling pnet_macros v0.35.0
+   Compiling thiserror-impl v1.0.69
+   Compiling clap_derive v4.5.47
+   Compiling matchers v0.2.0
+   Compiling tokio-stream v0.1.17
+   Compiling pnet_packet v0.35.0
+   Compiling zerofrom v0.1.6
+   Compiling yoke v0.8.0
+   Compiling tracing v0.1.41
+   Compiling zerovec v0.11.4
+   Compiling zerotrie v0.2.2
+   Compiling tracing-subscriber v0.3.20
+   Compiling clap v4.5.48
+   Compiling tinystr v0.8.1
+   Compiling potential_utf v0.1.3
+   Compiling icu_collections v2.0.0
+   Compiling icu_locale_core v2.0.0
+   Compiling icu_provider v2.0.0
+   Compiling either v1.15.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling toml_datetime v0.6.11
+   Compiling ipnetwork v0.20.0
+   Compiling serde_spanned v0.6.9
+   Compiling quick-xml v0.31.0
+   Compiling icu_normalizer v2.0.0
+   Compiling icu_properties v2.0.1
+   Compiling pnet_datalink v0.35.0
+   Compiling toml_edit v0.22.27
+   Compiling pnet_transport v0.35.0
+   Compiling futures v0.3.31
+   Compiling governor v0.6.3
+   Compiling idna_adapter v1.2.1
+   Compiling idna v1.1.0
+   Compiling url v2.5.7
+   Compiling toml v0.8.23
+   Compiling sqlx-core v0.8.6
+   Compiling prtip-core v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-core)
+   Compiling prtip-network v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-network)
+   Compiling sqlx-sqlite v0.8.6
+   Compiling sqlx-macros-core v0.8.6
+   Compiling sqlx-macros v0.8.6
+   Compiling sqlx v0.8.6
+   Compiling prtip-scanner v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-scanner)
+warning: unused import: `OsFingerprint`
+  --> crates/prtip-scanner/src/os_fingerprinter.rs:29:25
+   |
+29 | use prtip_core::{Error, OsFingerprint, OsFingerprintDb};
+   |                         ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `IpAddr`
+  --> crates/prtip-scanner/src/os_probe.rs:31:16
+   |
+31 | use std::net::{IpAddr, Ipv4Addr};
+   |                ^^^^^^
+
+warning: unused import: `SystemTime`
+  --> crates/prtip-scanner/src/os_probe.rs:32:36
+   |
+32 | use std::time::{Duration, Instant, SystemTime};
+   |                                    ^^^^^^^^^^
+
+warning: unused variable: `target`
+  --> crates/prtip-scanner/src/banner_grabber.rs:92:43
+   |
+92 |     pub async fn grab_https_banner(&self, target: SocketAddr) -> Result<String, Error> {
+   |                                           ^^^^^^ help: if this is intentional, prefix it with an underscore: `_target`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `probe`
+   --> crates/prtip-scanner/src/os_probe.rs:103:17
+    |
+103 |             let probe = self.build_seq_probe(i)?;
+    |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_probe`
+
+warning: unused variable: `ie1_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:122:13
+    |
+122 |         let ie1_probe = self.build_icmp_echo_probe(0, 0)?;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ie1_probe`
+
+warning: unused variable: `ie2_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:123:13
+    |
+123 |         let ie2_probe = self.build_icmp_echo_probe(4, 9)?;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ie2_probe`
+
+warning: unused variable: `ecn_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:129:13
+    |
+129 |         let ecn_probe = self.build_ecn_probe()?;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ecn_probe`
+
+warning: unused variable: `t2_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:135:13
+    |
+135 |         let t2_probe = self.build_t2_probe()?; // NULL flags to open port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t2_probe`
+
+warning: unused variable: `t3_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:136:13
+    |
+136 |         let t3_probe = self.build_t3_probe()?; // SYN+FIN+URG+PSH to open port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t3_probe`
+
+warning: unused variable: `t4_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:137:13
+    |
+137 |         let t4_probe = self.build_t4_probe()?; // ACK to open port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t4_probe`
+
+warning: unused variable: `t5_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:138:13
+    |
+138 |         let t5_probe = self.build_t5_probe()?; // SYN to closed port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t5_probe`
+
+warning: unused variable: `t6_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:139:13
+    |
+139 |         let t6_probe = self.build_t6_probe()?; // ACK to closed port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t6_probe`
+
+warning: unused variable: `t7_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:140:13
+    |
+140 |         let t7_probe = self.build_t7_probe()?; // FIN+PSH+URG to closed port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t7_probe`
+
+warning: unused variable: `u1_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:151:13
+    |
+151 |         let u1_probe = self.build_u1_probe()?;
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_u1_probe`
+
+   Compiling prtip-cli v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-cli)
+warning: `prtip-scanner` (lib) generated 15 warnings (run `cargo fix --lib -p prtip-scanner` to apply 3 suggestions)
+warning: method `print_compact` is never used
+  --> crates/prtip-cli/src/banner.rs:99:12
+   |
+15 | impl Banner {
+   | ----------- method in this implementation
+...
+99 |     pub fn print_compact(&self) {
+   |            ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `prtip-cli` (bin "prtip") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 25.94s

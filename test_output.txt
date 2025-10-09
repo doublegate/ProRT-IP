@@ -1,0 +1,872 @@
+   Compiling cfg-if v1.0.3
+   Compiling memchr v2.7.6
+   Compiling smallvec v1.15.1
+   Compiling once_cell v1.21.3
+   Compiling scopeguard v1.2.0
+   Compiling pin-project-lite v0.2.16
+   Compiling libc v0.2.176
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling stable_deref_trait v1.2.0
+   Compiling parking_lot_core v0.9.12
+   Compiling equivalent v1.0.2
+   Compiling regex-syntax v0.8.6
+   Compiling hashbrown v0.16.0
+   Compiling num-traits v0.2.19
+   Compiling log v0.4.28
+   Compiling crossbeam-utils v0.8.21
+   Compiling zerofrom v0.1.6
+   Compiling itoa v1.0.15
+   Compiling ryu v1.0.20
+   Compiling lock_api v0.4.14
+   Compiling serde_json v1.0.145
+   Compiling iana-time-zone v0.1.64
+   Compiling litemap v0.8.0
+   Compiling bytes v1.10.1
+   Compiling yoke v0.8.0
+   Compiling writeable v0.6.1
+   Compiling tracing-core v0.1.34
+   Compiling portable-atomic v1.11.1
+   Compiling zerovec v0.11.4
+   Compiling typenum v1.19.0
+   Compiling futures-core v0.3.31
+   Compiling zerotrie v0.2.2
+   Compiling generic-array v0.14.7
+   Compiling icu_properties_data v2.0.1
+   Compiling icu_normalizer_data v2.0.0
+   Compiling unicode-width v0.2.2
+   Compiling toml_write v0.1.2
+   Compiling aho-corasick v1.1.3
+   Compiling indexmap v2.11.4
+   Compiling tracing v0.1.41
+   Compiling no-std-net v0.6.0
+   Compiling bitflags v2.9.4
+   Compiling winnow v0.7.13
+   Compiling anyhow v1.0.100
+   Compiling thiserror v1.0.69
+   Compiling rlimit v0.10.2
+   Compiling tinystr v0.8.1
+   Compiling potential_utf v0.1.3
+   Compiling pnet_base v0.35.0
+   Compiling icu_collections v2.0.0
+   Compiling icu_locale_core v2.0.0
+   Compiling zerocopy v0.8.27
+   Compiling futures-sink v0.3.31
+   Compiling number_prefix v0.4.0
+   Compiling percent-encoding v2.3.2
+   Compiling mio v1.0.4
+   Compiling signal-hook-registry v1.4.6
+   Compiling socket2 v0.6.0
+   Compiling console v0.15.11
+   Compiling parking_lot v0.12.5
+   Compiling icu_provider v2.0.0
+   Compiling regex-automata v0.4.11
+   Compiling tokio v1.47.1
+   Compiling icu_normalizer v2.0.0
+   Compiling icu_properties v2.0.1
+   Compiling indicatif v0.17.11
+   Compiling getrandom v0.2.16
+   Compiling rand_core v0.6.4
+   Compiling chrono v0.4.42
+   Compiling ipnetwork v0.20.0
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling ppv-lite86 v0.2.21
+   Compiling form_urlencoded v1.2.2
+   Compiling pnet_sys v0.35.0
+   Compiling toml_edit v0.22.27
+   Compiling crypto-common v0.1.6
+   Compiling block-buffer v0.10.4
+   Compiling idna_adapter v1.2.1
+   Compiling futures-channel v0.3.31
+   Compiling pnet_macros_support v0.35.0
+   Compiling pin-utils v0.1.0
+   Compiling slab v0.4.11
+   Compiling allocator-api2 v0.2.21
+   Compiling futures-io v0.3.31
+   Compiling utf8_iter v1.0.4
+   Compiling foldhash v0.1.5
+   Compiling futures-task v0.3.31
+   Compiling hashbrown v0.15.5
+   Compiling idna v1.1.0
+   Compiling digest v0.10.7
+   Compiling rand_chacha v0.3.1
+   Compiling futures-util v0.3.31
+   Compiling concurrent-queue v2.5.0
+   Compiling thiserror v2.0.17
+   Compiling crc-catalog v2.4.0
+   Compiling cpufeatures v0.2.17
+   Compiling regex v1.11.3
+   Compiling parking v2.2.1
+   Compiling event-listener v5.4.1
+   Compiling toml v0.8.23
+   Compiling sha2 v0.10.9
+   Compiling prtip-core v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-core)
+   Compiling crc v3.3.0
+   Compiling pnet v0.35.0
+   Compiling hashlink v0.10.0
+   Compiling pnet_macros v0.35.0
+   Compiling url v2.5.7
+   Compiling futures-intrusive v0.5.0
+   Compiling rand v0.8.5
+   Compiling pnet_datalink v0.35.0
+   Compiling either v1.15.0
+   Compiling crossbeam-queue v0.3.12
+   Compiling spin v0.9.8
+   Compiling libsqlite3-sys v0.30.1
+   Compiling base64 v0.22.1
+   Compiling arrayvec v0.7.6
+   Compiling tokio-stream v0.1.17
+   Compiling pnet_packet v0.35.0
+   Compiling etherparse v0.15.0
+   Compiling flume v0.11.1
+   Compiling futures-executor v0.3.31
+   Compiling serde_urlencoded v0.7.1
+   Compiling sqlx-core v0.8.6
+   Compiling atoi v2.0.0
+   Compiling socket2 v0.5.10
+   Compiling nix v0.27.1
+   Compiling raw-cpuid v11.6.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling hashbrown v0.14.5
+   Compiling futures v0.3.31
+   Compiling crossbeam-channel v0.5.15
+   Compiling spinning_top v0.3.0
+   Compiling nonzero_ext v0.3.0
+   Compiling crossbeam-deque v0.8.6
+   Compiling no-std-compat v0.4.1
+   Compiling futures-timer v3.0.3
+   Compiling pnet_transport v0.35.0
+   Compiling dashmap v5.5.3
+   Compiling anstyle v1.0.13
+   Compiling prtip-network v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-network)
+   Compiling crossbeam v0.8.4
+   Compiling utf8parse v0.2.2
+   Compiling getrandom v0.3.3
+   Compiling rustix v1.1.2
+   Compiling quanta v0.12.6
+   Compiling anstyle-parse v0.2.7
+   Compiling lazy_static v1.5.0
+   Compiling governor v0.6.3
+   Compiling anstyle-query v1.1.4
+   Compiling is_terminal_polyfill v1.70.1
+   Compiling colorchoice v1.0.4
+   Compiling linux-raw-sys v0.11.0
+   Compiling anstream v0.6.21
+   Compiling strsim v0.11.1
+   Compiling clap_lex v0.7.5
+   Compiling fastrand v2.3.0
+   Compiling sharded-slab v0.1.7
+   Compiling clap_builder v4.5.48
+   Compiling matchers v0.2.0
+   Compiling tracing-log v0.2.0
+   Compiling thread_local v1.1.9
+   Compiling predicates-core v1.0.9
+   Compiling nu-ansi-term v0.50.1
+   Compiling doc-comment v0.3.3
+   Compiling colored v2.2.0
+   Compiling tracing-subscriber v0.3.20
+   Compiling quick-xml v0.31.0
+   Compiling num_cpus v1.17.0
+   Compiling float-cmp v0.10.0
+   Compiling difflib v0.4.0
+   Compiling normalize-line-endings v0.3.0
+   Compiling termtree v0.5.1
+   Compiling assert_cmd v2.0.17
+   Compiling predicates-tree v1.0.12
+   Compiling predicates v3.1.3
+   Compiling bstr v1.12.0
+   Compiling wait-timeout v0.2.1
+   Compiling tempfile v3.23.0
+   Compiling sqlx-sqlite v0.8.6
+   Compiling clap v4.5.48
+   Compiling sqlx-macros-core v0.8.6
+   Compiling sqlx-macros v0.8.6
+   Compiling sqlx v0.8.6
+   Compiling prtip-scanner v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-scanner)
+warning: unused import: `OsFingerprint`
+  --> crates/prtip-scanner/src/os_fingerprinter.rs:29:25
+   |
+29 | use prtip_core::{Error, OsFingerprint, OsFingerprintDb};
+   |                         ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `IpAddr`
+  --> crates/prtip-scanner/src/os_probe.rs:31:16
+   |
+31 | use std::net::{IpAddr, Ipv4Addr};
+   |                ^^^^^^
+
+warning: unused import: `SystemTime`
+  --> crates/prtip-scanner/src/os_probe.rs:32:36
+   |
+32 | use std::time::{Duration, Instant, SystemTime};
+   |                                    ^^^^^^^^^^
+
+warning: unused variable: `target`
+  --> crates/prtip-scanner/src/banner_grabber.rs:92:43
+   |
+92 |     pub async fn grab_https_banner(&self, target: SocketAddr) -> Result<String, Error> {
+   |                                           ^^^^^^ help: if this is intentional, prefix it with an underscore: `_target`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `probe`
+   --> crates/prtip-scanner/src/os_probe.rs:103:17
+    |
+103 |             let probe = self.build_seq_probe(i)?;
+    |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_probe`
+
+warning: unused variable: `ie1_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:122:13
+    |
+122 |         let ie1_probe = self.build_icmp_echo_probe(0, 0)?;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ie1_probe`
+
+warning: unused variable: `ie2_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:123:13
+    |
+123 |         let ie2_probe = self.build_icmp_echo_probe(4, 9)?;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ie2_probe`
+
+warning: unused variable: `ecn_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:129:13
+    |
+129 |         let ecn_probe = self.build_ecn_probe()?;
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ecn_probe`
+
+warning: unused variable: `t2_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:135:13
+    |
+135 |         let t2_probe = self.build_t2_probe()?; // NULL flags to open port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t2_probe`
+
+warning: unused variable: `t3_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:136:13
+    |
+136 |         let t3_probe = self.build_t3_probe()?; // SYN+FIN+URG+PSH to open port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t3_probe`
+
+warning: unused variable: `t4_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:137:13
+    |
+137 |         let t4_probe = self.build_t4_probe()?; // ACK to open port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t4_probe`
+
+warning: unused variable: `t5_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:138:13
+    |
+138 |         let t5_probe = self.build_t5_probe()?; // SYN to closed port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t5_probe`
+
+warning: unused variable: `t6_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:139:13
+    |
+139 |         let t6_probe = self.build_t6_probe()?; // ACK to closed port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t6_probe`
+
+warning: unused variable: `t7_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:140:13
+    |
+140 |         let t7_probe = self.build_t7_probe()?; // FIN+PSH+URG to closed port
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_t7_probe`
+
+warning: unused variable: `u1_probe`
+   --> crates/prtip-scanner/src/os_probe.rs:151:13
+    |
+151 |         let u1_probe = self.build_u1_probe()?;
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_u1_probe`
+
+   Compiling prtip-cli v0.1.0 (/home/parobek/Code/ProRT-IP/crates/prtip-cli)
+warning: `prtip-scanner` (lib) generated 15 warnings (run `cargo fix --lib -p prtip-scanner` to apply 3 suggestions)
+warning: method `print_compact` is never used
+  --> crates/prtip-cli/src/banner.rs:99:12
+   |
+15 | impl Banner {
+   | ----------- method in this implementation
+...
+99 |     pub fn print_compact(&self) {
+   |            ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `prtip-cli` (bin "prtip" test) generated 1 warning (1 duplicate)
+warning: `prtip-scanner` (lib test) generated 15 warnings (15 duplicates)
+warning: `prtip-cli` (bin "prtip") generated 1 warning
+    Finished `test` profile [optimized + debuginfo] target(s) in 1m 15s
+     Running unittests src/lib.rs (target/debug/deps/prtip_cli-3f1a6e7237634c71)
+
+running 64 tests
+test args::tests::test_interface_option ... ok
+test args::tests::test_host_discovery_flag ... ok
+test args::tests::test_database_option ... ok
+test args::tests::test_interface_list_flag ... ok
+test args::tests::test_parse_timing_invalid ... ok
+test args::tests::test_batch_size_option ... ok
+test args::tests::test_no_progress_flag ... ok
+test args::tests::test_parse_timing_valid ... ok
+test args::tests::test_parse_basic_args ... ok
+test args::tests::test_parse_multiple_targets ... ok
+test args::tests::test_output_format_variants ... ok
+test args::tests::test_parse_with_output_format ... ok
+test args::tests::test_parse_with_ports ... ok
+test args::tests::test_parse_with_timing ... ok
+test args::tests::test_parse_with_verbose ... ok
+test args::tests::test_progress_flag ... ok
+test args::tests::test_scan_delay_option ... ok
+test args::tests::test_stats_file ... ok
+test args::tests::test_stats_interval ... ok
+test args::tests::test_ulimit_option ... ok
+test args::tests::test_validate_batch_size_excessive ... ok
+test args::tests::test_scan_type_variants ... ok
+test args::tests::test_to_config ... ok
+test args::tests::test_to_config_with_options ... ok
+test args::tests::test_to_config_with_batch_and_ulimit ... ok
+test args::tests::test_validate_conflicting_progress ... ok
+test args::tests::test_validate_batch_size_zero ... ok
+test args::tests::test_validate_excessive_max_rate ... ok
+test args::tests::test_validate_excessive_retries ... ok
+test args::tests::test_validate_excessive_timeout ... ok
+test args::tests::test_validate_invalid_ports ... ok
+test args::tests::test_validate_stats_interval_excessive ... ok
+test args::tests::test_validate_stats_interval_zero ... ok
+test args::tests::test_validate_valid ... ok
+test banner::tests::test_ascii_art_contains_blocks ... ok
+test args::tests::test_validate_zero_max_concurrent ... ok
+test banner::tests::test_ascii_art_cyber_punk_style ... ok
+test args::tests::test_validate_ulimit_too_low ... ok
+test args::tests::test_validate_zero_max_rate ... ok
+test banner::tests::test_ascii_art_multicolor ... ok
+test banner::tests::test_ascii_art_multiline ... ok
+test args::tests::test_validate_zero_timeout ... ok
+test banner::tests::test_ascii_art_not_empty ... ok
+test banner::tests::test_banner_creation ... ok
+test banner::tests::test_banner_creation_with_version ... ok
+test banner::tests::test_banner_version_storage ... ok
+test banner::tests::test_default_banner ... ok
+test output::tests::test_create_formatter_json ... ok
+test output::tests::test_create_formatter_text ... ok
+test output::tests::test_create_formatter_xml ... ok
+test output::tests::test_json_formatter_basic ... ok
+test output::tests::test_json_formatter_statistics ... ok
+test output::tests::test_text_formatter_basic ... ok
+test output::tests::test_text_formatter_colorize ... ok
+test output::tests::test_text_formatter_empty ... ok
+test output::tests::test_text_formatter_long_banner ... ok
+test output::tests::test_text_formatter_multiple_hosts ... ok
+test output::tests::test_text_formatter_verbose_levels ... ok
+test output::tests::test_text_formatter_with_service ... ok
+test output::tests::test_text_formatter_multiple_states ... ok
+test output::tests::test_xml_formatter_basic ... ok
+test output::tests::test_xml_formatter_escape_special_chars ... ok
+test output::tests::test_xml_formatter_ipv6 ... ok
+test output::tests::test_xml_formatter_with_service ... ok
+
+test result: ok. 64 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/prtip-0369a23b36c77d7b)
+
+running 72 tests
+test args::tests::test_interface_option ... ok
+test args::tests::test_no_progress_flag ... ok
+test args::tests::test_parse_timing_invalid ... ok
+test args::tests::test_parse_timing_valid ... ok
+test args::tests::test_interface_list_flag ... ok
+test args::tests::test_database_option ... ok
+test args::tests::test_batch_size_option ... ok
+test args::tests::test_host_discovery_flag ... ok
+test args::tests::test_parse_basic_args ... ok
+test args::tests::test_parse_multiple_targets ... ok
+test args::tests::test_parse_with_output_format ... ok
+test args::tests::test_parse_with_ports ... ok
+test args::tests::test_parse_with_timing ... ok
+test args::tests::test_parse_with_verbose ... ok
+test args::tests::test_progress_flag ... ok
+test args::tests::test_scan_delay_option ... ok
+test args::tests::test_output_format_variants ... ok
+test args::tests::test_stats_file ... ok
+test args::tests::test_stats_interval ... ok
+test args::tests::test_to_config_with_options ... ok
+test args::tests::test_validate_batch_size_excessive ... ok
+test args::tests::test_ulimit_option ... ok
+test args::tests::test_validate_conflicting_progress ... ok
+test args::tests::test_scan_type_variants ... ok
+test args::tests::test_validate_batch_size_zero ... ok
+test args::tests::test_validate_excessive_timeout ... ok
+test args::tests::test_to_config ... ok
+test args::tests::test_validate_excessive_max_rate ... ok
+test args::tests::test_validate_excessive_retries ... ok
+test args::tests::test_to_config_with_batch_and_ulimit ... ok
+test args::tests::test_validate_invalid_ports ... ok
+test args::tests::test_validate_stats_interval_zero ... ok
+test args::tests::test_validate_stats_interval_excessive ... ok
+test banner::tests::test_ascii_art_contains_blocks ... ok
+test banner::tests::test_ascii_art_cyber_punk_style ... ok
+test banner::tests::test_ascii_art_multicolor ... ok
+test args::tests::test_validate_ulimit_too_low ... ok
+test banner::tests::test_ascii_art_multiline ... ok
+test args::tests::test_validate_zero_max_rate ... ok
+test args::tests::test_validate_zero_timeout ... ok
+test banner::tests::test_ascii_art_not_empty ... ok
+test args::tests::test_validate_zero_max_concurrent ... ok
+test banner::tests::test_banner_creation ... ok
+test banner::tests::test_banner_creation_with_version ... ok
+test banner::tests::test_banner_version_storage ... ok
+test banner::tests::test_default_banner ... ok
+test args::tests::test_validate_valid ... ok
+test output::tests::test_create_formatter_json ... ok
+test output::tests::test_create_formatter_text ... ok
+test output::tests::test_create_formatter_xml ... ok
+test output::tests::test_json_formatter_basic ... ok
+test output::tests::test_json_formatter_statistics ... ok
+test output::tests::test_text_formatter_basic ... ok
+test output::tests::test_text_formatter_colorize ... ok
+test output::tests::test_text_formatter_empty ... ok
+test output::tests::test_text_formatter_long_banner ... ok
+test output::tests::test_text_formatter_multiple_hosts ... ok
+test output::tests::test_text_formatter_multiple_states ... ok
+test output::tests::test_text_formatter_verbose_levels ... ok
+test output::tests::test_text_formatter_with_service ... ok
+test output::tests::test_xml_formatter_basic ... ok
+test output::tests::test_xml_formatter_ipv6 ... ok
+test output::tests::test_xml_formatter_escape_special_chars ... ok
+test output::tests::test_xml_formatter_with_service ... ok
+test tests::test_expand_targets_with_ports ... ok
+test tests::test_parse_targets_empty ... ok
+test tests::test_parse_targets_invalid ... ok
+test tests::test_parse_targets_multiple ... ok
+test tests::test_parse_targets_single ... ok
+test tests::test_print_summary_empty ... ok
+test tests::test_print_summary_with_results ... ok
+test tests::test_format_scan_banner ... ok
+
+test result: ok. 72 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration.rs (target/debug/deps/integration-021801ce2109c3c6)
+
+running 29 tests
+test test_cli_invalid_ports ... ok
+test test_cli_excessive_retries ... ok
+test test_cli_invalid_port_range ... ok
+test test_cli_excessive_timeout ... ok
+test test_cli_invalid_timing ... ok
+test test_cli_help ... ok
+test test_cli_excessive_max_concurrent ... ok
+test test_cli_port_zero ... ok
+test test_cli_no_targets ... ok
+test test_cli_custom_database ... ok
+test test_cli_version ... ok
+test test_cli_zero_max_rate ... ok
+test test_cli_zero_timeout ... ok
+test test_cli_retries ... ok
+test test_cli_max_concurrent ... ok
+test test_cli_port_list ... ok
+test test_cli_multiple_targets ... ok
+test test_cli_verbose_levels ... ok
+test test_cli_host_discovery_flag ... ok
+test test_cli_xml_output ... ok
+test test_cli_json_output ... ok
+test test_cli_interface_option ... ok
+test test_cli_mixed_port_spec ... ok
+test test_cli_scan_delay ... ok
+test test_cli_cidr_notation ... ok
+test test_cli_output_to_file ... ok
+test test_cli_scan_types ... ok
+test test_cli_port_range ... ok
+test test_cli_timing_templates ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running unittests src/lib.rs (target/debug/deps/prtip_core-0ff18869f7fe15a2)
+
+running 103 tests
+test config::tests::test_config_load_from_str_invalid ... ok
+test config::tests::test_config_toml_deserialization ... ok
+test config::tests::test_config_validation_excessive_parallelism ... ok
+test config::tests::test_config_toml_serialization ... ok
+test config::tests::test_config_validation_excessive_retries ... ok
+test config::tests::test_config_validation_excessive_timeout ... ok
+test config::tests::test_config_validation_valid ... ok
+test config::tests::test_config_validation_zero_max_rate ... ok
+test config::tests::test_config_validation_zero_parallelism ... ok
+test config::tests::test_config_validation_zero_timeout ... ok
+test config::tests::test_output_format_display ... ok
+test config::tests::test_config_with_interface ... ok
+test config::tests::test_default_config ... ok
+test crypto::tests::test_blackrock_bijective ... ok
+test crypto::tests::test_blackrock_deterministic ... ok
+test crypto::tests::test_blackrock_different_seeds ... ok
+test crypto::tests::test_blackrock_non_power_of_two ... ok
+test crypto::tests::test_blackrock_power_of_two ... ok
+test crypto::tests::test_siphash24_avalanche ... ok
+test crypto::tests::test_siphash24_basic ... ok
+test crypto::tests::test_siphash24_different_keys ... ok
+test crypto::tests::test_siphash24_longer_message ... ok
+test crypto::tests::test_blackrock_unshuffle ... ok
+test crypto::tests::test_siphash24_short_message ... ok
+test error::tests::test_error_display ... ok
+test error::tests::test_error_result_type ... ok
+test error::tests::test_io_error_conversion ... ok
+test error::tests::test_json_error_conversion ... ok
+test error::tests::test_network_error_conversion ... ok
+test error::tests::test_parse_error_conversion ... ok
+test errors::tests::test_categorize_io_error ... ok
+test errors::tests::test_display ... ok
+test errors::tests::test_error_category_conversion ... ok
+test errors::tests::test_error_kind_description ... ok
+test errors::tests::test_error_kind_suggestion ... ok
+test errors::tests::test_error_kind_to_category ... ok
+test errors::tests::test_from_io_error_connection_refused ... ok
+test errors::tests::test_from_io_error_permission_denied ... ok
+test errors::tests::test_from_io_error_timeout ... ok
+test errors::tests::test_scan_error_new ... ok
+test errors::tests::test_user_message ... ok
+test os_db::tests::test_empty_db ... ok
+test os_db::tests::test_match_fingerprint ... ok
+test os_db::tests::test_multiple_cpe ... ok
+test os_db::tests::test_parse_params ... ok
+test os_db::tests::test_parse_simple_fingerprint ... ok
+test os_db::tests::test_values_match_alternative ... ok
+test os_db::tests::test_values_match_exact ... ok
+test os_db::tests::test_values_match_range ... ok
+test progress::tests::test_error_tracking ... ok
+test progress::tests::test_increment_counters ... ok
+test progress::tests::test_new_progress ... ok
+test progress::tests::test_json_export ... ok
+test progress::tests::test_percentage ... ok
+test progress::tests::test_summary ... ok
+test resource_limits::tests::test_adjust_and_get_limit_no_change ... ok
+test resource_limits::tests::test_calculate_optimal_batch_size_average ... ok
+test resource_limits::tests::test_calculate_optimal_batch_size_high_limit ... ok
+test resource_limits::tests::test_calculate_optimal_batch_size_exact_match ... ok
+test resource_limits::tests::test_calculate_optimal_batch_size_moderate_limit ... ok
+test resource_limits::tests::test_calculate_optimal_batch_size_low_limit ... ok
+test resource_limits::tests::test_get_file_descriptor_limit ... ok
+test resource_limits::tests::test_get_recommended_batch_size ... ok
+test resource_limits::tests::test_resource_limits_equality ... ok
+test resource_limits::tests::test_resource_limits_display ... ok
+test service_db::tests::test_empty_db ... ok
+test resource_limits::tests::test_set_limit_requires_privileges ... ok
+test service_db::tests::test_parse_port_list ... ok
+test service_db::tests::test_parse_probe_string ... ok
+test service_db::tests::test_probes_for_intensity ... ok
+test types::tests::test_port_filter_default ... ok
+test types::tests::test_port_filter_empty ... ok
+test types::tests::test_port_filter_exclude_multiple ... ok
+test types::tests::test_port_filter_exclude_range ... ok
+test types::tests::test_port_filter_exclude_single ... ok
+test service_db::tests::test_parse_match_line ... ok
+test service_db::tests::test_softmatch_parsing ... ok
+test types::tests::test_port_filter_include_multiple ... ok
+test types::tests::test_port_filter_include_range ... ok
+test service_db::tests::test_probes_for_port ... ok
+test types::tests::test_port_filter_include_single ... ok
+test types::tests::test_port_filter_mixed_specs ... ok
+test types::tests::test_port_filter_ports ... ok
+test types::tests::test_port_range_invalid ... ok
+test types::tests::test_port_range_list ... ok
+test types::tests::test_port_range_mixed ... ok
+test types::tests::test_port_range_range ... ok
+test types::tests::test_port_range_single ... ok
+test types::tests::test_port_state_display ... ok
+test types::tests::test_port_state_ordering ... ok
+test types::tests::test_scan_result_creation ... ok
+test types::tests::test_scan_result_serialization ... ok
+test types::tests::test_scan_target_cidr ... ok
+test types::tests::test_scan_target_hostname ... ok
+test types::tests::test_scan_target_ipv6 ... ok
+test service_db::tests::test_parse_simple_probe ... ok
+test types::tests::test_scan_target_single_ip ... ok
+test types::tests::test_scan_type_display ... ok
+test progress::tests::test_thread_safety ... ok
+test types::tests::test_timing_template_values ... ok
+test progress::tests::test_elapsed_time ... ok
+test progress::tests::test_eta ... ok
+test progress::tests::test_rate_calculation ... ok
+
+test result: ok. 103 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/integration.rs (target/debug/deps/integration-4c869ab9576611ef)
+
+running 7 tests
+test test_error_conversion_chain ... ok
+test test_port_range_comprehensive ... ok
+test test_scan_result_serialization ... ok
+test test_port_state_ordering_comprehensive ... ok
+test test_timing_template_consistency ... ok
+test test_scan_target_expansion ... ok
+test test_config_roundtrip ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/prtip_network-3f7be9bd2b9d5aea)
+
+running 35 tests
+test capture::linux::tests::test_close_unopened ... ok
+test capture::linux::tests::test_linux_capture_creation ... ok
+test capture::linux::tests::test_receive_packet_not_open ... ok
+test capture::linux::tests::test_send_packet_empty ... ok
+test capture::linux::tests::test_send_packet_not_open ... ok
+test capture::linux::tests::test_send_packet_too_large ... ok
+test interface::tests::test_network_interface_no_addresses ... ok
+test interface::tests::test_network_interface_source_ip_matching ... ok
+test packet_builder::tests::test_tcp_flags ... ok
+test packet_builder::tests::test_tcp_option_mss ... ok
+test packet_builder::tests::test_tcp_option_timestamp ... ok
+test packet_builder::tests::test_tcp_option_window_scale ... ok
+test packet_builder::tests::test_tcp_packet_builder_basic ... ok
+test packet_builder::tests::test_tcp_packet_builder_missing_fields ... ok
+test packet_builder::tests::test_tcp_packet_builder_with_options ... ok
+test packet_builder::tests::test_udp_packet_builder_basic ... ok
+test packet_builder::tests::test_udp_packet_builder_empty_payload ... ok
+test privilege::tests::test_check_privileges ... ok
+test privilege::tests::test_drop_privileges_invalid_user ... ok
+test privilege::tests::test_has_raw_socket_capability ... ok
+test protocol_payloads::tests::test_dns_query_format ... ok
+test protocol_payloads::tests::test_get_udp_payload ... ok
+test protocol_payloads::tests::test_netbios_query ... ok
+test protocol_payloads::tests::test_ntp_request_size ... ok
+test protocol_payloads::tests::test_rpc_null_call ... ok
+test protocol_payloads::tests::test_snmp_get_request ... ok
+test protocol_payloads::tests::test_ssdp_discover ... ok
+test capture::linux::tests::test_get_interfaces ... ok
+test interface::tests::test_enumerate_interfaces ... ok
+test capture::linux::tests::test_find_interface_loopback ... ok
+test interface::tests::test_find_interface_by_name_invalid ... ok
+test interface::tests::test_get_source_ip_for_localhost ... ok
+test interface::tests::test_find_interface_for_localhost ... ok
+test interface::tests::test_interface_properties ... ok
+test interface::tests::test_find_interface_by_name_loopback ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration.rs (target/debug/deps/integration-1e1e8079eaf642a8)
+
+running 6 tests
+test test_capture_open_close_cycle ... ok
+test test_check_privileges_function ... ok
+test test_create_capture ... ok
+test test_privilege_check ... ok
+test test_packet_operations_without_open ... ok
+test test_send_invalid_packets ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/prtip_scanner-e071d63f2d03606d)
+
+running 114 tests
+test adaptive_rate_limiter::tests::test_rate_limiter_stats ... ok
+test banner_grabber::tests::test_banner_grabber_creation ... ok
+test banner_grabber::tests::test_parse_ftp_banner ... ok
+test banner_grabber::tests::test_parse_http_banner ... ok
+test banner_grabber::tests::test_parse_smtp_banner ... ok
+test banner_grabber::tests::test_parse_ssh_banner ... ok
+test banner_grabber::tests::test_set_max_banner_size ... ok
+test banner_grabber::tests::test_set_timeout ... ok
+test concurrent_scanner::tests::test_concurrent_scanner_creation ... ok
+test concurrent_scanner::tests::test_scan_empty_ports ... ok
+test concurrent_scanner::tests::test_scan_empty_targets ... ok
+test connection_pool::tests::test_connection_pool_creation ... ok
+test concurrent_scanner::tests::test_scan_socket_closed_port ... ok
+test concurrent_scanner::tests::test_concurrent_batch_processing ... ok
+test connection_pool::tests::test_scan_batch_empty ... ok
+test discovery::tests::test_arp_ping_not_implemented ... ok
+test connection_pool::tests::test_scan_batch_localhost ... ok
+test discovery::tests::test_discover_hosts_empty ... ok
+test discovery::tests::test_discovery_engine_configuration ... ok
+test discovery::tests::test_discovery_method_display ... ok
+test adaptive_rate_limiter::tests::test_adaptive_limiter_basic ... ok
+test discovery::tests::test_discovery_engine_default ... ok
+test os_fingerprinter::tests::test_create_fingerprinter ... ok
+test os_fingerprinter::tests::test_fingerprinter_with_db ... ok
+test adaptive_rate_limiter::tests::test_zero_rate_handling ... ok
+test os_probe::tests::test_build_ecn_probe ... ok
+test os_probe::tests::test_build_seq_probe ... ok
+test os_probe::tests::test_build_u1_probe ... ok
+test os_probe::tests::test_build_unusual_probes ... ok
+test os_probe::tests::test_gcd ... ok
+test os_probe::tests::test_gcd_vec ... ok
+test os_probe::tests::test_ip_id_pattern_incremental ... ok
+test os_probe::tests::test_ip_id_pattern_random ... ok
+test os_probe::tests::test_ip_id_pattern_zero ... ok
+test rate_limiter::tests::test_clone ... ok
+test rate_limiter::tests::test_debug_format ... ok
+test rate_limiter::tests::test_default_limiter ... ok
+test adaptive_rate_limiter::tests::test_batch_size_adaptation ... ok
+test rate_limiter::tests::test_no_rate_limit ... ok
+test discovery::tests::test_tcp_ping_ports_coverage ... ok
+test connection_pool::tests::test_default_pool ... ok
+test discovery::tests::test_icmp_ping_not_implemented ... ok
+test connection_pool::tests::test_connection_pool_with_options ... ok
+test discovery::tests::test_tcp_syn_ping_localhost ... ok
+test discovery::tests::test_tcp_syn_ping_ipv6 ... ok
+test rate_limiter::tests::test_rate_limiter_properties ... ok
+test rate_limiter::tests::test_try_acquire_limited ... ok
+test concurrent_scanner::tests::test_scan_localhost ... ok
+test rate_limiter::tests::test_try_acquire_unlimited ... ok
+test connection_pool::tests::test_concurrent_scanning ... ok
+test scheduler::tests::test_create_scheduler ... ok
+test scheduler::tests::test_invalid_config ... ok
+test scheduler::tests::test_execute_scan_empty ... ok
+test scheduler::tests::test_get_scan_ports ... ok
+test scheduler::tests::test_execute_scan_ports ... ok
+test service_detector::tests::test_create_detector ... ok
+test service_detector::tests::test_intensity_clamping ... ok
+test stealth_scanner::tests::test_scan_type_flags ... ok
+test stealth_scanner::tests::test_scan_type_names ... ok
+test stealth_scanner::tests::test_stealth_scanner_creation ... ok
+test scheduler::tests::test_execute_scan_with_discovery ... ok
+test service_detector::tests::test_substitute_captures ... ok
+test scheduler::tests::test_execute_scan_localhost ... ok
+test scheduler::tests::test_results_stored_in_database ... ok
+test storage::tests::test_create_and_complete_scan ... ok
+test storage::tests::test_create_storage ... ok
+test scheduler::tests::test_scan_target_single_host ... ok
+test storage::tests::test_all_port_states ... ok
+test storage::tests::test_empty_batch ... ok
+test storage::tests::test_get_scan_results ... ok
+test storage::tests::test_multiple_scans ... ok
+test storage::tests::test_ipv6_storage ... ok
+test syn_scanner::tests::test_connection_state_creation ... ok
+test syn_scanner::tests::test_scanner_creation ... ok
+test storage::tests::test_result_ordering ... ok
+test tcp_connect::tests::test_empty_port_list ... ok
+test tcp_connect::tests::test_concurrent_scan_limiting ... ok
+test tcp_connect::tests::test_response_time_measurement ... ok
+test storage::tests::test_store_batch ... ok
+test storage::tests::test_store_result ... ok
+test tcp_connect::tests::test_scan_invalid_port_zero ... ok
+test discovery::tests::test_tcp_ping_timeout_behavior ... ok
+test tcp_connect::tests::test_scan_localhost ... ok
+test storage::tests::test_scan_completion_timing ... ok
+test tcp_connect::tests::test_scan_multiple_ports ... ok
+test tcp_connect::tests::test_scan_closed_port ... ok
+test tcp_connect::tests::test_scan_target_single_host ... ok
+test tcp_connect::tests::test_scan_ipv6_localhost ... ok
+test tcp_connect::tests::test_scanner_configuration ... ok
+test tcp_connect::tests::test_scanner_default ... ok
+test timing::tests::test_adaptive_rate_decrease ... ok
+test tcp_connect::tests::test_large_port_range ... ok
+test timing::tests::test_adaptive_rate_limiter_creation ... ok
+test timing::tests::test_jitter_application ... ok
+test timing::tests::test_rtt_stats ... ok
+test timing::tests::test_timing_config_from_template ... ok
+test udp_scanner::tests::test_udp_scanner_creation ... ok
+test scheduler::tests::test_multiple_targets ... ok
+test tcp_connect::tests::test_scan_timeout ... ok
+test storage::tests::test_large_batch ... ok
+test adaptive_rate_limiter::tests::test_high_rate_batching ... ok
+test rate_limiter::tests::test_high_rate_limit ... ok
+test adaptive_rate_limiter::tests::test_adaptive_limiter_rate_enforcement ... ok
+test connection_pool::tests::test_retry_mechanism ... ok
+test tcp_connect::tests::test_retry_mechanism ... ok
+test discovery::tests::test_tcp_syn_ping_unreachable ... ok
+test rate_limiter::tests::test_different_rates ... ok
+test rate_limiter::tests::test_concurrent_acquire ... ok
+test discovery::tests::test_discover_hosts_concurrency ... ok
+test timing::tests::test_adaptive_rate_increase ... ok
+test rate_limiter::tests::test_rate_limit_enforced ... ok
+test discovery::tests::test_discover_hosts_multiple ... ok
+test discovery::tests::test_discover_hosts_with_localhost ... ok
+test scheduler::tests::test_scan_nonexistent_host ... ok
+
+test result: ok. 114 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.02s
+
+     Running tests/integration_scanner.rs (target/debug/deps/integration_scanner-0dca31d2d515e183)
+
+running 14 tests
+test test_port_range_iteration ... ok
+test test_concurrent_scanning ... ok
+test test_end_to_end_tcp_scan ... ok
+test test_target_expansion ... ok
+test test_storage_integration ... ok
+test test_scheduler_with_port_range ... ok
+test test_storage_multiple_scans ... ok
+test test_scheduler_config_validation ... ok
+test test_batch_storage_performance ... ok
+test test_scanner_error_handling ... ok
+test test_scheduler_full_workflow ... ok
+test test_rate_limiter_integration ... ok
+test test_discovery_integration ... ok
+test test_scheduler_with_discovery ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.01s
+
+   Doc-tests prtip_cli
+
+running 1 test
+test crates/prtip-cli/src/banner.rs - banner::Banner::new (line 24) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+   Doc-tests prtip_core
+
+running 29 tests
+test crates/prtip-core/src/os_db.rs - os_db (line 14) - compile ... FAILED
+test crates/prtip-core/src/crypto.rs - crypto::BlackRock::shuffle (line 189) ... ok
+test crates/prtip-core/src/crypto.rs - crypto::BlackRock::new (line 124) ... ok
+test crates/prtip-core/src/crypto.rs - crypto::BlackRock::unshuffle (line 263) ... ok
+test crates/prtip-core/src/crypto.rs - crypto (line 41) ... ok
+test crates/prtip-core/src/crypto.rs - crypto::siphash24 (line 397) ... ok
+test crates/prtip-core/src/service_db.rs - service_db (line 15) - compile ... FAILED
+test crates/prtip-core/src/crypto.rs - crypto (line 22) ... ok
+test crates/prtip-core/src/progress.rs - progress::ScanProgress::elapsed (line 220) ... ok
+test crates/prtip-core/src/resource_limits.rs - resource_limits::set_file_descriptor_limit (line 83) - compile ... ok
+test crates/prtip-core/src/resource_limits.rs - resource_limits::adjust_and_get_limit (line 165) ... ok
+test crates/prtip-core/src/progress.rs - progress::ScanProgress::rate_per_second (line 237) ... ok
+test crates/prtip-core/src/errors.rs - errors::ScanError::from_io_error (line 129) ... ok
+test crates/prtip-core/src/progress.rs - progress::ScanProgress::eta (line 263) ... ok
+test crates/prtip-core/src/progress.rs - progress::ScanProgress::new (line 85) ... ok
+test crates/prtip-core/src/progress.rs - progress (line 8) ... ok
+test crates/prtip-core/src/errors.rs - errors::ScanError::user_message (line 172) ... ok
+test crates/prtip-core/src/progress.rs - progress::ScanProgress::percentage (line 295) ... ok
+test crates/prtip-core/src/lib.rs - (line 8) ... ok
+test crates/prtip-core/src/progress.rs - progress::ScanProgress::increment_error (line 159) ... ok
+test crates/prtip-core/src/errors.rs - errors (line 8) ... ok
+test crates/prtip-core/src/resource_limits.rs - resource_limits::calculate_optimal_batch_size (line 123) ... ok
+test crates/prtip-core/src/progress.rs - progress::ScanProgress::to_json (line 385) ... ok
+test crates/prtip-core/src/resource_limits.rs - resource_limits::get_file_descriptor_limit (line 49) ... ok
+test crates/prtip-core/src/resource_limits.rs - resource_limits::get_recommended_batch_size (line 203) ... ok
+test crates/prtip-core/src/types.rs - types::PortFilter::exclude (line 614) ... ok
+test crates/prtip-core/src/types.rs - types::PortFilter (line 547) ... ok
+test crates/prtip-core/src/types.rs - types::PortFilter::include (line 585) ... ok
+test crates/prtip-core/src/types.rs - types::PortFilter::filter_ports (line 671) ... ok
+
+failures:
+
+---- crates/prtip-core/src/os_db.rs - os_db (line 14) stdout ----
+error: couldn't read `crates/prtip-core/src/os-db-subset.txt`: No such file or directory (os error 2)
+ --> crates/prtip-core/src/os_db.rs:18:36
+  |
+7 | let db = OsFingerprintDb::from_str(include_str!("os-db-subset.txt"))?;
+  |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find value `probe_results` in this scope
+ --> crates/prtip-core/src/os_db.rs:19:37
+  |
+8 | let matches = db.match_fingerprint(&probe_results);
+  |                                     ^^^^^^^^^^^^^ not found in this scope
+
+error: aborting due to 2 previous errors
+
+For more information about this error, try `rustc --explain E0425`.
+Couldn't compile the test.
+---- crates/prtip-core/src/service_db.rs - service_db (line 15) stdout ----
+error: couldn't read `crates/prtip-core/src/service-probes-subset.txt`: No such file or directory (os error 2)
+ --> crates/prtip-core/src/service_db.rs:19:35
+  |
+7 | let db = ServiceProbeDb::from_str(include_str!("service-probes-subset.txt"))?;
+  |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 1 previous error
+
+Couldn't compile the test.
+
+failures:
+    crates/prtip-core/src/os_db.rs - os_db (line 14)
+    crates/prtip-core/src/service_db.rs - service_db (line 15)
+
+test result: FAILED. 27 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.24s
+
+error: doctest failed, to rerun pass `-p prtip-core --doc`

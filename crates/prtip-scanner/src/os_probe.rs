@@ -28,8 +28,8 @@
 use prtip_core::{Error, ProbeResults};
 use prtip_network::packet_builder::{TcpFlags, TcpOption, TcpPacketBuilder, UdpPacketBuilder};
 use std::collections::HashMap;
-use std::net::{IpAddr, Ipv4Addr};
-use std::time::{Duration, Instant, SystemTime};
+use std::net::Ipv4Addr;
+use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 /// OS probe engine for sending 16-probe sequence
@@ -100,7 +100,7 @@ impl OsProbeEngine {
                 sleep(Duration::from_millis(100)).await;
             }
 
-            let probe = self.build_seq_probe(i)?;
+            let _probe = self.build_seq_probe(i)?;
             // TODO: Send probe and capture response
             // For now, create placeholder result
             seq_results.push(TcpProbeResult {
@@ -119,26 +119,26 @@ impl OsProbeEngine {
         results.seq = Some(self.analyze_seq_results(&seq_results));
 
         // IE: 2 ICMP echo requests
-        let ie1_probe = self.build_icmp_echo_probe(0, 0)?;
-        let ie2_probe = self.build_icmp_echo_probe(4, 9)?;
+        let _ie1_probe = self.build_icmp_echo_probe(0, 0)?;
+        let _ie2_probe = self.build_icmp_echo_probe(4, 9)?;
         // TODO: Send and capture
 
         results.ie = Some(HashMap::new());
 
         // ECN: Explicit Congestion Notification probe
-        let ecn_probe = self.build_ecn_probe()?;
+        let _ecn_probe = self.build_ecn_probe()?;
         // TODO: Send and capture
 
         results.ecn = Some(HashMap::new());
 
         // T2-T7: Unusual TCP probes to various ports
-        let t2_probe = self.build_t2_probe()?; // NULL flags to open port
-        let t3_probe = self.build_t3_probe()?; // SYN+FIN+URG+PSH to open port
-        let t4_probe = self.build_t4_probe()?; // ACK to open port
-        let t5_probe = self.build_t5_probe()?; // SYN to closed port
-        let t6_probe = self.build_t6_probe()?; // ACK to closed port
-        let t7_probe = self.build_t7_probe()?; // FIN+PSH+URG to closed port
-                                               // TODO: Send and capture
+        let _t2_probe = self.build_t2_probe()?; // NULL flags to open port
+        let _t3_probe = self.build_t3_probe()?; // SYN+FIN+URG+PSH to open port
+        let _t4_probe = self.build_t4_probe()?; // ACK to open port
+        let _t5_probe = self.build_t5_probe()?; // SYN to closed port
+        let _t6_probe = self.build_t6_probe()?; // ACK to closed port
+        let _t7_probe = self.build_t7_probe()?; // FIN+PSH+URG to closed port
+                                                // TODO: Send and capture
 
         results.t2 = Some(HashMap::new());
         results.t3 = Some(HashMap::new());
@@ -148,7 +148,7 @@ impl OsProbeEngine {
         results.t7 = Some(HashMap::new());
 
         // U1: UDP probe to closed port
-        let u1_probe = self.build_u1_probe()?;
+        let _u1_probe = self.build_u1_probe()?;
         // TODO: Send and capture
 
         results.u1 = Some(HashMap::new());

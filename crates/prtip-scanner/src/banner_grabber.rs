@@ -89,7 +89,7 @@ impl BannerGrabber {
     }
 
     /// Grab HTTPS banner (would require TLS - placeholder)
-    pub async fn grab_https_banner(&self, target: SocketAddr) -> Result<String, Error> {
+    pub async fn grab_https_banner(&self, _target: SocketAddr) -> Result<String, Error> {
         // TODO: Implement TLS handshake
         // For now, return placeholder
         Ok("HTTPS (TLS required)".to_string())

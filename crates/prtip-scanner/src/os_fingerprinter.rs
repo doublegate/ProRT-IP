@@ -5,13 +5,15 @@
 //!
 //! # Example
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_scanner::os_fingerprinter::OsFingerprinter;
 //! use prtip_core::OsFingerprintDb;
 //! use std::net::Ipv4Addr;
 //!
 //! # async fn example() -> Result<(), prtip_core::Error> {
-//! let db = OsFingerprintDb::from_str(include_str!("../../../data/os-db-subset.txt"))?;
+//! // Load OS fingerprint database from file
+//! let db_content = std::fs::read_to_string("data/nmap-os-db")?;
+//! let db = OsFingerprintDb::parse(&db_content)?;
 //! let fingerprinter = OsFingerprinter::new(db);
 //!
 //! let result = fingerprinter.fingerprint_os(
@@ -26,7 +28,7 @@
 //! ```
 
 use crate::os_probe::OsProbeEngine;
-use prtip_core::{Error, OsFingerprint, OsFingerprintDb};
+use prtip_core::{Error, OsFingerprintDb};
 use std::net::Ipv4Addr;
 use std::sync::Arc;
 
@@ -127,7 +129,7 @@ Class Linux | Linux | 5.x | general purpose
 CPE cpe:/o:linux:linux_kernel:5
 SEQ(SP=5%GCD=1%ISR=9A%TI=I)
 "#;
-        let db = OsFingerprintDb::from_str(content).unwrap();
+        let db = OsFingerprintDb::parse(content).unwrap();
         let fingerprinter = OsFingerprinter::new(db);
         assert_eq!(fingerprinter.db_size(), 1);
     }

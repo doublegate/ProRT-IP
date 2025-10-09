@@ -49,7 +49,6 @@ use tokio::time::timeout;
 use tracing::{debug, trace, warn};
 
 /// Connection state for tracking SYN scan responses
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 struct ConnectionState {
     /// Target IP address
@@ -138,6 +137,11 @@ impl SynScanner {
         for retry in 0..=max_retries {
             let wait_duration = Duration::from_millis(timeout_ms);
 
+            // Update retry count in connection state
+            if let Some(conn) = self.connections.lock().get_mut(&(target, port, src_port)) {
+                conn.retries = retry as u8;
+            }
+
             match timeout(
                 wait_duration,
                 self.wait_for_response(target, port, src_port),
@@ -146,14 +150,20 @@ impl SynScanner {
             {
                 Ok(Ok(state)) => {
                     // Cleanup connection tracking
-                    self.connections.lock().remove(&(target, port, src_port));
+                    let conn_state = self.connections.lock().remove(&(target, port, src_port));
 
                     // Send RST to close connection if it was open
                     if state == PortState::Open {
                         let _ = self.send_rst(target, port, src_port, sequence + 1).await;
                     }
 
-                    let response_time = start_time.elapsed();
+                    // Calculate response time from tracked sent_time
+                    let response_time = if let Some(conn) = conn_state {
+                        conn.sent_time.elapsed()
+                    } else {
+                        start_time.elapsed()
+                    };
+
                     return Ok(ScanResult::new(IpAddr::V4(target), port, state)
                         .with_response_time(response_time));
                 }
@@ -164,12 +174,28 @@ impl SynScanner {
                 Err(_) => {
                     // Timeout - retry if we haven't exceeded max retries
                     if retry < max_retries {
+                        // Get connection state for detailed logging
+                        let conn_info =
+                            self.connections
+                                .lock()
+                                .get(&(target, port, src_port))
+                                .map(|conn| {
+                                    format!(
+                                        "{}:{} -> src_port={}, seq={:#x}, elapsed={:?}, retries={}",
+                                        conn.target_ip,
+                                        conn.target_port,
+                                        conn.source_port,
+                                        conn.sequence,
+                                        conn.sent_time.elapsed(),
+                                        conn.retries
+                                    )
+                                });
+
                         debug!(
-                            "Timeout waiting for {}:{}, retry {}/{}",
-                            target,
-                            port,
+                            "Timeout waiting for connection, retry {}/{}: {}",
                             retry + 1,
-                            max_retries
+                            max_retries,
+                            conn_info.unwrap_or_else(|| format!("{}:{} (no state)", target, port))
                         );
 
                         // Exponential backoff
@@ -335,6 +361,20 @@ impl SynScanner {
         // Check if it matches our connection
         if tcp_packet.get_source() != port || tcp_packet.get_destination() != src_port {
             return Ok(None);
+        }
+
+        // Validate sequence number against stored connection state
+        if let Some(conn) = self.connections.lock().get(&(target, port, src_port)) {
+            let ack_num = tcp_packet.get_acknowledgement();
+            // For SYN/ACK, the ACK should be our sequence + 1
+            if ack_num != conn.sequence.wrapping_add(1) {
+                trace!(
+                    "Sequence mismatch: expected {}, got {}",
+                    conn.sequence.wrapping_add(1),
+                    ack_num
+                );
+                return Ok(None);
+            }
         }
 
         // Determine state based on flags

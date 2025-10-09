@@ -45,7 +45,11 @@ async fn run() -> Result<()> {
     // Print banner unless quiet mode or piped output
     if !args.quiet && atty::is(atty::Stream::Stdout) {
         let banner = Banner::new(env!("CARGO_PKG_VERSION"));
-        banner.print();
+        if args.compact_banner {
+            banner.print_compact();
+        } else {
+            banner.print();
+        }
     }
 
     // Handle --interface-list flag

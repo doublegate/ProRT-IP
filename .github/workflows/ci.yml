@@ -89,8 +89,8 @@ jobs:
           curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
 
-          # Copy SDK files to Windows SDK location where linker can find them
-          Copy-Item -Path "npcap-sdk\Lib\x64\*.lib" -Destination "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\um\x64\" -Force
+          # Add SDK lib directory to LIB environment variable for subsequent steps
+          echo "LIB=$PWD\npcap-sdk\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2

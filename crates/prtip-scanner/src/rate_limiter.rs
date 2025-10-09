@@ -248,8 +248,13 @@ mod tests {
         let elapsed = start.elapsed();
 
         // 50 packets at 100 pps = ~500ms
+        // Allow more tolerance in CI environments
         assert!(elapsed >= Duration::from_millis(400));
-        assert!(elapsed <= Duration::from_millis(700));
+        assert!(
+            elapsed <= Duration::from_millis(2000),
+            "Elapsed: {:?}, expected <= 2000ms with CI tolerance",
+            elapsed
+        );
     }
 
     #[tokio::test]

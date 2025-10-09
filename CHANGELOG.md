@@ -9,6 +9,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed - 2025-10-08
 
+#### CLI Banner: Cyber-Punk Graffiti Redesign (Cycle 7)
+
+**Objective:** Replace RustScan-style banner with aggressive cyber-punk graffiti aesthetic featuring multi-color block characters
+
+**Banner Redesign** (`crates/prtip-cli/src/banner.rs` - 192 lines):
+- **Cyber-punk multi-color graffiti ASCII art** with heavy block characters (██, ╔, ╗, ║, ═)
+- **Multi-color gradient:** cyan → magenta → red → yellow → green (NOT monochrome)
+- **Text:** "ProRT-IP WarScan" displayed with aggressive block letter style
+- **NOT bubbly/rounded** - aggressive and edgy cyber-punk aesthetic
+- **Cyber-punk info section** with tech separators (━, ▸, │, ⚡)
+
+**ASCII Art Design:**
+```
+ ██████╗ ██████╗  ██████╗ ██████╗ ████████╗     ██╗██████╗  (bright cyan)
+ ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝     ██║██╔══██╗ (bright magenta)
+ ██████╔╝██████╔╝██║   ██║██████╔╝   ██║  █████╗██║██████╔╝ (bright red)
+ ██╔═══╝ ██╔══██╗██║   ██║██╔══██╗   ██║  ╚════╝██║██╔═══╝  (bright yellow)
+ ██║     ██║  ██║╚██████╔╝██║  ██║   ██║        ██║██║      (bright green)
+ ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝        ╚═╝╚═╝      (white dimmed)
+
+ ██╗    ██╗ █████╗ ██████╗ ███████╗ ██████╗ █████╗ ███╗   ██╗ (bright cyan)
+ ██║    ██║██╔══██╗██╔══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║ (bright magenta)
+ ██║ █╗ ██║███████║██████╔╝███████╗██║     ███████║██╔██╗ ██║ (bright red)
+ ██║███╗██║██╔══██║██╔══██╗╚════██║██║     ██╔══██║██║╚██╗██║ (bright yellow)
+ ╚███╔███╔╝██║  ██║██║  ██║███████║╚██████╗██║  ██║██║ ╚████║ (bright green)
+  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝ (white dimmed)
+```
+
+**Color Scheme:**
+- **Bright Cyan:** Header lines, separators, tech aesthetic
+- **Bright Magenta:** Secondary lines, neon effect
+- **Bright Red:** Aggressive lines, warning aesthetic
+- **Bright Yellow:** Alert lines, caution aesthetic
+- **Bright Green:** Success lines, matrix/hacker aesthetic
+- **White/Dimmed:** Separators and structure
+
+**Information Section:**
+- Cyber-punk separators: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` (bright cyan)
+- Tech symbols: `▸` (arrows), `│` (pipes), `⚡` (lightning)
+- Multi-colored info: version (green), GitHub (blue/underline), tests (green), license (yellow)
+- Modern tagline: "⚡ The Modern Network Scanner & War Dialer"
+
+**Compact Banner:**
+- Format: `⟨ProRT-IP⟩ v0.1.0 ─ Network Scanner`
+- Uses cyber-punk brackets and separators
+
+**Dependencies:**
+- Removed `colorful` crate (gradient not needed for cyber-punk style)
+- Using only `colored` crate for multi-color support
+- Updated workspace and prtip-cli Cargo.toml
+
+**Tests Updated:**
+- `test_ascii_art_multicolor()` - validates ANSI color codes with force override
+- `test_ascii_art_contains_blocks()` - validates block characters (█) and box drawing (╔, ╗, ║, ═)
+- `test_ascii_art_cyber_punk_style()` - ensures NOT RustScan style, validates block characters
+- `test_ascii_art_multiline()` - validates 12+ lines for cyber-punk design
+
+**Style Characteristics:**
+- Aggressive and edgy (NOT soft/bubbly)
+- Modern cyber-punk/graffiti aesthetic
+- Heavy use of block characters (██) for solid appearance
+- Technical box drawing characters (╔, ╗, ║, ═)
+- Multi-color for maximum visual impact
+- Professional yet aggressive presentation
+
 #### CLI Banner: RustScan-Style ASCII Art (Cycle 6)
 
 **Objective:** Replace Unicode banner with RustScan-style ASCII art for better terminal compatibility

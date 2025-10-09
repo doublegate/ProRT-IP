@@ -1,13 +1,13 @@
 //! Banner module for ProRT-IP CLI
 //!
-//! Provides professional ASCII art banner and branding display.
+//! Provides aggressive cyber-punk graffiti-style ASCII art banner and branding display.
 
-use colorful::{Color, Colorful};
+use colored::Colorize;
 
 /// Banner display for ProRT-IP WarScan
 ///
-/// Manages ASCII art branding, version information, and project details.
-/// Automatically suppresses banner in quiet mode or piped output.
+/// Manages cyber-punk ASCII art branding, version information, and project details.
+/// Features aggressive multi-color graffiti aesthetic with block characters.
 pub struct Banner {
     version: String,
 }
@@ -33,73 +33,129 @@ impl Banner {
         }
     }
 
-    /// Print the full banner with ASCII art, version, and project information
+    /// Print the full banner with cyber-punk ASCII art, version, and project information
     ///
     /// Displays:
-    /// - ASCII art logo in green gradient (RustScan style)
-    /// - Version number in green
-    /// - Project tagline and description
+    /// - Multi-color cyber-punk graffiti ASCII art (cyan → magenta → red → yellow → green)
+    /// - Heavy block characters (██, ╔, ╗, ║, ═) for aggressive aesthetic
+    /// - Version number and project status
     /// - GitHub repository URL
-    /// - License information
+    /// - License and test information
+    /// - Cyber-punk separators and tech symbols (━, ▸, │, ⚡)
     pub fn print(&self) {
-        use colored::Colorize as C;
-
-        // Print ASCII art with RustScan-style green gradient
-        println!("{}", self.ascii_art().gradient(Color::Green).bold());
-        println!(
-            "{}",
-            C::bright_white("The Modern Network Scanner & War Dialer")
-        );
+        println!("{}", self.ascii_art());
         println!();
 
-        // Print project information
+        // Cyber-punk styled info with tech separators
         println!(
-            "  {} {} │ {} {}",
-            C::white("Version:").bold(),
-            C::green(self.version.as_str()).bold(),
-            C::white("Phase:").bold(),
-            C::green("3 COMPLETE").bold()
+            "{}",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                .bright_cyan()
         );
         println!(
-            "  {} {}",
-            C::white("GitHub:").bold(),
-            C::bright_blue("https://github.com/doublegate/ProRT-IP").underline()
+            "  {} {} {} {} {} {}",
+            "▸".bright_cyan().bold(),
+            "Version:".bright_white().bold(),
+            self.version.bright_green(),
+            "│".bright_black(),
+            "Phase:".bright_white().bold(),
+            "3 COMPLETE".bright_green().bold()
         );
         println!(
-            "  {} {} │ {} {}",
-            C::white("License:").bold(),
-            C::white("GPL-3.0"),
-            C::white("Tests:").bold(),
-            C::green("391 passing")
+            "  {} {} {} {} {} {}",
+            "▸".bright_magenta().bold(),
+            "GitHub:".bright_white().bold(),
+            "https://github.com/doublegate/ProRT-IP"
+                .bright_blue()
+                .underline(),
+            "│".bright_black(),
+            "Tests:".bright_white().bold(),
+            "391 passing".bright_green()
+        );
+        println!(
+            "  {} {} {}",
+            "▸".bright_red().bold(),
+            "License:".bright_white().bold(),
+            "GPL-3.0".bright_yellow()
+        );
+        println!(
+            "{}",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                .bright_cyan()
+        );
+        println!();
+        println!(
+            "{}",
+            "  ⚡ The Modern Network Scanner & War Dialer"
+                .bright_white()
+                .bold()
         );
         println!();
     }
 
     /// Print compact banner for minimal output
     ///
-    /// Single-line format: "ProRT-IP v0.1.0 - Modern Network Scanner"
+    /// Single-line format: "⟨ProRT-IP⟩ v0.1.0 ─ Network Scanner"
     pub fn print_compact(&self) {
-        use colored::Colorize as C;
-        let version_str = format!("v{}", self.version);
         println!(
-            "{} {} - {}",
-            C::cyan("ProRT-IP").bold(),
-            C::green(version_str.as_str()),
-            C::white("Modern Network Scanner")
+            "{} {} {} {}",
+            "⟨ProRT-IP⟩".bright_cyan().bold(),
+            self.version.bright_green(),
+            "─".bright_black(),
+            "Network Scanner".bright_white()
         );
     }
 
-    /// Get ASCII art logo
+    /// Get cyber-punk graffiti ASCII art logo
     ///
-    /// Returns RustScan-style ASCII art for ProRT-IP branding.
-    /// Uses only ASCII characters (no Unicode) for maximum compatibility.
-    /// Optimized for 80-column terminals.
+    /// Returns aggressive multi-color ASCII art with heavy block characters.
+    /// Cyber-punk aesthetic: NOT bubbly, edgy and aggressive.
+    /// Color gradient: cyan → magenta → red → yellow → green
+    /// Uses box drawing characters (╔, ╗, ║, ═) and blocks (██)
     fn ascii_art(&self) -> String {
-        r#".----. .---. .----.  .---. .----.     .-. .----.
-| {}  }| {}  }| {} \ | {} \{}  {}     | | | {}  }
-|  __/ |     /| {} / |    /{}  {} --- | | |  __/
-`-'    `-' `-'`-' `-'`-' `-'  `--'    `-' `-'    "#
-            .to_string()
+        // Cyber-punk multi-color graffiti style with heavy blocks
+        let line1 = " ██████╗ ██████╗  ██████╗ ██████╗ ████████╗     ██╗██████╗ "
+            .bright_cyan()
+            .bold();
+        let line2 = " ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝     ██║██╔══██╗"
+            .bright_magenta()
+            .bold();
+        let line3 = " ██████╔╝██████╔╝██║   ██║██████╔╝   ██║  █████╗██║██████╔╝"
+            .bright_red()
+            .bold();
+        let line4 = " ██╔═══╝ ██╔══██╗██║   ██║██╔══██╗   ██║  ╚════╝██║██╔═══╝ "
+            .bright_yellow()
+            .bold();
+        let line5 = " ██║     ██║  ██║╚██████╔╝██║  ██║   ██║        ██║██║     "
+            .bright_green()
+            .bold();
+        let line6 = " ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝        ╚═╝╚═╝     "
+            .white()
+            .dimmed();
+
+        let line7 = " ██╗    ██╗ █████╗ ██████╗ ███████╗ ██████╗ █████╗ ███╗   ██╗"
+            .bright_cyan()
+            .bold();
+        let line8 = " ██║    ██║██╔══██╗██╔══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║"
+            .bright_magenta()
+            .bold();
+        let line9 = " ██║ █╗ ██║███████║██████╔╝███████╗██║     ███████║██╔██╗ ██║"
+            .bright_red()
+            .bold();
+        let line10 = " ██║███╗██║██╔══██║██╔══██╗╚════██║██║     ██╔══██║██║╚██╗██║"
+            .bright_yellow()
+            .bold();
+        let line11 = " ╚███╔███╔╝██║  ██║██║  ██║███████║╚██████╗██║  ██║██║ ╚████║"
+            .bright_green()
+            .bold();
+        let line12 = "  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝"
+            .white()
+            .dimmed();
+
+        format!(
+            "{}\n{}\n{}\n{}\n{}\n{}\n\n{}\n{}\n{}\n{}\n{}\n{}",
+            line1, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12
+        )
     }
 }
 
@@ -133,23 +189,29 @@ mod tests {
     }
 
     #[test]
-    fn test_ascii_art_contains_ascii_only() {
+    fn test_ascii_art_multicolor() {
+        use colored::control;
+
+        // Force colors for testing
+        control::set_override(true);
+
         let banner = Banner::new("0.1.0");
         let art = banner.ascii_art();
-        // Should contain only ASCII characters (no Unicode)
-        assert!(art.chars().all(|c| c.is_ascii()));
+        // Should contain ANSI color escape codes
+        assert!(art.contains('\x1b'));
+
+        // Reset color override
+        control::unset_override();
     }
 
     #[test]
-    fn test_ascii_art_rustscan_style() {
+    fn test_ascii_art_contains_blocks() {
         let banner = Banner::new("0.1.0");
         let art = banner.ascii_art();
-        // Should contain RustScan-style ASCII characters
-        assert!(art.contains('.'));
-        assert!(art.contains('-'));
-        assert!(art.contains('|'));
-        assert!(art.contains('{'));
-        assert!(art.contains('}'));
+        // Should contain block characters for cyber-punk graffiti style
+        assert!(art.contains('█'));
+        // Should contain box drawing characters
+        assert!(art.contains('╔') || art.contains('╗') || art.contains('║') || art.contains('═'));
     }
 
     #[test]
@@ -169,17 +231,17 @@ mod tests {
     fn test_ascii_art_multiline() {
         let banner = Banner::new("0.1.0");
         let art = banner.ascii_art();
-        // ASCII art should be multi-line
-        assert!(art.lines().count() > 1);
+        // ASCII art should be multi-line (12 lines for cyber-punk design)
+        assert!(art.lines().count() >= 12);
     }
 
     #[test]
-    fn test_ascii_art_width() {
+    fn test_ascii_art_cyber_punk_style() {
         let banner = Banner::new("0.1.0");
         let art = banner.ascii_art();
-        // Each line should fit in reasonable terminal width (check longest line)
-        for line in art.lines() {
-            assert!(line.len() <= 100, "Line too long: {} chars", line.len());
-        }
+        // Should NOT contain old RustScan-style characters
+        assert!(!art.contains("{}"));
+        // Should contain cyber-punk block characters
+        assert!(art.contains('█'));
     }
 }

@@ -86,7 +86,7 @@ impl Banner {
         println!();
         println!(
             "{}",
-            "  ⚡ The Modern Network Scanner & War Dialer"
+            "  ⚡ Protocol/Port Real-Time War Scanner"
                 .bright_white()
                 .bold()
         );

@@ -1,12 +1,10 @@
 # ProRT-IP WarScan
 
-## Modern Network Scanner and War Dialer for IP Networks
+## Protocol/Port Real-Time War Scanner for IP Networks
 
 <div align="center">
   <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="600">
 </div>
-
-<br>
 
 [![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Release](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml)
@@ -21,8 +19,6 @@
 <div align="center">
   <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="800">
 </div>
-
-<br>
 
 ## Overview
 
@@ -134,7 +130,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
   - Banner grabbing with protocol-specific handlers
   - Database parsers for 2,000+ OS signatures
 - ✅ CI/CD Optimization (2025-10-09)
-  - Multi-platform builds (9 targets: Linux x86/ARM, Windows, macOS Intel/ARM, FreeBSD)
+  - Multi-platform builds (8 targets: Linux x86/ARM, Windows, macOS Intel/ARM, FreeBSD)
   - Smart release management (preserve notes, manual execution)
   - 100% CI success rate (7/7 jobs passing)
   - Cross-compilation infrastructure (cross-rs)
@@ -183,7 +179,7 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | [Security](docs/08-SECURITY.md) | Security implementation guide |
 | [FAQ](docs/09-FAQ.md) | Frequently asked questions |
 | [Project Status](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
-| [Platform Support](docs/13-PLATFORM-SUPPORT.md) | Comprehensive platform compatibility guide |
+| [Platform Support](docs/15-PLATFORM-SUPPORT.md) | Comprehensive platform compatibility guide |
 
 **Quick Start:** See [Documentation README](docs/README.md) for navigation guide.
 
@@ -355,7 +351,7 @@ ProRT-IP provides pre-built binaries for 5 production-ready platforms with full 
 
 **Platform Coverage:** 5 production platforms covering ~95% of target user base
 
-**Full Details:** See [Platform Support Guide](docs/13-PLATFORM-SUPPORT.md) for installation instructions, requirements, and known issues.
+**Full Details:** See [Platform Support Guide](docs/15-PLATFORM-SUPPORT.md) for installation instructions, requirements, and known issues.
 
 ---
 
@@ -439,7 +435,7 @@ cross build --release --target aarch64-unknown-linux-gnu
 cross build --release --target x86_64-unknown-freebsd
 ```
 
-**See [Dev Setup](docs/03-DEV-SETUP.md) and [Platform Support](docs/13-PLATFORM-SUPPORT.md) for detailed platform-specific instructions.**
+**See [Dev Setup](docs/03-DEV-SETUP.md) and [Platform Support](docs/15-PLATFORM-SUPPORT.md) for detailed platform-specific instructions.**
 
 ---
 
@@ -629,8 +625,8 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ---
 
-**Current Status**: ✅ Phase 3 Complete | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | 🚀 Phase 4 Ready | 551 Tests Passing | 7/7 CI Jobs Passing | 5/9 Platforms Production-Ready | 10,000+ Lines Production Code
+**Current Status**: ✅ Phase 3 Complete | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | 🚀 Phase 4 Ready | 551 Tests Passing | 7/7 CI Jobs Passing | 5/8 Platforms Production-Ready | 10,000+ Lines Production Code
 
 **Last Updated**: 2025-10-09
 
-For the latest project status, see [Project Status](docs/10-PROJECT-STATUS.md), [Platform Support](docs/13-PLATFORM-SUPPORT.md), and [Changelog](CHANGELOG.md).
+For the latest project status, see [Project Status](docs/10-PROJECT-STATUS.md), [Platform Support](docs/15-PLATFORM-SUPPORT.md), and [Changelog](CHANGELOG.md).

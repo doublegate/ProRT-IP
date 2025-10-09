@@ -78,16 +78,39 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install libpcap pkg-config
 
-      - name: Install Npcap SDK (Windows)
+      - name: Install Npcap SDK and Runtime DLLs (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           # Download and extract Npcap SDK (contains Packet.lib for development)
-          # Note: Not installing runtime (installer hangs in CI), so some tests may fail
           curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
 
+          # Download Npcap installer and extract DLLs without running (avoids hang)
+          curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
+
+          # Extract installer using 7zip (pre-installed on GitHub Actions)
+          7z x npcap-installer.exe -o"npcap-runtime" -y
+
+          # Create runtime directory and copy DLLs
+          New-Item -ItemType Directory -Force -Path "npcap-dlls"
+
+          # Find and copy the DLLs (they might be in different subdirectories)
+          Get-ChildItem -Path "npcap-runtime" -Recurse -Filter "*.dll" | Where-Object {
+            $_.Name -eq "Packet.dll" -or $_.Name -eq "wpcap.dll"
+          } | ForEach-Object {
+            Copy-Item $_.FullName -Destination "npcap-dlls\" -Force
+            Write-Host "Copied $($_.Name) from $($_.DirectoryName)"
+          }
+
           # Add SDK lib directory to LIB environment variable for linking
           echo "LIB=$PWD\npcap-sdk\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
+
+          # Add DLL directory to PATH for runtime
+          echo "PATH=$PWD\npcap-dlls;$env:PATH" >> $env:GITHUB_ENV
+
+          # List what we extracted to verify
+          Write-Host "Extracted DLLs:"
+          Get-ChildItem "npcap-dlls" -ErrorAction SilentlyContinue
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
@@ -99,9 +122,6 @@ jobs:
 
       - name: Run tests
         run: cargo test --workspace --locked --verbose
-        env:
-          # Skip network tests on Windows (requires Npcap installation)
-          SKIP_NETWORK_TESTS: ${{ matrix.os == 'windows-latest' && '1' || '0' }}
 
       - name: Build release
         run: cargo build --release --workspace --locked

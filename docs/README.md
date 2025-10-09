@@ -27,6 +27,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 | **[09-FAQ.md](09-FAQ.md)** | Frequently asked questions and troubleshooting guide | End users, developers |
 | **[10-PROJECT-STATUS.md](10-PROJECT-STATUS.md)** | Current status, task tracking, and milestones | Project managers, stakeholders |
 | **[12-IMPLEMENTATIONS_ADDED.md](12-IMPLEMENTATIONS_ADDED.md)** | Detailed implementation log for all phases and enhancement cycles | Developers, maintainers |
+| **[13-PLATFORM-SUPPORT.md](13-PLATFORM-SUPPORT.md)** | Comprehensive platform support guide with installation instructions | End users, system administrators |
 | **[13-GITHUB-RELEASE.md](13-GITHUB-RELEASE.md)** | Official v0.3.0 release notes and distribution guide | End users, stakeholders |
 | **[14-DOCUMENTATION_AUDIT.md](14-DOCUMENTATION_AUDIT.md)** | Documentation audit history and consistency tracking | Documentation maintainers |
 

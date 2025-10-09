@@ -74,6 +74,7 @@ flamegraph.svg
 .#*
 \#*\#
 Session.vim
+*_output.txt
 
 # Database files
 *.db

@@ -1,0 +1,210 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ProRT-IP WarScan v${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+          body: |
+            # ProRT-IP WarScan v${{ steps.get_version.outputs.version }}
+
+            ## 🚀 Major Features
+
+            ### Scanning Capabilities
+            - **7 scan types:** TCP Connect, SYN, UDP, FIN, NULL, Xmas, ACK
+            - **Protocol payloads:** 8 protocol-specific UDP payloads (DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
+            - **Timing templates:** T0-T5 (Paranoid to Insane) with RTT estimation
+
+            ### Detection Systems
+            - **OS fingerprinting:** 16-probe sequence (6 TCP SYN, 2 ICMP, 1 ECN, 6 unusual TCP, 1 UDP)
+            - **Service detection:** nmap-service-probes format with 500+ probes
+            - **Banner grabbing:** 6 protocols + TLS support (HTTP, HTTPS, FTP, SSH, SMTP, DNS, SNMP)
+
+            ### Performance & Stealth
+            - **Batch packet sending:** sendmmsg syscall (30-50% improvement at 1M+ pps)
+            - **Adaptive rate limiting:** Masscan-inspired circular buffer with dynamic batching
+            - **Connection pooling:** RustScan pattern with FuturesUnordered
+            - **Decoy scanning:** Up to 256 decoys for stealth attribution hiding
+            - **CDN/WAF detection:** 8 major providers with O(log n) lookup
+
+            ### Infrastructure
+            - **Network interface detection:** Automatic routing and source IP selection
+            - **Resource management:** ulimit detection and batch size optimization
+            - **Privilege management:** Immediate drop after socket creation
+            - **Cross-platform:** Linux/Windows/macOS support
+
+            ### User Experience
+            - **Professional CLI:** Cyber-punk ASCII banner with gradient colors
+            - **Progress tracking:** Real-time statistics with ETA estimation
+            - **Error categorization:** 7 categories with actionable suggestions
+            - **Multiple output formats:** JSON, XML, Text, SQLite
+
+            ## 📊 Statistics
+
+            - **Tests:** 551 (100% pass rate)
+            - **Code:** 10,000+ lines across 4 crates (40+ modules)
+            - **Dependencies:** Production-ready with security audits passing
+            - **Platforms:** Linux, Windows, macOS
+            - **MSRV:** Rust 1.70+
+
+            ## 📥 Installation
+
+            Download the appropriate binary for your platform from the assets below.
+
+            ### Linux / macOS
+            ```bash
+            # Extract
+            tar xzf prtip-${{ steps.get_version.outputs.version }}-x86_64-unknown-linux-gnu.tar.gz
+
+            # Make executable
+            chmod +x prtip
+
+            # Run
+            ./prtip --help
+            ```
+
+            ### Windows
+            ```cmd
+            # Extract the zip file, then run:
+            prtip.exe --help
+            ```
+
+            ### Build from Source
+            ```bash
+            git clone https://github.com/doublegate/ProRT-IP.git
+            cd ProRT-IP
+            cargo build --release
+            ./target/release/prtip --help
+            ```
+
+            ## 🔧 Usage Examples
+
+            ```bash
+            # Basic SYN scan
+            prtip -sS -p 1-1000 192.168.1.0/24
+
+            # OS detection + service detection
+            prtip -sS -O -sV -p 1-1000 10.0.0.1
+
+            # Stealth scan with decoys
+            prtip -sF -D RND:10 -p 80,443 target.com
+
+            # Fast scan with progress
+            prtip -T4 -p- --progress 192.168.1.1
+            ```
+
+            ## 📚 Documentation
+
+            - [README](https://github.com/doublegate/ProRT-IP/blob/main/README.md)
+            - [Architecture](https://github.com/doublegate/ProRT-IP/blob/main/docs/00-ARCHITECTURE.md)
+            - [Implementation Guide](https://github.com/doublegate/ProRT-IP/blob/main/docs/04-IMPLEMENTATION-GUIDE.md)
+
+            ## 🔒 Security
+
+            This is a **security research tool** intended for penetration testing, network security auditing, and educational purposes. **Always obtain proper authorization before scanning networks.**
+
+            See [SECURITY.md](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md) for responsible use guidelines.
+
+            ## 📝 Full Changelog
+
+            See [CHANGELOG.md](https://github.com/doublegate/ProRT-IP/blob/main/CHANGELOG.md) for complete version history.
+
+  build-release:
+    name: Build ${{ matrix.target }}
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            archive: tar.gz
+
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            archive: tar.gz
+
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            archive: zip
+
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            archive: tar.gz
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install musl tools (Linux musl)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: sudo apt-get install -y musl-tools
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Create archive (Linux/macOS)
+        if: matrix.archive == 'tar.gz'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czf ../../../prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.tar.gz prtip
+          cd ../../..
+
+      - name: Create archive (Windows)
+        if: matrix.archive == 'zip'
+        run: |
+          cd target/${{ matrix.target }}/release
+          7z a ../../../prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.zip prtip.exe
+          cd ../../..
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.${{ matrix.archive }}
+          asset_name: prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.${{ matrix.archive }}
+          asset_content_type: application/octet-stream

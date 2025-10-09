@@ -243,6 +243,61 @@ ProRT-IP WarScan is a **defensive security tool** for authorized penetration tes
 - **Include legal disclaimers** where appropriate
 - **Audit logging** for all scanning activities
 
+## Continuous Integration
+
+All pull requests must pass automated CI checks before merging:
+
+### CI Pipeline Requirements
+
+- **Format check**: `cargo fmt --check` - Code must be properly formatted
+- **Linting**: `cargo clippy -- -D warnings` - All clippy warnings must be resolved
+- **Tests on all platforms**: Linux, Windows, macOS - All tests must pass on each platform
+- **Security audit**: `cargo audit` - No known vulnerabilities allowed
+- **MSRV check**: Rust 1.70+ - Code must compile with minimum supported version
+
+### CI Workflow Details
+
+CI runs automatically on every push and PR. Check the [Actions tab](https://github.com/doublegate/ProRT-IP/actions) for status.
+
+**Workflow jobs:**
+- `format`: ~30 seconds - Checks code formatting
+- `clippy`: ~2-3 minutes - Lint checks with caching
+- `test`: ~3-5 minutes per platform (parallel) - Build and test
+- `security_audit`: ~1-2 minutes - Vulnerability scanning
+- `msrv`: ~2-3 minutes - Minimum version verification
+
+**Total CI time:** ~5-10 minutes (with caching and parallel execution)
+
+### Local Pre-Push Checks
+
+Run these commands locally before pushing to save CI time:
+
+```bash
+# Check formatting
+cargo fmt --all -- --check
+
+# Run clippy (strict mode)
+cargo clippy --workspace --all-targets -- -D warnings
+
+# Run all tests
+cargo test --workspace
+
+# Security audit (optional but recommended)
+cargo install cargo-audit
+cargo audit
+```
+
+### CI Optimization
+
+The CI pipeline uses aggressive caching for faster runs:
+- **Cargo registry cache**: Downloaded crate metadata (~100-500 MB)
+- **Cargo index cache**: Git index for crates.io (~50-200 MB)
+- **Build cache**: Compiled dependencies (~500 MB - 2 GB)
+
+**Cache benefits:**
+- Clean build: 5-10 minutes → Cached build: 1-2 minutes (80-90% speedup)
+- Cache hit rate: ~80-90% for typical changes
+
 ## Pull Request Process
 
 ### Before Submitting

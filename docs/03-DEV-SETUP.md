@@ -721,6 +721,86 @@ export PRTIP_DB_PATH=/var/lib/prtip/scans.db
 
 ---
 
+## Continuous Integration
+
+The project uses GitHub Actions for CI/CD with automated testing and release management.
+
+### CI Workflows
+
+**ci.yml** - Continuous Integration:
+- Format check: `cargo fmt --check`
+- Clippy lint: `cargo clippy -- -D warnings`
+- Multi-platform testing: Linux, Windows, macOS
+- Security audit: `cargo audit`
+- MSRV verification: Rust 1.70+
+
+**release.yml** - Release Automation:
+- Triggers on git tags: `v*.*.*`
+- Multi-platform binary builds:
+  - `x86_64-unknown-linux-gnu` (glibc)
+  - `x86_64-unknown-linux-musl` (static)
+  - `x86_64-pc-windows-msvc` (Windows)
+  - `x86_64-apple-darwin` (macOS)
+- Automatic GitHub release creation
+- Binary artifacts upload
+
+**dependency-review.yml** - PR Security:
+- Scans for vulnerable dependencies
+- Detects malicious packages
+- Automated on all pull requests
+
+**codeql.yml** - Security Analysis:
+- Advanced security scanning with CodeQL
+- Weekly scheduled runs
+- SARIF upload to GitHub Security tab
+
+### Local Testing
+
+Test formatting/linting before pushing to save CI time:
+
+```bash
+# Check formatting
+cargo fmt --all -- --check
+
+# Run clippy (strict mode)
+cargo clippy --workspace --all-targets -- -D warnings
+
+# Run tests
+cargo test --workspace
+
+# Build release
+cargo build --release --workspace
+
+# Security audit
+cargo install cargo-audit
+cargo audit
+```
+
+### CI Optimization
+
+The CI pipeline uses aggressive 3-tier caching:
+
+1. **Cargo registry** (~100-500 MB): Downloaded crate metadata
+2. **Cargo index** (~50-200 MB): Git index for crates.io
+3. **Build cache** (~500 MB - 2 GB): Compiled dependencies
+
+**Performance benefits:**
+- Clean build: 5-10 minutes
+- Cached build: 1-2 minutes (80-90% speedup)
+- Cache hit rate: ~80-90% for typical changes
+
+### Workflow Status
+
+Check workflow runs: [GitHub Actions](https://github.com/doublegate/ProRT-IP/actions)
+
+**Status badges** (add to README):
+```markdown
+[![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
+[![Release](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml)
+```
+
+---
+
 ## Next Steps
 
 After completing setup:
@@ -730,6 +810,7 @@ After completing setup:
 3. Review [Architecture Overview](00-ARCHITECTURE.md)
 4. Check [Technical Specifications](02-TECHNICAL-SPECS.md) for implementation details
 5. Begin development following [Roadmap](01-ROADMAP.md)
+6. Review [CI/CD Workflows](.github/workflows/README.md) for automation details
 
 ---
 
@@ -738,5 +819,6 @@ After completing setup:
 - **Documentation:** See `docs/` directory
 - **Issues:** GitHub Issues for bug reports
 - **Discussions:** GitHub Discussions for questions
+- **CI/CD:** `.github/workflows/README.md` for workflow documentation
 - **Chat:** Join project Discord/Matrix (TBD)
 

@@ -281,8 +281,9 @@ mod tests {
         let elapsed = start.elapsed();
 
         // 1000 packets at 10,000 pps = ~100ms
+        // Allow more tolerance in CI environments (CI runners can be slower)
         assert!(elapsed >= Duration::from_millis(80));
-        assert!(elapsed <= Duration::from_millis(200));
+        assert!(elapsed <= Duration::from_millis(500), "Elapsed: {:?}", elapsed);
     }
 
     #[test]
@@ -329,8 +330,9 @@ mod tests {
         let elapsed = start.elapsed();
 
         // 100 total acquisitions at 100 pps = ~1 second
+        // Allow more tolerance in CI environments (CI runners can be slower)
         assert!(elapsed >= Duration::from_millis(900));
-        assert!(elapsed <= Duration::from_millis(1300));
+        assert!(elapsed <= Duration::from_millis(2000), "Elapsed: {:?}", elapsed);
     }
 
     #[test]

@@ -13,7 +13,6 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
       version: ${{ steps.get_version.outputs.version }}
 
     steps:
@@ -24,15 +23,13 @@ jobs:
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ProRT-IP WarScan v${{ steps.get_version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          name: ProRT-IP WarScan v${{ steps.get_version.outputs.version }}
           draft: false
           prerelease: false
+          generate_release_notes: true
           body: |
             # ProRT-IP WarScan v${{ steps.get_version.outputs.version }}
 
@@ -69,7 +66,7 @@ jobs:
 
             ## 📊 Statistics
 
-            - **Tests:** 551 (100% pass rate)
+            - **Tests:** 391 (100% pass rate)
             - **Code:** 10,000+ lines across 4 crates (40+ modules)
             - **Dependencies:** Production-ready with security audits passing
             - **Platforms:** Linux, Windows, macOS
@@ -171,19 +168,23 @@ jobs:
 
       - name: Install musl tools (Linux musl)
         if: matrix.target == 'x86_64-unknown-linux-musl'
-        run: sudo apt-get install -y musl-tools
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
 
-      - name: Cache cargo
-        uses: actions/cache@v4
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install libpcap pkg-config
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          shared-key: "release-${{ matrix.target }}"
 
       - name: Build release binary
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target }} --locked
 
       - name: Create archive (Linux/macOS)
         if: matrix.archive == 'tar.gz'
@@ -194,17 +195,13 @@ jobs:
 
       - name: Create archive (Windows)
         if: matrix.archive == 'zip'
+        shell: pwsh
         run: |
           cd target/${{ matrix.target }}/release
-          7z a ../../../prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.zip prtip.exe
-          cd ../../..
+          Compress-Archive -Path prtip.exe -DestinationPath $env:GITHUB_WORKSPACE/prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.zip
 
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.${{ matrix.archive }}
-          asset_name: prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.${{ matrix.archive }}
-          asset_content_type: application/octet-stream
+          tag_name: ${{ github.ref_name }}
+          files: prtip-${{ needs.create-release.outputs.version }}-${{ matrix.target }}.${{ matrix.archive }}

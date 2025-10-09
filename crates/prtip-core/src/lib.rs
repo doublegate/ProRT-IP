@@ -21,6 +21,7 @@
 //! assert!(config.validate().is_ok());
 //! ```
 
+pub mod cdn_detector;
 pub mod config;
 pub mod crypto;
 pub mod error;
@@ -32,6 +33,7 @@ pub mod service_db;
 pub mod types;
 
 // Re-export commonly used types
+pub use cdn_detector::{CdnDetector, CdnProvider, Ipv4Cidr};
 pub use config::{
     Config, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig,
 };

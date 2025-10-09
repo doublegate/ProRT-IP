@@ -4,8 +4,8 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
-[![Status](https://img.shields.io/badge/status-Phase_3_Complete-brightgreen.svg)]
-[![Tests](https://img.shields.io/badge/tests-371_passing-brightgreen.svg)]
+[![Status](https://img.shields.io/badge/status-Phase_3_Complete%2BCycle_8-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-547_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---

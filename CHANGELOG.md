@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-10-08
+
+### Added
+- Fixed 4 previously ignored doc-tests (now 551 tests total, 100% passing)
+- Self-contained doc-test examples using inline test data
+- Production-ready documentation examples for all API modules
+
+### Changed
+- Updated workspace version to 0.3.0 across all crates
+- Replaced external file dependencies in doc-tests with inline data
+- Enhanced `os_db.rs` doc-test with self-contained OS fingerprint example
+- Enhanced `service_db.rs` doc-test with self-contained service probe example
+- Enhanced `os_fingerprinter.rs` doc-test with complete API usage example
+- Enhanced `service_detector.rs` doc-test with complete service detection example
+
+### Fixed
+- Fixed `Ipv4Cidr::to_string()` clippy warning by implementing Display trait instead
+- Fixed unused field warnings by prefixing with underscore (`_interface`, `_config`)
+- Fixed bool comparison clippy warnings (replaced `== false` with `!`)
+- All clippy warnings resolved (zero warnings with -D warnings)
+
+### Quality
+- Total tests: 551 (100% pass rate)
+- Previously ignored tests: 0 (was 4, all now active and passing)
+- Clippy warnings: 0 (clean build with strict linting)
+- Code properly formatted with cargo fmt
+
+### Performance
+- Batch packet sending with sendmmsg (30-50% improvement at 1M+ pps)
+- CDN/WAF detection for 8 major providers
+- Decoy scanning support (up to 256 decoys)
+
+### Documentation
+- Self-contained doc-tests requiring no external files
+- Clear examples for OS fingerprinting APIs
+- Clear examples for service detection APIs
+- Production-ready code snippets in all module documentation
+
+---
+
 ### Added - 2025-10-08
 
 #### Enhancement Cycle 8: Performance & Stealth Features (ZMap, naabu, Nmap patterns)

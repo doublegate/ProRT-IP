@@ -12,11 +12,19 @@
 //!
 //! # Example
 //!
-//! ```ignore
+//! ```
 //! use prtip_core::service_db::ServiceProbeDb;
+//! use prtip_core::Protocol;
 //!
-//! let db = ServiceProbeDb::parse(include_str!("service-probes-subset.txt"))?;
-//! let probes = db.probes_for_port(80, prtip_core::Protocol::Tcp);
+//! let db_content = r#"
+//! Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
+//! ports 80,443,8080
+//! rarity 1
+//! match http m|^HTTP/1\.[01]| p/HTTP/
+//! "#;
+//! let db = ServiceProbeDb::parse(db_content)?;
+//! let probes = db.probes_for_port(80, Protocol::Tcp);
+//! assert!(!probes.is_empty());
 //! # Ok::<(), prtip_core::Error>(())
 //! ```
 

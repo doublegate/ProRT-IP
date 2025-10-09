@@ -51,8 +51,8 @@
 //! - **Ethical Use**: Only use on authorized targets
 //! - **Network Topology**: Decoys should be topologically plausible
 
-use prtip_core::{Config, Error, Result, ScanResult, ScanTarget, PortState};
-use prtip_network::{TcpPacketBuilder, TcpFlags};
+use prtip_core::{Config, Error, PortState, Result, ScanResult, ScanTarget};
+use prtip_network::{TcpFlags, TcpPacketBuilder};
 use rand::Rng;
 use std::collections::HashSet;
 use std::net::Ipv4Addr;
@@ -79,8 +79,8 @@ pub enum DecoyPlacement {
 
 /// Decoy scanner for stealth scanning with IP spoofing
 pub struct DecoyScanner {
-    /// Scanner configuration
-    config: Config,
+    /// Scanner configuration (reserved for future use)
+    _config: Config,
     /// List of decoy IP addresses (not including real source)
     decoys: Vec<Ipv4Addr>,
     /// Real source IP placement strategy
@@ -93,7 +93,7 @@ impl DecoyScanner {
     /// Create new decoy scanner with configuration
     pub fn new(config: Config) -> Self {
         Self {
-            config,
+            _config: config,
             decoys: Vec::new(),
             real_placement: DecoyPlacement::Random,
             random_decoy_count: None,
@@ -193,10 +193,8 @@ impl DecoyScanner {
     /// Check if IP is in reserved range
     fn is_reserved_ip(ip: Ipv4Addr) -> bool {
         let octets = ip.octets();
-        matches!(
-            octets[0],
-            0 | 10 | 127 | 169 | 172 | 192 | 224..=255
-        ) || (octets[0] == 172 && (16..=31).contains(&octets[1]))
+        matches!(octets[0], 0 | 10 | 127 | 169 | 172 | 192 | 224..=255)
+            || (octets[0] == 172 && (16..=31).contains(&octets[1]))
             || (octets[0] == 192 && octets[1] == 168)
             || (octets[0] == 169 && octets[1] == 254)
     }
@@ -256,11 +254,7 @@ impl DecoyScanner {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn scan_with_decoys(
-        &mut self,
-        target: ScanTarget,
-        port: u16,
-    ) -> Result<ScanResult> {
+    pub async fn scan_with_decoys(&mut self, target: ScanTarget, port: u16) -> Result<ScanResult> {
         // Get real source IP (from network interface)
         let real_source = self.get_source_ip(&target)?;
 
@@ -272,7 +266,10 @@ impl DecoyScanner {
             target,
             port,
             decoy_list.len() - 1,
-            decoy_list.iter().position(|&ip| ip == real_source).unwrap_or(0)
+            decoy_list
+                .iter()
+                .position(|&ip| ip == real_source)
+                .unwrap_or(0)
         );
 
         // Send probes from all decoys in randomized order
@@ -288,16 +285,14 @@ impl DecoyScanner {
 
             // Small random delay between decoys to appear more natural
             if i < send_order.len() - 1 {
-                let delay_us = rand::thread_rng()
-                    .gen_range(MIN_DECOY_DELAY_US..=MAX_DECOY_DELAY_US);
+                let delay_us =
+                    rand::thread_rng().gen_range(MIN_DECOY_DELAY_US..=MAX_DECOY_DELAY_US);
                 time::sleep(Duration::from_micros(delay_us)).await;
             }
         }
 
         // Wait for response (only to real source IP)
-        let result = self
-            .wait_for_response(&target, port, real_source)
-            .await?;
+        let result = self.wait_for_response(&target, port, real_source).await?;
 
         Ok(result)
     }
@@ -399,9 +394,7 @@ impl DecoyScanner {
 
     /// Get current decoy count
     pub fn decoy_count(&self) -> usize {
-        self.decoys.len()
-            + self.random_decoy_count.unwrap_or(0)
-            + 1 // +1 for real IP
+        self.decoys.len() + self.random_decoy_count.unwrap_or(0) + 1 // +1 for real IP
     }
 
     /// Clear all decoys

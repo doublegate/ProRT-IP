@@ -11,11 +11,17 @@
 //!
 //! # Example
 //!
-//! ```ignore
+//! ```
 //! use prtip_core::os_db::OsFingerprintDb;
 //!
-//! let db = OsFingerprintDb::parse(include_str!("os-db-subset.txt"))?;
-//! let matches = db.match_fingerprint(&probe_results);
+//! let db_content = r#"
+//! Fingerprint Linux 5.x
+//! Class Linux | Linux | 5.x | general purpose
+//! CPE cpe:/o:linux:linux_kernel:5
+//! SEQ(SP=5%GCD=1%ISR=9A%TI=I)
+//! "#;
+//! let db = OsFingerprintDb::parse(db_content)?;
+//! assert_eq!(db.len(), 1);
 //! # Ok::<(), prtip_core::Error>(())
 //! ```
 

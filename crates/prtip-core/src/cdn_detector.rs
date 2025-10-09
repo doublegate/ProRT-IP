@@ -35,8 +35,9 @@
 //! - Minimal memory overhead (~50KB for all provider ranges)
 //! - Zero runtime allocations for lookups
 
-use std::net::{Ipv4Addr, Ipv6Addr};
 use std::cmp::Ordering;
+use std::fmt;
+use std::net::{Ipv4Addr, Ipv6Addr};
 
 /// CDN/WAF provider information
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -77,8 +78,12 @@ impl CdnProvider {
     /// Get provider category
     pub fn category(&self) -> &'static str {
         match self {
-            Self::Cloudflare | Self::Akamai | Self::Fastly | Self::CloudFront
-            | Self::GoogleCdn | Self::AzureCdn => "CDN",
+            Self::Cloudflare
+            | Self::Akamai
+            | Self::Fastly
+            | Self::CloudFront
+            | Self::GoogleCdn
+            | Self::AzureCdn => "CDN",
             Self::Imperva | Self::Sucuri => "WAF",
         }
     }
@@ -123,10 +128,11 @@ impl Ipv4Cidr {
     pub fn network_addr(&self) -> Ipv4Addr {
         Ipv4Addr::from(self.network)
     }
+}
 
-    /// Display as CIDR notation (e.g., "192.168.0.0/24")
-    pub fn to_string(&self) -> String {
-        format!("{}/{}", self.network_addr(), self.prefix_len)
+impl fmt::Display for Ipv4Cidr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}/{}", self.network_addr(), self.prefix_len)
     }
 }
 

@@ -5,17 +5,23 @@
 //!
 //! # Example
 //!
-//! ```ignore
+//! ```no_run
 //! use prtip_scanner::service_detector::ServiceDetector;
-//! use prtip_core::{ServiceProbeDb, Protocol};
+//! use prtip_core::ServiceProbeDb;
 //! use std::net::SocketAddr;
 //!
 //! # async fn example() -> Result<(), prtip_core::Error> {
-//! // Load service probe database from file
-//! let db_content = std::fs::read_to_string("data/nmap-service-probes")?;
+//! // Create service probe database with test data
+//! let db_content = r#"
+//! Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
+//! ports 80,443
+//! rarity 1
+//! match http m|^HTTP/1\.[01]| p/HTTP/
+//! "#;
 //! let db = ServiceProbeDb::parse(&db_content)?;
 //! let detector = ServiceDetector::new(db, 7); // intensity 7
 //!
+//! // Note: This requires network access and a live target
 //! let addr = "192.168.1.1:80".parse().unwrap();
 //! let result = detector.detect_service(addr).await?;
 //!

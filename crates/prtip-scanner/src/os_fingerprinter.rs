@@ -5,17 +5,22 @@
 //!
 //! # Example
 //!
-//! ```ignore
+//! ```no_run
 //! use prtip_scanner::os_fingerprinter::OsFingerprinter;
 //! use prtip_core::OsFingerprintDb;
 //! use std::net::Ipv4Addr;
 //!
 //! # async fn example() -> Result<(), prtip_core::Error> {
-//! // Load OS fingerprint database from file
-//! let db_content = std::fs::read_to_string("data/nmap-os-db")?;
+//! // Create OS fingerprint database with test data
+//! let db_content = r#"
+//! Fingerprint Linux 5.x
+//! Class Linux | Linux | 5.x | general purpose
+//! SEQ(SP=5%GCD=1%ISR=9A%TI=I)
+//! "#;
 //! let db = OsFingerprintDb::parse(&db_content)?;
 //! let fingerprinter = OsFingerprinter::new(db);
 //!
+//! // Note: This requires network access and a live target
 //! let result = fingerprinter.fingerprint_os(
 //!     Ipv4Addr::new(192, 168, 1, 1),
 //!     80,   // open port

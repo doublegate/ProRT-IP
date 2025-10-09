@@ -68,7 +68,9 @@ impl PacketBatch {
         }
 
         if packet.is_empty() {
-            return Err(Error::Network("Cannot add empty packet to batch".to_string()));
+            return Err(Error::Network(
+                "Cannot add empty packet to batch".to_string(),
+            ));
         }
 
         if packet.len() > 65535 {
@@ -102,8 +104,8 @@ impl PacketBatch {
 
 /// High-performance batch packet sender
 pub struct BatchSender {
-    /// Network interface name
-    interface: String,
+    /// Network interface name (reserved for future use)
+    _interface: String,
     /// Current packet batch
     batch: PacketBatch,
     /// Platform-specific sender
@@ -133,7 +135,7 @@ impl BatchSender {
         let linux_sender = Some(LinuxBatchSender::new(interface)?);
 
         Ok(Self {
-            interface: interface.to_string(),
+            _interface: interface.to_string(),
             batch,
             #[cfg(target_os = "linux")]
             linux_sender,
@@ -187,7 +189,9 @@ impl BatchSender {
 
         #[cfg(target_os = "linux")]
         {
-            let linux = self.linux_sender.as_mut()
+            let linux = self
+                .linux_sender
+                .as_mut()
                 .ok_or_else(|| Error::Network("Linux sender not initialized".to_string()))?;
 
             let sent = linux.send_batch(&self.batch, retries).await?;
@@ -245,7 +249,11 @@ mod linux_impl {
         pub fn new(interface: &str) -> Result<Self> {
             // Create raw socket
             let socket_fd = unsafe {
-                libc::socket(libc::AF_PACKET, libc::SOCK_RAW, (libc::ETH_P_ALL as u16).to_be() as i32)
+                libc::socket(
+                    libc::AF_PACKET,
+                    libc::SOCK_RAW,
+                    (libc::ETH_P_ALL as u16).to_be() as i32,
+                )
             };
 
             if socket_fd < 0 {
@@ -374,7 +382,8 @@ mod linux_impl {
                 // Partial send - retry remaining packets
                 tracing::warn!(
                     "Partial batch send: {}/{} packets, retrying remaining",
-                    sent, remaining
+                    sent,
+                    remaining
                 );
 
                 current_offset += sent;
@@ -383,7 +392,9 @@ mod linux_impl {
                 if attempt >= retries {
                     tracing::error!(
                         "Failed to send all packets after {} retries: {}/{} sent",
-                        retries, total_sent, batch.len
+                        retries,
+                        total_sent,
+                        batch.len
                     );
                     break;
                 }
@@ -475,19 +486,19 @@ mod tests {
         // It tests the batch management logic only
         let batch_size = 3;
         let mut sender = BatchSender {
-            interface: "lo".to_string(),
+            _interface: "lo".to_string(),
             batch: PacketBatch::new(batch_size),
             #[cfg(target_os = "linux")]
             linux_sender: None, // Skip actual socket creation
         };
 
-        assert!(sender.add_packet(vec![0u8; 64]).unwrap() == false);
+        assert!(!sender.add_packet(vec![0u8; 64]).unwrap());
         assert_eq!(sender.batch_len(), 1);
 
-        assert!(sender.add_packet(vec![0u8; 64]).unwrap() == false);
+        assert!(!sender.add_packet(vec![0u8; 64]).unwrap());
         assert_eq!(sender.batch_len(), 2);
 
-        assert!(sender.add_packet(vec![0u8; 64]).unwrap() == true); // Full
+        assert!(sender.add_packet(vec![0u8; 64]).unwrap()); // Full
         assert_eq!(sender.batch_len(), 3);
         assert!(sender.is_full());
     }
@@ -495,7 +506,7 @@ mod tests {
     #[test]
     fn test_batch_sender_empty_full() {
         let mut sender = BatchSender {
-            interface: "lo".to_string(),
+            _interface: "lo".to_string(),
             batch: PacketBatch::new(2),
             #[cfg(target_os = "linux")]
             linux_sender: None,

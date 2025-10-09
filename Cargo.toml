@@ -63,7 +63,7 @@ libc = "0.2"
 windows = { version = "0.52", features = ["Win32_Security", "Win32_Foundation", "Win32_NetworkManagement_IpHelper"] }
 
 [workspace.package]
-version = "0.1.0"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.70"
 authors = ["ProRT-IP Contributors"]

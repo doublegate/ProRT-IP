@@ -94,12 +94,18 @@ jobs:
           # Create runtime directory and copy DLLs
           New-Item -ItemType Directory -Force -Path "npcap-dlls"
 
-          # Find and copy the DLLs (they might be in different subdirectories)
+          # Find and copy ONLY x64 DLLs (to avoid 32-bit/64-bit architecture mismatch)
           Get-ChildItem -Path "npcap-runtime" -Recurse -Filter "*.dll" | Where-Object {
-            $_.Name -eq "Packet.dll" -or $_.Name -eq "wpcap.dll"
+            ($_.Name -eq "Packet.dll" -or $_.Name -eq "wpcap.dll") -and $_.DirectoryName -like "*x64*"
           } | ForEach-Object {
             Copy-Item $_.FullName -Destination "npcap-dlls\" -Force
             Write-Host "Copied $($_.Name) from $($_.DirectoryName)"
+          }
+
+          # Verify we got the x64 DLLs
+          if (-not (Test-Path "npcap-dlls\Packet.dll") -or -not (Test-Path "npcap-dlls\wpcap.dll")) {
+            Write-Error "Failed to extract x64 DLLs from installer"
+            exit 1
           }
 
           # Add SDK lib directory to LIB environment variable for linking

@@ -81,19 +81,13 @@ jobs:
       - name: Install Npcap SDK (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          # Download and install Npcap runtime
-          curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
-          Start-Process -FilePath ".\npcap-installer.exe" -ArgumentList "/S" -Wait
-
           # Download and extract Npcap SDK (contains Packet.lib for development)
+          # Note: Not installing runtime (installer hangs in CI), so some tests may fail
           curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
 
           # Add SDK lib directory to LIB environment variable for linking
           echo "LIB=$PWD\npcap-sdk\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
-
-          # Add Npcap DLL directory to PATH for runtime
-          echo "PATH=C:\Windows\System32\Npcap;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2

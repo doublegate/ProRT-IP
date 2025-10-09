@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - macOS: Homebrew with existence checks (eliminates warnings)
   - Windows: Npcap SDK + DLL extraction with 7zip (avoids installer hang)
   - Linux: apt-get for glibc, musl-tools for musl builds
-- **Comprehensive platform support documentation** (docs/13-PLATFORM-SUPPORT.md - 13KB)
+- **Comprehensive platform support documentation** (docs/15-PLATFORM-SUPPORT.md - 13KB)
   - 5 production platforms with installation instructions
   - 4 experimental platforms with known issues
   - Platform comparison table (performance, binary size)

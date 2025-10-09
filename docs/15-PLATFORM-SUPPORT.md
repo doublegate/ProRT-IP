@@ -24,16 +24,37 @@ These platforms have been thoroughly tested and are fully supported.
 
 **Installation:**
 ```bash
+# Download the binary
 wget https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-x86_64-unknown-linux-gnu.tar.gz
+
+# Extract
 tar xzf prtip-0.3.0-x86_64-unknown-linux-gnu.tar.gz
+
+# Install to system path
 sudo mv prtip /usr/local/bin/
+
+# Grant capabilities (instead of requiring root)
 sudo setcap cap_net_raw,cap_net_admin=eip /usr/local/bin/prtip
+```
+
+**Quick Verification:**
+```bash
+# Check version
+prtip --version
+
+# Test basic scan (requires permissions)
+prtip -sT -p 80 scanme.nmap.org
 ```
 
 **Requirements:**
 - glibc 2.27+ (check: `ldd --version`)
 - libpcap 1.9+
 - Kernel 4.15+ (for sendmmsg support)
+
+**Troubleshooting:**
+- **Permission denied:** Run `sudo setcap cap_net_raw,cap_net_admin=eip /usr/local/bin/prtip`
+- **libpcap missing:** Install with `sudo apt install libpcap-dev` (Debian/Ubuntu)
+- **Network unreachable:** Check firewall settings and network connectivity
 
 **Known Issues:** None
 
@@ -49,15 +70,38 @@ sudo setcap cap_net_raw,cap_net_admin=eip /usr/local/bin/prtip
 - Windows Server 2016+
 
 **Installation:**
-1. Download from [releases](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-x86_64-pc-windows-msvc.zip)
-2. Extract to desired location
-3. Install [Npcap](https://npcap.com/#download) (required for packet capture)
-4. Run as Administrator for scanning operations
+```powershell
+# Download the binary (PowerShell)
+Invoke-WebRequest -Uri "https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-x86_64-pc-windows-msvc.zip" -OutFile "prtip.zip"
+
+# Extract
+Expand-Archive -Path prtip.zip -DestinationPath .
+
+# Move to desired location (optional)
+Move-Item prtip.exe C:\Tools\prtip.exe
+
+# Install Npcap (required for packet capture)
+# Download from: https://npcap.com/#download
+```
+
+**Quick Verification:**
+```powershell
+# Check version
+prtip --version
+
+# Test basic scan (requires Administrator)
+prtip -sT -p 80 scanme.nmap.org
+```
 
 **Requirements:**
 - MSVC Runtime (usually pre-installed)
 - Npcap 1.79+ (for packet capture)
 - Administrator privileges (for raw sockets)
+
+**Troubleshooting:**
+- **DLL not found:** Install Npcap from https://npcap.com/
+- **Access denied:** Run PowerShell/CMD as Administrator
+- **Npcap not working:** Restart computer after Npcap installation
 
 **Known Issues:**
 - Network tests require Administrator privileges (skipped in CI)
@@ -74,9 +118,26 @@ sudo setcap cap_net_raw,cap_net_admin=eip /usr/local/bin/prtip
 
 **Installation:**
 ```bash
+# Download the binary
 wget https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-x86_64-apple-darwin.tar.gz
+
+# Or use curl
+curl -L -o prtip.tar.gz https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-x86_64-apple-darwin.tar.gz
+
+# Extract
 tar xzf prtip-0.3.0-x86_64-apple-darwin.tar.gz
+
+# Install to system path
 sudo mv prtip /usr/local/bin/
+```
+
+**Quick Verification:**
+```bash
+# Check version
+prtip --version
+
+# Test basic scan
+prtip -sT -p 80 scanme.nmap.org
 ```
 
 **Requirements:**
@@ -85,8 +146,16 @@ sudo mv prtip /usr/local/bin/
 
 **Setup BPF Access:**
 ```bash
+# Grant your user BPF access
 sudo dseditgroup -o edit -a $(whoami) -t user access_bpf
+
+# Or run with sudo
+sudo prtip -sT -p 80 scanme.nmap.org
 ```
+
+**Troubleshooting:**
+- **Permission denied:** Run setup BPF access command above or use `sudo`
+- **Binary quarantined:** Run `xattr -d com.apple.quarantine /usr/local/bin/prtip`
 
 **Known Issues:** None
 
@@ -104,9 +173,27 @@ sudo dseditgroup -o edit -a $(whoami) -t user access_bpf
 
 **Installation:**
 ```bash
+# Download the native ARM64 binary
 wget https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-aarch64-apple-darwin.tar.gz
+
+# Or use curl
+curl -L -o prtip.tar.gz https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-aarch64-apple-darwin.tar.gz
+
+# Extract
 tar xzf prtip-0.3.0-aarch64-apple-darwin.tar.gz
+
+# Install to system path
 sudo mv prtip /usr/local/bin/
+```
+
+**Quick Verification:**
+```bash
+# Check version and architecture
+prtip --version
+file /usr/local/bin/prtip  # Should show "arm64"
+
+# Test basic scan
+prtip -sT -p 80 scanme.nmap.org
 ```
 
 **Requirements:**
@@ -114,9 +201,20 @@ sudo mv prtip /usr/local/bin/
 - libpcap (pre-installed)
 - BPF device access (same as Intel)
 
+**Setup BPF Access:**
+```bash
+# Same as Intel - grant your user BPF access
+sudo dseditgroup -o edit -a $(whoami) -t user access_bpf
+```
+
 **Performance:**
 - 20-30% faster than Rosetta-translated x86_64 binaries
 - Native Apple Silicon optimization
+
+**Troubleshooting:**
+- **Permission denied:** Run setup BPF access command above or use `sudo`
+- **Binary quarantined:** Run `xattr -d com.apple.quarantine /usr/local/bin/prtip`
+- **Wrong architecture:** Ensure you downloaded the `aarch64` version, not `x86_64`
 
 **Known Issues:** None
 
@@ -133,14 +231,36 @@ sudo mv prtip /usr/local/bin/
 
 **Installation:**
 ```bash
+# Download the binary
 fetch https://github.com/doublegate/ProRT-IP/releases/download/v0.3.0/prtip-0.3.0-x86_64-unknown-freebsd.tar.gz
+
+# Extract
 tar xzf prtip-0.3.0-x86_64-unknown-freebsd.tar.gz
+
+# Install to system path
 sudo mv prtip /usr/local/bin/
+
+# Install libpcap if not present
+sudo pkg install libpcap
+```
+
+**Quick Verification:**
+```bash
+# Check version
+prtip --version
+
+# Test basic scan
+prtip -sT -p 80 scanme.nmap.org
 ```
 
 **Requirements:**
 - libpcap (install: `pkg install libpcap`)
 - BPF device access
+
+**Troubleshooting:**
+- **libpcap missing:** Run `sudo pkg install libpcap`
+- **Permission denied:** Check BPF device permissions (`ls -l /dev/bpf*`)
+- **No BPF devices:** Load module with `kldload if_tap`
 
 **Known Issues:** None
 
@@ -208,7 +328,7 @@ These platforms have builds available but may have known issues. Use with cautio
 
 **Target:** `aarch64-pc-windows-msvc`
 
-**Status:** ⚠️ Cross toolchain unavailable
+**Status:** ⚠️ Removed from CI/CD (toolchain unavailable)
 
 **Devices:**
 - Surface Pro X
@@ -216,9 +336,12 @@ These platforms have builds available but may have known issues. Use with cautio
 
 **Known Issues:**
 - GitHub Actions lacks ARM64 Windows cross-compilation support
-- MSVC ARM64 toolchain configuration issues
+- MSVC ARM64 toolchain configuration issues in GitHub CI
+- Build target removed from automated builds as of 2025-10-09
 
-**Workaround:** Build from source on native Windows ARM64 device
+**Workaround:** Build from source on native Windows ARM64 device with MSVC toolchain
+
+**Reason for Removal:** The GitHub Actions Windows runners do not provide cross-compilation support for ARM64 targets. The MSVC ARM64 cross-toolchain is not available in the CI environment, causing consistent build failures. Users with ARM64 Windows devices can build from source locally using the appropriate ARM64 MSVC toolchain.
 
 ---
 

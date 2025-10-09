@@ -260,12 +260,6 @@ jobs:
             os: windows-latest
             archive: zip
 
-          # Windows 10/11 - ARM64 (Surface Pro X, etc.)
-          - target: aarch64-pc-windows-msvc
-            os: windows-latest
-            archive: zip
-            cross: true
-
           # macOS - Intel x86_64 (older Macs)
           - target: x86_64-apple-darwin
             os: macos-13

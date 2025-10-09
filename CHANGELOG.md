@@ -8,35 +8,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **GitHub Actions CI/CD Workflows**:
-  - `ci.yml`: Continuous integration with format, clippy, build, test on Linux/Windows/macOS
-  - `release.yml`: Automated release builds for 4 platforms (Linux gnu/musl, Windows, macOS)
-  - `dependency-review.yml`: Security scanning on pull requests
-  - `codeql.yml`: Advanced security analysis with weekly scans
-  - `.github/workflows/README.md`: Complete workflow documentation
+- macOS Apple Silicon (ARM64) support with native binary
+- FreeBSD x86_64 support with cross-compiled binary
+- Cross-compilation infrastructure using cross-rs
+- vendored-openssl feature for static musl builds
+- Smart release management (detect existing releases, preserve notes)
+- Manual workflow execution via workflow_dispatch
+- Comprehensive platform support documentation (docs/13-PLATFORM-SUPPORT.md)
+- CI/CD best practices section in root CLAUDE.md
 
 ### Changed
-- **Documentation Updates**:
-  - README.md: Added CI/CD badges (CI, Release, Version)
-  - CONTRIBUTING.md: Added comprehensive CI/CD section with pipeline details
-  - docs/03-DEV-SETUP.md: Added CI/CD workflows and local testing guidance
-  - Updated test count badge: 551 passing tests
+- Expanded build targets from 4 to 9 platforms (+125%)
+- Increased Windows CI test timeout from 6s to 8s for reliability
+- Replicated all CI platform fixes to Release workflow
+- Enhanced release workflow with macOS Homebrew checks
+- Enhanced release workflow with Windows Npcap SDK/DLL extraction
+
+### Fixed
+- Windows build failures (missing Npcap SDK in Release workflow)
+- macOS Homebrew warnings (check before installing packages)
+- CI/Release workflow parity issues
+- Windows timing test failures (test_high_rate_limit timeout increased)
+
+### CI/CD
+- 100% CI success rate (7/7 jobs passing)
+- Release workflow: 5/9 builds successful (56%)
+- Automated cross-compilation for ARM and BSD targets
+- Smart artifact management for existing releases
 
 ### Infrastructure
 - **CI/CD Optimizations**:
   - 3-tier cargo caching (registry, index, build) for 50-80% speedup
   - Parallel job execution for faster feedback (~5-10 minutes total)
   - Multi-platform matrix testing ensures cross-platform compatibility
-  - MSRV verification (Rust 1.70+) in CI pipeline
-  - Security audit integration with cargo-audit
+  - MSRV verification (Rust 1.85+) in CI pipeline
+  - Security audit integration with cargo-deny
   - CodeQL security scanning with SARIF uploads
 
 ### Automation
 - **Release Pipeline**:
   - Automatic binary builds on git tags (`v*.*.*`)
-  - Multi-platform binaries: Linux (glibc, musl), Windows (msvc), macOS (darwin)
+  - Manual execution with version and attach_only parameters
+  - Multi-platform binaries: Linux (glibc, musl, ARM64), Windows (x86, ARM64), macOS (Intel, ARM), FreeBSD
   - Comprehensive release notes with features, installation, usage examples
   - Automatic asset upload (tar.gz, zip archives)
+  - Preserve existing release notes when attaching new artifacts
 
 ## [0.3.0] - 2025-10-08
 

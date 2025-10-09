@@ -2,6 +2,12 @@
 
 ## Modern Network Scanner and War Dialer for IP Networks
 
+<div align="center">
+  <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="600">
+</div>
+
+<br>
+
 [![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Release](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -11,6 +17,12 @@
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
+
+<div align="center">
+  <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="800">
+</div>
+
+<br>
 
 ## Overview
 

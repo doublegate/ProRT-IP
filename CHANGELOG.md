@@ -127,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modern tagline: "⚡ The Modern Network Scanner & War Dialer"
 
 **Compact Banner:**
-- Format: `⟨ProRT-IP⟩ v0.1.0 ─ Network Scanner`
+- Format: `⟨ProRT-IP⟩ v0.3.0 ─ Network Scanner`
 - Uses cyber-punk brackets and separators
 
 **Dependencies:**

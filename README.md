@@ -4,7 +4,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
-[![Status](https://img.shields.io/badge/status-Phase_3_Complete%2BCycle_8-brightgreen.svg)]
+[![Status](https://img.shields.io/badge/status-Phase_3_Complete%2BCycle_1--8-brightgreen.svg)]
 [![Tests](https://img.shields.io/badge/tests-547_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
@@ -95,20 +95,23 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Current Phase:** Phase 3 COMPLETE ✅ | **Phase 4 Ready**
 
-**Latest Version:** 0.1.0 (Detection Systems + Advanced Scanning)
+**Latest Version:** v0.3.0 (Production Ready - Detection Systems + Performance + Stealth)
 
-**Test Coverage:** 371 tests passing (100% success rate)
+**Test Coverage:** 547 tests passing (100% success rate)
 
 **Recent Accomplishments:**
 
 - ✅ Phase 1: Core Infrastructure (weeks 1-3)
 - ✅ Phase 2: Advanced Scanning (weeks 4-6)
-- ✅ Enhancement Cycle 1-5: Reference implementation optimizations
-  - Cryptographic foundation (SipHash, Blackrock)
-  - Concurrent scanning patterns (FuturesUnordered)
-  - Port filtering infrastructure
-  - Resource management (ulimit detection, interface selection)
-  - Progress tracking and error categorization
+- ✅ Enhancement Cycles 1-8: Reference implementation optimizations
+  - Cycle 1: Cryptographic foundation (SipHash, Blackrock)
+  - Cycle 2: Concurrent scanning patterns (FuturesUnordered)
+  - Cycle 3: Resource management (ulimit detection, interface selection)
+  - Cycle 4: CLI integration and ulimit awareness
+  - Cycle 5: Progress tracking and error categorization
+  - Cycle 6: Port filtering infrastructure
+  - Cycle 7: Advanced filtering and exclusion lists
+  - Cycle 8: Performance & stealth (sendmmsg batching, CDN detection, decoy scanning)
 - ✅ Phase 3: Detection Systems (weeks 7-10)
   - OS fingerprinting with 16-probe sequence
   - Service version detection with nmap-service-probes
@@ -117,10 +120,10 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Implementation Impact:**
 
-- Tests: 215 → 371 (+156 tests, +72% growth)
-- Lines: 15,237 production code (Phase 2: 3,551 + Phase 3: 2,372 net + Enhancements: 2,930)
-- Modules: 35 total production modules
-- Phase 3 Modules: 6 new (os_db, service_db, os_probe, os_fingerprinter, service_detector, banner_grabber)
+- Tests: 215 → 547 (+332 tests, +154% growth)
+- Lines: 10,000+ production code (Phase 1: base + Phase 2: 3,551 + Phase 3: 2,372 + Cycles: 4,077)
+- Modules: 40+ total production modules
+- Latest Additions (Cycle 8): sendmmsg batching (30-50% perf boost), CDN/WAF detection (8 providers), decoy scanning (up to 256 decoys)
 
 **Next Phase:** Phase 4 - Performance Optimization (lock-free data structures, adaptive rate limiting)
 
@@ -499,25 +502,27 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 ## Project Statistics
 
 - **Total Documentation:** 478 KB (237 KB technical docs + 241 KB reference specs)
-- **Root Documents:** 6 files (ROADMAP, CONTRIBUTING, SECURITY, SUPPORT, AUTHORS, CHANGELOG)
-- **Technical Documents:** 13 files in docs/ directory
-- **Development Phases:** 8 phases over 20 weeks (Phase 3 complete - 50% progress)
-- **Implementation Progress:** 4/8 phases complete (Phase 1-3 + Enhancements)
-- **Test Suite:** 371 tests passing (103 core + 35 network + 114 scanner + 119 integration)
+- **Root Documents:** 9 files (README, ROADMAP, CONTRIBUTING, SECURITY, SUPPORT, AUTHORS, CHANGELOG, CLAUDE.md, CLAUDE.local.md)
+- **Technical Documents:** 15 files in docs/ directory
+- **Development Phases:** 8 phases over 20 weeks (Phase 3 complete - 37.5% progress)
+- **Implementation Progress:** 3/8 phases complete (Phase 1-3) + 8 enhancement cycles
+- **Test Suite:** 547 tests passing (100% success rate)
 - **Crates Implemented:** 4 (prtip-core, prtip-network, prtip-scanner, prtip-cli)
-- **Total Production Code:** 15,237 lines
-- **Phase Breakdown:** Phase 1 (base) + Phase 2 (3,551) + Phase 3 (2,372 net) + Enhancements (2,930)
-- **Enhancement Cycles:** 5 complete (cryptographic foundation, filtering, resource management, CLI integration, user feedback)
-- **Total Modules:** 35 production modules
-- **Phase 3 Modules:** 6 new (os_db, service_db, os_probe, os_fingerprinter, service_detector, banner_grabber)
+- **Total Production Code:** 10,000+ lines
+- **Phase Breakdown:** Phase 1 (base) + Phase 2 (3,551) + Phase 3 (2,372) + Cycles 1-8 (4,077)
+- **Enhancement Cycles:** 8 complete (crypto, concurrency, resources, CLI, progress, filtering, exclusions, performance/stealth)
+- **Total Modules:** 40+ production modules
 - **Scan Types:** 7 implemented (Connect, SYN, UDP, FIN, NULL, Xmas, ACK)
 - **Protocol Payloads:** 8 (DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
 - **Timing Templates:** 6 (T0-T5 paranoid to insane)
-- **Detection Features:** OS fingerprinting (2,000+ signatures), Service detection (500+ probes), Banner grabbing
-- **CLI Version:** 0.1.0 (detection systems + advanced scanning)
-- **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif)
+- **Detection Features:** OS fingerprinting (2,000+ signatures), Service detection (500+ probes), Banner grabbing (6 protocols + TLS)
+- **Performance Features:** Adaptive rate limiting, connection pooling, sendmmsg batching (30-50% improvement)
+- **Stealth Features:** Decoy scanning (up to 256 decoys), timing variations, source port manipulation
+- **Infrastructure:** CDN/WAF detection (8 providers), network interface detection, resource limit management
+- **CLI Version:** v0.3.0 (production-ready with cyber-punk banner)
+- **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc)
 - **Target Performance:** 1M+ packets/second (stateless), 50K+ pps (stateful)
-- **Code Coverage:** 371/371 tests (100% pass rate)
+- **Code Coverage:** 547/547 tests (100% pass rate)
 
 ---
 
@@ -530,7 +535,7 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ---
 
-**Current Status**: ✅ Phase 3 Complete | 🚀 Phase 4 Ready | 371 Tests Passing | 15,237 Lines Production Code
+**Current Status**: ✅ Phase 3 Complete | ✅ Cycles 1-8 Complete | 🚀 Phase 4 Ready | 547 Tests Passing | 10,000+ Lines Production Code
 
 **Last Updated**: 2025-10-08
 

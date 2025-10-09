@@ -13,8 +13,8 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 
 ## Current Status
 
-**Phase**: Phase 3 COMPLETE ✅ → Phase 4 Ready
-**Version**: 0.1.0
+**Phase**: Phase 3 COMPLETE ✅ + Cycles 1-8 COMPLETE ✅ → Phase 4 Ready
+**Version**: v0.3.0
 **Last Updated**: 2025-10-08
 
 ### Completed Milestones
@@ -45,12 +45,24 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 
 - ✅ **M3: Comprehensive Detection** (2025-10-08)
   - 2,372 insertions, 1,093 deletions (net: ~1,279 lines)
-  - 371 tests passing (103 core + 35 network + 114 scanner + 119 integration)
+  - 391 tests passing after Phase 3 + Enhancement Cycles 1-5
   - 6 new detection modules (os_db, service_db, os_probe, os_fingerprinter, service_detector, banner_grabber)
   - OS fingerprinting with 16-probe sequence (2,000+ signatures)
   - Service version detection (500+ protocol probes)
   - Banner grabbing with protocol-specific handlers
   - CLI flags: -O, --sV, --version-intensity, --banner-grab
+
+- ✅ **M4: Enhancement Cycles 1-8 Complete** (2025-10-08)
+  - Cycle 1: Cryptographic foundation (SipHash, Blackrock)
+  - Cycle 2: Concurrent scanning (FuturesUnordered)
+  - Cycle 3: Resource management (ulimit detection, interface selection) - 345 tests
+  - Cycle 4: CLI integration and ulimit awareness - 352 tests
+  - Cycle 5: Progress tracking and error categorization - 391 tests
+  - Cycle 6: Port filtering infrastructure - 441 tests
+  - Cycle 7: Advanced filtering and exclusion lists - 504 tests
+  - Cycle 8: Performance & stealth (sendmmsg, CDN detection, decoy scanning) - 547 tests
+  - **Total enhancements:** 4,077 lines added across 8 cycles
+  - **Final test count:** 547 tests (100% pass rate)
 
 ## Development Phases
 

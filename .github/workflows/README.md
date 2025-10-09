@@ -54,35 +54,93 @@ This directory contains the CI/CD workflows for ProRT-IP WarScan.
 
 ### release.yml - Release Automation
 
-**Triggers:** Git tags matching `v*.*.*` (e.g., v0.3.0, v1.0.0)
+**Triggers:**
+- Git tags matching `v*.*.*` (e.g., v0.3.0, v1.0.0) - Automatic
+- Manual workflow dispatch via GitHub Actions UI - Manual
 
 **Jobs:**
 
-1. **Create Release** (~30s)
-   - Creates GitHub release with detailed changelog
-   - Uses `softprops/action-gh-release@v2` (modern, maintained)
-   - Generates release notes automatically
-   - Includes comprehensive feature list and usage examples
+1. **Check Release Existence** (~10s)
+   - Determines version from tag or manual input
+   - Checks if release already exists using GitHub CLI
+   - Provides release ID and existence status to downstream jobs
 
-2. **Build Release Binaries** (~5-10min per target with cache)
+2. **Generate Release Notes** (~30s, conditional)
+   - Only runs if release does NOT exist
+   - Dynamically generates release notes from:
+     - CHANGELOG.md version-specific entries
+     - Auto-calculated project statistics (tests, LOC)
+     - Consistent template with features, installation, docs, security
+   - Creates new GitHub release with generated notes
+
+3. **Build Release Binaries** (~5-10min per target with cache)
    - **Targets:**
      - `x86_64-unknown-linux-gnu` (glibc Linux)
      - `x86_64-unknown-linux-musl` (musl Linux, static)
      - `x86_64-pc-windows-msvc` (Windows)
      - `x86_64-apple-darwin` (macOS Intel)
    - Archives: `.tar.gz` for Linux/macOS, `.zip` for Windows
-   - Automatic upload to GitHub release
+   - Uploads artifacts to GitHub Actions for staging
+
+4. **Upload Artifacts to Release** (~30s)
+   - Downloads all build artifacts
+   - **Smart upload logic:**
+     - **Existing release + attach_only=true:** Preserves release notes, adds artifacts
+     - **Existing release + attach_only=false:** Skips upload (prevents overwrite)
+     - **New release:** Uploads artifacts to newly created release
+   - Uses `--clobber` flag to replace existing artifacts if needed
 
 **Features:**
+- ✅ Smart release existence checking (prevents duplication)
+- ✅ Manual execution via workflow_dispatch
+- ✅ Preserve existing release notes when attaching artifacts
+- ✅ Dynamic release notes generation from CHANGELOG.md
+- ✅ Auto-calculated project statistics
 - ✅ Cross-platform binary builds
 - ✅ Static musl builds for maximum Linux compatibility
-- ✅ Automated changelog in release notes
 - ✅ Professional release page with examples
 - ✅ Efficient caching per target
 
+**Manual Execution:**
+
+Generate artifacts for an existing release without modifying notes:
+```bash
+gh workflow run release.yml \
+  --field version=v0.3.0 \
+  --field attach_only=true
+```
+
+Parameters:
+- `version`: Version tag (e.g., v0.3.0) - required
+- `attach_only`:
+  - `true` (default): Only attach artifacts, preserve existing notes
+  - `false`: Skip upload if release exists (prevents overwrite)
+
+**Release Notes Template:**
+
+Release notes are dynamically generated using:
+- **CHANGELOG.md:** Version-specific changes extracted automatically
+- **Project Statistics:** Tests and LOC calculated at runtime
+- **Consistent Sections:** Features, Installation, Usage, Documentation, Security, License
+
+To customize release notes for future versions, update CHANGELOG.md:
+```markdown
+## [0.3.1] - 2025-10-10
+
+### Added
+- New feature description
+
+### Fixed
+- Bug fix description
+```
+
 **Fixes Applied:**
-- Replaced deprecated `actions/create-release@v1` with `softprops/action-gh-release@v2`
-- Replaced deprecated `actions/upload-release-asset@v1` with integrated upload
+- Replaced deprecated `actions/create-release@v1` with GitHub CLI
+- Replaced deprecated `actions/upload-release-asset@v1` with GitHub CLI
+- Added smart release existence checking
+- Added manual workflow execution capability
+- Added dynamic release notes generation
+- Added release note preservation logic
 - Added missing libpcap dependencies for builds
 - Added proper archive creation for all platforms
 - Updated to use `--locked` for reproducible builds

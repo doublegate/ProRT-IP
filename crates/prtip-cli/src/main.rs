@@ -13,7 +13,9 @@ use clap::Parser;
 use prtip_core::resource_limits::{adjust_and_get_limit, get_recommended_batch_size};
 use prtip_core::{PortRange, ScanTarget};
 use prtip_network::interface::enumerate_interfaces;
-use prtip_network::{check_privileges, drop_privileges};
+use prtip_network::check_privileges;
+#[cfg(target_os = "linux")]
+use prtip_network::drop_privileges;
 use prtip_scanner::{ScanScheduler, ScanStorage};
 use tracing::{info, warn};
 

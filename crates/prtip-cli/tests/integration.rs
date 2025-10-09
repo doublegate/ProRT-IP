@@ -12,7 +12,7 @@ fn test_cli_help() {
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("ProRT-IP WarScan"))
-        .stdout(predicate::str::contains("Modern Network Scanner"));
+        .stdout(predicate::str::contains("Masscan-speed scanning"));
 }
 
 #[test]

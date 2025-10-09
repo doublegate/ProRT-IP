@@ -34,6 +34,7 @@ toml = "0.8"
 # CLI
 clap = { version = "4.5", features = ["derive", "cargo"] }
 colored = "2.1"
+colorful = "0.3"
 
 # Database
 rusqlite = { version = "0.31", features = ["bundled"] }

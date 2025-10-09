@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - 2025-10-08
+
+#### CLI Banner: RustScan-Style ASCII Art (Cycle 6)
+
+**Objective:** Replace Unicode banner with RustScan-style ASCII art for better terminal compatibility
+
+**Banner Modernization** (`crates/prtip-cli/src/banner.rs` - updated):
+- **RustScan-style ASCII art** using only ASCII characters (`.`, `-`, `|`, `/`, `\`, `{`, `}`, `` ` ``, `'`)
+- **Green gradient effect** using `colorful` crate (`.gradient(Color::Green).bold()`)
+- **Enhanced terminal compatibility:**
+  * No Unicode dependencies (works in all terminals)
+  * ASCII-only characters for maximum portability
+  * Professional appearance matching RustScan aesthetic
+- **Updated tagline:** "The Modern Network Scanner & War Dialer"
+- **Dependencies added:**
+  * `colorful = "0.3"` for gradient color effects
+  * Resolves trait conflict between `colored::Colorize` and `colorful::Colorful`
+
+**ASCII Art Design:**
+```
+.----. .---. .----.  .---. .----.     .-. .----.
+| {}  }| {}  }| {} \ | {} \{}  {}     | | | {}  }
+|  __/ |     /| {} / |    /{}  {} --- | | |  __/
+`-'    `-' `-'`-' `-'`-' `-'  `--'    `-' `-'
+```
+
+**Tests Updated:**
+- Replaced `test_ascii_art_contains_box_drawing()` with `test_ascii_art_contains_ascii_only()`
+- Added `test_ascii_art_rustscan_style()` to verify ASCII character usage
+- Updated integration test to check for "Masscan-speed scanning" instead of "Modern Network Scanner"
+
+**CLI Args Enhancement:**
+- Updated `about` field to match banner tagline: "The Modern Network Scanner & War Dialer"
+
 ### Added - 2025-10-08
 
 #### CLI Enhancements: Modern Banner & Organized Help Output
@@ -14,9 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Objective:** Implement professional CLI user experience with RustScan-inspired banner and intuitive help organization
 
 **Modern ASCII Art Banner** (`crates/prtip-cli/src/banner.rs` - 169 lines, 8 tests):
-- **Cyber-aesthetic ASCII art** with Unicode box drawing characters
-- **Colored terminal output** using `colored` crate:
-  * Cyan/bold for ASCII art logo
+- **Professional ASCII art** with clean design
+- **Colored terminal output** using `colored` and `colorful` crates:
+  * Green gradient for ASCII art logo (RustScan style)
   * Green for version and status information
   * White/bright for project details
   * Bright blue/underline for GitHub URL

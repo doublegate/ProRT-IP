@@ -15,7 +15,7 @@ use std::path::PathBuf;
 #[command(
     name = "prtip",
     version,
-    about = "Modern network scanner and war dialer for IP networks",
+    about = "The Modern Network Scanner & War Dialer",
     long_about = "ProRT-IP WarScan combines Masscan-speed scanning with Nmap-depth detection.\n\
                   Supports OS fingerprinting, service detection, and comprehensive port scanning.",
     after_help = "EXAMPLES:\n  \

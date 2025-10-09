@@ -41,6 +41,7 @@ anyhow = { workspace = true }
 
 # Terminal colors
 colored = { workspace = true }
+colorful = { workspace = true }
 
 # Progress bar
 indicatif = { workspace = true }

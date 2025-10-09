@@ -78,11 +78,19 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install libpcap pkg-config
 
-      - name: Install Npcap (Windows)
+      - name: Install Npcap SDK (Windows)
         if: matrix.os == 'windows-latest'
         run: |
+          # Download and install Npcap runtime
           curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
           .\npcap-installer.exe /S
+
+          # Download and extract Npcap SDK (contains Packet.lib for development)
+          curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
+          Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
+
+          # Copy SDK files to Windows SDK location where linker can find them
+          Copy-Item -Path "npcap-sdk\Lib\x64\*.lib" -Destination "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\um\x64\" -Force
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2

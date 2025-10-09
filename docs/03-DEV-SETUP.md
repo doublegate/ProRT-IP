@@ -21,7 +21,7 @@
 
 ### Required Software
 
-#### Rust Toolchain (1.82+)
+#### Rust Toolchain (1.85+)
 
 ```bash
 # Install rustup (cross-platform Rust installer)
@@ -31,7 +31,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
 
 # Verify installation
-rustc --version  # Should be 1.82.0 or higher
+rustc --version  # Should be 1.85.0 or higher
 cargo --version
 ```
 

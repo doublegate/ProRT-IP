@@ -60,12 +60,12 @@ indicatif = "0.17"
 # Platform-specific (shared definitions)
 nix = { version = "0.27", features = ["user", "process"] }
 libc = "0.2"
-windows = { version = "0.52", features = ["Win32_Security", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_UI_Shell"] }
+windows = { version = "0.52", features = ["Win32_Security", "Win32_Security_Authorization", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_UI_Shell"] }
 
 [workspace.package]
 version = "0.3.0"
 edition = "2021"
-rust-version = "1.82"
+rust-version = "1.85"
 authors = ["ProRT-IP Contributors"]
 license = "GPL-3.0"
 repository = "https://github.com/doublegate/ProRT-IP"

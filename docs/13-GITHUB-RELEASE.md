@@ -46,7 +46,7 @@
 - **Code:** 10,000+ lines across 4 crates (40+ modules)
 - **Dependencies:** Production-ready with security audits passing
 - **Platforms:** Linux, Windows, macOS
-- **MSRV:** Rust 1.82+
+- **MSRV:** Rust 1.85+
 
 ---
 

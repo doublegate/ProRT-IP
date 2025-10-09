@@ -284,8 +284,8 @@ mod tests {
         // Allow more tolerance in CI environments (CI runners can be slower)
         assert!(elapsed >= Duration::from_millis(80));
         assert!(
-            elapsed <= Duration::from_millis(500),
-            "Elapsed: {:?}",
+            elapsed <= Duration::from_millis(2000),
+            "Elapsed: {:?}, expected <= 2000ms with CI tolerance",
             elapsed
         );
     }

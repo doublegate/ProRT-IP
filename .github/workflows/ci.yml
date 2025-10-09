@@ -78,9 +78,9 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install libpcap pkg-config
 
-      - name: Install WinPcap (Windows)
+      - name: Install Npcap (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install winpcap -y
+        run: choco install npcap -y
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2

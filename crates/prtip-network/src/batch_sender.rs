@@ -182,7 +182,7 @@ impl BatchSender {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn flush(&mut self, retries: u32) -> Result<usize> {
+    pub async fn flush(&mut self, _retries: u32) -> Result<usize> {
         if self.batch.is_empty() {
             return Ok(0);
         }

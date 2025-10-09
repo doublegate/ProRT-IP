@@ -21,7 +21,7 @@
 
 ### Required Software
 
-#### Rust Toolchain (1.75+)
+#### Rust Toolchain (1.82+)
 
 ```bash
 # Install rustup (cross-platform Rust installer)
@@ -31,7 +31,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
 
 # Verify installation
-rustc --version  # Should be 1.75.0 or higher
+rustc --version  # Should be 1.82.0 or higher
 cargo --version
 ```
 
@@ -732,7 +732,7 @@ The project uses GitHub Actions for CI/CD with automated testing and release man
 - Clippy lint: `cargo clippy -- -D warnings`
 - Multi-platform testing: Linux, Windows, macOS
 - Security audit: `cargo audit`
-- MSRV verification: Rust 1.75+
+- MSRV verification: Rust 1.82+
 
 **release.yml** - Release Automation:
 - Triggers on git tags: `v*.*.*`

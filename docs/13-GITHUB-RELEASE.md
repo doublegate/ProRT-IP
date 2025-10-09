@@ -46,7 +46,7 @@
 - **Code:** 10,000+ lines across 4 crates (40+ modules)
 - **Dependencies:** Production-ready with security audits passing
 - **Platforms:** Linux, Windows, macOS
-- **MSRV:** Rust 1.75+
+- **MSRV:** Rust 1.82+
 
 ---
 
@@ -74,7 +74,7 @@
 - Multi-platform CI: Linux, Windows, macOS
 - Security scanning: CodeQL, dependency review, cargo audit
 - Automated release builds for 4 targets
-- MSRV verification (Rust 1.75+)
+- MSRV verification (Rust 1.82+)
 
 ### Quality Improvements
 - Fixed 4 previously ignored doc-tests
@@ -224,7 +224,7 @@ See [SECURITY.md](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md) 
 #### Testing
 - Total tests: 551 (100% pass rate)
 - Added tests for batch sending, CDN detection, decoy scanning
-- MSRV verification (Rust 1.75+)
+- MSRV verification (Rust 1.82+)
 - Multi-platform CI: Linux, Windows, macOS
 
 See [CHANGELOG.md](https://github.com/doublegate/ProRT-IP/blob/main/CHANGELOG.md) for complete version history.
@@ -247,7 +247,7 @@ All pull requests must pass:
 - ✅ Clippy lint (`cargo clippy -- -D warnings`)
 - ✅ Tests on Linux, Windows, macOS
 - ✅ Security audit (`cargo audit`)
-- ✅ MSRV check (Rust 1.75+)
+- ✅ MSRV check (Rust 1.82+)
 
 See [CONTRIBUTING.md](https://github.com/doublegate/ProRT-IP/blob/main/CONTRIBUTING.md) for complete guidelines.
 

@@ -111,13 +111,13 @@ jobs:
 
   # Job 5: MSRV (Minimum Supported Rust Version) check
   msrv:
-    name: MSRV Check (1.70)
+    name: MSRV Check (1.75)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust 1.70
-        uses: dtolnay/rust-toolchain@1.70
+      - name: Install Rust 1.75
+        uses: dtolnay/rust-toolchain@1.75
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config

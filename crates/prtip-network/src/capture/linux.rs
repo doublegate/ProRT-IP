@@ -125,7 +125,7 @@ impl PacketCapture for LinuxCapture {
             .ok_or_else(|| Error::Network("Capture not open (call open() first)".to_string()))?;
 
         // Calculate timeout iterations (100ms per iteration from config)
-        let iterations = (timeout_ms + 99) / 100; // Round up
+        let iterations = timeout_ms.div_ceil(100); // Round up
 
         for _ in 0..iterations {
             match rx.next() {

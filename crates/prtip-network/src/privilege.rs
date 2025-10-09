@@ -158,7 +158,7 @@ fn unix_drop_privileges(user: &str, group: &str) -> Result<()> {
 #[cfg(target_os = "windows")]
 fn windows_has_capability() -> Result<bool> {
     use windows::Win32::Foundation::BOOL;
-    use windows::Win32::System::SystemServices::IsUserAnAdmin;
+    use windows::Win32::UI::Shell::IsUserAnAdmin;
 
     unsafe {
         let is_admin: BOOL = IsUserAnAdmin();

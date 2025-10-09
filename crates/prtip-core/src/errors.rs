@@ -353,7 +353,7 @@ mod tests {
         let err = io::Error::new(io::ErrorKind::PermissionDenied, "denied");
         assert_eq!(categorize_io_error(&err), ScanErrorKind::PermissionDenied);
 
-        let err = io::Error::new(io::ErrorKind::Other, "other");
+        let err = io::Error::other("other");
         assert_eq!(categorize_io_error(&err), ScanErrorKind::Other);
     }
 

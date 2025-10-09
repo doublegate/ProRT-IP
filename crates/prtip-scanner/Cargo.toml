@@ -7,6 +7,10 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[features]
+# Vendor OpenSSL for static linking (required for musl builds)
+vendored-openssl = ["native-tls/vendored"]
+
 [dependencies]
 prtip-core = { path = "../prtip-core" }
 prtip-network = { path = "../prtip-network" }

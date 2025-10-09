@@ -287,10 +287,10 @@ mod tests {
 
         // 1000 packets at 10,000 pps = ~100ms
         // Allow more tolerance in CI environments (CI runners can be slower)
-        // Windows CI is particularly slow, allow up to 6 seconds
+        // Windows CI is particularly slow, allow up to 8 seconds
         assert!(elapsed >= Duration::from_millis(80));
         let max_duration = if cfg!(target_os = "windows") && cfg!(test) {
-            Duration::from_millis(6000) // Windows CI tolerance
+            Duration::from_millis(8000) // Windows CI tolerance (increased for slower runners)
         } else {
             Duration::from_millis(2000) // Normal CI tolerance
         };

@@ -70,6 +70,10 @@ authors = ["ProRT-IP Contributors"]
 license = "GPL-3.0"
 repository = "https://github.com/doublegate/ProRT-IP"
 
+[features]
+# Vendor OpenSSL for static linking (required for musl builds)
+vendored-openssl = []
+
 [profile.release]
 opt-level = 3
 lto = "fat"

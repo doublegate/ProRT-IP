@@ -233,21 +233,54 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Linux - Debian/Ubuntu (glibc) - x86_64
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             archive: tar.gz
 
+          # Linux - Alpine/Static (musl) - x86_64
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
             archive: tar.gz
 
+          # Linux - Debian/Ubuntu (glibc) - ARM64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            archive: tar.gz
+            cross: true
+
+          # Linux - Alpine/Static (musl) - ARM64
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            archive: tar.gz
+            cross: true
+
+          # Windows 10/11 - x86_64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
             archive: zip
 
+          # Windows 10/11 - ARM64 (Surface Pro X, etc.)
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+            archive: zip
+            cross: true
+
+          # macOS - Intel x86_64 (older Macs)
           - target: x86_64-apple-darwin
+            os: macos-13
+            archive: tar.gz
+
+          # macOS - Apple Silicon ARM64 (M1/M2/M3/M4)
+          - target: aarch64-apple-darwin
             os: macos-latest
             archive: tar.gz
+
+          # FreeBSD - x86_64 (for BSD users)
+          - target: x86_64-unknown-freebsd
+            os: ubuntu-latest
+            archive: tar.gz
+            cross: true
 
     steps:
       - uses: actions/checkout@v4
@@ -257,7 +290,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install musl tools (Linux musl)
+      - name: Install cross-compilation tool
+        if: matrix.cross == true
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Install musl tools (Linux musl x86_64)
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: sudo apt-get update && sudo apt-get install -y musl-tools
 
@@ -267,7 +304,51 @@ jobs:
 
       - name: Install system dependencies (macOS)
         if: matrix.os == 'macos-latest'
-        run: brew install libpcap pkg-config
+        run: |
+          # Install libpcap (only if not already present)
+          brew list libpcap &>/dev/null || brew install libpcap
+          # pkg-config is provided by pkgconf which is pre-installed on GitHub Actions runners
+          brew list pkgconf &>/dev/null || brew install pkgconf
+
+      - name: Install Npcap SDK and Runtime DLLs (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          # Download and extract Npcap SDK (contains Packet.lib for development)
+          curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
+          Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
+
+          # Download Npcap installer and extract DLLs without running (avoids hang)
+          curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
+
+          # Extract installer using 7zip (pre-installed on GitHub Actions)
+          7z x npcap-installer.exe -o"npcap-runtime" -y
+
+          # Create runtime directory and copy DLLs
+          New-Item -ItemType Directory -Force -Path "npcap-dlls"
+
+          # Find and copy ONLY x64 DLLs (to avoid 32-bit/64-bit architecture mismatch)
+          Get-ChildItem -Path "npcap-runtime" -Recurse -Filter "*.dll" | Where-Object {
+            ($_.Name -eq "Packet.dll" -or $_.Name -eq "wpcap.dll") -and $_.DirectoryName -like "*x64*"
+          } | ForEach-Object {
+            Copy-Item $_.FullName -Destination "npcap-dlls\" -Force
+            Write-Host "Copied $($_.Name) from $($_.DirectoryName)"
+          }
+
+          # Verify we got the x64 DLLs
+          if (-not (Test-Path "npcap-dlls\Packet.dll") -or -not (Test-Path "npcap-dlls\wpcap.dll")) {
+            Write-Error "Failed to extract x64 DLLs from installer"
+            exit 1
+          }
+
+          # Add SDK lib directory to LIB environment variable for linking
+          echo "LIB=$PWD\npcap-sdk\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
+
+          # Add DLL directory to PATH for runtime
+          echo "PATH=$PWD\npcap-dlls;$env:PATH" >> $env:GITHUB_ENV
+
+          # List what we extracted to verify
+          Write-Host "Extracted DLLs:"
+          Get-ChildItem "npcap-dlls" -ErrorAction SilentlyContinue
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
@@ -275,7 +356,25 @@ jobs:
           shared-key: "release-${{ matrix.target }}"
 
       - name: Build release binary
-        run: cargo build --release --target ${{ matrix.target }} --locked
+        run: |
+          # Determine build command (cargo or cross)
+          if [ "${{ matrix.cross }}" = "true" ]; then
+            BUILD_CMD="cross"
+          else
+            BUILD_CMD="cargo"
+          fi
+
+          # Build with appropriate features
+          if [[ "${{ matrix.target }}" == *"musl"* ]]; then
+            # musl builds require vendored OpenSSL for static linking
+            $BUILD_CMD build --release --target ${{ matrix.target }} --locked --features prtip-scanner/vendored-openssl
+          else
+            $BUILD_CMD build --release --target ${{ matrix.target }} --locked
+          fi
+        shell: bash
+        env:
+          # Force static linking for musl targets
+          OPENSSL_STATIC: 1
 
       - name: Create archive (Linux/macOS)
         if: matrix.archive == 'tar.gz'

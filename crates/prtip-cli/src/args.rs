@@ -98,6 +98,10 @@ pub struct Args {
     #[arg(long, help_heading = "NETWORK")]
     pub interface_list: bool,
 
+    /// Source port to use for scanning (for firewall evasion)
+    #[arg(short = 'g', long, value_name = "PORT", help_heading = "NETWORK")]
+    pub source_port: Option<u16>,
+
     /// Enable OS detection (requires open and closed ports)
     #[arg(short = 'O', long, help_heading = "DETECTION")]
     pub os_detection: bool,
@@ -334,7 +338,7 @@ impl Args {
             },
             network: NetworkConfig {
                 interface: self.interface.clone(),
-                source_port: None, // TODO: Add CLI arg for source port in future
+                source_port: self.source_port,
             },
             output: OutputConfig {
                 format: output_format,

@@ -20,6 +20,10 @@ pnet_packet = { workspace = true }
 socket2 = { workspace = true }
 etherparse = { workspace = true }
 
+# TLS support
+tokio-native-tls = "0.3"
+native-tls = "0.2"
+
 # Database
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono"] }
 

@@ -88,11 +88,72 @@ impl BannerGrabber {
         self.read_banner(stream).await
     }
 
-    /// Grab HTTPS banner (would require TLS - placeholder)
-    pub async fn grab_https_banner(&self, _target: SocketAddr) -> Result<String, Error> {
-        // TODO: Implement TLS handshake
-        // For now, return placeholder
-        Ok("HTTPS (TLS required)".to_string())
+    /// Grab HTTPS banner with TLS handshake
+    pub async fn grab_https_banner(&self, target: SocketAddr) -> Result<String, Error> {
+        use tokio_native_tls::native_tls::TlsConnector;
+        use tokio_native_tls::TlsConnector as TokioTlsConnector;
+
+        // Create TLS connector with danger_accept_invalid_certs for scanning purposes
+        let tls_connector = TlsConnector::builder()
+            .danger_accept_invalid_certs(true)
+            .danger_accept_invalid_hostnames(true)
+            .build()
+            .map_err(|e| Error::Network(format!("TLS setup failed: {}", e)))?;
+
+        let tokio_connector = TokioTlsConnector::from(tls_connector);
+
+        // Connect to target
+        let stream = timeout(self.timeout, TcpStream::connect(target))
+            .await
+            .map_err(|_| Error::Network("Connection timeout".to_string()))?
+            .map_err(|e| Error::Network(format!("Connection failed: {}", e)))?;
+
+        // Perform TLS handshake
+        let host = target.ip().to_string();
+        let mut tls_stream = tokio_connector
+            .connect(&host, stream)
+            .await
+            .map_err(|e| Error::Network(format!("TLS handshake failed: {}", e)))?;
+
+        // Send HTTP GET request
+        let request = format!(
+            "GET / HTTP/1.1\r\nHost: {}\r\nUser-Agent: ProRT-IP/1.0\r\nConnection: close\r\n\r\n",
+            target.ip()
+        );
+
+        tls_stream
+            .write_all(request.as_bytes())
+            .await
+            .map_err(|e| Error::Network(format!("Write failed: {}", e)))?;
+
+        // Read response
+        self.read_banner_from_tls(tls_stream).await
+    }
+
+    /// Read banner from TLS stream
+    async fn read_banner_from_tls<S>(&self, mut stream: S) -> Result<String, Error>
+    where
+        S: tokio::io::AsyncRead + Unpin,
+    {
+        let mut buffer = vec![0u8; 4096];
+
+        match timeout(self.timeout, stream.read(&mut buffer)).await {
+            Ok(Ok(bytes_read)) => {
+                if bytes_read == 0 {
+                    return Err(Error::Network("No data received".to_string()));
+                }
+
+                let response = String::from_utf8_lossy(&buffer[..bytes_read])
+                    .lines()
+                    .take(10) // Limit to first 10 lines
+                    .collect::<Vec<_>>()
+                    .join("\n");
+
+                Ok(response)
+            }
+            Ok(Err(e)) => Err(Error::Network(format!("Read error: {}", e))),
+            Err(_) => Err(Error::Network("Read timeout".to_string())),
+        }
     }
 
     /// Grab FTP banner

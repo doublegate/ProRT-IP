@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProRT-IP Test Environment</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #00ff41;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+        h1 {
+            color: #00ff41;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+        }
+        .banner {
+            background: #1a1e3a;
+            border-left: 4px solid #00ff41;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            background: #1a1e3a;
+            padding: 2px 6px;
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ProRT-IP WarScan Test Environment</h1>
+
+        <div class="banner">
+            <p><strong>Service:</strong> Nginx HTTP Server</p>
+            <p><strong>Purpose:</strong> Phase 4 Performance Benchmarking</p>
+            <p><strong>Status:</strong> <span style="color: #00ff41;">● ONLINE</span></p>
+        </div>
+
+        <h2>Service Detection Tests</h2>
+        <p>This server is part of the ProRT-IP test environment for validating:</p>
+        <ul>
+            <li>Service version detection accuracy</li>
+            <li>Banner grabbing functionality</li>
+            <li>HTTP header parsing</li>
+            <li>Performance benchmarking with network latency</li>
+        </ul>
+
+        <h2>Server Information</h2>
+        <p>Server headers configured for testing:</p>
+        <ul>
+            <li><code>X-Server-Type: ProRT-IP-Test-Nginx</code></li>
+            <li><code>X-Test-Environment: Phase-4-Benchmarking</code></li>
+        </ul>
+
+        <h2>Test Scenarios</h2>
+        <p>Use this service to test:</p>
+        <ol>
+            <li>TCP Connect scans on port 80</li>
+            <li>Service version detection (<code>--sV</code> flag)</li>
+            <li>Banner grabbing with HTTP GET requests</li>
+            <li>Performance with network latency simulation</li>
+        </ol>
+
+        <p style="margin-top: 40px; text-align: center; color: #666;">
+            ProRT-IP WarScan v0.3.0 | Phase 4 Testing Infrastructure
+        </p>
+    </div>
+</body>
+</html>

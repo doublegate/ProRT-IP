@@ -7,7 +7,9 @@
 
 This document provides comprehensive guidance for benchmarking ProRT-IP WarScan performance before, during, and after Phase 4 optimizations. Establishing baseline metrics is critical for measuring optimization improvements.
 
-**Phase 3 Baseline Results:** See [BASELINE-RESULTS.md](BASELINE-RESULTS.md) for the complete v0.3.0 performance baseline established on 2025-10-09.
+**Phase 3 Baseline Results:** See [../benchmarks/1-BASELINE-RESULTS.md](../benchmarks/1-BASELINE-RESULTS.md) for the complete v0.3.0 performance baseline established on 2025-10-09.
+
+**Latest Benchmarks:** See [../benchmarks/README.md](../benchmarks/README.md) for all benchmark results including Sprint 4.3-4.4 comprehensive analysis.
 
 ---
 

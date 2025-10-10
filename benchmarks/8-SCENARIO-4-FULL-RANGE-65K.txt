@@ -1,0 +1,57 @@
+    Finished `release` profile [optimized] target(s) in 0.10s
+     Running `target/release/prtip -s connect -p 1-65535 127.0.0.1 --timing=4`
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    1-65535
+Type:     TCP Connect
+Timing:   T4 (Aggressive)
+Timeout:  3000ms
+Parallel: 0
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-10 22:31:52 UTC
+Scan Type: TCP Connect
+Timing Template: T4 (Aggressive)
+Total Results: 65535
+
+Hosts Scanned: 1
+Ports: 17 open, 65518 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 17 open, 65518 closed, 0 filtered
+
+Open Ports:
+   1716 open         (  0.27ms)
+   2023 open         (  0.55ms)
+   2025 open         (  0.54ms)
+   2021 open         (  0.58ms)
+   2022 open         (  0.59ms)
+   2445 open         (  0.45ms)
+   2053 open         (  2.96ms)
+   2139 open         (  3.69ms)
+   3306 open         (  1.74ms)
+   5355 open         (  0.08ms)
+   5432 open         (  0.19ms)
+   8180 open         (  0.79ms)
+   8080 open         (  1.69ms)
+  43739 open         (  1.84ms)
+  45359 open         (  1.20ms)
+  50097 open         (  1.29ms)
+  51923 open         (  0.96ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Hosts Scanned:    1
+Total Ports:      65535
+Open Ports:       17
+Closed Ports:     65518
+Filtered Ports:   0
+============================================================

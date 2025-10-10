@@ -1,0 +1,38 @@
+    Finished `release` profile [optimized] target(s) in 0.10s
+     Running `target/release/prtip -s connect -p 1-1000 127.0.0.1 --timing=4`
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    1-1000
+Type:     TCP Connect
+Timing:   T4 (Aggressive)
+Timeout:  3000ms
+Parallel: 0
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-10 22:32:01 UTC
+Scan Type: TCP Connect
+Timing Template: T4 (Aggressive)
+Total Results: 1000
+
+Hosts Scanned: 1
+Ports: 0 open, 1000 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 0 open, 1000 closed, 0 filtered
+
+
+
+============================================================
+Scan Summary
+============================================================
+Hosts Scanned:    1
+Total Ports:      1000
+Open Ports:       0
+Closed Ports:     1000
+Filtered Ports:   0
+============================================================

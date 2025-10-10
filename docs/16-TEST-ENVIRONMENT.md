@@ -30,7 +30,7 @@ This test environment provides a comprehensive suite of services for validating 
 
 ### Why This Environment?
 
-The Phase 3 baseline (docs/BASELINE-RESULTS.md) revealed that localhost testing is **91-2000x faster** than expected network scans due to zero latency. This environment solves that problem by:
+The Phase 3 baseline (../benchmarks/1-BASELINE-RESULTS.md) revealed that localhost testing is **91-2000x faster** than expected network scans due to zero latency. This environment solves that problem by:
 
 1. **Realistic RTT**: Add 10-100ms latency to simulate LAN/WAN/Internet conditions
 2. **Diverse Services**: Test service detection accuracy against real implementations
@@ -759,7 +759,7 @@ docker-compose ps
 **Related Documentation:**
 - [Phase 4 Performance Plan](../.cursor/plans/phase-4-performance-plan.plan.md)
 - [Benchmark Methodology](14-BENCHMARKS.md)
-- [Performance Baselines](BASELINE-RESULTS.md)
+- [Performance Baselines](../benchmarks/README.md)
 - [Performance Optimization Guide](07-PERFORMANCE.md)
 
 ---

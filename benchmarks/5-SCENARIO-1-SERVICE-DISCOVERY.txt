@@ -1,0 +1,45 @@
+    Finished `release` profile [optimized] target(s) in 0.09s
+     Running `target/release/prtip -s connect -p 2021,2022,8080,3306,5432,5353,2525,1161,6379,11211 127.0.0.1 --timing=3`
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    2021,2022,8080,3306,5432,5353,2525,1161,6379,11211
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 0
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-10 22:31:38 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 10
+
+Hosts Scanned: 1
+Ports: 5 open, 5 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 5 open, 5 closed, 0 filtered
+
+Open Ports:
+   8080 open         (  0.09ms)
+   2021 open         (  0.14ms)
+   2022 open         (  0.14ms)
+   5432 open         (  0.09ms)
+   3306 open         (  0.11ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Hosts Scanned:    1
+Total Ports:      10
+Open Ports:       5
+Closed Ports:     5
+Filtered Ports:   0
+============================================================

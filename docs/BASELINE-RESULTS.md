@@ -1111,6 +1111,16 @@ Once the container is running, Sprint 4.3+ can proceed with realistic network be
 - ✅ Lock-free result aggregator implemented and tested (435 lines, 8 tests)
 - ✅ All 565 tests passing (100% success rate, +14 from baseline)
 - ✅ Foundation established for Sprint 4.3-4.6
-- ⏸ Network-based benchmarking BLOCKED on Metasploitable2 container setup
+- ✅ Network-based benchmarking COMPLETE (see docs/PHASE4-NETWORK-BENCHMARKS.md)
+
+**Network Benchmarking Results (2025-10-10):**
+Comprehensive benchmarking completed against Metasploitable2 container. Key findings:
+- **Performance maintained:** 20K ports in <1s (Phase 3 baseline confirmed)
+- **Critical bottleneck:** 65K port scan >3 minutes (expected <10s) - HIGH priority Sprint 4.4
+- **Lock-free aggregator:** Implemented but NOT integrated - HIGH priority Sprint 4.3
+- **Service detection:** Modules complete but NOT integrated - HIGH priority Sprint 4.6
+- **Timing templates:** No measurable difference on localhost - requires network latency for validation
+
+See **docs/PHASE4-NETWORK-BENCHMARKS.md** for complete results, analysis, and Sprint 4.3-4.6 priorities.
 
 **Questions?** Open a GitHub issue with label `phase-4` or `performance`

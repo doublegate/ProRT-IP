@@ -250,7 +250,7 @@ impl AdaptiveRateLimiter {
         Self {
             config,
             current_rate_mhz: AtomicU64::new(initial_rate_mhz),
-            min_rate_mhz: 10_000, // 10 pps * 1000
+            min_rate_mhz: 10_000,        // 10 pps * 1000
             max_rate_mhz: 1_000_000_000, // 1M pps * 1000
             consecutive_timeouts: AtomicUsize::new(0),
             successful_responses: AtomicUsize::new(0),
@@ -299,21 +299,30 @@ impl AdaptiveRateLimiter {
 
             let last_adj_micros = self.last_adjustment_micros.load(Ordering::Relaxed);
 
-            if now_micros.saturating_sub(last_adj_micros) > 100_000 { // 100ms in microseconds
+            if now_micros.saturating_sub(last_adj_micros) > 100_000 {
+                // 100ms in microseconds
                 // Atomic compare-and-swap loop for rate increase
                 loop {
                     let current_mhz = self.current_rate_mhz.load(Ordering::Relaxed);
                     let increase_mhz = (current_mhz as f64 * 0.01) as u64; // 1% increase
                     let new_mhz = (current_mhz + increase_mhz).min(self.max_rate_mhz);
 
-                    if self.current_rate_mhz.compare_exchange_weak(
-                        current_mhz,
-                        new_mhz,
-                        Ordering::Release,
-                        Ordering::Relaxed,
-                    ).is_ok() {
-                        self.last_adjustment_micros.store(now_micros, Ordering::Relaxed);
-                        trace!("Rate increase: {:.0} pps (success rate improved)", new_mhz as f64 / 1000.0);
+                    if self
+                        .current_rate_mhz
+                        .compare_exchange_weak(
+                            current_mhz,
+                            new_mhz,
+                            Ordering::Release,
+                            Ordering::Relaxed,
+                        )
+                        .is_ok()
+                    {
+                        self.last_adjustment_micros
+                            .store(now_micros, Ordering::Relaxed);
+                        trace!(
+                            "Rate increase: {:.0} pps (success rate improved)",
+                            new_mhz as f64 / 1000.0
+                        );
                         break;
                     }
                 }
@@ -330,19 +339,27 @@ impl AdaptiveRateLimiter {
                     let current_mhz = self.current_rate_mhz.load(Ordering::Relaxed);
                     let new_mhz = ((current_mhz as f64 * 0.5) as u64).max(self.min_rate_mhz); // Cut in half
 
-                    if self.current_rate_mhz.compare_exchange_weak(
-                        current_mhz,
-                        new_mhz,
-                        Ordering::Release,
-                        Ordering::Relaxed,
-                    ).is_ok() {
+                    if self
+                        .current_rate_mhz
+                        .compare_exchange_weak(
+                            current_mhz,
+                            new_mhz,
+                            Ordering::Release,
+                            Ordering::Relaxed,
+                        )
+                        .is_ok()
+                    {
                         self.consecutive_timeouts.store(0, Ordering::Relaxed);
                         let now_micros = std::time::SystemTime::now()
                             .duration_since(std::time::UNIX_EPOCH)
                             .unwrap()
                             .as_micros() as u64;
-                        self.last_adjustment_micros.store(now_micros, Ordering::Relaxed);
-                        debug!("Rate decrease: {:.0} pps (congestion detected)", new_mhz as f64 / 1000.0);
+                        self.last_adjustment_micros
+                            .store(now_micros, Ordering::Relaxed);
+                        debug!(
+                            "Rate decrease: {:.0} pps (congestion detected)",
+                            new_mhz as f64 / 1000.0
+                        );
                         break;
                     }
                 }

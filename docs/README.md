@@ -29,8 +29,8 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 | **[12-IMPLEMENTATIONS_ADDED.md](12-IMPLEMENTATIONS_ADDED.md)** | Detailed implementation log for all phases and enhancement cycles | Developers, maintainers |
 | **[13-GITHUB-RELEASE.md](13-GITHUB-RELEASE.md)** | Official v0.3.0 release notes and distribution guide | End users, stakeholders |
 | **[14-BENCHMARKS.md](14-BENCHMARKS.md)** | Performance benchmarking methodology and optimization targets | Performance engineers, developers |
-| **[BASELINE-RESULTS.md](BASELINE-RESULTS.md)** | Phase 3 performance baseline results for v0.3.0 | Performance engineers, stakeholders |
-| **[PHASE4-NETWORK-BENCHMARKS.md](PHASE4-NETWORK-BENCHMARKS.md)** | Phase 4 network benchmarking results and Sprint 4.3-4.6 priorities | Performance engineers, developers |
+| **[../benchmarks/](../benchmarks/)** | **Benchmark results directory** (moved from docs/) | Performance engineers, developers |
+| **[../benchmarks/README.md](../benchmarks/README.md)** | Benchmark organization and quick reference guide | Performance engineers, stakeholders |
 | **[14-DOCUMENTATION_AUDIT.md](14-DOCUMENTATION_AUDIT.md)** | Documentation audit history and consistency tracking | Documentation maintainers |
 | **[15-PLATFORM-SUPPORT.md](15-PLATFORM-SUPPORT.md)** | Comprehensive platform support guide with installation instructions | End users, system administrators |
 | **[16-TEST-ENVIRONMENT.md](16-TEST-ENVIRONMENT.md)** | Docker test environment setup and network benchmarking guide | Developers, performance engineers |

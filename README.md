@@ -3,7 +3,7 @@
 ## Protocol/Port Real-Time War Scanner for IP Networks
 
 <div align="center">
-  <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="800">
+  <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="600">
 </div>
 
 [![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-565_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-582_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -85,6 +85,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Table of Contents
 
+- [Architecture Overview](#architecture-overview)
 - [Project Status](#project-status)
 - [Documentation](#documentation)
 - [Quick Start](#quick-start)
@@ -101,15 +102,134 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ---
 
+## Architecture Overview
+
+ProRT-IP WarScan uses a modular, layered architecture built on Rust's async/await ecosystem. The following diagrams illustrate key system components and data flows.
+
+### Workspace Module Relationships
+
+```mermaid
+graph LR
+    subgraph CLI Layer
+        CLI[prtip-cli]
+    end
+    subgraph Scanner Engine
+        Scheduler[ScanScheduler]
+        Scanners[Scan Implementations]
+        Storage[ScanStorage]
+    end
+    subgraph Networking & System
+        Network[prtip-network]
+        Core[prtip-core]
+    end
+
+    CLI -->|parses args| Core
+    CLI -->|builds config| Scheduler
+    Scheduler -->|reads/writes| Storage
+    Scheduler -->|invokes| Scanners
+    Scanners -->|craft packets| Network
+    Network -->|uses types/errors| Core
+    Storage -->|serialize results| Core
+```
+
+### CLI Execution Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI as prtip-cli
+    participant Core as prtip-core
+    participant Scanner as prtip-scanner
+    participant Network as prtip-network
+    participant DB as SQLite (ScanStorage)
+
+    User->>CLI: Run `prtip ...`
+    CLI->>CLI: Parse & validate arguments
+    CLI->>Core: Build Config & PortRange
+    CLI->>Core: Adjust resource limits
+    CLI->>Scanner: Create ScanScheduler + Storage
+    CLI->>Scanner: Execute scan (targets, ports)
+    Scanner->>Network: Check/drop privileges
+    Scanner->>Network: Send/receive packets
+    Scanner->>DB: Persist scan records/results
+    DB-->>Scanner: Ack writes
+    Scanner-->>CLI: Return ScanResult list
+    CLI->>Core: Format output (text/json/xml)
+    CLI-->>User: Render formatted results
+```
+
+### Scan Scheduler Orchestration
+
+```mermaid
+graph TD
+    Scheduler[ScanScheduler] --> Config[Config Validation]
+    Scheduler --> Discovery[DiscoveryEngine]
+    Scheduler --> RateLimiter[RateLimiter]
+    Scheduler --> Parallelism[Adaptive Parallelism]
+    Scheduler --> TCP[TcpConnectScanner]
+    Scheduler --> SYN[SynScanner]
+    Scheduler --> UDP[UdpScanner]
+    Scheduler --> Stealth[StealthScanner]
+    Scheduler --> Service[ServiceDetector]
+    Scheduler --> OS[OsFingerprinter]
+    Scheduler --> Storage
+    Storage --> DB[(SQLite)]
+    RateLimiter --> Core
+    Parallelism --> Core
+```
+
+### Result Aggregation Pipeline
+
+```mermaid
+flowchart LR
+    subgraph Producers
+        Workers[Scan Workers]
+    end
+    Workers -->|ScanResult| Aggregator[LockFreeAggregator (SegQueue)]
+    Aggregator -->|Batch drain| Writer[Storage Writer Task]
+    Writer -->|Transaction| SQLite[(SQLite WAL)]
+    SQLite --> Reports[Formatted Output]
+    Reports --> CLI
+```
+
+### Packet Lifecycle (SYN Scan Path)
+
+```mermaid
+sequenceDiagram
+    participant Syn as SynScanner
+    participant Builder as TcpPacketBuilder
+    participant Capture as PacketCapture
+    participant Target as Target Host
+
+    Syn->>Builder: Build SYN frame\n(local IP/port + target)
+    Builder-->>Syn: Raw packet bytes
+    Syn->>Capture: send_packet(bytes)
+    Capture-->>Target: Transmit over wire
+    Target-->>Capture: SYN/ACK or RST
+    Capture-->>Syn: receive_packet()
+    Syn->>Syn: Update connection state
+    Syn->>Builder: Optional RST teardown
+    Syn-->>Scheduler: PortState + timing
+```
+
+**For detailed technical documentation, see [Architecture](docs/00-ARCHITECTURE.md) and [DIAGRAMS.md](DIAGRAMS.md).**
+
+---
+
 ## Project Status
 
-**Current Phase:** Phase 4 Performance Optimization IN PROGRESS 🚀 | **Sprint 4.1-4.2 COMPLETE ✅**
+**Current Phase:** Phase 4 Performance Optimization IN PROGRESS 🚀 | **Sprint 4.1-4.4 COMPLETE ✅**
 
-**Latest Version:** v0.3.0 (Production Ready - Full Detection + Multi-Platform CI/CD + Lock-Free Optimizations)
+**Latest Version:** v0.3.0+ (Production Ready - Full Detection + Multi-Platform CI/CD + Adaptive Parallelism)
 
-**Test Coverage:** 565 tests passing (100% success rate, +14 from v0.3.0 baseline)
+**Test Coverage:** 582 tests passing (100% success rate, +31 from v0.3.0 baseline)
 
-**CI/CD Status:** 7/7 jobs passing | 5/9 platforms production-ready
+**CI/CD Status:** 7/7 jobs passing | 5/8 platforms production-ready
+
+**Latest Achievement:** Sprint 4.4 - **Critical 65K Port Bottleneck Fixed!**
+- Full port scans (1-65535): **>180s → 0.91s** (198x faster!)
+- Adaptive parallelism: Automatic scaling (20-1000 concurrent)
+- Port overflow bug fixed: Eliminated infinite loop on port 65535
 
 **Recent Accomplishments:**
 
@@ -145,14 +265,17 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Build Targets: 9 total (5 working, 4 experimental)
 - Latest Additions: Multi-platform CI/CD, macOS ARM64 support, FreeBSD support
 
-**Phase 4 Progress (Sprint 4.1-4.2 Complete):**
-- ✅ Network Testing Infrastructure (Docker Compose, latency simulation, test environment docs)
-- ✅ Lock-Free Result Aggregator (crossbeam SegQueue, 8 new tests)
-- ✅ DashMap for SYN Scanner (eliminates mutex contention)
-- ✅ Atomic Operations in Rate Limiter (lock-free hot path)
-- 🔄 Sprint 4.3-4.6 In Progress (batched syscalls, full port range optimization, NUMA awareness, service detection validation)
+**Phase 4 Progress (Sprint 4.1-4.4 Complete):**
+- ✅ Sprint 4.1: Network Testing Infrastructure (Docker Compose + 10 services, latency simulation, test environment docs)
+- ✅ Sprint 4.2: Lock-Free Result Aggregator (crossbeam SegQueue, 10M+ results/sec, <100ns latency)
+- ✅ Sprint 4.3: DashMap for SYN Scanner (eliminates mutex contention)
+- ✅ Sprint 4.4: Adaptive Parallelism + Port Overflow Fix (65K ports: >180s → 0.91s, **198x faster!**)
+  - Critical bug fix: u16 port overflow causing infinite loop on port 65535
+  - Adaptive scaling: 20-1000 concurrent based on port count
+  - 342 lines adaptive parallelism module with 17 comprehensive tests
+- 🔄 Sprint 4.5-4.6 In Progress (batched syscalls, service detection integration, NUMA awareness)
 
-**Next Sprint:** 4.3 - Batched Syscalls (sendmmsg/recvmmsg for 1M+ pps capability)
+**Next Sprint:** 4.5 - Lock-Free Integration + Batched Syscalls (sendmmsg/recvmmsg for 1M+ pps capability)
 
 ---
 
@@ -593,31 +716,32 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ## Project Statistics
 
-- **Total Documentation:** 491 KB (250 KB technical docs + 241 KB reference specs)
-- **Root Documents:** 9 files (README, ROADMAP, CONTRIBUTING, SECURITY, SUPPORT, AUTHORS, CHANGELOG, CLAUDE.md, CLAUDE.local.md)
-- **Technical Documents:** 13 files in docs/ directory (including Platform Support guide)
-- **Development Phases:** 8 phases over 20 weeks (Phase 3 + CI/CD complete - 40% progress)
-- **Implementation Progress:** 3/8 phases complete (Phase 1-3) + 8 enhancement cycles + CI/CD optimization
-- **Test Suite:** 565 tests passing (100% success rate, +14 from Phase 4 Sprint 4.1-4.2)
+- **Total Documentation:** 520+ KB (280 KB technical docs + 241 KB reference specs)
+- **Root Documents:** 10 files (README, ROADMAP, CONTRIBUTING, SECURITY, SUPPORT, AUTHORS, CHANGELOG, DIAGRAMS, AGENTS, CLAUDE.md, CLAUDE.local.md)
+- **Technical Documents:** 15 files in docs/ directory (including Platform Support, Test Environment, Phase 4 Benchmarks)
+- **Development Phases:** 8 phases over 20 weeks (Phase 3 + CI/CD + Sprint 4.1-4.4 complete - 50% progress)
+- **Implementation Progress:** 3/8 phases complete (Phase 1-3) + 8 enhancement cycles + CI/CD optimization + Phase 4 Sprint 4.1-4.4
+- **Test Suite:** 582 tests passing (100% success rate, +31 from v0.3.0 baseline, +17 from Sprint 4.4)
 - **CI/CD Status:** 7/7 jobs passing (100% success rate)
-- **Build Targets:** 9 platforms (5 production-ready, 4 experimental)
+- **Build Targets:** 8 platforms (5 production-ready, 3 experimental)
 - **Platform Coverage:** Linux x86, Windows x86, macOS Intel/ARM, FreeBSD (95% user base)
 - **Crates Implemented:** 4 (prtip-core, prtip-network, prtip-scanner, prtip-cli)
-- **Total Production Code:** 10,000+ lines
-- **Phase Breakdown:** Phase 1 (base) + Phase 2 (3,551) + Phase 3 (2,372) + Cycles 1-8 (4,077)
+- **Total Production Code:** 10,400+ lines (Phase 1-3: 6,097 + Cycles: 4,546 + Phase 4: 2,334)
+- **Phase 4 Additions:** Sprint 4.1 (1,557L infrastructure) + Sprint 4.2 (435L lock-free) + Sprint 4.4 (342L adaptive parallelism)
 - **Enhancement Cycles:** 8 complete (crypto, concurrency, resources, CLI, progress, filtering, exclusions, performance/stealth)
-- **Total Modules:** 40+ production modules
+- **Total Modules:** 43+ production modules (added: adaptive_parallelism, lockfree_aggregator, network test environment)
 - **Scan Types:** 7 implemented (Connect, SYN, UDP, FIN, NULL, Xmas, ACK)
 - **Protocol Payloads:** 8 (DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
 - **Timing Templates:** 6 (T0-T5 paranoid to insane)
 - **Detection Features:** OS fingerprinting (2,000+ signatures), Service detection (500+ probes), Banner grabbing (6 protocols + TLS)
-- **Performance Features:** Adaptive rate limiting, connection pooling, sendmmsg batching (30-50% improvement)
+- **Performance Features:** Adaptive parallelism (20-1000 concurrent), adaptive rate limiting, connection pooling, sendmmsg batching (30-50% improvement)
+- **Performance Achievements:** 65K ports in 0.91s (was >180s, **198x faster**), 72K pps sustained throughput
 - **Stealth Features:** Decoy scanning (up to 256 decoys), timing variations, source port manipulation
-- **Infrastructure:** CDN/WAF detection (8 providers), network interface detection, resource limit management
-- **CLI Version:** v0.3.0 (production-ready with cyber-punk banner)
-- **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc)
-- **Target Performance:** 1M+ packets/second (stateless), 50K+ pps (stateful)
-- **Code Coverage:** 551/551 tests (100% pass rate)
+- **Infrastructure:** CDN/WAF detection (8 providers), network interface detection, resource limit management, Docker test environment (10 services)
+- **CLI Version:** v0.3.0+ (production-ready with cyber-punk banner + adaptive parallelism)
+- **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam)
+- **Target Performance:** 1M+ packets/second (stateless), 72K+ pps (stateful - achieved!)
+- **Code Coverage:** 582/582 tests (100% pass rate)
 - **Cross-Compilation:** Supported via cross-rs for ARM64 and BSD targets
 - **Release Automation:** GitHub Actions with smart release management
 
@@ -632,7 +756,7 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ---
 
-**Current Status**: ✅ Phase 3 Complete | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | 🔄 Phase 4 Sprint 4.1-4.2 Complete | 565 Tests Passing | 7/7 CI Jobs Passing | 5/9 Platforms Production-Ready | 10,000+ Lines Production Code
+**Current Status**: ✅ Phase 3 Complete | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Phase 4 Sprint 4.1-4.4 Complete | 582 Tests Passing | 7/7 CI Jobs Passing | 5/8 Platforms Production-Ready | 10,400+ Lines Production Code | **65K Ports: 198x Faster!**
 
 **Last Updated**: 2025-10-10
 

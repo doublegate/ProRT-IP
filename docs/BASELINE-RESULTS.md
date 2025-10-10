@@ -853,4 +853,93 @@ $ time cargo test --release -- --test-threads=1 --nocapture
 
 ---
 
+## Phase 4 Sprint 4.2: Lock-Free Optimizations
+
+**Date:** 2025-10-10
+**Commit:** (pending)
+**Changes:** Lock-free data structures for reduced contention
+
+### Implementation Summary
+
+Implemented lock-free optimizations to eliminate mutex contention bottlenecks:
+
+**1. SYN Scanner Connection Table**
+- **Before:** `Arc<Mutex<HashMap<(Ipv4Addr, u16, u16), ConnectionState>>>`
+- **After:** `Arc<DashMap<(Ipv4Addr, u16, u16), ConnectionState>>`
+- **Location:** `crates/prtip-scanner/src/syn_scanner.rs:69`
+- **Benefit:** Lock-free concurrent access with sharded locking (16 shards by default)
+- **Operations affected:** 8 (insert, get, get_mut, remove in 4 locations)
+
+**2. Adaptive Rate Limiter**
+- **Before:** `Arc<Mutex<AdaptiveState>>` (5 fields under single lock)
+- **After:** Atomic fields for lock-free hot path
+  - `current_rate_mhz: AtomicU64` (stored in millihertz for precision)
+  - `consecutive_timeouts: AtomicUsize`
+  - `successful_responses: AtomicUsize`
+  - `last_adjustment_micros: AtomicU64`
+  - `rtt_stats: Arc<Mutex<RttStats>>` (complex operations still need mutex)
+- **Location:** `crates/prtip-scanner/src/timing.rs:221-237`
+- **Benefit:** Lock-free `wait()` and `report_response()` methods
+- **Algorithm:** AIMD congestion control with compare-and-swap loops
+
+### Test Results
+
+**Test Suite:** All 551 tests passing (100% success rate)
+- prtip-core: 64 tests (0.00s)
+- prtip-network: 72 tests (0.00s) + 29 integration (0.79s)
+- prtip-scanner: 115 tests (0.10s) + timing: 7 tests (1.50s)
+- prtip-cli: 43 tests (0.00s)
+- Integration tests: 126+14+1+31 = 172 tests (57.01s)
+- Doc-tests: 11+32 = 43 tests (12.27s)
+
+**Build Time:** 30.26s (release, no regression)
+
+**Warnings:** 1 unused import fixed (`Instant` in timing.rs)
+
+### Expected Performance Impact
+
+**Projected Improvements (network testing required):**
+- 10-30% throughput increase on multi-core scans
+- Reduced lock contention events (>90% target)
+- Better scaling to 10+ cores
+- <5% CPU time in synchronization primitives
+
+**Benchmarking Required:**
+- Network-based testing with Metasploitable2 Docker container
+- Lock contention profiling: `perf record -e lock:contention_begin`
+- Multi-core scaling validation (1, 2, 4, 8, 10, 16 cores)
+- Comparison with Phase 3 baseline (docs/BASELINE-RESULTS.md)
+
+### Code Changes Summary
+
+**Files Modified:** 3
+1. `Cargo.toml` - Added `dashmap = "6.1"` workspace dependency
+2. `crates/prtip-scanner/Cargo.toml` - Added dashmap to scanner crate
+3. `crates/prtip-scanner/src/syn_scanner.rs` - DashMap refactoring (11 edits)
+4. `crates/prtip-scanner/src/timing.rs` - Atomic operations (6 edits)
+
+**Lines Changed:**
+- syn_scanner.rs: ~15 lines (type alias, 8 method calls, 1 import)
+- timing.rs: ~100 lines (struct definition, 3 methods, atomics)
+
+**Dependencies Added:**
+- `dashmap = "6.1"` (lock-free HashMap with sharded locking)
+
+### Remaining Sprint 4.2 Tasks
+
+**Completed:**
+- ✅ Audit lock usage across codebase
+- ✅ Refactor SYN scanner with DashMap
+- ✅ Refactor timing module with atomics
+- ✅ Run full test suite (551 passing)
+
+**Pending:**
+- ⏸ Lock-free result aggregator (crossbeam SegQueue) - Sprint 4.2 Task 2
+- ⏸ Refactor stealth/UDP/OS scanners (minimal benefit, only capture mutex)
+- ⏸ Performance validation benchmarks (requires network target)
+
+**Next Sprint:** 4.3 - Batched Syscalls (sendmmsg/recvmmsg)
+
+---
+
 **Questions?** Open a GitHub issue with label `performance` or `benchmarking`

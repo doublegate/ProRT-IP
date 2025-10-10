@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Performance
+
+#### Phase 4 Sprint 4.2: Lock-Free Data Structures (2025-10-10)
+- **Lock-free SYN scanner connection table** using DashMap
+  - Replaced `Arc<Mutex<HashMap>>` with `Arc<DashMap>` for connection state tracking
+  - Eliminates lock contention during concurrent SYN scans
+  - Sharded locking (16 shards) for O(1) concurrent access
+  - Location: `crates/prtip-scanner/src/syn_scanner.rs:69`
+- **Atomic rate limiter** for lock-free congestion control
+  - Replaced `Arc<Mutex<AdaptiveState>>` with atomic fields
+  - Lock-free `wait()` and `report_response()` hot paths
+  - AIMD algorithm with compare-and-swap loops
+  - Fields: `AtomicU64` (current_rate_mhz, last_adjustment_micros), `AtomicUsize` (timeouts, successes)
+  - Location: `crates/prtip-scanner/src/timing.rs:221-237`
+- **Expected improvements:**
+  - 10-30% throughput increase on multi-core scans
+  - >90% reduction in lock contention events
+  - Better scaling to 10+ cores
+  - <5% CPU time in synchronization primitives
+- **All 551 tests passing** (100% success rate, zero regressions)
+- **Documentation updates:**
+  - docs/07-PERFORMANCE.md: Added Phase 4 Sprint 4.2 implementation details
+  - docs/BASELINE-RESULTS.md: Added Sprint 4.2 section with code changes summary
+
 ### Added
 
 #### Platform Support (2025-10-09)

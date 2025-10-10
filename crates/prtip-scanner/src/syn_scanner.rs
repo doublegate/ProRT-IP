@@ -37,10 +37,10 @@
 //! # }
 //! ```
 
+use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
 use prtip_network::{create_capture, PacketCapture, TcpFlags, TcpOption, TcpPacketBuilder};
-use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -65,8 +65,8 @@ struct ConnectionState {
     retries: u8,
 }
 
-/// Connection tracking table
-type ConnectionTable = Arc<Mutex<HashMap<(Ipv4Addr, u16, u16), ConnectionState>>>;
+/// Connection tracking table (lock-free with DashMap for Phase 4 performance)
+type ConnectionTable = Arc<DashMap<(Ipv4Addr, u16, u16), ConnectionState>>;
 
 /// SYN scanner with raw packet support
 pub struct SynScanner {
@@ -85,7 +85,7 @@ impl SynScanner {
         Ok(Self {
             config,
             capture: Arc::new(Mutex::new(None)),
-            connections: Arc::new(Mutex::new(HashMap::new())),
+            connections: Arc::new(DashMap::new()),
             local_ip,
         })
     }
@@ -127,7 +127,6 @@ impl SynScanner {
         };
 
         self.connections
-            .lock()
             .insert((target, port, src_port), conn_state.clone());
 
         // Wait for response with retries
@@ -138,7 +137,7 @@ impl SynScanner {
             let wait_duration = Duration::from_millis(timeout_ms);
 
             // Update retry count in connection state
-            if let Some(conn) = self.connections.lock().get_mut(&(target, port, src_port)) {
+            if let Some(mut conn) = self.connections.get_mut(&(target, port, src_port)) {
                 conn.retries = retry as u8;
             }
 
@@ -149,8 +148,8 @@ impl SynScanner {
             .await
             {
                 Ok(Ok(state)) => {
-                    // Cleanup connection tracking
-                    let conn_state = self.connections.lock().remove(&(target, port, src_port));
+                    // Cleanup connection tracking (DashMap returns (key, value) tuple)
+                    let conn_state = self.connections.remove(&(target, port, src_port)).map(|(_, v)| v);
 
                     // Send RST to close connection if it was open
                     if state == PortState::Open {
@@ -177,7 +176,6 @@ impl SynScanner {
                         // Get connection state for detailed logging
                         let conn_info =
                             self.connections
-                                .lock()
                                 .get(&(target, port, src_port))
                                 .map(|conn| {
                                     format!(
@@ -211,7 +209,7 @@ impl SynScanner {
         }
 
         // No response after all retries - port is filtered
-        self.connections.lock().remove(&(target, port, src_port));
+        self.connections.remove(&(target, port, src_port));
         let response_time = start_time.elapsed();
 
         Ok(
@@ -364,7 +362,7 @@ impl SynScanner {
         }
 
         // Validate sequence number against stored connection state
-        if let Some(conn) = self.connections.lock().get(&(target, port, src_port)) {
+        if let Some(conn) = self.connections.get(&(target, port, src_port)) {
             let ack_num = tcp_packet.get_acknowledgement();
             // For SYN/ACK, the ACK should be our sequence + 1
             if ack_num != conn.sequence.wrapping_add(1) {

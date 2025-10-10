@@ -3,7 +3,7 @@
 ## Protocol/Port Real-Time War Scanner for IP Networks
 
 <div align="center">
-  <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="600">
+  <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="800">
 </div>
 
 [![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
@@ -17,7 +17,7 @@
 ---
 
 <div align="center">
-  <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="800">
+  <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="600">
 </div>
 
 ## Overview

@@ -8,6 +8,7 @@
 //!
 //! The scheduler manages the scan lifecycle from initialization through completion.
 
+use crate::adaptive_parallelism::calculate_parallelism;
 use crate::{DiscoveryEngine, DiscoveryMethod, RateLimiter, ScanStorage, TcpConnectScanner};
 use prtip_core::{Config, Error, PortRange, Result, ScanResult, ScanTarget};
 use std::sync::Arc;
@@ -168,14 +169,27 @@ impl ScanScheduler {
         let ports = self.get_scan_ports()?;
         debug!("Scanning {} ports", ports.len());
 
+        // Calculate adaptive parallelism based on port count
+        // parallelism == 0 means use adaptive, otherwise use configured value
+        let user_override = if self.config.performance.parallelism > 0 {
+            Some(self.config.performance.parallelism)
+        } else {
+            None
+        };
+        let parallelism = calculate_parallelism(
+            ports.len(),
+            user_override,
+            self.config.performance.requested_ulimit,
+        );
+
         for host in hosts {
             // Rate limiting
             self.rate_limiter.acquire().await?;
 
-            // Perform TCP connect scan
+            // Perform TCP connect scan with adaptive parallelism
             match self
                 .tcp_scanner
-                .scan_ports(host, ports.clone(), self.config.performance.parallelism)
+                .scan_ports(host, ports.clone(), parallelism)
                 .await
             {
                 Ok(results) => {
@@ -225,10 +239,23 @@ impl ScanScheduler {
 
         info!("Discovering live hosts among {} addresses", all_ips.len());
 
+        // Calculate parallelism for host discovery
+        // parallelism == 0 means use adaptive, otherwise use configured value
+        let user_override = if self.config.performance.parallelism > 0 {
+            Some(self.config.performance.parallelism)
+        } else {
+            None
+        };
+        let discovery_parallelism = calculate_parallelism(
+            all_ips.len(),
+            user_override,
+            self.config.performance.requested_ulimit,
+        );
+
         // Discover live hosts
         let live_hosts = self
             .discovery
-            .discover_hosts(all_ips.clone(), self.config.performance.parallelism)
+            .discover_hosts(all_ips.clone(), discovery_parallelism)
             .await?;
 
         info!("Found {} live hosts", live_hosts.len());
@@ -295,6 +322,19 @@ impl ScanScheduler {
         let ports_vec: Vec<u16> = ports.iter().collect();
         let mut all_results = Vec::new();
 
+        // Calculate adaptive parallelism based on port count
+        // parallelism == 0 means use adaptive, otherwise use configured value
+        let user_override = if self.config.performance.parallelism > 0 {
+            Some(self.config.performance.parallelism)
+        } else {
+            None
+        };
+        let parallelism = calculate_parallelism(
+            ports_vec.len(),
+            user_override,
+            self.config.performance.requested_ulimit,
+        );
+
         for target in targets {
             let hosts = target.expand_hosts();
 
@@ -303,7 +343,7 @@ impl ScanScheduler {
 
                 match self
                     .tcp_scanner
-                    .scan_ports(host, ports_vec.clone(), self.config.performance.parallelism)
+                    .scan_ports(host, ports_vec.clone(), parallelism)
                     .await
                 {
                     Ok(results) => {

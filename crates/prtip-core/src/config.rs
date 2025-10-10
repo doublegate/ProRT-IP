@@ -60,11 +60,8 @@ impl Config {
         }
 
         // Validate performance config
-        if self.performance.parallelism == 0 {
-            return Err(Error::Config(
-                "parallelism must be greater than 0".to_string(),
-            ));
-        }
+        // parallelism == 0 is allowed (means use adaptive parallelism)
+        // Values > 0 are explicit user settings
 
         if self.performance.parallelism > 100_000 {
             return Err(Error::Config(
@@ -246,7 +243,8 @@ mod tests {
     fn test_config_validation_zero_parallelism() {
         let mut config = Config::default();
         config.performance.parallelism = 0;
-        assert!(config.validate().is_err());
+        // 0 is now allowed (means adaptive parallelism)
+        assert!(config.validate().is_ok());
     }
 
     #[test]

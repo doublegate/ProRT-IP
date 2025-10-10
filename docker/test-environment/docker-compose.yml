@@ -37,24 +37,24 @@ version: '3.8'
 services:
   # Metasploitable2 - Comprehensive vulnerable VM
   metasploitable2:
-    image: tleemcjr/metasploitable2
+    image: docker.io/tleemcjr/metasploitable2
     container_name: prtip-metasploitable2
     networks:
       prtip_test:
         ipv4_address: 172.20.0.10
     ports:
-      - "21:21"     # FTP
-      - "22:22"     # SSH
-      - "23:23"     # Telnet
-      - "25:25"     # SMTP
-      - "53:53/tcp" # DNS TCP
-      - "53:53/udp" # DNS UDP
-      - "80:80"     # HTTP
-      - "139:139"   # NetBIOS
-      - "445:445"   # SMB
-      - "3306:3306" # MySQL
-      - "5432:5432" # PostgreSQL
-      - "8180:8180" # Tomcat
+      - "2021:21"    # FTP
+      - "2022:22"    # SSH
+      - "2023:23"    # Telnet
+      - "2025:25"    # SMTP
+      - "2053:53/tcp" # DNS TCP
+      - "2053:53/udp" # DNS UDP
+      - "8080:80"    # HTTP
+      - "2139:139"   # NetBIOS
+      - "2445:445"   # SMB
+      - "3306:3306"  # MySQL
+      - "5432:5432"  # PostgreSQL
+      - "8180:8180"  # Tomcat
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "80"]
@@ -64,13 +64,13 @@ services:
 
   # Nginx - Modern HTTP/HTTPS server
   nginx:
-    image: nginx:latest
+    image: docker.io/library/nginx:latest
     container_name: prtip-nginx
     networks:
       prtip_test:
         ipv4_address: 172.20.0.20
     ports:
-      - "8080:80"
+      - "8081:80"
       - "8443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -84,7 +84,7 @@ services:
 
   # OpenSSH Server
   openssh:
-    image: linuxserver/openssh-server
+    image: docker.io/linuxserver/openssh-server
     container_name: prtip-openssh
     networks:
       prtip_test:
@@ -107,13 +107,13 @@ services:
 
   # vsftpd - FTP Server
   vsftpd:
-    image: fauria/vsftpd
+    image: docker.io/fauria/vsftpd
     container_name: prtip-vsftpd
     networks:
       prtip_test:
         ipv4_address: 172.20.0.22
     ports:
-      - "20:20"
+      - "2020:20"
       - "2121:21"
       - "21100-21110:21100-21110"
     environment:
@@ -126,7 +126,7 @@ services:
 
   # MySQL Database
   mysql:
-    image: mysql:8.0
+    image: docker.io/library/mysql:8.0
     container_name: prtip-mysql
     networks:
       prtip_test:
@@ -147,7 +147,7 @@ services:
 
   # PostgreSQL Database
   postgres:
-    image: postgres:15
+    image: docker.io/library/postgres:15
     container_name: prtip-postgres
     networks:
       prtip_test:
@@ -167,7 +167,7 @@ services:
 
   # Redis Key-Value Store
   redis:
-    image: redis:7-alpine
+    image: docker.io/library/redis:7-alpine
     container_name: prtip-redis
     networks:
       prtip_test:
@@ -183,7 +183,7 @@ services:
 
   # Memcached
   memcached:
-    image: memcached:latest
+    image: docker.io/library/memcached:latest
     container_name: prtip-memcached
     networks:
       prtip_test:
@@ -194,7 +194,7 @@ services:
 
   # BIND9 DNS Server
   bind9:
-    image: ubuntu/bind9:latest
+    image: docker.io/ubuntu/bind9:latest
     container_name: prtip-bind9
     networks:
       prtip_test:
@@ -209,7 +209,7 @@ services:
 
   # Net-SNMP Agent
   snmpd:
-    image: polinux/snmpd
+    image: docker.io/polinux/snmpd
     container_name: prtip-snmpd
     networks:
       prtip_test:

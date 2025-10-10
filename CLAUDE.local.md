@@ -1,27 +1,28 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-10 | **Phase:** Phase 4 Sprint 4.1-4.2 Complete | **Tests:** 565/565 ✅
+**Updated:** 2025-10-10 | **Phase:** Phase 4 Sprint 4.1-4.4 Complete | **Tests:** 582/582 ✅
 
 ## Current Status
 
-**Milestone:** Phase 4 Performance Optimization - Sprint 4.1-4.2 Complete (Network Infrastructure + Lock-Free Aggregator)
+**Milestone:** Phase 4 Performance Optimization - Sprint 4.1-4.4 Complete (**Critical 65K Port Fix: 198x Faster!**)
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase Progress** | Sprint 4.1-4.2 Complete | Infrastructure + Lock-free optimizations |
+| **Phase Progress** | Sprint 4.1-4.4 Complete | Infrastructure + Lock-free + Adaptive Parallelism |
 | **CI Status** | 7/7 passing (100%) | Format, Clippy, Test×3, MSRV, Security |
-| **Release Status** | 5/9 successful (56%) | Linux×2, Windows, macOS×2, FreeBSD |
-| **Build Targets** | 9 | Linux glibc/musl/ARM64, Windows x86/ARM64, macOS Intel/ARM, FreeBSD |
+| **Release Status** | 5/8 successful (62.5%) | Linux×2, Windows, macOS×2, FreeBSD |
+| **Build Targets** | 8 | Linux glibc/musl/ARM64, Windows x86, macOS Intel/ARM, FreeBSD |
 | **Platform Coverage** | 5 production (~95% users) | Linux x86, Windows x86, macOS Intel/ARM, FreeBSD |
-| **Total Tests** | 565 (100% pass) | +14 from v0.3.0 baseline (551 → 565) |
-| **Lines Added (P4)** | 1,992 | Infrastructure: 1,557 + Aggregator: 435 |
-| **Total Lines** | 10,089 | Phase 1-3: 6,097 + Cycles: 4,546 + Phase 4: 1,992 |
+| **Total Tests** | 582 (100% pass) | +31 from v0.3.0 baseline (551 → 582) |
+| **Lines Added (P4)** | 2,334 | Infrastructure: 1,557 + Aggregator: 435 + Adaptive: 342 |
+| **Total Lines** | 10,431 | Phase 1-3: 6,097 + Cycles: 4,546 + Phase 4: 2,334 |
 | **Crates** | 4 | prtip-core, prtip-network, prtip-scanner, prtip-cli |
 | **Scan Types** | 7 (+decoy) | Connect, SYN, UDP, FIN, NULL, Xmas, ACK, Decoy |
 | **Protocol Payloads** | 8 | DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS |
 | **Timing Templates** | 6 | T0-T5 (paranoid→insane) |
-| **CLI Version** | 0.3.0 | Production-ready with CI/CD + Phase 4 optimizations |
-| **Latest Commits** | Pending | Phase 4 Sprint 4.1-4.2 changes staged |
+| **CLI Version** | 0.3.0+ | Production-ready + Adaptive Parallelism + Port Fix |
+| **Latest Commits** | 2922c95 (Sprint 4.4) | 65K ports: >180s → 0.91s (198x faster!) |
+| **Performance Achievement** | **198x improvement** | Full port scans now complete in <1 second! |
 
 **Enhancement Cycles (Post-Phase 2):**
 - ✅ C1 (5782aed): SipHash, Blackrock, Concurrent scanner → 121 tests
@@ -64,6 +65,64 @@
 **Optimizations:** Lock-free (crossbeam), batched syscalls (sendmmsg/recvmmsg), NUMA pinning, SIMD checksums (AVX2), zero-copy, XDP/eBPF (Phase 4)
 
 ## Recent Sessions (Condensed)
+
+### 2025-10-10: Documentation Updates - DIAGRAMS.md Integration & Comprehensive Updates
+**Objective:** Incorporate DIAGRAMS.md into README.md, update all documentation to reflect Sprint 4.4 achievements, and sync memory banks
+**Activities:**
+- **DIAGRAMS.md Integration:**
+  - Added Architecture Overview section to README.md with 5 Mermaid diagrams
+  - Diagrams: Workspace relationships, CLI execution flow, scheduler orchestration, result aggregation, packet lifecycle
+  - Positioned after Table of Contents, before Project Status for logical flow
+- **README.md Comprehensive Updates:**
+  - Updated logo width (800px → 600px for consistency)
+  - Updated test badge (565 → 582 tests passing)
+  - Added Sprint 4.4 achievements to Project Status section
+  - Updated Phase 4 progress with Sprint 4.1-4.4 details
+  - Updated Project Statistics with latest metrics (10,431 lines, 582 tests, Sprint 4.4 performance)
+  - Updated final status line with 198x performance improvement highlight
+- **CHANGELOG.md Updates:**
+  - Added comprehensive Sprint 4.4 section with critical bug fixes
+  - Documented 198x performance improvement
+  - Included performance results table
+  - Listed all 17 new tests and code changes
+- **CLAUDE.local.md Updates:**
+  - Updated header to reflect Sprint 4.1-4.4 complete
+  - Updated Current Status table with latest metrics
+  - Added this session documentation
+**Deliverables:**
+- README.md: Architecture diagrams + Sprint 4.4 status + updated statistics
+- CHANGELOG.md: Sprint 4.4 comprehensive entry
+- CLAUDE.local.md: Latest session and metrics
+- All files formatted and ready for commit
+**Result:** Complete documentation refresh reflecting all Sprint 4.4 achievements and architectural diagrams incorporated
+
+### 2025-10-10: Phase 4 Sprint 4.4 Complete - Critical 65K Port Bottleneck Fixed (198x Faster!)
+**Objective:** Fix critical performance bottleneck preventing full port range scans from completing
+**Activities:**
+- **Critical Bug Fixes:**
+  - **Port 65535 overflow:** Fixed u16 wrap causing infinite loop on port 65535
+  - **Adaptive parallelism detection:** Fixed scheduler logic checking `> 1` instead of `> 0`
+- **Adaptive Parallelism Module Implementation:**
+  - Created `adaptive_parallelism.rs` (342 lines, 17 comprehensive tests)
+  - Automatic scaling: 20-1000 concurrent based on port count
+  - System integration with ulimit file descriptor limits
+  - Scan-type specific adjustments (SYN 2x, UDP 0.5x, etc.)
+- **Scheduler Integration:**
+  - Modified 3 methods: `scan_target()`, `execute_scan_ports()`, `execute_scan_with_discovery()`
+  - Fixed parallelism detection logic throughout
+- **Performance Results:**
+  - 1K ports: 20x faster (0.05s, ~20K pps)
+  - 10K ports: 40x faster (0.25s, ~40K pps)
+  - **65K ports: 198x faster (>180s → 0.91s, ~72K pps)** ✅
+- **Testing:**
+  - All 582 tests passing (100% success, +17 from Sprint 4.2)
+  - Zero regressions, zero clippy warnings
+  - >90% coverage for core modules
+**Deliverables:**
+- `adaptive_parallelism.rs` - 342 lines production code + 17 tests
+- Fixed `scheduler.rs`, `args.rs`, `config.rs`, `types.rs` (port overflow)
+- Commit 2922c95 ready to push
+**Result:** Sprint 4.4 COMPLETE - Critical usability issue resolved, full port scans now <1 second!
 
 ### 2025-10-10: Phase 4 Sprint 4.1-4.2 Complete - Network Infrastructure + Lock-Free Aggregator
 **Objective:** Implement Phase 4 performance optimization Sprint 4.1 (Network Testing Infrastructure) and Sprint 4.2 (Lock-Free Result Aggregator)

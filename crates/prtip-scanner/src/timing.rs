@@ -42,8 +42,9 @@
 
 use parking_lot::Mutex;
 use prtip_core::TimingTemplate;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio::time::sleep;
 use tracing::{debug, trace};
 
@@ -219,54 +220,52 @@ impl RttStats {
 /// Adaptive rate limiter with AIMD congestion control
 pub struct AdaptiveRateLimiter {
     config: TimingConfig,
-    state: Arc<Mutex<AdaptiveState>>,
-}
-
-#[derive(Debug)]
-struct AdaptiveState {
-    /// Current rate (packets per second)
-    current_rate: f64,
-    /// Minimum rate allowed
-    min_rate: f64,
-    /// Maximum rate allowed
-    max_rate: f64,
-    /// RTT statistics
-    rtt_stats: RttStats,
+    /// Current rate in millihertz (mHz = packets/sec * 1000) for atomic storage
+    current_rate_mhz: AtomicU64,
+    /// Minimum rate in mHz
+    min_rate_mhz: u64,
+    /// Maximum rate in mHz
+    max_rate_mhz: u64,
     /// Number of consecutive timeouts
-    consecutive_timeouts: usize,
+    consecutive_timeouts: AtomicUsize,
     /// Number of successful responses
-    successful_responses: usize,
-    /// Last rate adjustment time
-    last_adjustment: Instant,
+    successful_responses: AtomicUsize,
+    /// RTT statistics (still needs mutex for complex operations)
+    rtt_stats: Arc<Mutex<RttStats>>,
+    /// Last rate adjustment time (stored as micros since epoch)
+    last_adjustment_micros: AtomicU64,
 }
 
 impl AdaptiveRateLimiter {
     /// Create a new adaptive rate limiter
     pub fn new(config: TimingConfig) -> Self {
         let initial_rate = (config.max_parallelism as f64) * 10.0; // 10 Hz per parallel probe
+        let initial_rate_mhz = (initial_rate * 1000.0) as u64;
+
+        let now_micros = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_micros() as u64;
 
         Self {
             config,
-            state: Arc::new(Mutex::new(AdaptiveState {
-                current_rate: initial_rate,
-                min_rate: 10.0,
-                max_rate: 1_000_000.0, // 1M pps max
-                rtt_stats: RttStats::new(),
-                consecutive_timeouts: 0,
-                successful_responses: 0,
-                last_adjustment: Instant::now(),
-            })),
+            current_rate_mhz: AtomicU64::new(initial_rate_mhz),
+            min_rate_mhz: 10_000, // 10 pps * 1000
+            max_rate_mhz: 1_000_000_000, // 1M pps * 1000
+            consecutive_timeouts: AtomicUsize::new(0),
+            successful_responses: AtomicUsize::new(0),
+            rtt_stats: Arc::new(Mutex::new(RttStats::new())),
+            last_adjustment_micros: AtomicU64::new(now_micros),
         }
     }
 
     /// Wait before sending next packet
     pub async fn wait(&self) {
-        let delay = {
-            let state = self.state.lock();
-            let packets_per_second = state.current_rate.max(1.0);
-            let delay_millis = 1000.0 / packets_per_second;
-            Duration::from_millis(delay_millis as u64)
-        };
+        // Read current rate atomically (convert from mHz to pps)
+        let rate_mhz = self.current_rate_mhz.load(Ordering::Relaxed);
+        let packets_per_second = ((rate_mhz as f64) / 1000.0).max(1.0);
+        let delay_millis = 1000.0 / packets_per_second;
+        let delay = Duration::from_millis(delay_millis as u64);
 
         // Apply jitter if enabled
         let jittered_delay = self.config.apply_jitter(delay);
@@ -283,50 +282,78 @@ impl AdaptiveRateLimiter {
 
     /// Report a response (success or failure)
     pub fn report_response(&self, success: bool, rtt: Duration) {
-        let mut state = self.state.lock();
-
         if success {
-            // Update RTT statistics
-            state.rtt_stats.update(rtt);
-            state.successful_responses += 1;
-            state.consecutive_timeouts = 0;
+            // Update RTT statistics (requires mutex)
+            self.rtt_stats.lock().update(rtt);
+
+            // Atomic updates
+            self.successful_responses.fetch_add(1, Ordering::Relaxed);
+            self.consecutive_timeouts.store(0, Ordering::Relaxed);
 
             // AIMD: Additive Increase
-            // Increase rate slowly when successful
-            if state.last_adjustment.elapsed() > Duration::from_millis(100) {
-                let increase = state.current_rate * 0.01; // 1% increase
-                state.current_rate = (state.current_rate + increase).min(state.max_rate);
-                state.last_adjustment = Instant::now();
+            // Increase rate slowly when successful (check if 100ms elapsed)
+            let now_micros = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_micros() as u64;
 
-                trace!(
-                    "Rate increase: {:.0} pps (success rate improved)",
-                    state.current_rate
-                );
+            let last_adj_micros = self.last_adjustment_micros.load(Ordering::Relaxed);
+
+            if now_micros.saturating_sub(last_adj_micros) > 100_000 { // 100ms in microseconds
+                // Atomic compare-and-swap loop for rate increase
+                loop {
+                    let current_mhz = self.current_rate_mhz.load(Ordering::Relaxed);
+                    let increase_mhz = (current_mhz as f64 * 0.01) as u64; // 1% increase
+                    let new_mhz = (current_mhz + increase_mhz).min(self.max_rate_mhz);
+
+                    if self.current_rate_mhz.compare_exchange_weak(
+                        current_mhz,
+                        new_mhz,
+                        Ordering::Release,
+                        Ordering::Relaxed,
+                    ).is_ok() {
+                        self.last_adjustment_micros.store(now_micros, Ordering::Relaxed);
+                        trace!("Rate increase: {:.0} pps (success rate improved)", new_mhz as f64 / 1000.0);
+                        break;
+                    }
+                }
             }
         } else {
             // Timeout occurred
-            state.consecutive_timeouts += 1;
+            let timeouts = self.consecutive_timeouts.fetch_add(1, Ordering::Relaxed) + 1;
 
             // AIMD: Multiplicative Decrease
             // Decrease rate aggressively on timeouts
-            if state.consecutive_timeouts >= 3 {
-                let decrease_factor = 0.5; // Cut rate in half
-                state.current_rate = (state.current_rate * decrease_factor).max(state.min_rate);
-                state.consecutive_timeouts = 0;
-                state.last_adjustment = Instant::now();
+            if timeouts >= 3 {
+                // Atomic compare-and-swap loop for rate decrease
+                loop {
+                    let current_mhz = self.current_rate_mhz.load(Ordering::Relaxed);
+                    let new_mhz = ((current_mhz as f64 * 0.5) as u64).max(self.min_rate_mhz); // Cut in half
 
-                debug!(
-                    "Rate decrease: {:.0} pps (congestion detected)",
-                    state.current_rate
-                );
+                    if self.current_rate_mhz.compare_exchange_weak(
+                        current_mhz,
+                        new_mhz,
+                        Ordering::Release,
+                        Ordering::Relaxed,
+                    ).is_ok() {
+                        self.consecutive_timeouts.store(0, Ordering::Relaxed);
+                        let now_micros = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .as_micros() as u64;
+                        self.last_adjustment_micros.store(now_micros, Ordering::Relaxed);
+                        debug!("Rate decrease: {:.0} pps (congestion detected)", new_mhz as f64 / 1000.0);
+                        break;
+                    }
+                }
             }
         }
     }
 
     /// Get current recommended timeout
     pub fn current_timeout(&self) -> Duration {
-        let state = self.state.lock();
-        let calculated = state.rtt_stats.timeout();
+        let rtt_stats = self.rtt_stats.lock();
+        let calculated = rtt_stats.timeout();
 
         // Clamp to configured min/max
         calculated
@@ -336,15 +363,15 @@ impl AdaptiveRateLimiter {
 
     /// Get current rate in packets per second
     pub fn current_rate(&self) -> f64 {
-        self.state.lock().current_rate
+        let rate_mhz = self.current_rate_mhz.load(Ordering::Relaxed);
+        (rate_mhz as f64) / 1000.0
     }
 
     /// Reset statistics
     pub fn reset(&self) {
-        let mut state = self.state.lock();
-        state.consecutive_timeouts = 0;
-        state.successful_responses = 0;
-        state.rtt_stats = RttStats::new();
+        self.consecutive_timeouts.store(0, Ordering::Relaxed);
+        self.successful_responses.store(0, Ordering::Relaxed);
+        *self.rtt_stats.lock() = RttStats::new();
     }
 }
 

@@ -45,6 +45,7 @@
 //! # }
 //! ```
 
+pub mod adaptive_parallelism;
 pub mod adaptive_rate_limiter;
 pub mod banner_grabber;
 pub mod concurrent_scanner;

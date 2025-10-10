@@ -263,7 +263,24 @@ impl Iterator for PortRangeIterator {
                 }
 
                 let port = self.current_port;
-                self.current_port += 1;
+
+                // Check if we've reached the end of the range to avoid u16 overflow
+                if self.current_port == *end {
+                    // Move to next range
+                    self.current_range_idx += 1;
+                    if self.current_range_idx < self.ranges.len() {
+                        if let Some(next_range) = self.ranges.get(self.current_range_idx) {
+                            match next_range {
+                                PortRange::Single(p) => self.current_port = *p,
+                                PortRange::Range(s, _) => self.current_port = *s,
+                                _ => {}
+                            }
+                        }
+                    }
+                } else {
+                    self.current_port += 1;
+                }
+
                 Some(port)
             }
             PortRange::List(_) => unreachable!("Lists should be flattened"),

@@ -296,6 +296,15 @@ impl Args {
     ///
     /// Transforms CLI arguments into the internal configuration format
     /// used by the scanner engine.
+    ///
+    /// # Adaptive Parallelism
+    ///
+    /// If `--max-concurrent` is not specified, parallelism will be calculated
+    /// adaptively based on port count during scan execution. This provides optimal
+    /// performance without requiring manual tuning:
+    /// - Small scans (≤1K ports): 20 concurrent
+    /// - Medium scans (1K-10K ports): 100 concurrent
+    /// - Large scans (>10K ports): 500-1000 concurrent
     pub fn to_config(&self) -> Config {
         let timing = match self.timing {
             0 => TimingTemplate::Paranoid,
@@ -324,9 +333,10 @@ impl Args {
         };
 
         // Determine parallelism
-        let parallelism = self
-            .max_concurrent
-            .unwrap_or_else(|| num_cpus::get().max(1));
+        // If user specified --max-concurrent, use it directly
+        // Otherwise, use a placeholder (0) to signal adaptive parallelism
+        // should be used during scan execution based on actual port count
+        let parallelism = self.max_concurrent.unwrap_or(0);
 
         Config {
             scan: ScanConfig {

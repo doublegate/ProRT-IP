@@ -91,7 +91,7 @@ pub fn calculate_parallelism(
 ) -> usize {
     // User override takes absolute precedence
     if let Some(override_value) = user_override {
-        let bounded = override_value.min(MAX_PARALLELISM).max(MIN_PARALLELISM);
+        let bounded = override_value.clamp(MIN_PARALLELISM, MAX_PARALLELISM);
         if override_value != bounded {
             warn!(
                 "User parallelism {} bounded to valid range [{}, {}]",
@@ -124,7 +124,7 @@ pub fn calculate_parallelism(
 
     // Check system ulimit and adjust if necessary
     let ulimit_max = get_ulimit_constraint(ulimit_override);
-    let final_parallelism = adaptive.min(ulimit_max).max(MIN_PARALLELISM);
+    let final_parallelism = adaptive.clamp(MIN_PARALLELISM, ulimit_max);
 
     if adaptive > final_parallelism {
         warn!(
@@ -160,7 +160,7 @@ fn get_ulimit_constraint(ulimit_override: Option<u64>) -> usize {
             // Reserve other 50% for: database, logging, OS overhead
             let safe_limit = (effective_limit / 2) as usize;
 
-            safe_limit.max(MIN_PARALLELISM).min(MAX_PARALLELISM)
+            safe_limit.clamp(MIN_PARALLELISM, MAX_PARALLELISM)
         }
         Err(e) => {
             warn!("Failed to detect file descriptor limits: {}", e);
@@ -193,7 +193,7 @@ pub fn get_scan_type_parallelism(
 
     // If user override provided, respect it exactly (no scan type adjustment)
     if let Some(override_value) = user_override {
-        let bounded = override_value.min(MAX_PARALLELISM).max(MIN_PARALLELISM);
+        let bounded = override_value.clamp(MIN_PARALLELISM, MAX_PARALLELISM);
         return bounded;
     }
 
@@ -273,7 +273,10 @@ mod tests {
     fn test_parallelism_respects_max_limit() {
         // Should not exceed MAX_PARALLELISM
         assert!(calculate_parallelism(1000000, None, None) <= MAX_PARALLELISM);
-        assert_eq!(calculate_parallelism(1000, Some(5000), None), MAX_PARALLELISM);
+        assert_eq!(
+            calculate_parallelism(1000, Some(5000), None),
+            MAX_PARALLELISM
+        );
     }
 
     #[test]

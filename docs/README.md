@@ -33,6 +33,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 | **[PHASE4-NETWORK-BENCHMARKS.md](PHASE4-NETWORK-BENCHMARKS.md)** | Phase 4 network benchmarking results and Sprint 4.3-4.6 priorities | Performance engineers, developers |
 | **[14-DOCUMENTATION_AUDIT.md](14-DOCUMENTATION_AUDIT.md)** | Documentation audit history and consistency tracking | Documentation maintainers |
 | **[15-PLATFORM-SUPPORT.md](15-PLATFORM-SUPPORT.md)** | Comprehensive platform support guide with installation instructions | End users, system administrators |
+| **[16-TEST-ENVIRONMENT.md](16-TEST-ENVIRONMENT.md)** | Docker test environment setup and network benchmarking guide | Developers, performance engineers |
 
 ---
 

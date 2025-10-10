@@ -969,7 +969,7 @@ Implemented lock-free optimizations to eliminate mutex contention bottlenecks:
    - Protocol coverage: HTTP, SSH, FTP, SMTP, DNS (TCP/UDP), SNMP (UDP)
    - Health checks for all services
    
-3. **Comprehensive Documentation** (`docs/15-TEST-ENVIRONMENT.md` - 32KB)
+3. **Comprehensive Documentation** (`docs/16-TEST-ENVIRONMENT.md` - 32KB)
    - Full setup guide (prerequisites, installation, configuration)
    - 4 benchmark scenarios with expected results
    - Service matrix with IP addresses and ports
@@ -987,7 +987,7 @@ Implemented lock-free optimizations to eliminate mutex contention bottlenecks:
 - `docker/test-environment/docker-compose.yml` (188 lines)
 - `docker/test-environment/nginx/nginx.conf` (43 lines)
 - `docker/test-environment/nginx/html/index.html` (54 lines)
-- `docs/15-TEST-ENVIRONMENT.md` (1,024 lines, 32KB)
+- `docs/16-TEST-ENVIRONMENT.md` (1,024 lines, 32KB)
 
 **Total:** 1,557 lines of infrastructure code and documentation
 

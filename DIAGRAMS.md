@@ -81,7 +81,7 @@ flowchart LR
     subgraph Producers
         Workers[Scan Workers]
     end
-    Workers -->|ScanResult| Aggregator[LockFreeAggregator (SegQueue)]
+    Workers -->|ScanResult| Aggregator["LockFreeAggregator (SegQueue)"]
     Aggregator -->|Batch drain| Writer[Storage Writer Task]
     Writer -->|Transaction| SQLite[(SQLite WAL)]
     SQLite --> Reports[Formatted Output]

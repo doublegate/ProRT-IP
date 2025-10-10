@@ -149,7 +149,10 @@ impl SynScanner {
             {
                 Ok(Ok(state)) => {
                     // Cleanup connection tracking (DashMap returns (key, value) tuple)
-                    let conn_state = self.connections.remove(&(target, port, src_port)).map(|(_, v)| v);
+                    let conn_state = self
+                        .connections
+                        .remove(&(target, port, src_port))
+                        .map(|(_, v)| v);
 
                     // Send RST to close connection if it was open
                     if state == PortState::Open {
@@ -175,19 +178,17 @@ impl SynScanner {
                     if retry < max_retries {
                         // Get connection state for detailed logging
                         let conn_info =
-                            self.connections
-                                .get(&(target, port, src_port))
-                                .map(|conn| {
-                                    format!(
-                                        "{}:{} -> src_port={}, seq={:#x}, elapsed={:?}, retries={}",
-                                        conn.target_ip,
-                                        conn.target_port,
-                                        conn.source_port,
-                                        conn.sequence,
-                                        conn.sent_time.elapsed(),
-                                        conn.retries
-                                    )
-                                });
+                            self.connections.get(&(target, port, src_port)).map(|conn| {
+                                format!(
+                                    "{}:{} -> src_port={}, seq={:#x}, elapsed={:?}, retries={}",
+                                    conn.target_ip,
+                                    conn.target_port,
+                                    conn.source_port,
+                                    conn.sequence,
+                                    conn.sent_time.elapsed(),
+                                    conn.retries
+                                )
+                            });
 
                         debug!(
                             "Timeout waiting for connection, retry {}/{}: {}",

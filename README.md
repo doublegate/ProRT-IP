@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-620_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-551_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -104,21 +104,32 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 4 Performance Optimization COMPLETE ✅ | **Sprint 4.1-4.8 v2 COMPLETE ✅**
+**Current Phase:** Phase 4 Performance Optimization COMPLETE ✅ | **Comprehensive Validation COMPLETE ✅**
 
-**Latest Version:** v0.3.0+ (Production Ready - Full Detection + Multi-Platform CI/CD + Phase 4 Optimizations)
+**Latest Version:** v0.3.0 (Production Ready - Port Scanning + Full Validation)
 
-**Test Coverage:** 620 tests passing (100% success rate, +69 from v0.3.0 baseline)
+**Test Coverage:** 551 tests passing (100% success rate)
 
 **CI/CD Status:** 7/7 jobs passing | 5/8 platforms production-ready
 
-**Latest Achievement:** Sprint 4.8 v2 Complete - **Async Storage Deadlock Fixed!**
+**Latest Achievement:** Phase 4 COMPLETE + Comprehensive Validation
 
-- Default mode: **41.1ms** for 10K ports (maintained, 5.2x faster than old default!)
-- --with-db mode: **74.5ms** for 10K ports (46.7% improvement, deadlock resolved!)
-- Critical fix: Replaced tokio::select! with timeout() for proper channel closure
-- Production-ready: 620 tests passing, zero hangs, zero warnings
-- Phase 4 Performance Optimization: **COMPLETE** ✅
+- ✅ **Port Scanning:** 100% accuracy, 2.3-35x faster than competitors
+- ✅ **Performance:** 66ms for common ports (vs nmap: 150ms, rustscan: 223ms, naabu: 2335ms)
+- ✅ **DNS Resolution:** Hostname support (scanme.nmap.org)
+- ✅ **Benchmarking:** 29 comprehensive benchmark files with flamegraphs
+- ⚠️ **Service Detection:** Critical bug identified (empty probe database) - fix documented in bug_fix/
+
+**Industry Comparison (Common Ports on scanme.nmap.org):**
+
+| Scanner | Time | vs ProRT-IP | Accuracy |
+|---------|------|-------------|----------|
+| **ProRT-IP** | **66ms** | **baseline** | 100% ✅ |
+| nmap | 150ms | 2.3x slower | 100% ✅ |
+| rustscan | 223ms | 3.4x slower | 100% ✅ |
+| naabu | 2335ms | 35.4x slower | 100% ✅ |
+
+**ProRT-IP is the fastest validated network scanner tested.**
 
 **Recent Accomplishments:**
 
@@ -154,7 +165,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Build Targets: 9 total (5 working, 4 experimental)
 - Latest Additions: Async storage, lock-free aggregation, in-memory default mode
 
-**Phase 4 Progress (Sprint 4.1-4.8 v2 COMPLETE ✅):**
+**Phase 4 Progress (Sprint 4.1-4.11 COMPLETE ✅):**
 
 - ✅ Sprint 4.1: Network Testing Infrastructure (Docker Compose + 10 services, latency simulation, test environment docs)
 - ✅ Sprint 4.2: Lock-Free Result Aggregator (crossbeam SegQueue, 10M+ results/sec, <100ns latency)
@@ -171,8 +182,36 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - ✅ Sprint 4.8 v2: Async Storage Deadlock Fix (139.9ms → 74.5ms, **46.7% improvement!**)
   - Critical fix: Replaced tokio::select! with timeout() pattern
   - Zero hangs, proper channel closure, production-ready
+- ✅ Sprint 4.9: Final Benchmarking (29 files: hyperfine, perf, strace, massif, flamegraphs)
+- ✅ Sprint 4.10: CLI Improvements (statistics, parallel count fix, scan summary)
+- ✅ Sprint 4.11: Service Detection Integration + DNS Fix + Validation
+  - Service detection wired into scheduler (--sV, --version-intensity, --banner-grab)
+  - DNS hostname resolution (scanme.nmap.org, google.com)
+  - Comprehensive validation vs nmap, rustscan, naabu
+  - **100% port accuracy, 2.3-35x faster than competitors**
 
-**Phase 4 Summary:** All performance targets achieved, 620 tests passing, production-ready!
+**Phase 4 Summary:** All performance targets achieved, comprehensive validation complete, production-ready port scanning!
+
+### Performance Achievements (Phase 3 → Phase 4)
+
+| Benchmark | Phase 3 | Phase 4 | Improvement |
+|-----------|---------|---------|-------------|
+| 1K ports | 25ms | 4.5ms | 82% faster |
+| 10K ports | 117ms | 39.4ms | 66.3% faster |
+| 65K ports | >180s | 190.9ms | 198x faster |
+| 10K --with-db | 194.9ms | 75.1ms | 61.5% faster |
+
+### Known Issues
+
+**Service Detection (--sV flag):**
+- **Status:** ❌ BROKEN - Empty probe database
+- **Impact:** 0% service detection rate
+- **Root Cause:** `ServiceProbeDb::default()` creates empty Vec
+- **Fix Guide:** See `bug_fix/SERVICE-DETECTION-FIX.md`
+- **Estimated Fix:** 1-2 hours
+- **Tracking:** Issue documented in bug_fix/ directory
+
+**Workaround:** Use `--banner-grab` flag for basic service identification until fix is implemented.
 
 ---
 
@@ -207,6 +246,17 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | [FAQ](docs/09-FAQ.md) | Frequently asked questions |
 | [Project Status](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
 | [Platform Support](docs/15-PLATFORM-SUPPORT.md) | Comprehensive platform compatibility guide |
+
+### Validation & Bug Reports (`bug_fix/`)
+
+Comprehensive validation reports and bug analysis:
+
+| Document | Description |
+|----------|-------------|
+| [Validation Report](bug_fix/VALIDATION-REPORT.md) | Complete validation vs nmap, rustscan, naabu |
+| [Service Detection Fix](bug_fix/SERVICE-DETECTION-FIX.md) | Detailed fix guide for empty probe database |
+| [Validation Summary](bug_fix/FINAL-VALIDATION-SUMMARY.md) | Executive summary of findings |
+| [Analysis Data](bug_fix/analysis/) | Raw test outputs and debug logs (32 files) |
 
 **Quick Start:** See [Documentation README](docs/README.md) for navigation guide.
 

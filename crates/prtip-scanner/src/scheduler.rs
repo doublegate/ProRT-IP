@@ -362,7 +362,7 @@ impl ScanScheduler {
         for target in targets {
             let hosts = target.expand_hosts();
 
-            for host in hosts {
+            for (host_idx, host) in hosts.iter().enumerate() {
                 self.rate_limiter.acquire().await?;
 
                 // Create a progress tracker for this host's ports
@@ -416,7 +416,7 @@ impl ScanScheduler {
 
                 match self
                     .tcp_scanner
-                    .scan_ports_with_progress(host, ports_vec.clone(), parallelism, Some(&host_progress))
+                    .scan_ports_with_progress(*host, ports_vec.clone(), parallelism, Some(&host_progress))
                     .await
                 {
                     Ok(results) => {
@@ -436,6 +436,18 @@ impl ScanScheduler {
                                 // Retry push (result not moved because we cloned above)
                                 aggregator.push(result)?;
                             }
+                        }
+
+                        // Apply host delay if configured (helps avoid network rate limiting)
+                        if self.config.scan.host_delay_ms > 0 {
+                            debug!(
+                                "Applying host delay: {}ms (host {}/{})",
+                                self.config.scan.host_delay_ms,
+                                host_idx + 1,
+                                hosts.len()
+                            );
+                            tokio::time::sleep(Duration::from_millis(self.config.scan.host_delay_ms))
+                                .await;
                         }
                     }
                     Err(e) => {
@@ -589,6 +601,7 @@ mod tests {
                 timeout_ms: 1000,
                 retries: 0,
                 scan_delay_ms: 0,
+                host_delay_ms: 0,
                 service_detection: Default::default(),
                 progress: false,
             },

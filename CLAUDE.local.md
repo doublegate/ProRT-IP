@@ -67,6 +67,45 @@
 
 ## Recent Sessions (Condensed)
 
+### 2025-10-11: Sprint 4.14 - Network Timeout Optimization (SUCCESS ✅)
+**Objective:** Fix reported "hangs/pauses every 10K ports" on large network scans
+**Problem:** User's 192.168.4.0/24 × 10K scan running at 178 pps with 4-hour ETA
+**Investigation - No Blocking Bug Found:**
+- Added comprehensive timing instrumentation
+- All operations complete in < 5ms (progress bridge, storage, aggregator)
+- Zero gaps between hosts in test runs
+**Root Cause - Network Timeout Behavior:**
+- Default 3-second timeout × 500 concurrent = 166 pps worst-case (filtered ports)
+- User's 178 pps exactly matched worst-case timeout behavior
+- Network responding with filtered/timeout for >99% of ports
+- "Hangs" were perception issue: scan working but very slow (1.78 ports per 10ms update)
+**Solution - Triple Optimization:**
+1. **Reduced timeout:** 3000ms → 1000ms (3x faster filtered detection)
+2. **Increased parallelism:** 500 → 1000 concurrent for 10K+ ports (2x more)
+3. **Added `--host-delay` flag:** Workaround for network rate limiting/IDS
+**Results:**
+- Benchmark: 10K ports on 192.168.4.1: 3.19s (3,132 pps, 17.5x faster!)
+- Expected for user: 178 pps → 500-1000 pps (3-5x faster)
+- User's ETA: 4 hours → 42-85 minutes (3-5x faster)
+- Worst-case performance: 166 pps → 1000 pps (6x faster)
+**Testing:**
+- All 275 tests passing (100%)
+- Localhost: 247,257 pps (no regression)
+- Zero warnings, zero regressions
+**Files Modified (6 files, ~90 lines):**
+- `config.rs`: timeout_ms default 3000→1000, added host_delay_ms field
+- `args.rs`: added --host-delay flag
+- `scheduler.rs`: implemented host delay between hosts (lines 442-451)
+- `adaptive_parallelism.rs`: increased thresholds for 10K+ ports
+- `output.rs`: updated test for new timeout default
+- `integration_scanner.rs`: updated test config
+**Documentation:**
+- `/tmp/ProRT-IP/sprint4.14-hang-fix/root-cause-analysis.md` (28KB)
+- `/tmp/ProRT-IP/sprint4.14-hang-fix/implementation-summary.md` (15KB)
+- `/tmp/ProRT-IP/sprint4.14-hang-fix/USER-REPORT.md` (6KB)
+- Updated CHANGELOG.md with Sprint 4.14 comprehensive entry
+**Result:** **SUCCESS ✅** - No blocking bug, optimized for network scans, 3-17x faster
+
 ### 2025-10-11: Sprint 4.13 - Critical Performance Regression Fix (SUCCESS ✅)
 **Objective:** Fix catastrophic performance regression (50-800x slowdown on large network scans)
 **Problem:** User's 192.168.4.0/24 × 10K scan running at 289 pps with 2-hour ETA (should be 10-30 min)

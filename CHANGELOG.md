@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+**Sprint 4.14 - Network Timeout Optimization & Host Delay Feature** (2025-10-11)
+
+- **New `--host-delay` Flag:** Adds configurable delay between host scans for network rate limiting workarounds
+  - Helps avoid IDS/IPS detection on aggressive scans
+  - Example: `prtip -p 1-10000 --host-delay 5000 192.168.4.0/24` (5s between hosts)
+  - Useful for stealth scanning or rate-limited networks
+
 **Phase 4 Final Benchmarking & Comprehensive Validation (2025-10-11)**
 
 - **Comprehensive Benchmarking Suite** (29 files)
@@ -149,6 +156,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING (Sprint 4.14):** Default timeout reduced from 3000ms to 1000ms
+  - **Reason:** 3s timeout caused worst-case 166 pps on filtered ports (500 concurrent / 3s)
+  - **Impact:** 3x faster filtered port detection (500 pps worst-case with 1s timeout)
+  - **Parallelism:** Increased to 1000 concurrent for 10K+ ports (was 500)
+  - **Combined:** 6x faster worst-case performance (1000 ports / 1s = 1000 pps)
+  - **User Control:** Override with `--timeout 3000` if needed
+  - **Benchmark:** 10K ports on 192.168.4.1: 3.19s (3,132 pps, 17.5x faster!)
 - **BREAKING**: Default behavior is now in-memory (no database) for maximum performance
   - Previous default (SQLite storage): 194.9ms for 10K ports
   - New default (in-memory): 39.4ms for 10K ports (5.2x faster!)

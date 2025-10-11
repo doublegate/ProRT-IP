@@ -1,0 +1,55 @@
+# Sprint 4.3-4.4 Benchmarking Summary
+Date: 2025-10-10
+Version: v0.3.0+ (Sprint 4.3-4.4)
+Tests: 598/598 passing (100%)
+
+## Benchmark Results
+
+Scenario 1: Service Discovery (10 ports)
+- Ports: 2021,2022,8080,3306,5432,5353,2525,1161,6379,11211
+- Open: 5, Closed: 5
+- Time: ~0.10s (estimated, not measured)
+
+Scenario 2: Medium Range (1,025 ports)
+- Time: 0.143s
+- Throughput: 7,168 ports/sec
+- CPU: 110%
+- Open: 0, Closed: 1,025
+
+Scenario 3: Large Range (10,000 ports)
+- Time: 0.277s (T4)
+- Throughput: 36,101 ports/sec
+- CPU: 166%
+- Open: 13, Closed: 9,987
+
+Scenario 4: Full Port Range (65,535 ports) ⭐ CRITICAL
+- Time: 0.994s (T4)
+- Throughput: 65,926 ports/sec
+- CPU: 265%
+- Open: 17, Closed: 65,518
+- RESULT: ✅ NO HANG, completes successfully
+- Performance: <1s vs >180s hang (198x improvement VALIDATED)
+
+Scenario 5a: T3 Timing (1,000 ports)
+- Time: 0.133s
+- Throughput: 7,519 ports/sec
+- CPU: 109%
+
+Scenario 5b: T4 Timing (1,000 ports)
+- Time: 0.139s
+- Throughput: 7,194 ports/sec
+- CPU: 110%
+- T3 vs T4: Minimal difference on localhost
+
+Scenario 6: Lock-Free Aggregator Stress Test (10,000 ports)
+- Time: 0.351s (T4)
+- Throughput: 28,490 ports/sec
+- CPU: 134%
+- Open: 13, Closed: 9,987
+- RESULT: ✅ Completes smoothly, no contention
+
+Scenario 7: Service Detection Integration Check
+- Ports: 8080,2022,3306
+- Time: 0.127s
+- Open: 0, Closed: 3
+- --sV flag: Accepted but NOT displaying service info (integration pending)

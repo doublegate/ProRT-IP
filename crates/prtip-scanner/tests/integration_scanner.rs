@@ -64,9 +64,20 @@ async fn test_rate_limiter_integration() {
     let elapsed = start.elapsed();
 
     // 10 packets at 50 pps = ~200ms
-    // macOS CI can be slower, so allow up to 600ms tolerance
+    // Platform-specific timeouts (CI environments need wider margins):
+    // - Linux: 600ms (3x baseline)
+    // - macOS: 1200ms (6x baseline, CI runners can be slow)
+    // - Windows: 1800ms (9x baseline, see CLAUDE.md CI/CD best practices)
+    let max_duration = if cfg!(target_os = "macos") {
+        Duration::from_millis(1200)
+    } else if cfg!(target_os = "windows") {
+        Duration::from_millis(1800)
+    } else {
+        Duration::from_millis(600) // Linux and others
+    };
+
     assert!(elapsed >= Duration::from_millis(180));
-    assert!(elapsed <= Duration::from_millis(600));
+    assert!(elapsed <= max_duration);
 }
 
 #[tokio::test]

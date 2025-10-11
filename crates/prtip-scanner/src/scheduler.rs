@@ -10,7 +10,10 @@
 
 use crate::adaptive_parallelism::calculate_parallelism;
 use crate::storage_backend::StorageBackend;
-use crate::{BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter, ServiceDetector, TcpConnectScanner};
+use crate::{
+    BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter,
+    ServiceDetector, TcpConnectScanner,
+};
 use prtip_core::{Config, PortRange, PortState, Result, ScanResult, ScanTarget, ServiceProbeDb};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -386,15 +389,16 @@ impl ScanScheduler {
         // Perform service detection if enabled
         if self.config.scan.service_detection.enabled {
             info!("Starting service detection on open ports");
-            let open_count = all_results.iter().filter(|r| r.state == PortState::Open).count();
+            let open_count = all_results
+                .iter()
+                .filter(|r| r.state == PortState::Open)
+                .count();
 
             if open_count > 0 {
                 // Create service detector and banner grabber
                 let probe_db = ServiceProbeDb::default();
-                let detector = ServiceDetector::new(
-                    probe_db,
-                    self.config.scan.service_detection.intensity
-                );
+                let detector =
+                    ServiceDetector::new(probe_db, self.config.scan.service_detection.intensity);
                 let grabber = BannerGrabber::new();
 
                 debug!("Detecting services on {} open ports", open_count);
@@ -413,7 +417,8 @@ impl ScanScheduler {
                                     // Combine product and version
                                     if let Some(product) = service_info.product {
                                         if let Some(version) = service_info.version {
-                                            result.version = Some(format!("{} {}", product, version));
+                                            result.version =
+                                                Some(format!("{} {}", product, version));
                                         } else {
                                             result.version = Some(product);
                                         }
@@ -421,8 +426,10 @@ impl ScanScheduler {
                                         result.version = Some(version);
                                     }
 
-                                    debug!("Detected service on {}:{}: {} {}",
-                                        result.target_ip, result.port,
+                                    debug!(
+                                        "Detected service on {}:{}: {} {}",
+                                        result.target_ip,
+                                        result.port,
                                         result.service.as_ref().unwrap_or(&"unknown".to_string()),
                                         result.version.as_ref().unwrap_or(&"".to_string())
                                     );
@@ -430,7 +437,10 @@ impl ScanScheduler {
                                 }
                             }
                             Err(e) => {
-                                debug!("Service detection failed for {}:{}: {}", result.target_ip, result.port, e);
+                                debug!(
+                                    "Service detection failed for {}:{}: {}",
+                                    result.target_ip, result.port, e
+                                );
                             }
                         }
 
@@ -440,21 +450,31 @@ impl ScanScheduler {
                                 Ok(banner) => {
                                     if !banner.is_empty() {
                                         result.banner = Some(banner);
-                                        debug!("Grabbed banner from {}:{}", result.target_ip, result.port);
+                                        debug!(
+                                            "Grabbed banner from {}:{}",
+                                            result.target_ip, result.port
+                                        );
                                     }
                                 }
                                 Err(e) => {
-                                    debug!("Banner grab failed for {}:{}: {}", result.target_ip, result.port, e);
+                                    debug!(
+                                        "Banner grab failed for {}:{}: {}",
+                                        result.target_ip, result.port, e
+                                    );
                                 }
                             }
                         }
                     }
                 }
 
-                let detected = all_results.iter()
+                let detected = all_results
+                    .iter()
                     .filter(|r| r.service.is_some() || r.banner.is_some())
                     .count();
-                info!("Service detection complete: {}/{} services identified", detected, open_count);
+                info!(
+                    "Service detection complete: {}/{} services identified",
+                    detected, open_count
+                );
             }
         }
 

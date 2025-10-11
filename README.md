@@ -17,7 +17,7 @@
 ---
 
 <div align="center">
-  <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="601">
+  <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="600">
 </div>
 
 ## Overview

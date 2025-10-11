@@ -35,7 +35,8 @@ pub mod types;
 // Re-export commonly used types
 pub use cdn_detector::{CdnDetector, CdnProvider, Ipv4Cidr};
 pub use config::{
-    Config, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig, ServiceDetectionConfig,
+    Config, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, ScanConfig,
+    ServiceDetectionConfig,
 };
 pub use error::{Error, Result};
 pub use errors::{ScanError, ScanErrorKind};

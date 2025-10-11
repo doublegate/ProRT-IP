@@ -408,10 +408,7 @@ fn print_summary(results: &[prtip_core::ScanResult], duration: std::time::Durati
         .count();
 
     // Calculate services detected (ports with service name)
-    let services_detected = results
-        .iter()
-        .filter(|r| r.service().is_some())
-        .count();
+    let services_detected = results.iter().filter(|r| r.service().is_some()).count();
 
     // Calculate scan rate (ports/second)
     let duration_secs = duration.as_secs_f64();
@@ -439,14 +436,8 @@ fn print_summary(results: &[prtip_core::ScanResult], duration: std::time::Durati
 
     // Scan statistics
     println!("{}", "Performance:".bright_white().bold());
-    println!(
-        "  Duration:       {}",
-        duration_str.bright_white()
-    );
-    println!(
-        "  Scan Rate:      {:.0} ports/sec",
-        scan_rate
-    );
+    println!("  Duration:       {}", duration_str.bright_white());
+    println!("  Scan Rate:      {:.0} ports/sec", scan_rate);
 
     println!();
     println!("{}", "Targets:".bright_white().bold());
@@ -465,22 +456,13 @@ fn print_summary(results: &[prtip_core::ScanResult], duration: std::time::Durati
         "  Open Ports:     {}",
         open_ports.to_string().green().bold()
     );
-    println!(
-        "  Closed Ports:   {}",
-        closed_ports.to_string().red()
-    );
-    println!(
-        "  Filtered Ports: {}",
-        filtered_ports.to_string().yellow()
-    );
+    println!("  Closed Ports:   {}", closed_ports.to_string().red());
+    println!("  Filtered Ports: {}", filtered_ports.to_string().yellow());
 
     if services_detected > 0 {
         println!();
         println!("{}", "Detection:".bright_white().bold());
-        println!(
-            "  Services:       {}",
-            services_detected.to_string().cyan()
-        );
+        println!("  Services:       {}", services_detected.to_string().cyan());
     }
 
     println!("{}", "=".repeat(60).bright_cyan());

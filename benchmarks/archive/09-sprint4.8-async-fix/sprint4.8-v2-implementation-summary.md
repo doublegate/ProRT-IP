@@ -4,14 +4,16 @@
 
 Successfully fixed critical async storage deadlock that was causing tests to hang indefinitely. Achieved 46.7% performance improvement for `--with-db` mode (139.9ms → 74.5ms). All 620 tests passing with zero hangs.
 
-## Critical Success: Deadlock Resolved!
+## Critical Success: Deadlock Resolved
 
 ### Previous Attempt (Failed)
+
 - **Issue**: Oneshot channel deadlock - tests hung indefinitely
 - **Root cause**: tokio::select! with sleep arm prevented `else` branch from triggering
 - **Result**: All async tests would hang after 60+ seconds
 
 ### This Attempt (Successful)
+
 - **Solution**: Replace tokio::select! with timeout() wrapped around recv()
 - **Implementation**: Proper channel closure detection via Ok(None) match arm
 - **Result**: True async completion, zero hangs, all tests passing in <100ms!
@@ -29,11 +31,13 @@ Successfully fixed critical async storage deadlock that was causing tests to han
 **Why 74.5ms instead of <45ms target?**
 
 The async implementation is working correctly - the overhead is SQLite write performance:
+
 - Scanning: 41.1ms (in-memory baseline)
 - Async worker + SQLite: 33.4ms additional overhead
 - Total: 74.5ms
 
 This is acceptable for production because:
+
 1. Network scanning (real-world) takes 5-10+ seconds for 10K ports
 2. 74ms is negligible (0.74% overhead) in production scenarios
 3. 46.7% improvement from broken 139.9ms baseline is significant
@@ -44,6 +48,7 @@ This is acceptable for production because:
 ### 1. Async Storage Worker Fix (async_storage.rs)
 
 **OLD (Broken) Pattern:**
+
 ```rust
 loop {
     tokio::select! {
@@ -55,6 +60,7 @@ loop {
 ```
 
 **NEW (Working) Pattern:**
+
 ```rust
 loop {
     match tokio::time::timeout(Duration::from_millis(100), rx.recv()).await {
@@ -70,6 +76,7 @@ loop {
 ### 2. Storage Backend Fix (storage_backend.rs)
 
 **OLD (Broken) Definition:**
+
 ```rust
 AsyncDatabase {
     tx: UnboundedSender<Vec<ScanResult>>, // Can't explicitly drop!
@@ -78,6 +85,7 @@ AsyncDatabase {
 ```
 
 **NEW (Working) Definition:**
+
 ```rust
 AsyncDatabase {
     storage: Arc<ScanStorage>,
@@ -88,6 +96,7 @@ AsyncDatabase {
 ```
 
 **Channel Lifecycle:**
+
 ```
 1. Creation:
    - tx: Some(sender) in Mutex
@@ -144,6 +153,7 @@ pub async fn flush(&self) -> Result<()> {
 ## Testing Results
 
 ### Test Suite Summary
+
 - **Total tests**: 620 (100% pass rate)
 - **Async tests**: 7 (all passing, <100ms each)
 - **Database verification**: 130K results stored correctly
@@ -151,6 +161,7 @@ pub async fn flush(&self) -> Result<()> {
 - **Zero regressions**: No existing functionality broken
 
 ### Async Test Breakdown
+
 1. `test_async_worker_basic` - 10 results ✅
 2. `test_async_worker_batching` - 1000 results ✅
 3. `test_async_worker_empty` - 0 results ✅
@@ -160,6 +171,7 @@ pub async fn flush(&self) -> Result<()> {
 7. `test_async_database_batch` - Batch integration ✅
 
 ### Performance Verification
+
 ```bash
 # Default mode (maintained)
 hyperfine './target/release/prtip -s syn -p 1-10000 127.0.0.1'
@@ -212,9 +224,11 @@ Result: 130000 (10K ports × 13 runs)
 ## Lessons Learned
 
 ### tokio::select! Pitfall
+
 **Problem**: The `else` branch only triggers when ALL other arms would return None simultaneously. If any arm is always ready (like sleep), the else branch never fires.
 
 **Solution**: Use explicit pattern matching with timeout:
+
 ```rust
 // BAD - else never triggers with sleep arm
 tokio::select! {
@@ -231,9 +245,11 @@ match timeout(duration, rx.recv()).await {
 ```
 
 ### Option<> for Explicit Drop
+
 **Problem**: UnboundedSender stored in struct can't be explicitly dropped to signal closure.
 
 **Solution**: Wrap in `Option<>` to allow `take()` for ownership transfer:
+
 ```rust
 // BAD - can't drop explicitly
 tx: UnboundedSender<T>
@@ -243,9 +259,11 @@ tx: Arc<Mutex<Option<UnboundedSender<T>>>>
 ```
 
 ### oneshot for Async Completion
+
 **Problem**: How to wait for async worker completion without busy-looping?
 
 **Solution**: Use oneshot channel for single-use completion signaling:
+
 ```rust
 let (completion_tx, completion_rx) = oneshot::channel();
 // Worker sends on completion_tx
@@ -255,21 +273,27 @@ let (completion_tx, completion_rx) = oneshot::channel();
 ## Next Steps (Optional Future Work)
 
 ### Service Detection (-V flag)
+
 Not implemented in this sprint due to focus on critical deadlock fix. Could be added in future sprint with:
+
 - service_detector.rs module
 - Banner grabbing for common services
 - HTTP-specific probing
 - CLI integration with -V flag
 
 ### CLI Statistics
+
 Not implemented due to deadlock priority. Could add:
+
 - Scan duration tracking
 - Ports/sec rate display
 - Open/closed/filtered counts
 - Service detection statistics
 
 ### Further Performance Optimization
+
 Current 74.5ms could potentially be reduced to ~45ms with:
+
 - Async SQLite writes (tokio-rusqlite)
 - Batch size tuning (currently 500 results)
 - WAL mode optimization
@@ -280,6 +304,7 @@ However, for production network scanning (5-10+ seconds for 10K ports), the curr
 ## Conclusion
 
 Sprint 4.8 v2 successfully resolved the critical async storage deadlock. The implementation demonstrates proper async Rust patterns:
+
 - Explicit channel lifecycle management
 - oneshot for completion signaling
 - timeout() for proper closure detection

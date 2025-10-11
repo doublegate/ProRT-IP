@@ -7,6 +7,7 @@ Successfully implemented Sprint 4.6, achieving **5.2x performance improvement** 
 ## Performance Results
 
 ### Default Mode (In-Memory)
+
 ```
 Command: ./target/release/prtip -s syn -p 1-10000 127.0.0.1
 Time (mean ± σ):      37.4 ms ±   3.2 ms    [User: 36.5 ms, System: 240.5 ms]
@@ -16,6 +17,7 @@ Range (min … max):    32.8 ms …  44.0 ms    10 runs
 **Result: 37.4ms (Target: 37.9ms) ✅ ACHIEVED**
 
 ### --with-db Mode (Async Storage)
+
 ```
 Command: ./target/release/prtip -s syn -p 1-10000 --with-db --database=/tmp/test.db 127.0.0.1
 Time (mean ± σ):      68.5 ms ±   5.5 ms    [User: 58.4 ms, System: 219.9 ms]
@@ -35,17 +37,22 @@ Range (min … max):    60.9 ms …  77.9 ms    10 runs
 ## Implementation Details
 
 ### Phase 1: CLI Arguments (COMPLETE ✅)
+
 **Files Modified:**
+
 - `crates/prtip-cli/src/args.rs` - Replaced `--no-db` with `--with-db` flag
 
 **Changes:**
+
 - Removed `pub no_db: bool` flag
 - Added `pub with_db: bool` flag with comprehensive help text
 - Moved `database` field after `with_db` for logical ordering
 - Updated help text to explain default in-memory behavior
 
 ### Phase 2: Storage Architecture (COMPLETE ✅)
+
 **Files Created:**
+
 1. `crates/prtip-scanner/src/memory_storage.rs` (295 lines, 11 tests)
    - Fast in-memory result storage
    - Thread-safe via RwLock
@@ -66,6 +73,7 @@ Range (min … max):    60.9 ms …  77.9 ms    10 runs
    - Automatic worker spawning for async mode
 
 **Files Modified:**
+
 - `crates/prtip-scanner/src/lib.rs` - Exported new modules
 - `crates/prtip-cli/src/main.rs` - Inverted storage logic (if with_db vs if no_db)
 - `crates/prtip-scanner/tests/integration_scanner.rs` - Updated 5 tests to use `Some(storage)`
@@ -86,6 +94,7 @@ Range (min … max):    60.9 ms …  77.9 ms    10 runs
 ### For Users
 
 **Old usage:**
+
 ```bash
 # Default: Uses SQLite (slow - 194.9ms)
 prtip -s syn -p 1-1000 192.168.1.0/24
@@ -95,6 +104,7 @@ prtip -s syn -p 1-1000 --no-db 192.168.1.0/24
 ```
 
 **New usage:**
+
 ```bash
 # Default: In-memory (fast - 37.4ms)
 prtip -s syn -p 1-1000 192.168.1.0/24
@@ -113,15 +123,18 @@ prtip -s syn -p 1-1000 --with-db 192.168.1.0/24
 ## Test Results
 
 ### Build Status
+
 - **Release build**: SUCCESS ✅
 - **Total compilation time**: 30.63s
 
 ### Test Status
+
 - **CLI tests**: 28/29 passing (1 test updated for --with-db)
 - **Scanner library tests**: 176+ tests (long-running, skipped for time)
 - **Integration tests**: Fixed 5 tests to use `Some(storage)` instead of `storage`
 
 ### Known Test Issues
+
 - Test suite takes >5 minutes to complete (timeout issue)
 - All critical functionality verified via manual testing
 - Release binary functions correctly with both default and --with-db modes
@@ -176,6 +189,7 @@ $ sqlite3 /tmp/test.db "SELECT COUNT(*) FROM scan_results;"
 ## Known Issues & Future Work
 
 ### Issue 1: --with-db Mode Performance (68.5ms vs 40-50ms target)
+
 **Root Cause:** Current implementation still uses synchronous scheduler storage path. The async storage worker is created but the scheduler doesn't use it yet.
 
 **Solution for Future:** Refactor scheduler to use `StorageBackend` enum directly instead of `Option<ScanStorage>`. This would enable true async storage.
@@ -183,6 +197,7 @@ $ sqlite3 /tmp/test.db "SELECT COUNT(*) FROM scan_results;"
 **Impact:** Low - Default mode is fast (37.4ms), --with-db mode is still 2.8x faster than old default
 
 ### Issue 2: Test Suite Timeout
+
 **Root Cause:** Some tests (likely network-related) take >5 minutes to complete
 
 **Solution for Future:** Investigate slow tests, add timeouts, or split test suite
@@ -190,6 +205,7 @@ $ sqlite3 /tmp/test.db "SELECT COUNT(*) FROM scan_results;"
 **Impact:** Low - Release build succeeds, functionality verified manually
 
 ### Issue 3: Storage Backend Not Used
+
 **Status:** Created `storage_backend.rs` but scheduler still uses old `Option<ScanStorage>` pattern
 
 **Solution for Future:** Refactor scheduler to use `StorageBackend` enum
@@ -199,12 +215,14 @@ $ sqlite3 /tmp/test.db "SELECT COUNT(*) FROM scan_results;"
 ## Architecture Improvements
 
 ### Memory Storage
+
 - **Zero overhead**: No database initialization, transactions, or indexes
 - **Thread-safe**: RwLock for concurrent access
 - **Pre-allocation**: Estimated capacity to reduce reallocation
 - **Simple API**: `add_result()`, `add_results_batch()`, `get_results()`
 
 ### Async Storage Worker
+
 - **Non-blocking**: Unbounded channel never blocks sender
 - **Batch optimization**: 500-result batches for optimal SQLite throughput
 - **Periodic flushing**: 100ms intervals ensure timely writes
@@ -212,6 +230,7 @@ $ sqlite3 /tmp/test.db "SELECT COUNT(*) FROM scan_results;"
 - **Comprehensive logging**: Debug logs for batch sizes, flush timing, total written
 
 ### Storage Backend Abstraction
+
 - **Unified API**: Same interface for both memory and database modes
 - **Automatic worker management**: Worker spawned automatically for async database mode
 - **Clean separation**: Memory and database logic fully decoupled
@@ -219,6 +238,7 @@ $ sqlite3 /tmp/test.db "SELECT COUNT(*) FROM scan_results;"
 ## Documentation Status
 
 ### Files to Update
+
 - [ ] `CHANGELOG.md` - Sprint 4.6 breaking changes and performance improvements
 - [ ] `README.md` - Updated usage examples, performance metrics
 - [ ] `CLAUDE.local.md` - Session summary and metrics update
@@ -236,6 +256,7 @@ $ sqlite3 /tmp/test.db "SELECT COUNT(*) FROM scan_results;"
 Sprint 4.6 is **FUNCTIONALLY COMPLETE** with one critical success:
 
 ### ✅ PRIMARY GOAL ACHIEVED
+
 **Default mode is now 5.2x faster (37.4ms vs 194.9ms)**
 
 The `--with-db` mode is slightly slower than ideal (68.5ms vs 40-50ms target) but still represents a 2.8x improvement over the old default. This is acceptable given that:

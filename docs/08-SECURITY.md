@@ -795,4 +795,3 @@ fn verify_api_key_weak(provided: &str, expected: &str) -> bool {
 - Review [Testing Strategy](06-TESTING.md) for security testing
 - Consult [Architecture](00-ARCHITECTURE.md) for security boundaries
 - See [Development Setup](03-DEV-SETUP.md) for secure build configuration
-

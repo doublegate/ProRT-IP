@@ -35,16 +35,19 @@ ProRT-IP WarScan has comprehensive documentation in the `docs/` directory:
 ### Quick Start Guides
 
 **New Users:**
+
 1. Read [README.md](README.md) for project overview
 2. Check [docs/09-FAQ.md](docs/09-FAQ.md) for common questions
 3. Follow [docs/03-DEV-SETUP.md](docs/03-DEV-SETUP.md) for installation
 
 **Developers:**
+
 1. Review [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) for system design
 2. Read [docs/04-IMPLEMENTATION-GUIDE.md](docs/04-IMPLEMENTATION-GUIDE.md) for code patterns
 3. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 
 **Security Researchers:**
+
 1. Read [SECURITY.md](SECURITY.md) for security policy
 2. Review [docs/08-SECURITY.md](docs/08-SECURITY.md) for implementation details
 3. Follow responsible disclosure practices
@@ -74,15 +77,17 @@ ProRT-IP WarScan has comprehensive documentation in the `docs/` directory:
 
 For questions, ideas, and general discussion:
 
-**URL**: https://github.com/doublegate/ProRT-IP/discussions
+**URL**: <https://github.com/doublegate/ProRT-IP/discussions>
 
 **Categories:**
+
 - **Q&A**: Ask questions and get answers
 - **Ideas**: Propose new features or improvements
 - **Show and Tell**: Share your projects and use cases
 - **General**: General discussion about ProRT-IP
 
 **When to use:**
+
 - You have a question about usage
 - You want to discuss features or design
 - You're seeking advice on implementation
@@ -92,15 +97,17 @@ For questions, ideas, and general discussion:
 
 For bug reports and feature requests:
 
-**URL**: https://github.com/doublegate/ProRT-IP/issues
+**URL**: <https://github.com/doublegate/ProRT-IP/issues>
 
 **When to use:**
+
 - You've found a bug (not a security vulnerability)
 - You have a specific feature request
 - You've identified a documentation gap
 - You want to track a specific problem
 
 **Bug Report Template:**
+
 ```markdown
 **Environment:**
 - OS: [Linux/Windows/macOS version]
@@ -123,7 +130,9 @@ What actually happened
 
 **Error Messages:**
 ```
+
 Paste error messages here
+
 ```
 
 **Additional Context:**
@@ -133,6 +142,7 @@ Any other relevant information
 #### Email Support
 
 For private inquiries:
+
 - **General questions**: Consider GitHub Discussions instead
 - **Security vulnerabilities**: See [SECURITY.md](SECURITY.md)
 - **Partnership inquiries**: Contact maintainers via GitHub profile
@@ -142,11 +152,13 @@ For private inquiries:
 ### Bug Reports
 
 **Before reporting:**
+
 - Search for existing issues
 - Verify it's reproducible
 - Collect necessary information
 
 **Good bug reports include:**
+
 - Clear, descriptive title
 - Environment details (OS, Rust version, dependencies)
 - Minimal reproducible example
@@ -155,6 +167,7 @@ For private inquiries:
 - Relevant log output (`RUST_LOG=debug`)
 
 **Example:**
+
 ```
 Title: TCP SYN scan fails on IPv6 targets
 
@@ -180,6 +193,7 @@ thread 'main' panicked at 'Invalid checksum', src/network/tcp.rs:123
 ### Feature Requests
 
 **Good feature requests include:**
+
 - Problem statement (what problem does this solve?)
 - Proposed solution
 - Alternative approaches considered
@@ -187,6 +201,7 @@ thread 'main' panicked at 'Invalid checksum', src/network/tcp.rs:123
 - Impact on existing functionality
 
 **Example:**
+
 ```
 Title: Add support for SCTP scanning
 
@@ -213,6 +228,7 @@ Impact:
 ### Documentation Issues
 
 **Found unclear or incorrect documentation?**
+
 - Open an issue with the `documentation` label
 - Specify which document and section
 - Suggest improvements or corrections
@@ -224,6 +240,7 @@ Impact:
 **Current Phase**: Documentation complete, implementation starting
 
 **Contribution Opportunities:**
+
 - Review and provide feedback on documentation
 - Help with initial implementation (Phase 1)
 - Contribute test cases and benchmarks
@@ -246,6 +263,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines:
 - **Pull Requests**: Code contributions and reviews
 
 **Planned:**
+
 - Discord server (when community grows)
 - Monthly development updates
 - Community calls for major decisions
@@ -276,6 +294,7 @@ A: Raw packet operations require root/Administrator for socket creation. Privile
 
 **Q: How do I set up Linux capabilities instead of root?**
 A:
+
 ```bash
 sudo setcap cap_net_raw=ep /path/to/prtip
 ```
@@ -315,6 +334,7 @@ Commercial support is not currently available (pre-release phase).
 ### Future Plans
 
 **Planned offerings:**
+
 - **Enterprise support**: Priority bug fixes, dedicated assistance
 - **Custom development**: Feature development for specific needs
 - **Training and consulting**: Network security assessment training
@@ -341,22 +361,22 @@ Contact the maintainers to discuss your requirements and timeline.
 
 ### Official Links
 
-- **GitHub Repository**: https://github.com/doublegate/ProRT-IP
+- **GitHub Repository**: <https://github.com/doublegate/ProRT-IP>
 - **Documentation**: [docs/README.md](docs/README.md)
-- **Issue Tracker**: https://github.com/doublegate/ProRT-IP/issues
-- **Discussions**: https://github.com/doublegate/ProRT-IP/discussions
+- **Issue Tracker**: <https://github.com/doublegate/ProRT-IP/issues>
+- **Discussions**: <https://github.com/doublegate/ProRT-IP/discussions>
 
 ### Related Projects
 
-- **Nmap**: https://nmap.org/
-- **Masscan**: https://github.com/robertdavidgraham/masscan
-- **RustScan**: https://github.com/RustScan/RustScan
-- **ZMap**: https://zmap.io/
+- **Nmap**: <https://nmap.org/>
+- **Masscan**: <https://github.com/robertdavidgraham/masscan>
+- **RustScan**: <https://github.com/RustScan/RustScan>
+- **ZMap**: <https://zmap.io/>
 
 ### Learning Resources
 
-- **Rust Programming**: https://doc.rust-lang.org/book/
-- **Tokio Async Runtime**: https://tokio.rs/
+- **Rust Programming**: <https://doc.rust-lang.org/book/>
+- **Tokio Async Runtime**: <https://tokio.rs/>
 - **Network Programming**: [docs/02-TECHNICAL-SPECS.md](docs/02-TECHNICAL-SPECS.md)
 - **Packet Analysis**: Wireshark documentation
 

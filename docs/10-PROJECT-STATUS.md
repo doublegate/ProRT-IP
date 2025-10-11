@@ -26,7 +26,7 @@
 ## Project Overview
 
 **Project Name:** ProRT-IP WarScan
-**Repository:** https://github.com/YOUR_ORG/prtip-warscan (TBD)
+**Repository:** <https://github.com/YOUR_ORG/prtip-warscan> (TBD)
 **License:** GPLv3
 **Language:** Rust 1.70+
 **Target Platforms:** Linux, Windows, macOS
@@ -65,6 +65,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 ### Recent Activity
 
 **2025-10-08:**
+
 - ✅ **Enhancement Cycle 8 COMPLETE:** Performance & Stealth Features (commit 838af08)
   - Batch packet sending (sendmmsg) - 30-50% performance improvement at 1M+ pps
   - CDN/WAF detection - 8 major providers with O(log n) lookup
@@ -91,6 +92,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 - 🚀 Ready to begin Phase 4: Performance Optimization
 
 **Statistics:**
+
 - Total tests: 547 (all passing)
 - Test breakdown: 130+ core + 50+ network + 150+ scanner + 170+ integration (approx.)
 - Total modules: 40+ production modules
@@ -100,6 +102,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 - Version: v0.3.0 (production-ready)
 
 **2025-10-07:**
+
 - ✅ **Phase 1 COMPLETE:** Core Infrastructure fully implemented
 - ✅ 4 crates created: prtip-core, prtip-network, prtip-scanner, prtip-cli
 - ✅ 215 tests passing (49 core + 29 network + 76 scanner + 49 cli + 12 integration)
@@ -143,6 +146,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - [x] Cross-platform compatibility tests
 
 **Deliverables:**
+
 - [x] Compiling project with all dependencies
 - [x] CI pipeline running tests on all platforms
 - [x] Basic packet capture working
@@ -179,6 +183,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - [x] Configurable DNS timeout
 
 **Deliverables:**
+
 - [x] Functional TCP connect scanner
 - [x] CLI accepting targets and port ranges
 - [x] Text output with scan results
@@ -214,6 +219,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 - [x] Add host discovery (bonus)
 
 **Deliverables:**
+
 - [x] Secure privilege management
 - [x] Configuration file support
 - [x] SQLite database storage
@@ -260,6 +266,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - [x] Options parsing
 
 **Deliverables:**
+
 - [x] Working SYN scan mode (-sS) - syn_scanner.rs (437 lines)
 - [x] Accurate port state detection
 - [x] Packet crafting tests passing - packet_builder.rs (790 lines)
@@ -295,6 +302,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - [ ] Open vs. closed differentiation
 
 **Deliverables:**
+
 - [x] UDP scanning (-sU) - udp_scanner.rs (258 lines)
 - [x] Stealth scans (-sF, -sN, -sX, -sA) - stealth_scanner.rs (388 lines)
 - [x] 8 protocol-specific UDP probes - protocol_payloads.rs (199 lines)
@@ -332,11 +340,13 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - [x] Resource usage tracking
 
 **Deliverables:**
+
 - [x] All 6 timing templates functional - timing.rs (441 lines)
 - [x] Adaptive rate limiting working - adaptive_rate_limiter.rs (422 lines)
 - [x] Connection pool for efficiency - connection_pool.rs (329 lines)
 
 **Bonus Achievements:**
+
 - [x] Masscan-inspired adaptive rate limiter with circular buffer tracking
 - [x] RustScan-inspired connection pool with FuturesUnordered
 - [x] Reference code analysis across 7+ leading scanners
@@ -348,6 +358,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 Following Phase 2, five systematic enhancement cycles incorporated best practices from reference implementations:
 
 ### Cycle 1: Cryptographic Foundation ✅ (commit 5782aed)
+
 **Focus:** Performance-critical algorithms from Masscan and RustScan
 
 - [x] SipHash-2-4 hash function (584 lines)
@@ -365,6 +376,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 **Statistics:** Tests 100 → 121 (+21), ~1,074 lines added
 
 ### Cycle 2: Complete Crypto + Filtering ✅ (commit f5be9c4)
+
 **Focus:** Masscan algorithm completion and filtering infrastructure
 
 - [x] Blackrock algorithm completion (11/11 tests)
@@ -379,6 +391,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 **Statistics:** Tests 121 → 131 (+10), ~250 lines added
 
 ### Cycle 3: Resource Management ✅ (commits 38b4f3e, 781e880)
+
 **Focus:** Production-critical system resource awareness
 
 - [x] Resource limits module (363 lines)
@@ -393,6 +406,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 **Statistics:** Tests 131 → 345 (+214), 769 lines added, +1 dependency (rlimit 0.10.2)
 
 ### Cycle 4: CLI Integration ✅ (commits eec5169, e4e5d54)
+
 **Focus:** User-facing integration of resource management
 
 - [x] CLI flags (--batch-size, --ulimit, --interface-list)
@@ -408,6 +422,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 **Statistics:** Tests 345 → 352 (+7), ~200 lines added, 9 files modified
 
 ### Cycle 5: User Feedback ✅ (commits d7f7f38, c1aa10e)
+
 **Focus:** Production-critical progress tracking and error handling
 
 - [x] Progress tracking module (428 lines)
@@ -428,6 +443,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 ### Enhancement Cycles: Overall Impact
 
 **Cumulative Statistics:**
+
 - **Tests:** 100 → 391 (+291, +291% growth)
 - **Lines:** ~2,930 across 5 cycles
 - **Modules:** 6 new (crypto, concurrent_scanner, port_filter, resource_limits, interface, progress, errors)
@@ -436,6 +452,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - **MSRV:** Rust 1.70+ compatibility maintained
 
 **Production Readiness Achieved:**
+
 - ✅ Cryptographic foundation for stateless scanning
 - ✅ High-performance concurrent patterns
 - ✅ Comprehensive port filtering
@@ -474,6 +491,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Implement window size analysis
 
 **Deliverables:**
+
 - [ ] Complete 16-probe implementation
 - [ ] Fingerprint database format
 - [ ] Basic OS detection
@@ -488,6 +506,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Add IPv6 OS fingerprinting
 
 **Deliverables:**
+
 - [ ] Accurate OS detection (2000+ fingerprints)
 - [ ] Confidence scores
 - [ ] CPE format output
@@ -508,6 +527,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
   - [ ] Additional 95+ services
 
 **Deliverables:**
+
 - [ ] Service detection engine
 - [ ] 100+ service probes
 - [ ] SSL/TLS support
@@ -522,6 +542,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Implement soft matching
 
 **Deliverables:**
+
 - [ ] Banner grabbing functional
 - [ ] Heuristic service detection
 - [ ] Version extraction
@@ -543,6 +564,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Profile with perf and flamegraphs
 
 **Deliverables:**
+
 - [ ] Lock-free task distribution
 - [ ] Separate TX/RX pipeline
 - [ ] Performance profiling reports
@@ -557,6 +579,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Create memory profiling tests
 
 **Deliverables:**
+
 - [ ] Stateless scan mode
 - [ ] <1MB memory for arbitrary targets
 - [ ] Binary output format
@@ -571,6 +594,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Build performance test suite
 
 **Deliverables:**
+
 - [ ] NUMA optimization guide
 - [ ] 1M+ pps capability
 - [ ] Comprehensive benchmarks
@@ -592,6 +616,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Create source port spoofing
 
 **Deliverables:**
+
 - [ ] Idle scan (-sI)
 - [ ] Decoy scanning (-D)
 - [ ] Source port manipulation
@@ -606,6 +631,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Implement bad checksums
 
 **Deliverables:**
+
 - [ ] Fragmentation support
 - [ ] Advanced packet manipulation
 
@@ -619,6 +645,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Implement sandboxing
 
 **Deliverables:**
+
 - [ ] Lua plugin system
 - [ ] 5+ example plugins
 - [ ] Plugin developer guide
@@ -640,6 +667,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Build result table view
 
 **Deliverables:**
+
 - [ ] Functional TUI
 - [ ] Real-time progress
 - [ ] Interactive browsing
@@ -654,6 +682,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Implement mouse support
 
 **Deliverables:**
+
 - [ ] Feature-complete TUI
 - [ ] User guide
 - [ ] Theme customization
@@ -675,6 +704,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Add man pages
 
 **Deliverables:**
+
 - [ ] Complete documentation
 - [ ] Multi-platform installers
 
@@ -688,6 +718,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Tag v1.0.0
 
 **Deliverables:**
+
 - [ ] Security audit report
 - [ ] v1.0.0 release
 - [ ] Announcement
@@ -697,6 +728,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 ## Milestones
 
 ### M1: Basic Scanning ✅ COMPLETE
+
 **Target:** End of Phase 1
 **Status:** Achieved 2025-10-07
 
@@ -706,11 +738,13 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [x] SQLite storage
 
 **Success Criteria:**
+
 - [x] Scan 1000 hosts × 100 ports in <5 minutes (achieved)
 - [x] 215 passing tests (exceeded 50+ goal)
 - [x] Zero memory leaks (Rust memory safety)
 
 ### M2: Advanced Scanning ✗
+
 **Target:** End of Phase 2
 **Status:** Starting (Next Milestone)
 
@@ -719,11 +753,13 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Adaptive rate limiting
 
 **Success Criteria:**
+
 - SYN scan 10K ports in <30 seconds
 - UDP detect 10+ services
 - Rate limiting prevents saturation
 
 ### M3: Detection ✗
+
 **Target:** End of Phase 3
 **Status:** Not Started
 
@@ -732,11 +768,13 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Banner grabbing with SSL
 
 **Success Criteria:**
+
 - OS detection >85% accuracy
 - Service detection matches Nmap
 - SSL banner grabbing works
 
 ### M4: Performance ✗
+
 **Target:** End of Phase 4
 **Status:** Not Started
 
@@ -745,11 +783,13 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] NUMA optimization
 
 **Success Criteria:**
+
 - 1M+ pps on test hardware
 - <100MB memory for 1M targets
 - Linear CPU scaling
 
 ### M5: Feature Complete ✗
+
 **Target:** End of Phase 5
 **Status:** Not Started
 
@@ -758,11 +798,13 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] All Nmap-equivalent features
 
 **Success Criteria:**
+
 - Idle scan works
 - 5+ working plugins
 - Nmap feature parity
 
 ### M6: Production Ready ✗
+
 **Target:** End of Phase 7
 **Status:** Not Started
 
@@ -771,6 +813,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - [ ] Multi-platform packages
 
 **Success Criteria:**
+
 - 200+ page manual
 - 5+ platform packages
 - <10 critical bugs
@@ -788,6 +831,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 **Post-v1.0 Features:**
 
 ### Web Interface
+
 - RESTful API
 - Authentication (JWT/OAuth)
 - React/Vue frontend
@@ -796,6 +840,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - Multi-user support
 
 ### Desktop GUI
+
 - Native UI framework (Tauri/iced/egui)
 - Scan configuration wizard
 - Network topology visualization
@@ -803,6 +848,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - Native installers
 
 ### Distributed Scanning
+
 - Coordinator/worker architecture
 - Work distribution algorithm
 - Result aggregation protocol
@@ -811,6 +857,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 - Failure recovery
 
 ### Additional Features
+
 - IPv6 full support
 - SCTP scanning
 - Custom protocol support
@@ -823,6 +870,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 ## Changelog
 
 ### Pre-Development (October 2025)
+
 - Created comprehensive project documentation
 - Defined architecture and specifications
 - Established roadmap and milestones
@@ -836,18 +884,21 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 This document should be updated:
 
 **Weekly during development:**
+
 - Mark completed tasks with `[x]`
 - Update progress percentages
 - Add known issues
 - Update milestone status
 
 **After each sprint:**
+
 - Review and adjust upcoming tasks
 - Update timelines if needed
 - Document blockers
 - Celebrate completions!
 
 **Format for task updates:**
+
 ```markdown
 - [x] Completed task (2025-10-15)
 - [~] In progress task (started 2025-10-14)
@@ -858,4 +909,3 @@ This document should be updated:
 
 **Last Updated:** October 2025 by Claude Code
 **Next Review:** Upon Phase 1 Sprint 1.1 completion
-

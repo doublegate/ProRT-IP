@@ -12,6 +12,7 @@
 ProRT-IP WarScan represents the next evolution of network reconnaissance tools—combining the comprehensive feature set of Nmap, the blistering speed of Masscan, the modern architecture of RustScan, and innovative adaptive learning capabilities. Written entirely in Rust for memory safety and performance, WarScan will deliver internet-scale scanning capabilities with advanced stealth features, extensible architecture, and a user-centric design philosophy.
 
 **Core Value Proposition:**
+
 - **Speed:** Internet-scale scanning (full IPv4 sweep in <6 minutes on appropriate hardware)
 - **Safety:** Memory-safe implementation eliminating entire categories of vulnerabilities
 - **Stealth:** Advanced evasion techniques including timing controls, decoys, fragmentation, and idle scanning
@@ -104,6 +105,7 @@ ProRT-IP WarScan adheres to the following architectural principles:
 ### 1.3 Core Components Overview
 
 #### 1.3.1 Scanner Scheduler
+
 - **Purpose:** Orchestrates scan jobs, manages target queues, distributes work across threads
 - **Responsibilities:**
   - Parse and expand target specifications (CIDR, ranges, lists)
@@ -112,6 +114,7 @@ ProRT-IP WarScan adheres to the following architectural principles:
   - Coordinate multi-phase scans (discovery → enumeration → deep inspection)
   
 #### 1.3.2 Rate Controller
+
 - **Purpose:** Adaptive rate limiting to prevent network saturation and detection
 - **Responsibilities:**
   - Track packet transmission rates
@@ -121,6 +124,7 @@ ProRT-IP WarScan adheres to the following architectural principles:
   - Dynamic adjustment based on network conditions
 
 #### 1.3.3 Result Aggregator
+
 - **Purpose:** Collect, deduplicate, and merge scan results from multiple workers
 - **Responsibilities:**
   - Thread-safe result collection
@@ -129,6 +133,7 @@ ProRT-IP WarScan adheres to the following architectural principles:
   - Stream results to output formatters
 
 #### 1.3.4 Packet Crafting Engine
+
 - **Purpose:** Generate raw network packets for all scan types
 - **Responsibilities:**
   - Build Ethernet/IP/TCP/UDP/ICMP packets
@@ -137,6 +142,7 @@ ProRT-IP WarScan adheres to the following architectural principles:
   - Source address/port spoofing
 
 #### 1.3.5 Packet Capture Engine
+
 - **Purpose:** Receive and parse network responses
 - **Responsibilities:**
   - Configure BPF filters for efficient capture
@@ -151,6 +157,7 @@ ProRT-IP WarScan adheres to the following architectural principles:
 ### 2.1 Core Rust Crates
 
 #### 2.1.1 Network Programming
+
 ```toml
 [dependencies]
 # Async Runtime
@@ -173,6 +180,7 @@ trust-dns-resolver = "0.23" # Async DNS resolution
 ```
 
 #### 2.1.2 Concurrency and Performance
+
 ```toml
 # Parallelism
 rayon = "1.8"              # Data parallelism
@@ -185,6 +193,7 @@ perfcnt = "0.8"            # Hardware perf counters
 ```
 
 #### 2.1.3 CLI and TUI
+
 ```toml
 # Command-line parsing
 clap = { version = "4.4", features = ["derive", "cargo"] }
@@ -195,6 +204,7 @@ crossterm = "0.27"         # Terminal manipulation
 ```
 
 #### 2.1.4 Output Formats
+
 ```toml
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -207,6 +217,7 @@ sqlx = { version = "0.7", features = ["postgres", "runtime-tokio"] }
 ```
 
 #### 2.1.5 Scripting Engine
+
 ```toml
 # Lua scripting
 mlua = { version = "0.9", features = ["async", "vendored"] }
@@ -216,6 +227,7 @@ pyo3 = { version = "0.20", features = ["auto-initialize"] }
 ```
 
 #### 2.1.6 Cryptography and SSL
+
 ```toml
 # TLS for banner grabbing
 tokio-native-tls = "0.3"
@@ -228,6 +240,7 @@ sha2 = "0.10"
 ```
 
 #### 2.1.7 Utilities
+
 ```toml
 # Logging
 tracing = "0.1"
@@ -252,6 +265,7 @@ chrono = "0.4"
 ### 2.2 Platform-Specific Dependencies
 
 #### 2.2.1 Windows
+
 ```toml
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winsock2", "ws2def"] }
@@ -259,6 +273,7 @@ windows-sys = "0.52"
 ```
 
 #### 2.2.2 Linux
+
 ```toml
 [target.'cfg(target_os = "linux")'.dependencies]
 nix = { version = "0.27", features = ["net"] }
@@ -266,6 +281,7 @@ libc = "0.2"
 ```
 
 #### 2.2.3 macOS
+
 ```toml
 [target.'cfg(target_os = "macos")'.dependencies]
 nix = { version = "0.27", features = ["net"] }
@@ -301,6 +317,7 @@ nix = { version = "0.27", features = ["net"] }
 WarScan implements multiple scanning paradigms optimized for different scenarios:
 
 #### 3.1.1 Stateless Mode (Masscan-style)
+
 - **Use Case:** Large-scale, initial discovery
 - **Characteristics:**
   - No connection state maintained
@@ -310,6 +327,7 @@ WarScan implements multiple scanning paradigms optimized for different scenarios
   - Target randomization via custom indexing
 
 **Implementation Pattern:**
+
 ```rust
 /// Stateless scanner using SipHash for response validation
 pub struct StatelessScanner {
@@ -374,6 +392,7 @@ impl StatelessScanner {
 ```
 
 #### 3.1.2 Stateful Mode (Nmap-style)
+
 - **Use Case:** Detailed enumeration, stealth scanning
 - **Characteristics:**
   - Per-connection state tracking
@@ -383,6 +402,7 @@ impl StatelessScanner {
   - Deep packet inspection
 
 **Implementation Pattern:**
+
 ```rust
 /// Stateful connection tracker
 pub struct ConnectionState {
@@ -469,6 +489,7 @@ impl StatefulScanner {
 ```
 
 #### 3.1.3 Hybrid Mode
+
 - **Use Case:** Balanced speed and depth
 - **Characteristics:**
   - Fast stateless initial sweep
@@ -479,6 +500,7 @@ impl StatefulScanner {
 ### 3.2 Target Specification and Randomization
 
 #### 3.2.1 Target Parser
+
 ```rust
 /// Target specification parser supporting multiple formats
 pub enum TargetSpec {
@@ -1249,12 +1271,14 @@ impl PacketData {
 **Description:** The default and most popular scan type. Sends SYN packets without completing the three-way handshake.
 
 **Advantages:**
+
 - Fast and efficient
 - Relatively stealthy (no full connection)
 - Works against any compliant TCP stack
 - Clear differentiation between open/closed/filtered
 
 **Implementation:**
+
 ```rust
 /// TCP SYN scanner implementation
 pub struct SynScanner {
@@ -1344,6 +1368,7 @@ impl SynScanner {
 ```
 
 **Detection Characteristics:**
+
 - Logged by most IDSs as incomplete connections
 - Appears in system logs on target
 - Firewall-friendly (many allow SYN but track state)
@@ -1353,6 +1378,7 @@ impl SynScanner {
 **Description:** Uses OS socket connect() system call. Fallback when raw socket privileges unavailable.
 
 **Implementation:**
+
 ```rust
 /// TCP Connect scanner using OS sockets
 pub struct ConnectScanner {
@@ -1426,11 +1452,13 @@ impl ConnectScanner {
 ```
 
 **Advantages:**
+
 - No special privileges required
 - Works on all platforms
 - Reliable results
 
 **Disadvantages:**
+
 - Slower than raw packet scans
 - Creates full connections (more logs)
 - More easily detected
@@ -1440,6 +1468,7 @@ impl ConnectScanner {
 **Description:** Sends FIN packet to closed port (should get RST), open port should not respond per RFC 793.
 
 **Implementation:**
+
 ```rust
 pub struct FinScanner {
     transmitter: PacketTransmitter,
@@ -1488,11 +1517,13 @@ impl FinScanner {
 ```
 
 **Stealth Characteristics:**
+
 - Can bypass simple stateless firewalls
 - Not logged as connection attempt
 - Effective against non-stateful filters
 
 **Limitations:**
+
 - Not all OS stacks are RFC 793 compliant
 - Windows, Cisco, BSDI, HP/UX may respond to FIN on open ports
 - Result ambiguity (open|filtered)
@@ -5780,9 +5811,11 @@ criterion_main!(benches);
 ## 17. Development Roadmap
 
 ### Phase 1: Foundation (Months 1-2)
+
 **Goal:** Core scanning engine with basic TCP scans
 
 **Deliverables:**
+
 - Project structure and build system
 - Raw packet transmission/reception (pnet integration)
 - Basic TCP SYN scan
@@ -5792,6 +5825,7 @@ criterion_main!(benches);
 - Unit test framework
 
 **Success Criteria:**
+
 - Can scan localhost successfully
 - Proper packet crafting validated with Wireshark
 - 1000+ ports scanned in <5 seconds on local network
@@ -5799,9 +5833,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 2: Advanced Scanning (Months 3-4)
+
 **Goal:** Complete scan type coverage
 
 **Deliverables:**
+
 - FIN/NULL/Xmas scans
 - ACK scan for firewall mapping
 - UDP scanning with protocol-specific probes
@@ -5812,6 +5848,7 @@ criterion_main!(benches);
 - Retransmission logic
 
 **Success Criteria:**
+
 - All major scan types implemented
 - Can detect filtered vs closed ports
 - Successful UDP service detection (DNS, SNMP)
@@ -5819,9 +5856,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 3: Intelligence Gathering (Months 5-6)
+
 **Goal:** OS fingerprinting and service detection
 
 **Deliverables:**
+
 - OS fingerprint database (initial set: 100+ OS signatures)
 - TCP/IP stack fingerprinting implementation
 - Passive OS fingerprinting
@@ -5831,6 +5870,7 @@ criterion_main!(benches);
 - Version extraction and parsing
 
 **Success Criteria:**
+
 - 85%+ accuracy on OS detection (tested against known targets)
 - Successful service version detection for top 20 services
 - Banner grabbing works for HTTP/FTP/SSH/SMTP
@@ -5838,9 +5878,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 4: Performance Optimization (Month 7)
+
 **Goal:** Internet-scale performance
 
 **Deliverables:**
+
 - Stateless scanning mode (Masscan-style)
 - SipHash response validation
 - Adaptive rate control with congestion avoidance
@@ -5850,6 +5892,7 @@ criterion_main!(benches);
 - Performance benchmarks and profiling
 
 **Success Criteria:**
+
 - 500k+ pps on commodity hardware
 - <5% packet loss at high rates
 - Can complete /16 network scan in <10 minutes
@@ -5857,9 +5900,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 5: Stealth and Evasion (Month 8)
+
 **Goal:** Advanced red-team capabilities
 
 **Deliverables:**
+
 - Timing templates (T0-T5)
 - Packet fragmentation
 - Decoy scanning
@@ -5869,6 +5914,7 @@ criterion_main!(benches);
 - MAC address spoofing
 
 **Success Criteria:**
+
 - Paranoid mode (T0) evades basic IDS
 - Idle scan works against predictable-IPID hosts
 - Fragmentation bypasses simple filters
@@ -5876,9 +5922,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 6: Output and Integration (Month 9)
+
 **Goal:** Professional reporting and data export
 
 **Deliverables:**
+
 - JSON/JSONL output
 - XML output (Nmap-compatible)
 - CSV output
@@ -5888,6 +5936,7 @@ criterion_main!(benches);
 - PCAP packet logging
 
 **Success Criteria:**
+
 - Output parseable by standard tools
 - XML compatible with Nmap viewers
 - Database schema supports efficient queries
@@ -5895,9 +5944,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 7: Extensibility (Month 10)
+
 **Goal:** Plugin architecture and scripting
 
 **Deliverables:**
+
 - Plugin API and trait system
 - Lua scripting engine with WarScan API
 - 20+ example scripts (HTTP title, SSL cert, etc.)
@@ -5905,6 +5956,7 @@ criterion_main!(benches);
 - Custom scan module interface
 
 **Success Criteria:**
+
 - Third-party plugins can be loaded
 - Lua scripts execute correctly
 - Custom modules integrate seamlessly
@@ -5912,9 +5964,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 8: TUI (Month 11)
+
 **Goal:** Interactive terminal interface
 
 **Deliverables:**
+
 - Real-time scan progress dashboard
 - Interactive result browser
 - Configuration wizard
@@ -5922,6 +5976,7 @@ criterion_main!(benches);
 - Keyboard navigation
 
 **Success Criteria:**
+
 - TUI renders correctly on Linux/macOS/Windows
 - Responsive at high scan rates
 - User-friendly for non-experts
@@ -5929,9 +5984,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 9: Web Interface (Month 12)
+
 **Goal:** Browser-based dashboard
 
 **Deliverables:**
+
 - Local web server (actix-web/axum)
 - REST API for scan control
 - WebSocket for real-time updates
@@ -5940,6 +5997,7 @@ criterion_main!(benches);
 - Scan history and reports
 
 **Success Criteria:**
+
 - API documented with OpenAPI
 - UI works on modern browsers
 - Secure by default (TLS, auth)
@@ -5947,9 +6005,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 10: GUI Application (Month 13)
+
 **Goal:** Native desktop application
 
 **Deliverables:**
+
 - Cross-platform GUI (Tauri or Iced)
 - Visual target builder
 - Scan template manager
@@ -5957,6 +6017,7 @@ criterion_main!(benches);
 - Export functionality
 
 **Success Criteria:**
+
 - Native feel on Windows/Linux/macOS
 - Installs via standard package managers
 - Accessible to non-technical users
@@ -5964,9 +6025,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 11: Documentation and Polish (Month 14)
+
 **Goal:** Production-ready release
 
 **Deliverables:**
+
 - Comprehensive user manual
 - API documentation (rustdoc)
 - Tutorial videos
@@ -5975,6 +6038,7 @@ criterion_main!(benches);
 - Troubleshooting guide
 
 **Success Criteria:**
+
 - Documentation covers all features
 - New users can perform basic scans from docs
 - No critical bugs in issue tracker
@@ -5982,9 +6046,11 @@ criterion_main!(benches);
 ---
 
 ### Phase 12: Community and Distribution (Month 15)
+
 **Goal:** Open-source launch
 
 **Deliverables:**
+
 - GitHub repository public release
 - Package for: Cargo, Debian/Ubuntu, Arch AUR, Homebrew, Chocolatey
 - Docker images
@@ -5994,6 +6060,7 @@ criterion_main!(benches);
 - CI/CD pipeline
 
 **Success Criteria:**
+
 - GPLv3 licensing verified
 - Available in major package repositories
 - Automated builds for releases
@@ -6175,6 +6242,7 @@ prtip-warscan/
 ### 18.2 Module Organization
 
 **Core Library (`prtip-core`):**
+
 - Provides all scanning functionality as a library
 - No CLI or UI dependencies
 - Fully documented with rustdoc
@@ -6182,33 +6250,39 @@ prtip-warscan/
 - Can be used by other Rust projects
 
 **CLI Application (`prtip-cli`):**
+
 - Thin wrapper around core library
 - Argument parsing and validation
 - Progress display
 - Error handling and user messages
 
 **TUI Application (`prtip-tui`):**
+
 - Interactive terminal interface
 - Real-time updates
 - Event-driven architecture
 
 **Web Interface (`prtip-web`):**
+
 - REST API for scan control
 - WebSocket for live updates
 - Static file serving
 - Authentication
 
 **GUI Application (`prtip-gui`):**
+
 - Native desktop application
 - Visual scan configuration
 - Results visualization
 
 **Plugin System (`prtip-plugins`):**
+
 - Plugin trait definitions
 - Lua/Python scripting engines
 - Example plugins and scripts
 
 **Platform Layer (`prtip-platform`):**
+
 - Platform-specific implementations
 - Raw socket abstractions
 - Privilege management
@@ -6216,6 +6290,7 @@ prtip-warscan/
 ### 18.3 Configuration Files
 
 **User Configuration (~/.prtip/config.toml):**
+
 ```toml
 [general]
 default_timing = "Normal"
@@ -6239,6 +6314,7 @@ script_directory = "~/.prtip/scripts"
 ```
 
 **Scan Profiles (~/.prtip/profiles/):**
+
 ```toml
 # quick.toml
 [scan]
@@ -6279,6 +6355,7 @@ This comprehensive specification document provides the complete technical founda
 12. **Roadmap** - Phased development plan with clear milestones
 
 **Next Steps:**
+
 1. Review and validate technical approach
 2. Set up development environment
 3. Begin Phase 1 implementation

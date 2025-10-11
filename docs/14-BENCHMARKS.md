@@ -18,18 +18,21 @@ This document provides comprehensive guidance for benchmarking ProRT-IP WarScan 
 ### Prerequisites
 
 **Hardware Requirements:**
+
 - Isolated test network (no production traffic)
 - Test target with known open/closed/filtered ports
 - Dedicated network interface (no competing traffic)
 - Stable system load (no background processes)
 
 **Software Requirements:**
+
 - ProRT-IP v0.3.0+ installed
 - Comparison tools: Nmap 7.90+, Masscan 1.3+, RustScan 2.0+ (optional)
 - Monitoring tools: `htop`, `iftop`, `perf`, `flamegraph`
 - Test target: Metasploitable VM, Docker container, or dedicated test server
 
 **Environment Setup:**
+
 ```bash
 # Disable CPU frequency scaling
 sudo cpupower frequency-set -g performance
@@ -56,17 +59,20 @@ These baselines should be established before Phase 4 optimizations begin.
 #### 1. TCP Connect Scan - Common Ports (1,000 ports)
 
 **Command:**
+
 ```bash
 time prtip -sT -p 1-1000 192.168.1.100 --no-progress
 ```
 
 **Expected Baseline:**
+
 - **Duration:** 5-10 seconds (depends on network latency)
 - **Throughput:** 100-200 ports/second
 - **Memory:** ~10-20 MB
 - **CPU:** 5-15% (single core)
 
 **Metrics to Record:**
+
 - Total scan duration (wall clock time)
 - Ports per second rate
 - Peak memory usage (`/usr/bin/time -v`)
@@ -78,17 +84,20 @@ time prtip -sT -p 1-1000 192.168.1.100 --no-progress
 #### 2. SYN Scan - Full Port Range (65,535 ports)
 
 **Command:**
+
 ```bash
 time sudo prtip -sS -p- 192.168.1.100 -T4 --no-progress
 ```
 
 **Expected Baseline:**
+
 - **Duration:** 30-60 seconds (T4 timing)
 - **Throughput:** 1,000-2,000 ports/second
 - **Memory:** ~50-100 MB
 - **CPU:** 20-40% (multi-core)
 
 **Metrics to Record:**
+
 - Total scan duration
 - Ports per second rate
 - Connection pool size and utilization
@@ -100,17 +109,20 @@ time sudo prtip -sS -p- 192.168.1.100 -T4 --no-progress
 #### 3. UDP Scan - Top 100 UDP Ports
 
 **Command:**
+
 ```bash
 time sudo prtip -sU -p U:53,123,161,137,500,1900,5353 192.168.1.100 --no-progress
 ```
 
 **Expected Baseline:**
+
 - **Duration:** 20-40 seconds (UDP is slower)
 - **Throughput:** 10-50 ports/second (ICMP rate limiting)
 - **Memory:** ~10-20 MB
 - **CPU:** 5-10%
 
 **Metrics to Record:**
+
 - Total scan duration
 - Protocol payload effectiveness
 - ICMP responses vs timeouts
@@ -121,17 +133,20 @@ time sudo prtip -sU -p U:53,123,161,137,500,1900,5353 192.168.1.100 --no-progres
 #### 4. OS Fingerprinting + Service Detection
 
 **Command:**
+
 ```bash
 time sudo prtip -sS -O --sV -p 1-1000 192.168.1.100 -T4 --no-progress
 ```
 
 **Expected Baseline:**
+
 - **Duration:** 15-30 seconds
 - **Throughput:** 30-70 ports/second (slower due to probing)
 - **Memory:** ~100-200 MB (database loaded)
 - **CPU:** 30-50%
 
 **Metrics to Record:**
+
 - Total scan duration
 - Accuracy of OS detection (compare with Nmap)
 - Service detection success rate
@@ -143,6 +158,7 @@ time sudo prtip -sS -O --sV -p 1-1000 192.168.1.100 -T4 --no-progress
 #### 5. Timing Template Comparison
 
 **Commands:**
+
 ```bash
 # T0 (Paranoid)
 time sudo prtip -sS -p 1-100 192.168.1.100 -T0 --no-progress
@@ -155,11 +171,13 @@ time sudo prtip -sS -p 1-100 192.168.1.100 -T5 --no-progress
 ```
 
 **Expected Baseline:**
+
 - **T0:** 500-600 seconds (5-minute delays)
 - **T3:** 10-20 seconds
 - **T5:** 2-5 seconds (aggressive)
 
 **Metrics to Record:**
+
 - Duration per timing template
 - Accuracy vs speed tradeoff
 - Packet loss at T5
@@ -172,6 +190,7 @@ time sudo prtip -sS -p 1-100 192.168.1.100 -T5 --no-progress
 ### CPU Profiling with `perf`
 
 **Record Performance Data:**
+
 ```bash
 # Build with debug symbols
 RUSTFLAGS="-C debuginfo=2 -C force-frame-pointers=yes" cargo build --release
@@ -187,6 +206,7 @@ firefox flame.svg
 ```
 
 **Key Areas to Analyze:**
+
 - Hot paths (functions consuming >5% CPU)
 - Lock contention (spinlock cycles)
 - Memory allocations (malloc/free calls)
@@ -197,16 +217,19 @@ firefox flame.svg
 ### Memory Profiling with `valgrind`
 
 **Check for Memory Leaks:**
+
 ```bash
 valgrind --leak-check=full --show-leak-kinds=all ./target/release/prtip -sT -p 1-100 192.168.1.100
 ```
 
 **Analyze Memory Usage:**
+
 ```bash
 /usr/bin/time -v ./target/release/prtip -sS -p- 192.168.1.100 2>&1 | grep -E "Maximum resident set size|User time|System time"
 ```
 
 **Key Metrics:**
+
 - Peak resident set size (RSS)
 - Heap allocations per scan
 - Memory leaks (should be zero)
@@ -216,11 +239,13 @@ valgrind --leak-check=full --show-leak-kinds=all ./target/release/prtip -sT -p 1
 ### Network Profiling with `iftop`
 
 **Monitor Real-Time Bandwidth:**
+
 ```bash
 sudo iftop -i eth0 -f "host 192.168.1.100"
 ```
 
 **Key Metrics:**
+
 - Peak bandwidth utilization (Mbps)
 - Packet rate (packets/second)
 - Burst patterns vs steady state
@@ -232,16 +257,19 @@ sudo iftop -i eth0 -f "host 192.168.1.100"
 ### vs. Nmap (Detection Accuracy)
 
 **ProRT-IP:**
+
 ```bash
 time sudo prtip -sS -O --sV -p 1-1000 192.168.1.100 --output json > prortip-results.json
 ```
 
 **Nmap:**
+
 ```bash
 time sudo nmap -sS -O -sV -p 1-1000 192.168.1.100 -oX nmap-results.xml
 ```
 
 **Compare:**
+
 - **Accuracy:** OS detection match percentage
 - **Speed:** ProRT-IP should be 1.5-2x faster (baseline)
 - **Results:** Compare open port lists, service versions, OS guesses
@@ -251,16 +279,19 @@ time sudo nmap -sS -O -sV -p 1-1000 192.168.1.100 -oX nmap-results.xml
 ### vs. Masscan (Raw Speed)
 
 **ProRT-IP (T5):**
+
 ```bash
 time sudo prtip -sS -p- 192.168.1.100 -T5 --no-progress
 ```
 
 **Masscan:**
+
 ```bash
 time sudo masscan -p 1-65535 192.168.1.100 --rate 10000
 ```
 
 **Compare:**
+
 - **Speed:** Masscan will be faster (stateless, ~10x)
 - **Accuracy:** ProRT-IP should have fewer false positives
 - **Memory:** ProRT-IP will use more memory (stateful tracking)
@@ -272,16 +303,19 @@ time sudo masscan -p 1-65535 192.168.1.100 --rate 10000
 ### vs. RustScan (Rust Ecosystem)
 
 **ProRT-IP:**
+
 ```bash
 time sudo prtip -sT -p- 192.168.1.100 --no-progress
 ```
 
 **RustScan:**
+
 ```bash
 time rustscan -a 192.168.1.100 --range 1-65535 --batch-size 5000
 ```
 
 **Compare:**
+
 - **Speed:** Should be comparable (both use FuturesUnordered)
 - **Features:** ProRT-IP has more scan types and detection
 - **Resource usage:** Compare ulimit handling and concurrency
@@ -305,18 +339,22 @@ After Phase 4 optimizations, these improvements are expected:
 ### Specific Optimizations
 
 **1. Lock-Free Data Structures (crossbeam):**
+
 - Replace `Arc<Mutex<HashMap>>` with lock-free alternatives
 - Target: Eliminate >90% of lock contention
 
 **2. Batched Syscalls (sendmmsg/recvmmsg):**
+
 - Batch 64-1024 packets per syscall
 - Target: 30-50% speedup at 1M+ pps
 
 **3. NUMA-Aware Thread Placement:**
+
 - Pin threads to NUMA nodes
 - Target: 10-30% speedup on multi-socket systems
 
 **4. Stateless Scanning Mode:**
+
 - Use Blackrock shuffling and SipHash
 - Target: Masscan-like speeds (1M+ pps)
 
@@ -363,6 +401,7 @@ cat $RESULTS
 ```
 
 **Run Benchmarks:**
+
 ```bash
 chmod +x benchmark.sh
 ./benchmark.sh
@@ -375,6 +414,7 @@ chmod +x benchmark.sh
 ### Linux
 
 **Optimal Settings:**
+
 ```bash
 # Increase receive buffer size
 sudo sysctl -w net.core.rmem_max=26214400
@@ -394,6 +434,7 @@ sudo sysctl -w net.ipv4.tcp_window_scaling=1
 ### macOS
 
 **Considerations:**
+
 - BPF buffer size is limited
 - Packet capture is slower than Linux
 - Expect 20-30% slower than Linux baseline
@@ -401,6 +442,7 @@ sudo sysctl -w net.ipv4.tcp_window_scaling=1
 ### Windows
 
 **Considerations:**
+
 - Npcap overhead adds ~10-20% latency
 - Administrator privileges required
 - Timing tests may be 2-3x slower due to Npcap
@@ -432,6 +474,7 @@ fi
 ```
 
 **Run in CI:**
+
 ```yaml
 # .github/workflows/performance.yml
 - name: Performance Regression Test
@@ -445,6 +488,7 @@ fi
 ### Recording Benchmark Results
 
 **Template:**
+
 ```
 ProRT-IP Performance Benchmark
 ==============================

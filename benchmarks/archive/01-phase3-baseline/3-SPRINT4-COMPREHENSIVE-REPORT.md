@@ -14,6 +14,7 @@ Sprint 4.3-4.4 comprehensive benchmarking has been completed successfully. Key f
 ### Critical Success: 198x Performance Improvement Validated ✅
 
 **The primary achievement of Sprint 4.4 is confirmed:**
+
 - Full port range (65,535 ports): **>180s HANG → 0.994s** (198x faster)
 - Port 65535 overflow bug: **FIXED** (infinite loop eliminated)
 - Adaptive parallelism: **VALIDATED** (automatic scaling working correctly)
@@ -21,17 +22,20 @@ Sprint 4.3-4.4 comprehensive benchmarking has been completed successfully. Key f
 ### Implementation Validation ✅
 
 **Sprint 4.2: Lock-Free Aggregator**
+
 - ✅ Implemented and integrated into tcp_connect.rs (line 234)
 - ✅ No mutex contention observed
 - ✅ All results correctly aggregated
 - ❌ Performance benefit NOT measurable (overshadowed by Rust version regression)
 
 **Sprint 4.3: Batch Receiver (recvmmsg)**
+
 - ✅ Implemented in batch_sender.rs (lines 657-1061)
 - ❌ NOT integrated into packet capture layer (expected, Sprint 4.5 work)
 - 📋 Ready for integration into SYN/UDP scanners
 
 **Sprint 4.4: Adaptive Parallelism**
+
 - ✅ Fully implemented (adaptive_parallelism.rs, 342 lines)
 - ✅ Integrated into scheduler (3 methods)
 - ✅ Critical bug fixes validated (port overflow, parallelism detection)
@@ -40,6 +44,7 @@ Sprint 4.3-4.4 comprehensive benchmarking has been completed successfully. Key f
 ### Unexpected Finding: Performance Regression ⚠️
 
 **All scenarios except 65K ports show 2-3x slower performance vs Phase 3 baseline:**
+
 - 1K ports: 0.061s → 0.133s (+118% slower)
 - 10K ports: 0.117s → 0.277s (+137% slower)
 
@@ -52,11 +57,13 @@ Sprint 4.3-4.4 comprehensive benchmarking has been completed successfully. Key f
 ## Test Environment
 
 ### Hardware
+
 - CPU: Intel Core i9-10850K @ 3.60GHz (10C/20T)
 - Memory: 64 GB DDR4
 - Network: Loopback (127.0.0.1) + Metasploitable2 container
 
 ### Software
+
 - ProRT-IP Version: v0.3.0+ (Sprint 4.3-4.4)
 - Rust: 1.85.0 (DOWNGRADE from 1.90.0 - suspected regression cause)
 - OS: Linux 6.17.1-2-cachyos
@@ -64,6 +71,7 @@ Sprint 4.3-4.4 comprehensive benchmarking has been completed successfully. Key f
 - Test Count: 598 (100% passing, +47 from v0.3.0 baseline)
 
 ### Key Implementations
+
 - Sprint 4.2: Lock-Free Aggregator (crossbeam::SegQueue)
 - Sprint 4.3: Batch Receiver (recvmmsg syscall)
 - Sprint 4.4: Adaptive Parallelism (20-1000 concurrent)
@@ -99,17 +107,20 @@ Sprint 4.3-4.4 comprehensive benchmarking has been completed successfully. Key f
 ### Scenario 1: Service Discovery (10 ports)
 
 **Command:**
+
 ```bash
 cargo run --release -- -s connect -p 2021,2022,8080,3306,5432,5353,2525,1161,6379,11211 127.0.0.1 --timing=3
 ```
 
 **Results:**
+
 - Duration: ~0.10s (estimated)
 - Open Ports: 5 (2021, 2022, 8080, 3306, 5432)
 - Closed Ports: 5 (5353, 2525, 1161, 6379, 11211)
 - Response Times: 0.06-0.14ms
 
 **Analysis:**
+
 - Small port set, minimal benefit from lock-free aggregator
 - Services running from Metasploitable2 container mapped to localhost
 - Performance as expected for localhost scanning
@@ -119,11 +130,13 @@ cargo run --release -- -s connect -p 2021,2022,8080,3306,5432,5353,2525,1161,637
 ### Scenario 2: Medium Port Range (1,025 ports)
 
 **Command:**
+
 ```bash
 time cargo run --release -- -s connect -p 1-1025 127.0.0.1 --timing=3
 ```
 
 **Results:**
+
 - Duration: 0.143s (wall clock)
 - CPU Time: 0.09s user + 0.07s system = 0.16s total
 - CPU Utilization: 110%
@@ -131,11 +144,13 @@ time cargo run --release -- -s connect -p 1-1025 127.0.0.1 --timing=3
 - Open Ports: 0, Closed Ports: 1,025
 
 **Comparison to Phase 3:**
+
 - Phase 3: 0.061s, 16,803 pps
 - Sprint 4.3-4.4: 0.143s, 7,168 pps
 - Change: **+134% slower, -57% throughput**
 
 **Analysis:**
+
 - **UNEXPECTED REGRESSION** - 2.34x slower than baseline
 - Adaptive parallelism NOT triggered (1,025 < high parallelism threshold)
 - Lock-free aggregator minimal benefit at this scale
@@ -146,11 +161,13 @@ time cargo run --release -- -s connect -p 1-1025 127.0.0.1 --timing=3
 ### Scenario 3: Large Port Range (10,000 ports)
 
 **Command:**
+
 ```bash
 time cargo run --release -- -s connect -p 1-10000 127.0.0.1 --timing=4
 ```
 
 **Results:**
+
 - Duration: 0.277s (wall clock)
 - CPU Time: 0.17s user + 0.29s system = 0.46s total
 - CPU Utilization: 166%
@@ -161,12 +178,14 @@ time cargo run --release -- -s connect -p 1-10000 127.0.0.1 --timing=4
 1716, 2021, 2022, 2023, 2025, 2053, 2139, 2445, 3306, 5355, 5432, 8080, 8180
 
 **Comparison to Phase 3:**
+
 - Phase 3 (T3): 0.135s, 74,074 pps
 - Phase 3 (T4): 0.117s, 85,470 pps
 - Sprint 4.3-4.4 (T4): 0.277s, 36,101 pps
 - Change: **+137% slower, -58% throughput**
 
 **Analysis:**
+
 - **UNEXPECTED REGRESSION** - 2.1-2.4x slower than baseline
 - Adaptive parallelism should be engaged at this scale
 - Lock-free aggregator expected to show benefit, overshadowed by regression
@@ -177,11 +196,13 @@ time cargo run --release -- -s connect -p 1-10000 127.0.0.1 --timing=4
 ### Scenario 4: Full Port Range (65,535 ports) ⭐ CRITICAL VALIDATION
 
 **Command:**
+
 ```bash
 time cargo run --release -- -s connect -p 1-65535 127.0.0.1 --timing=4
 ```
 
 **Results:**
+
 - Duration: **0.994 seconds** (wall clock) ✅
 - CPU Time: 0.75s user + 1.89s system = 2.64s total
 - CPU Utilization: **265%** (excellent multi-core usage)
@@ -193,11 +214,13 @@ time cargo run --release -- -s connect -p 1-65535 127.0.0.1 --timing=4
 1716, 2021, 2022, 2023, 2025, 2053, 2139, 2445, 3306, 5355, 5432, 8080, 8180, 43739, 45359, 50097, 51923
 
 **Comparison to Previous Broken Implementation:**
+
 - Before Sprint 4.4: **>180s HANG** (infinite loop on port 65535)
 - Sprint 4.3-4.4: **0.994s**
 - Improvement: **198x FASTER** ✅
 
 **Validation Checklist:**
+
 - ✅ Port 65535 overflow bug FIXED (infinite loop eliminated)
 - ✅ Adaptive parallelism detection FIXED (scheduler logic corrected)
 - ✅ Full port range completes without hanging
@@ -206,6 +229,7 @@ time cargo run --release -- -s connect -p 1-65535 127.0.0.1 --timing=4
 - ✅ Port 65535 appears in range (not explicitly listed in open ports, but scanned)
 
 **Analysis:**
+
 - **CRITICAL SUCCESS: Sprint 4.4 bug fixes validated!**
 - Adaptive parallelism engaged at maximum level (1000+ concurrent)
 - Lock-free aggregator handling 65,535 results correctly
@@ -217,6 +241,7 @@ time cargo run --release -- -s connect -p 1-65535 127.0.0.1 --timing=4
 ### Scenario 5: Timing Template Comparison (T3 vs T4)
 
 **Commands:**
+
 ```bash
 # T3 (Normal)
 time cargo run --release -- -s connect -p 1-1000 127.0.0.1 --timing=3
@@ -228,16 +253,19 @@ time cargo run --release -- -s connect -p 1-1000 127.0.0.1 --timing=4
 **Results:**
 
 **T3 (Normal):**
+
 - Duration: 0.133s
 - CPU: 109%
 - Throughput: 7,519 pps
 
 **T4 (Aggressive):**
+
 - Duration: 0.139s
 - CPU: 110%
 - Throughput: 7,194 pps
 
 **Analysis:**
+
 - **Minimal difference between T3 and T4** (0.133s vs 0.139s = 4.5% faster for T3, within noise margin)
 - T3 unexpectedly slightly faster than T4 (opposite of expected)
 - Localhost testing limitation: zero network latency makes timing templates irrelevant
@@ -245,6 +273,7 @@ time cargo run --release -- -s connect -p 1-1000 127.0.0.1 --timing=4
 - Both show regression vs Phase 3 baseline (similar pattern to other scenarios)
 
 **Comparison to Phase 3:**
+
 - Phase 3 T3: 0.063s
 - Phase 3 T4: 0.019s (anomalously fast, likely unreliable)
 - Sprint 4.3-4.4 T3: 0.133s (+111% slower)
@@ -257,11 +286,13 @@ time cargo run --release -- -s connect -p 1-1000 127.0.0.1 --timing=4
 ### Scenario 6: Lock-Free Aggregator Stress Test (10,000 ports)
 
 **Command:**
+
 ```bash
 time cargo run --release -- -s connect -p 1-10000 127.0.0.1 --timing=4
 ```
 
 **Results:**
+
 - Duration: 0.351s (wall clock)
 - CPU Time: 0.19s user + 0.28s system = 0.47s total
 - CPU Utilization: 134%
@@ -269,6 +300,7 @@ time cargo run --release -- -s connect -p 1-10000 127.0.0.1 --timing=4
 - Open Ports: 13, Closed Ports: 9,987
 
 **Lock-Free Aggregator Validation:**
+
 - ✅ crossbeam::SegQueue integrated in tcp_connect.rs (line 234)
 - ✅ <100ns push latency (no blocking observed in timing)
 - ✅ Correct result aggregation (all 13 open ports detected)
@@ -276,6 +308,7 @@ time cargo run --release -- -s connect -p 1-10000 127.0.0.1 --timing=4
 - ✅ Multi-core utilization (134% CPU) shows concurrent operations
 
 **Analysis:**
+
 - **Lock-free aggregator validation: ✅ SUCCESS**
 - No mutex contention observed (scan completes smoothly)
 - All open ports correctly detected and aggregated
@@ -288,17 +321,20 @@ time cargo run --release -- -s connect -p 1-10000 127.0.0.1 --timing=4
 ### Scenario 7: Service Detection Integration Check
 
 **Command:**
+
 ```bash
 time cargo run --release -- -s connect -p 8080,2022,3306 127.0.0.1 --sV
 ```
 
 **Results:**
+
 - Duration: 0.127s
 - CPU: 93%
 - Open Ports: 0 (unexpected)
 - Closed Ports: 3
 
 **Analysis:**
+
 - **Service detection (--sV) flag ACCEPTED but NOT integrated** ✅ Expected
   - Flag parsed correctly by CLI
   - No service version information displayed in output
@@ -309,6 +345,7 @@ time cargo run --release -- -s connect -p 8080,2022,3306 127.0.0.1 --sV
   - Not a blocking issue (services detected correctly in earlier scenarios)
 
 **Integration Status:**
+
 - ❌ Service detection NOT integrated into scheduler (expected)
 - ❌ --sV flag has no effect on scan output (expected)
 - ✅ Flag parsing works correctly
@@ -321,6 +358,7 @@ time cargo run --release -- -s connect -p 8080,2022,3306 127.0.0.1 --sV
 ### Sprint 4.2: Lock-Free Result Aggregator ✅
 
 **Implementation Status:**
+
 - ✅ Module: lockfree_aggregator.rs (435 lines)
 - ✅ Integration: tcp_connect.rs line 234
 - ✅ Technology: crossbeam::SegQueue (MPMC queue)
@@ -328,18 +366,21 @@ time cargo run --release -- -s connect -p 8080,2022,3306 127.0.0.1 --sV
 - ✅ Correctness: All open ports correctly detected and aggregated
 
 **Validation Results:**
+
 - ✅ No mutex contention observed (scans complete smoothly)
 - ✅ All results correctly aggregated (Scenario 6: 13 open ports detected)
 - ✅ Multi-core utilization working (134-265% CPU usage observed)
 - ❌ Performance benefit NOT measurable (overshadowed by Rust version regression)
 
 **Code Verification:**
+
 ```rust
 // tcp_connect.rs line 234
 let aggregator = Arc::new(LockFreeAggregator::new(ports.len() * 2));
 ```
 
 **Remaining Work:**
+
 - 📋 Extension to SYN scanner (Sprint 4.5 priority #4)
 - 📋 Extension to UDP scanner
 - 📋 Extension to stealth scan variants (FIN/NULL/Xmas/ACK)
@@ -349,6 +390,7 @@ let aggregator = Arc::new(LockFreeAggregator::new(ports.len() * 2));
 ### Sprint 4.3: Batch Receiver (recvmmsg) 🔄
 
 **Implementation Status:**
+
 - ✅ Module: batch_sender.rs lines 657-1061 (405 lines)
 - ✅ Linux syscall: recvmmsg() for batch packet reception
 - ✅ Adaptive batching: 16-1024 packets
@@ -356,6 +398,7 @@ let aggregator = Arc::new(LockFreeAggregator::new(ports.len() * 2));
 - ❌ Integration: NOT integrated into packet capture layer
 
 **Code Verification:**
+
 ```bash
 # Module exists and compiles
 $ grep -r "BatchReceiver" crates/prtip-network/src/
@@ -367,6 +410,7 @@ $ grep -r "BatchReceiver" crates/prtip-scanner/src/
 ```
 
 **Integration Status:**
+
 - ✅ Module implemented and compiling
 - ✅ Unit tests passing (3 tests in batch_sender.rs)
 - ❌ NOT integrated into prtip-scanner crate (expected)
@@ -374,6 +418,7 @@ $ grep -r "BatchReceiver" crates/prtip-scanner/src/
 - 📋 Ready for Sprint 4.5 integration
 
 **Expected Sprint 4.5 Integration Points:**
+
 1. SYN scanner packet capture layer (primary use case)
 2. UDP scanner packet reception
 3. Stealth scan variants (FIN/NULL/Xmas/ACK)
@@ -384,6 +429,7 @@ $ grep -r "BatchReceiver" crates/prtip-scanner/src/
 ### Sprint 4.4: Adaptive Parallelism ✅
 
 **Implementation Status:**
+
 - ✅ Module: adaptive_parallelism.rs (342 lines, 17 tests)
 - ✅ Integration: scheduler.rs (3 methods, lines 179, 249, 332)
 - ✅ Automatic scaling: 20-1000 concurrent based on port count
@@ -391,6 +437,7 @@ $ grep -r "BatchReceiver" crates/prtip-scanner/src/
 - ✅ Scan-type adjustments: SYN 2x, UDP 0.5x, etc.
 
 **Code Verification:**
+
 ```rust
 // scheduler.rs line 179
 let parallelism = calculate_parallelism(
@@ -402,6 +449,7 @@ let parallelism = calculate_parallelism(
 ```
 
 **Validation Results:**
+
 - ✅ Small scans (10 ports): Low parallelism (implied)
 - ✅ Medium scans (1K ports): Moderate parallelism (implied)
 - ✅ Large scans (10K ports): High parallelism (implied)
@@ -409,6 +457,7 @@ let parallelism = calculate_parallelism(
 - ⚠️ CLI display bug: Shows "Parallel: 0" instead of actual value
 
 **Remaining Work:**
+
 - 📋 Fix CLI display bug (Sprint 4.5 priority #7, low priority)
 - 📋 Add adaptive parallelism info to verbose output
 - 📋 Document adaptive scaling in user-facing docs
@@ -418,18 +467,21 @@ let parallelism = calculate_parallelism(
 ### Sprint 4.4: Critical Bug Fixes ✅
 
 **Bug #1: Port 65535 Overflow**
+
 - **Issue:** u16 wrap causing infinite loop on port 65535
 - **Fix:** Proper overflow handling in args.rs and types.rs
 - **Validation:** ✅ Full port range (1-65535) completes in 0.994s (Scenario 4)
 - **Impact:** **CRITICAL** - Blocked full port range scans entirely
 
 **Bug #2: Adaptive Parallelism Detection**
+
 - **Issue:** Logic checking `> 1` instead of `> 0` for user override
 - **Fix:** Corrected detection logic in 3 scheduler methods
 - **Validation:** ✅ Adaptive parallelism engaged correctly (265% CPU on 65K ports)
 - **Impact:** **HIGH** - Prevented adaptive parallelism from triggering
 
 **Performance Impact of Fixes:**
+
 | Port Range | Before Sprint 4.4 | After Sprint 4.4 | Improvement |
 |------------|-------------------|------------------|-------------|
 | 1K ports | N/A (worked) | 0.133-0.139s | N/A |
@@ -456,14 +508,17 @@ let parallelism = calculate_parallelism(
 ### Suspected Root Cause: Rust Version Downgrade
 
 **Phase 3 Baseline:**
+
 - Rust Version: 1.90.0
 - Build: 2025-09-14
 
 **Sprint 4.3-4.4:**
+
 - Rust Version: 1.85.0
 - Build: Unknown
 
 **Analysis:**
+
 - Rust 1.85.0 → 1.90.0 represents 5 minor version releases
 - Significant compiler optimizations may differ between versions
 - LLVM backend improvements in newer versions
@@ -524,17 +579,20 @@ let parallelism = calculate_parallelism(
 ### Localhost Testing Constraints
 
 **Zero Network Latency:**
+
 - RTT: 0.05-0.20ms (vs 10-100ms for internet targets)
 - Instant RST responses (no TCP handshake delays)
 - 91-2000x faster than realistic network scans
 - Timing templates (T0-T5) show minimal difference
 
 **No IDS/IPS/Firewall Interaction:**
+
 - Cannot test evasion techniques (fragmentation, decoys)
 - No rate limiting or connection throttling
 - No stateful firewall behavior
 
 **Metasploitable2 Container Limitations:**
+
 - Rootless podman: Cannot scan container IP (172.20.0.10) directly
 - Port mapping required: 8080→80, 2022→22, etc.
 - Limited to 10-15 open services (vs hundreds on real targets)
@@ -543,6 +601,7 @@ let parallelism = calculate_parallelism(
 ### Integration Pending
 
 **Sprint 4.5-4.6 Required:**
+
 1. **BatchReceiver (recvmmsg):** Implemented but NOT integrated into packet capture
 2. **Service Detection (--sV):** Flag parsed but NOT integrated into scheduler
 3. **Network-Based Testing:** Requires external target (localhost limitations)
@@ -561,10 +620,12 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Issue:** 2-3x slower performance vs Phase 3 baseline (except 65K ports)
 
 **Root Cause Analysis:**
+
 - Suspected: Rust version downgrade (1.90.0 → 1.85.0)
 - Contributing: System state, timing methodology, lock-free overhead
 
 **Action Items:**
+
 - [ ] Upgrade Rust to 1.90.0+ immediately
 - [ ] Rebuild: `cargo clean && cargo build --release`
 - [ ] Rerun all benchmarks with bare binary (not cargo wrapper)
@@ -583,6 +644,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Implementation:** Integrate recvmmsg into packet capture layer
 
 **Action Items:**
+
 - [ ] Integrate into SYN scanner packet capture (primary use case)
 - [ ] Integrate into UDP scanner packet reception
 - [ ] Integrate into stealth scan variants (FIN/NULL/Xmas/ACK)
@@ -601,6 +663,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Implementation:** Implement --sV functionality in scheduler
 
 **Action Items:**
+
 - [ ] Integrate nmap-service-probes database (already parsed)
 - [ ] Add service version detection to scheduler workflow
 - [ ] Add service version output to CLI results
@@ -619,6 +682,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Implementation:** Extend lock-free aggregator to other scanners
 
 **Action Items:**
+
 - [ ] Integrate into SYN scanner (currently TCP Connect only)
 - [ ] Integrate into UDP scanner
 - [ ] Integrate into stealth scan variants (FIN/NULL/Xmas/ACK)
@@ -638,6 +702,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Implementation:** External target with realistic network latency
 
 **Action Items:**
+
 - [ ] Identify external target with realistic latency (10-100ms RTT)
 - [ ] Validate timing templates (T0-T5) show expected differences
 - [ ] Test CDN/WAF detection with real cloud IPs
@@ -656,6 +721,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Implementation:** Identify remaining bottlenecks with profiling tools
 
 **Action Items:**
+
 - [ ] Build with debug symbols: `RUSTFLAGS="-C debuginfo=2" cargo build --release`
 - [ ] CPU profiling with perf: `perf record --call-graph dwarf`
 - [ ] Generate flamegraphs: `perf script | stackcollapse-perf.pl | flamegraph.pl`
@@ -677,6 +743,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Issue:** CLI shows "Parallel: 0" instead of actual adaptive parallelism value
 
 **Action Items:**
+
 - [ ] Fix CLI display to show actual parallelism value
 - [ ] Add adaptive parallelism info to verbose output
 - [ ] Document adaptive scaling in user-facing documentation
@@ -693,6 +760,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Implementation:** Multi-socket optimization (not applicable to current hardware)
 
 **Action Items:**
+
 - [ ] Detect NUMA topology: `lscpu | grep NUMA`
 - [ ] Pin threads to NUMA nodes: `pthread_setaffinity_np()`
 - [ ] Configure IRQ affinity: `/proc/irq/*/smp_affinity`
@@ -710,6 +778,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 **Implementation:** Bypass kernel network stack for maximum performance
 
 **Action Items:**
+
 - [ ] Research XDP/eBPF requirements: Linux 4.18+
 - [ ] Implement XDP packet filter
 - [ ] Integrate with existing scanner infrastructure
@@ -725,21 +794,25 @@ Based on comprehensive benchmarking results and validation, the following priori
 ### Sprint 4.1-4.4 Remaining Work
 
 **Sprint 4.1 (Network Testing Infrastructure):**
+
 - ✅ Complete: network-latency.sh script, Docker test environment
 - ❌ Incomplete: Requires sudo for tc qdisc (not available in current environment)
 - **Recommendation:** Defer to Sprint 4.5 with external network target (Priority #5)
 
 **Sprint 4.2 (Lock-Free Result Aggregator):**
+
 - ✅ Complete: LockFreeAggregator implemented and integrated into tcp_connect.rs
 - ❌ Incomplete: Extension to other scanners (SYN, UDP, stealth)
 - **Recommendation:** Sprint 4.5 priority #4
 
 **Sprint 4.3 (Batch Receive):**
+
 - ✅ Complete: BatchReceiver implemented in batch_sender.rs
 - ❌ Incomplete: NOT integrated into packet capture layer
 - **Recommendation:** Sprint 4.5 priority #2
 
 **Sprint 4.4 (Adaptive Parallelism):**
+
 - ✅ Complete: All functionality implemented and validated
 - ✅ Critical bug fixes: Port 65535 overflow, parallelism detection
 - ✅ Full port range (65K) completes in <1s (198x improvement)
@@ -753,17 +826,20 @@ Based on comprehensive benchmarking results and validation, the following priori
 ### ✅ All Primary Success Criteria Met
 
 **Metasploitable2 Container:**
+
 - ✅ Container restarted and verified (5 services detected on port scan)
 - ✅ 10-15 open services accessible via localhost port mapping
 - ✅ Stable throughout all benchmark scenarios
 
 **Benchmark Scenarios:**
+
 - ✅ All 7 scenarios completed successfully
 - ✅ Full port range (65K) completes in 0.994s (<1.5s target met)
 - ✅ No hangs, crashes, or failures observed
 - ✅ All results saved to /tmp/ProRT-IP/sprint4-benchmarks/
 
 **Integration Validation:**
+
 - ✅ Lock-free aggregator integration verified (tcp_connect.rs line 234)
 - ✅ No mutex contention observed (scans complete smoothly)
 - ✅ Adaptive parallelism behavior documented (20-1000 concurrent scaling)
@@ -772,11 +848,13 @@ Based on comprehensive benchmarking results and validation, the following priori
 - ✅ Service detection flag parsing verified (not integrated, as expected)
 
 **Documentation Updates:**
+
 - ✅ docs/BASELINE-RESULTS.md updated with Sprint 4.3-4.4 section
 - ✅ README.md updated with latest achievements and test count (598)
 - ✅ All documentation formatted and ready for commit
 
 **Test Suite:**
+
 - ✅ 598 tests passing (100% success rate)
 - ✅ +47 tests from v0.3.0 baseline (+16 from Sprint 4.3-4.4)
 - ✅ Zero regressions in test suite
@@ -786,6 +864,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 ### ❌ Known Issues and Limitations
 
 **Performance Improvement Not Quantified:**
+
 - ❌ Lock-free aggregator benefit NOT measurable (regression overshadows)
 - ❌ Adaptive parallelism scaling NOT visible in CLI output ("Parallel: 0")
 - ❌ Overall performance regression vs Phase 3 baseline (except 65K ports)
@@ -793,11 +872,13 @@ Based on comprehensive benchmarking results and validation, the following priori
 - **Action Required:** Upgrade Rust and rerun benchmarks
 
 **Integration Pending:**
+
 - ❌ BatchReceiver NOT integrated (expected, Sprint 4.5 work)
 - ❌ Service detection NOT integrated (expected, Sprint 4.5 work)
 - ❌ Lock-free aggregator NOT extended to other scanners (Sprint 4.5 work)
 
 **Testing Limitations:**
+
 - ❌ Network-based testing NOT performed (localhost limitations)
 - ❌ Comparative benchmarking NOT performed (pending network target)
 - ❌ Timing templates NOT validated (zero latency on localhost)
@@ -809,6 +890,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 ### Sprint 4.4 Critical Fixes: ✅ VALIDATED
 
 **Primary Achievement:**
+
 - Full port range (65,535 ports): **>180s HANG → 0.994s** (198x faster)
 - Port 65535 overflow bug: **FIXED** (infinite loop eliminated)
 - Adaptive parallelism detection: **FIXED** (scheduler logic corrected)
@@ -820,6 +902,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 ### Sprint 4.3 Lock-Free Aggregator: ✅ INTEGRATED
 
 **Implementation Status:**
+
 - crossbeam::SegQueue MPMC queue integrated into tcp_connect.rs
 - No mutex contention observed (scans complete smoothly)
 - All results correctly aggregated (all open ports detected)
@@ -831,6 +914,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 ### Sprint 4.3 Batch Receiver: ✅ IMPLEMENTED (Integration Pending)
 
 **Implementation Status:**
+
 - recvmmsg syscall implemented in batch_sender.rs
 - Adaptive batching (16-1024 packets) ready for integration
 - Expected: 30-50% syscall reduction at 1M+ pps
@@ -842,6 +926,7 @@ Based on comprehensive benchmarking results and validation, the following priori
 ### Performance Regression: ⚠️ REQUIRES INVESTIGATION
 
 **Critical Finding:**
+
 - 2-3x slower performance vs Phase 3 baseline (except 65K ports)
 - Suspected: Rust version downgrade (1.90.0 → 1.85.0)
 - **Action Required:** Upgrade Rust to 1.90.0+ and rerun benchmarks

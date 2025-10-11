@@ -109,6 +109,7 @@ docker-compose ps | grep "healthy"
 ```
 
 **Expected Output:**
+
 ```
 NAME                    IMAGE                       STATUS              PORTS
 prtip-bind9             ubuntu/bind9:latest         Up (healthy)        53/tcp, 53/udp
@@ -136,6 +137,7 @@ docker network inspect prtip-test-environment_prtip_test | \
 ```
 
 **Expected IP Addresses:**
+
 - Metasploitable2: `172.20.0.10`
 - Nginx: `172.20.0.20`
 - OpenSSH: `172.20.0.21`
@@ -228,9 +230,11 @@ docker-compose down -v
 ### Service Details
 
 #### 1. Metasploitable2 (172.20.0.10)
+
 **Description:** Intentionally vulnerable Linux VM with 20+ services
 
 **Services:**
+
 - FTP (21): vsftpd 2.3.4 (with backdoor)
 - SSH (22): OpenSSH 4.7p1
 - Telnet (23): Linux telnetd
@@ -243,6 +247,7 @@ docker-compose down -v
 - PostgreSQL (5432): PostgreSQL 8.3
 
 **Test Scenarios:**
+
 ```bash
 # Service version detection
 prtip --scan-type connect --sV -p 21-80 172.20.0.10
@@ -255,13 +260,16 @@ prtip --scan-type connect -p- 172.20.0.10 --timing 4
 ```
 
 #### 2. Nginx (172.20.0.20)
+
 **Description:** Modern HTTP server with custom headers for testing
 
 **Custom Headers:**
+
 - `X-Server-Type: ProRT-IP-Test-Nginx`
 - `X-Test-Environment: Phase-4-Benchmarking`
 
 **Test Scenarios:**
+
 ```bash
 # HTTP banner grabbing
 prtip --scan-type connect --sV -p 80 172.20.0.20
@@ -271,13 +279,16 @@ curl -I http://172.20.0.20
 ```
 
 #### 3. OpenSSH (172.20.0.21)
+
 **Description:** SSH server on custom port 2222
 
 **Credentials:**
+
 - Username: `testuser`
 - Password: `testpassword`
 
 **Test Scenarios:**
+
 ```bash
 # SSH banner grabbing
 prtip --scan-type connect --sV -p 2222 172.20.0.21
@@ -287,28 +298,34 @@ nc 172.20.0.21 2222
 ```
 
 #### 4. MySQL & PostgreSQL
+
 **Description:** Database servers for testing MySQL/PostgreSQL detection
 
 **MySQL (172.20.0.30:3306):**
+
 - Root password: `rootpassword`
 - Database: `testdb`
 - User: `testuser` / `testpass`
 
 **PostgreSQL (172.20.0.31:5432):**
+
 - User: `testuser`
 - Password: `testpass`
 - Database: `testdb`
 
 **Test Scenarios:**
+
 ```bash
 # Database service detection
 prtip --scan-type connect --sV -p 3306,5432 172.20.0.30-31
 ```
 
 #### 5. Redis & Memcached
+
 **Description:** Key-value stores for caching
 
 **Test Scenarios:**
+
 ```bash
 # Redis detection
 prtip --scan-type connect --sV -p 6379 172.20.0.32
@@ -318,9 +335,11 @@ prtip --scan-type connect --sV -p 11211 172.20.0.33
 ```
 
 #### 6. BIND9 DNS (172.20.0.40)
+
 **Description:** DNS server for UDP testing
 
 **Test Scenarios:**
+
 ```bash
 # UDP DNS scan
 prtip --scan-type udp -p 53 172.20.0.40
@@ -330,11 +349,13 @@ dig @172.20.0.40 google.com
 ```
 
 #### 7. SNMPD (172.20.0.41)
+
 **Description:** SNMP agent for UDP testing
 
 **Community String:** `public`
 
 **Test Scenarios:**
+
 ```bash
 # UDP SNMP scan
 prtip --scan-type udp -p 161 172.20.0.41
@@ -369,6 +390,7 @@ sudo scripts/network-latency.sh show <interface>
 ### Common Scenarios
 
 #### LAN Testing (10ms RTT)
+
 ```bash
 # Add 5ms latency (5ms × 2 = 10ms RTT)
 sudo scripts/network-latency.sh docker 5ms
@@ -379,6 +401,7 @@ ping -c 5 172.20.0.10
 ```
 
 #### WAN Testing (100ms RTT)
+
 ```bash
 # Add 50ms latency (50ms × 2 = 100ms RTT)
 sudo scripts/network-latency.sh docker 50ms
@@ -389,6 +412,7 @@ ping -c 5 172.20.0.10
 ```
 
 #### Internet Testing (200ms RTT)
+
 ```bash
 # Add 100ms latency (100ms × 2 = 200ms RTT)
 sudo scripts/network-latency.sh docker 100ms
@@ -399,6 +423,7 @@ ping -c 5 172.20.0.10
 ```
 
 #### Satellite Link (600ms RTT)
+
 ```bash
 # Add 300ms latency (300ms × 2 = 600ms RTT)
 sudo scripts/network-latency.sh docker 300ms
@@ -445,12 +470,14 @@ sudo scripts/network-latency.sh show docker0
 **Purpose:** Validate timing templates (T0-T5) with realistic network latency
 
 **Test Setup:**
+
 ```bash
 # Add 50ms latency (100ms RTT)
 sudo scripts/network-latency.sh docker 50ms
 ```
 
 **Test Commands:**
+
 ```bash
 # T0 - Paranoid (5-minute probe delays)
 time prtip --scan-type connect -p 1-100 172.20.0.10 --timing 0
@@ -469,6 +496,7 @@ time prtip --scan-type connect -p 1-100 172.20.0.10 --timing 5
 ```
 
 **Expected Results:**
+
 | Template | Expected Duration | Relative Speed |
 |----------|-------------------|----------------|
 | T0 | 500-600 seconds | 1.0x (baseline) |
@@ -482,12 +510,14 @@ time prtip --scan-type connect -p 1-100 172.20.0.10 --timing 5
 **Purpose:** Validate service detection against diverse services
 
 **Test Setup:**
+
 ```bash
 # No latency needed for accuracy testing
 sudo scripts/network-latency.sh remove docker0
 ```
 
 **Test Commands:**
+
 ```bash
 # Full service scan on Metasploitable2
 prtip --scan-type connect --sV -p 21,22,25,80,3306,5432 172.20.0.10 \
@@ -500,6 +530,7 @@ nmap -sV -p 21,22,25,80,3306,5432 172.20.0.10 -oX nmap-baseline.xml
 ```
 
 **Expected Services:**
+
 | Port | Service | Version |
 |------|---------|---------|
 | 21 | FTP | vsftpd 2.3.4 |
@@ -514,12 +545,14 @@ nmap -sV -p 21,22,25,80,3306,5432 172.20.0.10 -oX nmap-baseline.xml
 **Purpose:** Measure ProRT-IP performance vs baselines with network latency
 
 **Test Setup:**
+
 ```bash
 # Add 50ms latency (100ms RTT)
 sudo scripts/network-latency.sh docker 50ms
 ```
 
 **Test Commands:**
+
 ```bash
 # ProRT-IP (10K ports, T4)
 time prtip --scan-type connect -p 1-10000 172.20.0.10 --timing 4 \
@@ -537,6 +570,7 @@ time masscan -p 1-10000 172.20.0.10 --rate 10000 -oJ masscan-10k.json
 ```
 
 **Expected Performance (100ms RTT):**
+
 | Tool | Duration | Ports/Second | Notes |
 |------|----------|--------------|-------|
 | ProRT-IP (T4) | 15-30s | 330-660 pps | Stateful with connection tracking |
@@ -545,6 +579,7 @@ time masscan -p 1-10000 172.20.0.10 --rate 10000 -oJ masscan-10k.json
 | Masscan | 1-2s | 5000-10000 pps | Stateless (less accurate) |
 
 **Performance Targets:**
+
 - ProRT-IP should be **1.5-2x faster** than Nmap
 - ProRT-IP should be **5-10x slower** than Masscan (acceptable for stateful tracking)
 - ProRT-IP should be **comparable** to RustScan (both use Tokio + FuturesUnordered)
@@ -554,12 +589,14 @@ time masscan -p 1-10000 172.20.0.10 --rate 10000 -oJ masscan-10k.json
 **Purpose:** Validate Sprint 4.4 full port range optimization (65K ports in <10s)
 
 **Test Setup:**
+
 ```bash
 # Remove latency for localhost-speed testing
 sudo scripts/network-latency.sh remove docker0
 ```
 
 **Test Commands:**
+
 ```bash
 # Full port range scan
 time prtip --scan-type connect -p- 172.20.0.10 --timing 4 \
@@ -569,6 +606,7 @@ time prtip --scan-type connect -p- 172.20.0.10 --timing 4 \
 ```
 
 **Expected Results:**
+
 | Environment | Duration | Ports/Second | Status |
 |-------------|----------|--------------|--------|
 | Localhost (no latency) | <10s | 6,500+ pps | ✅ Sprint 4.4 target |
@@ -584,6 +622,7 @@ time prtip --scan-type connect -p- 172.20.0.10 --timing 4 \
 **Objective:** Validate >95% accuracy vs Nmap service detection
 
 **Test 1: HTTP Server Detection**
+
 ```bash
 # ProRT-IP
 prtip --scan-type connect --sV -p 80 172.20.0.20
@@ -600,6 +639,7 @@ nmap -sV -p 80 172.20.0.20
 ```
 
 **Test 2: SSH Banner Grabbing**
+
 ```bash
 # ProRT-IP
 prtip --scan-type connect --sV -p 2222 172.20.0.21
@@ -614,6 +654,7 @@ nmap -sV -p 2222 172.20.0.21
 ```
 
 **Test 3: Database Detection**
+
 ```bash
 # ProRT-IP
 prtip --scan-type connect --sV -p 3306,5432 172.20.0.30-31
@@ -627,6 +668,7 @@ nmap -sV -p 3306,5432 172.20.0.30-31
 ```
 
 **Test 4: UDP Service Detection**
+
 ```bash
 # ProRT-IP
 prtip --scan-type udp --sV -p 53,161 172.20.0.40-41
@@ -640,6 +682,7 @@ nmap -sU -sV -p 53,161 172.20.0.40-41
 ```
 
 **Success Criteria:**
+
 - ✅ >95% service identification match with Nmap
 - ✅ Correct version detection for major services
 - ✅ <10% speed penalty vs port scanning alone
@@ -653,6 +696,7 @@ nmap -sU -sV -p 53,161 172.20.0.40-41
 **Problem:** Containers fail to start or immediately exit
 
 **Solutions:**
+
 ```bash
 # Check Docker daemon status
 sudo systemctl status docker
@@ -673,6 +717,7 @@ docker-compose up -d
 **Problem:** Cannot reach container IP addresses
 
 **Solutions:**
+
 ```bash
 # Verify Docker network
 docker network ls
@@ -692,6 +737,7 @@ docker-compose up -d
 **Problem:** `tc` command fails or latency not applied
 
 **Solutions:**
+
 ```bash
 # Check if tc is installed
 which tc
@@ -714,6 +760,7 @@ tc qdisc show dev docker0
 **Problem:** ProRT-IP fails with permission errors
 
 **Solutions:**
+
 ```bash
 # Check if user is in docker group
 groups | grep docker
@@ -734,6 +781,7 @@ sudo setcap cap_net_raw+ep ./target/release/prtip
 **Problem:** Services show "unhealthy" status
 
 **Solutions:**
+
 ```bash
 # Check service logs
 docker-compose logs <service-name>
@@ -757,6 +805,7 @@ docker-compose ps
 5. **Sprint 4.6:** Service detection validation (use this environment)
 
 **Related Documentation:**
+
 - [Phase 4 Performance Plan](../.cursor/plans/phase-4-performance-plan.plan.md)
 - [Benchmark Methodology](14-BENCHMARKS.md)
 - [Performance Baselines](../benchmarks/README.md)
@@ -765,6 +814,7 @@ docker-compose ps
 ---
 
 **Document Metadata:**
+
 - **Created:** 2025-10-10
 - **Author:** Claude Code (Automated Setup)
 - **Version:** 1.0

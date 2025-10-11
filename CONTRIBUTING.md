@@ -25,14 +25,18 @@ This project is dedicated to providing a welcoming and inclusive environment for
 
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/ProRT-IP.git
    cd ProRT-IP
    ```
+
 3. **Add upstream remote**:
+
    ```bash
    git remote add upstream https://github.com/doublegate/ProRT-IP.git
    ```
+
 4. **Set up your development environment** (see [Development Setup](#development-setup))
 
 ## How to Contribute
@@ -83,6 +87,7 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
 ### Quick Start
 
 1. **Install Rust** (1.70+ required):
+
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    ```
@@ -93,11 +98,13 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
    - **macOS**: ChmodBPF or run with sudo
 
 3. **Build the project**:
+
    ```bash
    cargo build
    ```
 
 4. **Run tests**:
+
    ```bash
    cargo test
    ```
@@ -107,12 +114,14 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
 ### Rust Style Guide
 
 - **Use `rustfmt`** for consistent formatting:
+
   ```bash
   cargo fmt --check  # Check formatting
   cargo fmt          # Apply formatting
   ```
 
 - **Use `clippy`** for linting:
+
   ```bash
   cargo clippy -- -D warnings
   ```
@@ -123,6 +132,7 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
 
 - **Clear, descriptive names** for functions, variables, types
 - **Comprehensive documentation** for all public APIs:
+
   ```rust
   /// Performs a TCP SYN scan on the specified targets.
   ///
@@ -173,6 +183,7 @@ Comprehensive testing guidelines are in **[docs/06-TESTING.md](docs/06-TESTING.m
 All code contributions must include:
 
 1. **Unit tests** for individual functions:
+
    ```rust
    #[cfg(test)]
    mod tests {
@@ -186,6 +197,7 @@ All code contributions must include:
    ```
 
 2. **Integration tests** for component interactions:
+
    ```rust
    // tests/scanner_integration.rs
    #[tokio::test]
@@ -203,6 +215,7 @@ All code contributions must include:
 - **>90% coverage** for core modules (`prtip-core`, `prtip-network`)
 - **>80% coverage** for overall codebase
 - Run coverage with:
+
   ```bash
   cargo tarpaulin --out Html --output-dir coverage/
   ```
@@ -260,6 +273,7 @@ All pull requests must pass automated CI checks before merging:
 CI runs automatically on every push and PR. Check the [Actions tab](https://github.com/doublegate/ProRT-IP/actions) for status.
 
 **Workflow jobs:**
+
 - `format`: ~30 seconds - Checks code formatting
 - `clippy`: ~2-3 minutes - Lint checks with caching
 - `test`: ~3-5 minutes per platform (parallel) - Build and test
@@ -290,11 +304,13 @@ cargo audit
 ### CI Optimization
 
 The CI pipeline uses aggressive caching for faster runs:
+
 - **Cargo registry cache**: Downloaded crate metadata (~100-500 MB)
 - **Cargo index cache**: Git index for crates.io (~50-200 MB)
 - **Build cache**: Compiled dependencies (~500 MB - 2 GB)
 
 **Cache benefits:**
+
 - Clean build: 5-10 minutes → Cached build: 1-2 minutes (80-90% speedup)
 - Cache hit rate: ~80-90% for typical changes
 
@@ -303,12 +319,14 @@ The CI pipeline uses aggressive caching for faster runs:
 ### Before Submitting
 
 1. **Update from upstream**:
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. **Run full test suite**:
+
    ```bash
    cargo test
    cargo clippy -- -D warnings
@@ -387,6 +405,7 @@ We follow **Conventional Commits** format:
 ### Scope
 
 Optional, indicates area of change:
+
 - `network`: Network/packet handling
 - `scanner`: Scanning engine
 - `detection`: Service/OS detection
@@ -433,6 +452,7 @@ Use descriptive branch names with type prefixes:
 - `test/<description>` - Test additions/updates
 
 **Examples:**
+
 - `feature/udp-scanning`
 - `fix/tcp-checksum-ipv6`
 - `docs/windows-setup-guide`
@@ -443,6 +463,7 @@ Use descriptive branch names with type prefixes:
 ### Bug Reports
 
 Include:
+
 - **Environment**: OS, Rust version, dependencies
 - **Steps to reproduce**: Minimal reproducible example
 - **Expected behavior**: What should happen
@@ -453,6 +474,7 @@ Include:
 ### Feature Requests
 
 Include:
+
 - **Problem statement**: What problem does this solve?
 - **Proposed solution**: How would you implement it?
 - **Alternatives**: Other approaches considered
@@ -462,6 +484,7 @@ Include:
 ### Good First Issues
 
 Look for issues tagged `good-first-issue`:
+
 - Well-defined scope
 - Clear acceptance criteria
 - Mentorship available
@@ -498,23 +521,27 @@ Reviewers will check:
 ## Development Workflow
 
 1. **Create feature branch**:
+
    ```bash
    git checkout -b feature/my-feature
    ```
 
 2. **Make changes** and commit:
+
    ```bash
    git add .
    git commit -m "feat(scope): Add feature description"
    ```
 
 3. **Keep branch updated**:
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 4. **Push to your fork**:
+
    ```bash
    git push origin feature/my-feature
    ```

@@ -9,11 +9,13 @@
 ## DNS Resolution Test
 
 ### Command
+
 ```bash
 prtip -s connect -p 22,80,443 scanme.nmap.org
 ```
 
 ### Result
+
 ```
 [DNS] Resolved scanme.nmap.org -> 45.33.32.156
 
@@ -39,6 +41,7 @@ Open Ports:
 **Status:** ✅ PASS - Hostname resolved correctly to 45.33.32.156
 
 **Expected Services:**
+
 - Port 22: SSH (OpenSSH)
 - Port 80: HTTP (Apache or nginx)
 - Port 443: HTTPS (may be filtered)
@@ -48,11 +51,13 @@ Open Ports:
 ## Service Detection Test
 
 ### Command
+
 ```bash
 prtip -s connect -p 22,80,443 --sV scanme.nmap.org
 ```
 
 ### Result
+
 ```
 [DNS] Resolved scanme.nmap.org -> 45.33.32.156
 
@@ -78,6 +83,7 @@ Open Ports:
 **Status:** ⚠️ PARTIAL - Service detection flag accepted but no service names displayed
 
 **Note:** Service detection appears to not show service names/versions in the output. This may be:
+
 1. A display issue (services detected but not shown)
 2. A configuration issue (service detection not fully activated)
 3. An implementation gap (service detection incomplete)
@@ -89,11 +95,13 @@ Open Ports:
 ## Banner Grabbing Test
 
 ### Command
+
 ```bash
 prtip -s connect -p 22,80 --banner-grab scanme.nmap.org
 ```
 
 ### Result
+
 ```
 [DNS] Resolved scanme.nmap.org -> 45.33.32.156
 
@@ -127,15 +135,19 @@ Open Ports:
 ### DNS Overhead Measurement
 
 **IP address scan (no DNS):**
+
 ```bash
 time ./target/release/prtip -s connect -p 80,443 8.8.8.8
 ```
+
 **Result:** ~3.00s total
 
 **Hostname scan (with DNS):**
+
 ```bash
 time ./target/release/prtip -s connect -p 80 scanme.nmap.org
 ```
+
 **Result:** ~3.07s total
 
 **DNS Overhead:** ~70ms (includes DNS lookup + network latency to scanme.nmap.org)
@@ -147,6 +159,7 @@ time ./target/release/prtip -s connect -p 80 scanme.nmap.org
 ## Comparison with Nmap
 
 ### ProRT-IP
+
 ```
 [DNS] Resolved scanme.nmap.org -> 45.33.32.156
 
@@ -159,6 +172,7 @@ Open Ports:
 ```
 
 ### Nmap (if available)
+
 ```bash
 # Not run in this test session
 # User can compare manually if nmap is installed
@@ -171,19 +185,23 @@ Open Ports:
 ## Conclusion
 
 ### DNS Resolution
+
 - ✅ **WORKING:** Hostnames resolved correctly
 - ✅ **FAST:** <50ms DNS overhead (acceptable)
 - ✅ **RELIABLE:** Tested with official Nmap test server
 
 ### Service Detection
+
 - ⚠️ **NEEDS INVESTIGATION:** --sV flag accepted but no service names shown
 - ⚠️ **SEPARATE ISSUE:** Not related to DNS resolution bug
 
 ### Banner Grabbing
+
 - ⚠️ **NEEDS INVESTIGATION:** --banner-grab flag accepted but no banners shown
 - ⚠️ **SEPARATE ISSUE:** Not related to DNS resolution bug
 
 ### Performance
+
 - ✅ **ACCEPTABLE:** DNS overhead minimal (<50ms)
 - ✅ **STABLE:** No performance regressions
 
@@ -198,6 +216,7 @@ Open Ports:
 **Priority:** DNS resolution (CRITICAL bug) is FIXED ✅
 
 **Next Steps:**
+
 1. ✅ DNS resolution complete - ready for commit
 2. ⏳ Service detection investigation - future session
 3. ⏳ Banner grabbing investigation - future session

@@ -21,6 +21,7 @@
 ### Current State
 
 **Already Implemented (Phase 3):**
+
 - ✅ `service_detector.rs` (262 lines) - Full service detection engine with:
   - Probe-based matching with nmap-service-probes format
   - Intensity levels (0-9)
@@ -49,6 +50,7 @@
 **Integration into Scanning Workflow:**
 
 1. **ScanConfig additions** (`crates/prtip-core/src/config.rs`):
+
 ```rust
 pub struct ScanConfig {
     // ... existing fields ...
@@ -61,6 +63,7 @@ pub struct ScanConfig {
 ```
 
 2. **Args to Config mapping** (`crates/prtip-cli/src/args.rs`, line ~356):
+
 ```rust
 impl Args {
     pub fn to_config(&self) -> Config {
@@ -87,6 +90,7 @@ impl Args {
    - Enrich `ScanResult` with service info (name, version, banner)
 
 **Example Integration Flow:**
+
 ```rust
 // In scheduler.rs execute_scan_ports() after scanning
 if self.config.scan.service_detection || self.config.scan.banner_grabbing {
@@ -126,6 +130,7 @@ if self.config.scan.service_detection || self.config.scan.banner_grabbing {
 ### Implementation Details
 
 **Files Modified:**
+
 - `crates/prtip-cli/src/main.rs` (3 functions updated, 3 tests updated)
 
 **Changes:**
@@ -174,6 +179,7 @@ cargo test --package prtip-cli --lib
 ```
 
 **Output:**
+
 ```
 ============================================================
 ProRT-IP WarScan
@@ -219,6 +225,7 @@ Results:
 ### Current State
 
 README.md currently organized by **development phases**:
+
 - Phase 1 examples
 - Phase 2 examples
 - Phase 3 examples
@@ -227,6 +234,7 @@ README.md currently organized by **development phases**:
 ### Proposed Reorganization
 
 **Target Structure:**
+
 ```markdown
 ## Usage Examples
 
@@ -277,11 +285,13 @@ README.md currently organized by **development phases**:
 ## Sprint 4.10 Achievements
 
 ### Lines Modified
+
 - **Total:** 172 lines
 - `main.rs`: +141/-31 = net +110 lines
 - Tests: +12 lines
 
 ### Code Quality
+
 - ✅ Zero clippy warnings
 - ✅ Zero compilation errors
 - ✅ All 64 CLI tests passing
@@ -290,12 +300,14 @@ README.md currently organized by **development phases**:
 ### Deliverables
 
 **Completed:**
+
 1. ✅ Fixed parallel count display bug
 2. ✅ Comprehensive scan statistics (duration, rate, organized output)
 3. ✅ All tests passing
 4. ✅ Live testing on localhost verified
 
 **Documented but Not Implemented:**
+
 1. ⚠️ Service detection integration requirements (detailed above)
 2. ❌ README reorganization (detailed structure provided)
 
@@ -308,6 +320,7 @@ README.md currently organized by **development phases**:
 **Task:** Complete service detection integration
 
 **Steps:**
+
 1. Add service detection fields to `ScanConfig` struct
 2. Update `args.rs` to pass flags to config
 3. Add `ServiceDetector` and `BannerGrabber` to `ScanScheduler`
@@ -322,12 +335,14 @@ README.md currently organized by **development phases**:
 ## Performance Comparison
 
 ### Before Sprint 4.10
+
 ```
 Parallel: 0  ← Confusing!
 Total results: 10000
 ```
 
 ### After Sprint 4.10
+
 ```
 Parallel: 500 (adaptive)  ← Clear!
 
@@ -347,6 +362,7 @@ Performance:
 | Full workspace | ✅ PASS | 620+ tests |
 
 **Manual Testing:**
+
 - ✅ Basic scan (2 ports): Parallel count displays correctly
 - ✅ Statistics output: Duration, rate, organized sections
 - ✅ Edge cases: Empty results (no panic), fast scans (0ms displayed)

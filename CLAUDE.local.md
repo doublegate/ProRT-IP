@@ -24,6 +24,7 @@
 | **Timing Templates** | 6 | T0-T5 (paranoid→insane) |
 
 **Enhancement Cycles (Post-Phase 2):**
+
 - ✅ C1 (5782aed): SipHash, Blackrock, Concurrent scanner → 121 tests
 - ✅ C2 (f5be9c4): Blackrock complete, Port filtering → 131 tests
 - ✅ C3 (38b4f3e/781e880): Resource limits, Interface detection → 345 tests
@@ -32,6 +33,7 @@
 - ✅ C8 (pending): sendmmsg batching, CDN/WAF detection, Decoy scanning → 547 tests
 
 **Key Modules (13 production):**
+
 - **Phase 2 (6):** packet_builder (790L), syn_scanner (437L), udp_scanner (258L), stealth_scanner (388L), timing (441L), protocol_payloads (199L)
 - **Enhancements (7):** adaptive_rate_limiter (422L), connection_pool (329L), resource_limits (363L), interface (406L), progress (428L), errors (209L), blackrock, siphash
 
@@ -66,11 +68,13 @@
 ## Recent Sessions (Condensed)
 
 ### 2025-10-11: Session Complete - Phase 4 + Validation + Documentation Organization (SUCCESS ✅)
+
 **Objective:** Complete Phase 4, validate against industry tools, organize all documentation, and commit to GitHub
 **Duration:** ~8 hours comprehensive work
 **Activities:**
 
 #### Phase 4 Final Benchmarking & Validation
+
 - **Benchmarking Suite:** Executed 5 comprehensive benchmark scenarios
   - hyperfine: Statistical analysis (5 scenarios, JSON + Markdown)
   - perf: CPU profiling with call graphs + hardware counters
@@ -88,6 +92,7 @@
   - Root cause: ServiceProbeDb::default() at scheduler.rs:393
 
 #### Sprint 4.11 Feature Completion
+
 - **Service Detection Integration:** Wired modules into scheduler workflow
   - Added ServiceDetectionConfig to config system
   - Connected CLI flags: --sV, --version-intensity, --banner-grab
@@ -105,12 +110,14 @@
   - Color-coded output sections
 
 #### Critical DNS Resolution Fix
+
 - **Bug:** Hostnames not resolved (scanme.nmap.org → 0.0.0.0)
 - **Solution:** Implemented resolve_target() with ToSocketAddrs
 - **Impact:** Scanner now works with real-world targets
 - **Testing:** Validated with scanme.nmap.org, google.com
 
 #### Documentation Organization & Updates
+
 - **Created bug_fix/ directory structure:**
   - Moved 8 markdown files from /tmp/ProRT-IP/ to bug_fix/
   - Moved 32 text files from /tmp/ProRT-IP/ to bug_fix/analysis/
@@ -126,6 +133,7 @@
   - bug_fix/README.md: Issue tracking and fix guides
 
 **Deliverables:**
+
 - 29 benchmark files (performance validation)
 - 4 validation reports (28KB total documentation)
 - 10+ test output files (cross-reference data)
@@ -140,9 +148,11 @@
 **Result:** **Phase 4 COMPLETE ✅** - Port scanning production-ready (2.3-35x faster than competitors), service detection bug documented with fix guide, all documentation organized and updated
 
 ### 2025-10-11: Comprehensive Validation Against Industry Tools (PARTIAL SUCCESS ⚠️)
+
 **Objective:** Validate ProRT-IP functionality against nmap, rustscan, naabu, masscan, zmap
 **Tools Used:** nmap 7.98, rustscan, naabu, netcat, telnet (masscan/zmap skipped - require root)
 **Activities:**
+
 - **Phase 1: Port Detection Validation**
   - Tested against scanme.nmap.org (45.33.32.156) and example.com (23.215.0.136)
   - Compared results: ProRT-IP vs nmap vs rustscan vs naabu
@@ -175,9 +185,11 @@
 **Next Action:** Fix service detection (HIGH PRIORITY - 1-2 hours estimated)
 
 ### 2025-10-11: Critical Bug Fix - DNS Hostname Resolution (SUCCESS ✅)
+
 **Objective:** Fix critical bug where hostnames were not resolved to IP addresses
 **Issue:** `scanme.nmap.org` was being set to `0.0.0.0`, causing all hostname scans to fail
 **Activities:**
+
 - **Root Cause Analysis:**
   - Found bug in `ScanTarget::parse()` (prtip-core/src/types.rs:44-50)
   - Hostnames were assigned `0.0.0.0/32` network instead of actual DNS resolution
@@ -213,8 +225,10 @@
 **Result:** **CRITICAL BUG FIXED ✅** - DNS resolution working, backward compatible, production-ready
 
 ### 2025-10-11: Phase 4 Final Benchmarking Suite - COMPLETE ✅
+
 **Objective:** Execute comprehensive final benchmarking suite to establish Phase 4 performance baseline and validate all optimizations
 **Activities:**
+
 - **Phase 1: Benchmark Organization (COMPLETE ✅)**
   - Verified archive structure (11 sprint directories in benchmarks/archive/)
   - Confirmed flamegraphs/ directory at root level
@@ -269,6 +283,7 @@
 **Result:** **Phase 4 COMPLETE ✅** - Comprehensive benchmarking suite validates all Phase 4 optimizations (66.3% improvement for 10K ports, 198x for 65K ports, 98% futex reduction). Production-ready with zero regressions.
 
 **Key Findings:**
+
 - **Performance validated:** 39.4ms ± 3.1ms for 10K ports (66.3% faster than 117ms Phase 3 baseline)
 - **Critical fix confirmed:** 65K ports complete in 190.9ms (was >180s infinite loop)
 - **Lock-free success:** 398 futex calls (98% reduction from 20,373 in Sprint 4.5 SQLite contention)
@@ -279,8 +294,10 @@
 **Next Phase:** Phase 5 Advanced Features (service detection integration, OS fingerprinting optimization, plugin system)
 
 ### 2025-10-10: Phase 4 Sprint 4.7 - Scheduler Refactor Complete (PARTIAL SUCCESS ⚠️)
+
 **Objective:** Refactor scheduler to use StorageBackend enum directly, fixing --with-db performance regression
 **Activities:**
+
 - **Phase 1: Scheduler Refactor (COMPLETE ✅)**
   - Refactored `scheduler.rs` (87 lines changed):
     - Removed `storage: Option<Arc<RwLock<ScanStorage>>>`
@@ -320,10 +337,12 @@
 **Result:** **Scheduler refactor COMPLETE ✅**, but performance target NOT MET ❌ (139.9ms vs 40ms target). Clear path forward for Sprint 4.8.
 
 ### 2025-10-11: Phase 4 Sprint 4.10 - CLI Improvements Complete (PARTIAL SUCCESS ✅⚠️)
+
 **Objective:** Complete Sprint 4.10 with three objectives: Service Detection Integration, CLI Improvements, README Reorganization
 **Result:** 2/3 objectives complete (66%), 1 deferred to future sprint
 
 **Activities:**
+
 - **OBJECTIVE 1: Service Detection Integration (40% COMPLETE ⚠️)**
   - Service detection modules ALREADY EXIST from Phase 3:
     - `service_detector.rs` (262 lines) - Full probe-based detection engine
@@ -355,12 +374,14 @@
   - Estimated: ~1 hour work
 
 **Deliverables:**
+
 - Modified: `crates/prtip-cli/src/main.rs` (3 functions, 3 tests updated)
 - Created: `/tmp/ProRT-IP/sprint4.10-summary.md` (comprehensive integration guide)
 - Updated: `CHANGELOG.md` (Sprint 4.10 entry)
 - Updated: `CLAUDE.local.md` (this file)
 
 **Live Testing:**
+
 ```bash
 ./target/release/prtip -p 80,443 127.0.0.1
 
@@ -391,8 +412,10 @@ Results:
 **Next Sprint 4.11 Priority:** Complete service detection integration (~2-3 hours)
 
 ### 2025-10-10: Phase 4 Sprint 4.6 Complete - Default In-Memory + Async Storage (SUCCESS ✅)
+
 **Objective:** Invert default behavior to in-memory (no database) for 5x performance improvement
 **Activities:**
+
 - **Phase 1: CLI Arguments Inversion**
   - Modified `args.rs`: Removed `--no-db` flag, added `--with-db` flag
   - Updated help text to explain default in-memory behavior and optional database
@@ -438,8 +461,10 @@ Results:
 **Result:** **SUCCESS ✅** - Primary goal achieved (5.2x faster default), --with-db mode acceptable (2.8x faster), architecture in place for future optimization
 
 ### 2025-10-10: Phase 4 Sprint 4.5 Complete - Scheduler Lock-Free Integration (Partial Success)
+
 **Objective:** Eliminate SQLite write contention by integrating lock-free aggregation in scheduler
 **Activities:**
+
 - **Modified `ScanScheduler`** to use `LockFreeAggregator` for zero-contention result collection
   - `execute_scan_ports()`: Create aggregator at scan start, batch drain at completion
   - `scan_target()`: Lock-free result collection per target
@@ -468,8 +493,10 @@ Results:
 **Result:** **Partial Success** - Lock-free aggregation integrated, --no-db mode optimized (80% faster), SQLite bottleneck persists (need async storage worker for Sprint 4.6)
 
 ### 2025-10-10: Phase 4 Sprint 4.3 Complete - Lock-Free Integration + Batched Syscalls (recvmmsg)
+
 **Objective:** Implement lock-free result aggregation and batch packet receiving for high-performance scanning
 **Activities:**
+
 - **Phase A: Lock-Free Aggregator Integration (tcp_connect.rs):**
   - Integrated `LockFreeAggregator` into `TcpConnectScanner::scan_ports_with_progress()`
   - Replaced synchronous Vec collection with `crossbeam::SegQueue` (MPMC lock-free)
@@ -513,8 +540,10 @@ Results:
 **Next Steps:** Sprint 4.5-4.6 require network-based benchmarking with Metasploitable2 Docker container to validate real-world performance improvements.
 
 ### 2025-10-10: Documentation Updates - DIAGRAMS.md Integration & Comprehensive Updates
+
 **Objective:** Incorporate DIAGRAMS.md into README.md, update all documentation to reflect Sprint 4.4 achievements, and sync memory banks
 **Activities:**
+
 - **DIAGRAMS.md Integration:**
   - Added Architecture Overview section to README.md with 5 Mermaid diagrams
   - Diagrams: Workspace relationships, CLI execution flow, scheduler orchestration, result aggregation, packet lifecycle
@@ -543,8 +572,10 @@ Results:
 **Result:** Complete documentation refresh reflecting all Sprint 4.4 achievements and architectural diagrams incorporated
 
 ### 2025-10-10: Phase 4 Sprint 4.4 Complete - Critical 65K Port Bottleneck Fixed (198x Faster!)
+
 **Objective:** Fix critical performance bottleneck preventing full port range scans from completing
 **Activities:**
+
 - **Critical Bug Fixes:**
   - **Port 65535 overflow:** Fixed u16 wrap causing infinite loop on port 65535
   - **Adaptive parallelism detection:** Fixed scheduler logic checking `> 1` instead of `> 0`
@@ -571,8 +602,10 @@ Results:
 **Result:** Sprint 4.4 COMPLETE - Critical usability issue resolved, full port scans now <1 second!
 
 ### 2025-10-10: Phase 4 Sprint 4.1-4.2 Complete - Network Infrastructure + Lock-Free Aggregator
+
 **Objective:** Implement Phase 4 performance optimization Sprint 4.1 (Network Testing Infrastructure) and Sprint 4.2 (Lock-Free Result Aggregator)
 **Activities:**
+
 - **Sprint 4.1 - Network Testing Infrastructure:**
   - Created network latency simulation script (`scripts/network-latency.sh` - 248 lines)
   - Built Docker test environment with 10 services (`docker/test-environment/docker-compose.yml` - 188 lines + nginx config)
@@ -598,8 +631,10 @@ Results:
 **Next Steps:** Sprint 4.3-4.6 require Metasploitable2 Docker container for network-based benchmarking. User must provide container IP address to proceed.
 
 ### 2025-10-09: Performance Baseline Establishment (v0.3.0)
+
 **Objective:** Execute comprehensive benchmark suite from docs/14-BENCHMARKS.md and establish Phase 3 performance baselines
 **Activities:**
+
 - **5 Benchmark Scenarios Executed:**
   - Scenario 1: TCP Connect (1000 ports) → 0.055s, 18,182 ports/sec
   - Scenario 2: TCP Connect (10K ports) → 0.117-0.135s, 74K-85K ports/sec (T3/T4)
@@ -630,8 +665,10 @@ Results:
 **Result:** Production-ready performance baseline established, ready for Phase 4 optimization comparison
 
 ### 2025-10-09: CI/CD Workflow Optimization Complete
+
 **Objective:** Achieve 100% CI success, expand platform coverage from 4 to 9+ targets, establish CI/Release parity
 **Activities:**
+
 - **CI Workflow Fixes:**
   - Increased Windows `test_high_rate_limit` timeout from 6s to 8s (commit 56bcbf7)
   - Verified all 7 jobs passing: Format, Clippy, Test×3 (Linux/Windows/macOS), MSRV, Security
@@ -673,8 +710,10 @@ Results:
 **Result:** Production-ready CI/CD pipeline with multi-platform support, smart artifact management
 
 ### 2025-10-08: Enhancement Cycle 8 - Performance & Stealth Features (ZMap/naabu/Nmap patterns)
+
 **Objective:** Incorporate HIGH priority optimization patterns from reference codebases
 **Enhancements Implemented (3):**
+
 1. **Batch Packet Sending** (batch_sender.rs - 656 lines, 9 tests):
    - Linux sendmmsg syscall for batch transmission (inspired by ZMap send-linux.c)
    - 30-50% performance improvement at 1M+ pps
@@ -695,11 +734,13 @@ Results:
    - Maximum 256 total decoys
 
 **Reference Analysis:**
+
 - ZMap /code_ref/zmap/src/send-linux.c (lines 72-130): sendmmsg batch implementation
 - naabu /code_ref/naabu/pkg/scan/cdn.go: CDN IP range checking
 - Nmap /code_ref/nmap/scan_engine_raw.cc: Decoy probe mixing
 
 **Deliverables:**
+
 - 1,616 lines of production code across 3 new modules
 - 43 new tests (9 + 12 + 11 + 11 integration)
 - All 547 tests passing (100% success, +156 from baseline 391)
@@ -707,18 +748,22 @@ Results:
 - Cross-platform support (Linux production, Windows/macOS fallback)
 
 **Integration:**
+
 - prtip-network: Added batch_sender module (libc dependency for Unix)
 - prtip-core: Added cdn_detector module (CIDR matching)
 - prtip-scanner: Added decoy_scanner module (probe mixing)
 
 **Next Priority Patterns Identified (not implemented):**
+
 - MEDIUM: Idle/Zombie Scanning (Nmap idle_scan.cc) - Ultimate anonymity
 - MEDIUM: Packet Fragmentation Evasion (Masscan) - IDS/IPS evasion
 - MEDIUM: Output Module System (ZMap) - Pluggable output formats
 
 ### 2025-10-08: CI/CD Infrastructure & v0.3.0 Release
+
 **Objective:** Implement GitHub Actions CI/CD pipelines and create production v0.3.0 release
 **Activities:**
+
 - **5 GitHub Actions workflows created:**
   - ci.yml (152L): Format, clippy, multi-platform testing (Linux/Windows/macOS), security audit, MSRV
   - release.yml (210L): Automated release builds for 4 targets (Linux gnu/musl, Windows, macOS)
@@ -747,8 +792,10 @@ Results:
 **Result:** Production-ready CI/CD infrastructure, automated testing & releases, comprehensive workflow documentation
 
 ### 2025-10-08: Documentation Consolidation & Cleanup (commits fab0518, bce8a40, 6538f8a)
+
 **Objective:** Clean up temporary files and consolidate documentation
 **Activities:**
+
 - Removed temporary output files (*_output.txt) and updated .gitignore (fab0518)
 - Moved IMPLEMENTATIONS_ADDED.md to docs/ directory for proper organization (bce8a40)
 - Consolidated /tmp/ProRT-IP/ markdown files into docs/12-IMPLEMENTATIONS_ADDED.md (6538f8a)
@@ -756,8 +803,10 @@ Results:
 **Result:** Clean repository structure, professional documentation organization, zero temporary artifacts
 
 ### 2025-10-08: Phase 3 Detection Systems Complete (commits dbef142, e784768, c6f975a, 6204882)
+
 **Objective:** Complete all TODOs, stubs, and implement full detection systems
 **Activities:**
+
 - Implemented OS fingerprinting (16-probe sequence, weighted scoring)
 - Service detection (nmap-service-probes parser, protocol banners)
 - Banner grabbing for HTTP, FTP, SSH, SMTP, DNS, SNMP
@@ -766,31 +815,38 @@ Results:
 **Result:** Phase 3 COMPLETE, 391 tests passing, zero incomplete code, production-ready
 
 ### 2025-10-08: Cycle 5 - Progress & Error Categorization
+
 **New:** progress.rs (428L, 11 tests), errors.rs (209L, 9 tests), CLI flags (4: --progress, --no-progress, --stats-interval, --stats-file)
 **Features:** Thread-safe progress, real-time stats (rate, ETA), 7 error categories, actionable suggestions, JSON export
 **Result:** 391 tests (+39), 637 LOC, RustScan/naabu patterns applied
 
 ### 2025-10-08: Cycle 3 - Resource Limits & Interface Detection
+
 **New:** resource_limits.rs (363L, 11 tests), interface.rs (406L, 13 tests), rlimit dependency
 **Features:** Ulimit detection, intelligent batch sizing, network enumeration, smart routing, source IP selection
 **Result:** 345 tests (+28), 769 LOC, MSRV 1.70+ maintained
 
 ### 2025-10-08: Documentation Update (Phase 2 Complete)
+
 **Updated:** README, CHANGELOG, PROJECT-STATUS, ROADMAP, CLAUDE.local (6 files)
 **Verified:** 278 tests, 3,551 LOC (Phase 2), 7 scan types, 8 payloads, 6 timing templates
 **Commits:** 296838a (Phase 2), 5d7fa8b (Performance)
 
 ### 2025-10-08: Phase 2 - Advanced Scanning (296838a)
+
 **Added:** 2,646 LOC across 16 files - Complete TCP/UDP packet building, SYN scanner, UDP scanner, stealth scans (FIN/NULL/Xmas/ACK), timing templates (T0-T5 + RTT)
 
 ### 2025-10-08: Performance Enhancements (5d7fa8b)
+
 **Added:** 905 LOC - Adaptive rate limiter (Masscan-inspired, 256-bucket circular buffer), connection pool (RustScan FuturesUnordered), analyzed 7 scanners (3,271 files)
 
 ### 2025-10-07: Phase 1 Complete (0.1.0)
+
 **Delivered:** 4 crates, 215 tests, TCP connect scanner, CLI (all formats), packet capture abstraction, rate limiting, SQLite storage, privilege mgmt, sqlx 0.8.6 (RUSTSEC-2024-0363 fixed), LICENSE (GPL-3.0)
 
 ### 2025-10-07: Docs & Git Setup
-**Created:** 12 technical docs (237KB), 5 root docs (44KB), git repo, GitHub integration (https://github.com/doublegate/ProRT-IP)
+
+**Created:** 12 technical docs (237KB), 5 root docs (44KB), git repo, GitHub integration (<https://github.com/doublegate/ProRT-IP>)
 
 ## Key Decisions
 
@@ -808,6 +864,7 @@ Results:
 **Anticipated (Phase 4):** NUMA-aware scheduling complexity, lock-free data structure tuning, XDP/eBPF kernel version requirements, cross-platform syscall batching (Linux vs Windows vs macOS)
 
 ## Input Validation Checklist
+
 ✅ IP parsing (IPv4/IPv6) | ✅ CIDR (0-32/0-128) | ✅ Ports (1-65535) | ✅ Filename sanitization | ✅ Rate limits (anti-DoS) | ✅ Memory bounds
 
 ## Quick Commands
@@ -829,7 +886,7 @@ cargo doc --open | cargo audit | cargo bench
 ## Docs & Links
 
 **Docs:** 00-ARCHITECTURE, 01-ROADMAP, 04-IMPLEMENTATION-GUIDE, 05-API-REFERENCE, 10-PROJECT-STATUS (all in `docs/`)
-**Repo:** https://github.com/doublegate/ProRT-IP
+**Repo:** <https://github.com/doublegate/ProRT-IP>
 **Refs:** Rust docs, Tokio guide, Nmap book, pnet docs
 
 ## Maintenance

@@ -5,6 +5,7 @@ This directory contains validation reports and analysis for service detection de
 ## Contents
 
 ### Root Level (Markdown Reports)
+
 - **VALIDATION-REPORT.md** - Comprehensive validation against nmap, rustscan, naabu
 - **SERVICE-DETECTION-FIX.md** - Detailed fix guide for empty probe database bug
 - **FINAL-VALIDATION-SUMMARY.md** - Executive summary of findings
@@ -15,6 +16,7 @@ This directory contains validation reports and analysis for service detection de
 - **new-usage-examples.md** - Feature-based README examples
 
 ### analysis/ Subdirectory (Raw Data)
+
 - Text output files from comparison tests (32 files)
 - Tool output captures (nmap, prtip, rustscan, naabu)
 - Debug logs (service detection, DNS resolution)
@@ -57,16 +59,19 @@ This directory contains validation reports and analysis for service detection de
 ## Files Overview
 
 ### Primary Documentation
+
 - **VALIDATION-REPORT.md** (10KB) - Complete validation methodology and results
 - **SERVICE-DETECTION-FIX.md** (9KB) - Implementation guide with 3 options
 - **FINAL-VALIDATION-SUMMARY.md** (10KB) - Executive summary for stakeholders
 
 ### Supporting Documentation
+
 - **dns-resolution-fix-summary.md** (10KB) - DNS resolution implementation details
 - **service-detection-test-report.md** (5KB) - Initial testing findings
 - **FINAL-SUMMARY.md** (6KB) - Sprint 4.11 deliverables summary
 
 ### Analysis Data
+
 - **analysis/** directory - 32 raw test output files
   - Port scanning comparisons
   - Service detection tests

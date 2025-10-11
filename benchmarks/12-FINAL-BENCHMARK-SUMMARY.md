@@ -35,6 +35,7 @@
 ### 1. Hyperfine Statistical Analysis
 
 #### 1K Ports Benchmark
+
 ```
 Benchmark 1: prtip -s connect -p 1-1000 127.0.0.1
   Time (mean ± σ):       4.5 ms ±   0.4 ms    [User: 5.6 ms, System: 17.8 ms]
@@ -42,12 +43,14 @@ Benchmark 1: prtip -s connect -p 1-1000 127.0.0.1
 ```
 
 **Analysis:**
+
 - Mean: 4.5ms ± 0.4ms (8.9% std dev)
 - Range: 4.1ms - 5.5ms (1.4ms spread)
 - Throughput: ~222,222 ports/second
 - Extremely fast, sub-5ms execution time
 
 #### 10K Ports Benchmark
+
 ```
 Benchmark 1: prtip -s connect -p 1-10000 127.0.0.1
   Time (mean ± σ):      39.4 ms ±   3.1 ms    [User: 36.0 ms, System: 236.3 ms]
@@ -55,6 +58,7 @@ Benchmark 1: prtip -s connect -p 1-10000 127.0.0.1
 ```
 
 **Analysis:**
+
 - Mean: 39.4ms ± 3.1ms (7.9% std dev)
 - Range: 34.5ms - 45.3ms (10.8ms spread)
 - Throughput: ~253,807 ports/second
@@ -62,6 +66,7 @@ Benchmark 1: prtip -s connect -p 1-10000 127.0.0.1
 - System time dominates (236ms vs 36ms user) due to socket operations
 
 #### 65K Ports (Full Range)
+
 ```
 Benchmark 1: prtip -s connect -p 1-65535 127.0.0.1
   Time (mean ± σ):     190.9 ms ±   7.1 ms    [User: 250.9 ms, System: 1645.0 ms]
@@ -69,6 +74,7 @@ Benchmark 1: prtip -s connect -p 1-65535 127.0.0.1
 ```
 
 **Analysis:**
+
 - Mean: 190.9ms ± 7.1ms (3.7% std dev - excellent consistency!)
 - Range: 181.1ms - 204.5ms (23.4ms spread)
 - Throughput: ~343,224 ports/second
@@ -77,6 +83,7 @@ Benchmark 1: prtip -s connect -p 1-65535 127.0.0.1
 - Production-ready for full port scans (was >180s, now <200ms)
 
 #### Database Mode (--with-db)
+
 ```
 Benchmark 1: prtip -s connect -p 1-10000 --with-db 127.0.0.1
   Time (mean ± σ):      75.1 ms ±   6.1 ms    [User: 59.2 ms, System: 227.0 ms]
@@ -84,6 +91,7 @@ Benchmark 1: prtip -s connect -p 1-10000 --with-db 127.0.0.1
 ```
 
 **Analysis:**
+
 - Mean: 75.1ms ± 6.1ms (8.1% std dev)
 - Range: 63.9ms - 82.6ms (18.7ms spread)
 - Overhead: 35.7ms vs in-memory (90.6% overhead)
@@ -91,6 +99,7 @@ Benchmark 1: prtip -s connect -p 1-10000 --with-db 127.0.0.1
 - Async storage worker performing well (no deadlocks, Sprint 4.8 v2 fix validated)
 
 #### Timing Templates (T0, T3, T5)
+
 ```
 Benchmark 1: prtip -s connect -p 1-1000 -T 0 127.0.0.1
   Time (mean ± σ):       4.6 ms ±   0.4 ms    [User: 4.1 ms, System: 19.6 ms]
@@ -106,6 +115,7 @@ Benchmark 3: prtip -s connect -p 1-1000 -T 5 127.0.0.1
 ```
 
 **Analysis:**
+
 - T0 (Paranoid): 4.6ms ± 0.4ms
 - T3 (Normal): 4.7ms ± 0.5ms
 - T5 (Insane): 4.6ms ± 0.2ms
@@ -116,6 +126,7 @@ Benchmark 3: prtip -s connect -p 1-1000 -T 5 127.0.0.1
 ### 2. CPU Profiling (perf)
 
 #### Call Graph Analysis (Top 20 Functions)
+
 ```
 12.60%  tokio::time::timeout::Timeout<T>::poll
 12.31%  tokio::net::tcp::stream::TcpStream::connect
@@ -126,17 +137,20 @@ Benchmark 3: prtip -s connect -p 1-1000 -T 5 127.0.0.1
 ```
 
 **Hot Spots Identified:**
+
 1. **Tokio TCP operations** - 12.6% (expected, core functionality)
 2. **Registration allocation** - 5.93% (tokio I/O registration)
 3. **Memory allocation** - 5.23% (Arc allocation for async tasks)
 4. **System allocator** - 3.8% (posix_memalign for aligned memory)
 
 **Optimization Opportunities:**
+
 - Registration set allocation could use object pooling
 - Arc allocations are unavoidable for async task management
 - Overall profile looks healthy - no unexpected bottlenecks
 
 #### CPU Statistics (perf stat)
+
 ```
 Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 
@@ -160,6 +174,7 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 ```
 
 **Key Metrics:**
+
 - **CPU utilization:** 6.092 CPUs (excellent multi-core scaling on 10C/20T system)
 - **Instructions per cycle:** 0.44 (I/O-bound workload, expected)
 - **Branch miss rate:** 2.42% (very good prediction accuracy)
@@ -172,6 +187,7 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 **Visual:** See `08-flamegraph-10k-ports.svg` (190KB SVG file)
 
 **Key Observations:**
+
 - **Tokio runtime dominates:** 60-70% of samples in async runtime operations
 - **TCP connection setup:** 12-15% in `TcpStream::connect` path
 - **Memory allocation:** 5-8% in Arc/Box allocations
@@ -179,6 +195,7 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 - **No unexpected hot paths:** Profile matches expected async TCP workload
 
 **Comparison to Sprint 4.5:**
+
 - Similar overall structure (async runtime dominance)
 - No SQLite contention visible (in-memory default eliminates bottleneck)
 - Healthy distribution across async task management
@@ -186,6 +203,7 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 ### 4. Syscall Analysis (strace)
 
 #### Overall Syscall Count
+
 ```
 % time     seconds  usecs/call     calls    errors syscall
 --------------------------------------------------------------
@@ -197,12 +215,14 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 ```
 
 **Top Syscalls:**
+
 1. **futex** - 544 calls (89% of time, synchronization for tokio runtime)
 2. **brk** - 75 calls (8.8% of time, heap management)
 3. **clone3** - 20 calls (0.56%, thread spawning)
 4. **Total syscalls:** 1,033 (for 10K port scan)
 
 **Analysis:**
+
 - Dominated by futex for async task coordination
 - Very efficient syscall usage (<0.1 syscalls per port)
 - Low overhead from synchronization primitives
@@ -210,6 +230,7 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 #### Futex Analysis (Lock Contention)
 
 **In-Memory Mode (Default):**
+
 ```
 % time     seconds  usecs/call     calls    errors syscall
 --------------------------------------------------------------
@@ -217,6 +238,7 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 ```
 
 **Database Mode (--with-db):**
+
 ```
 % time     seconds  usecs/call     calls    errors syscall
 --------------------------------------------------------------
@@ -224,12 +246,14 @@ Performance counter stats for 'prtip -s connect -p 1-10000 127.0.0.1':
 ```
 
 **Comparison:**
+
 - **Sprint 4.5 futex count:** 20,373 (SQLite bottleneck - BEFORE fix)
 - **Current in-memory:** 398 futex calls (**98% reduction!**)
 - **Current --with-db:** 381 futex calls (**98.1% reduction!**)
 - **Async worker effectiveness:** Database mode has FEWER futex calls than in-memory!
 
 **Analysis:**
+
 - **Lock-free aggregator highly effective:** Eliminated 19,975 futex calls
 - **Async storage worker success:** Non-blocking writes, minimal contention
 - **In-memory vs database difference:** Only 17 more futex calls (4.3% increase)
@@ -250,12 +274,14 @@ Memory breakdown at peak:
 ```
 
 **Memory Characteristics:**
+
 - **Peak memory:** 1.9 MB (ultra-low for 1K port scan)
 - **Heap efficiency:** 98.2% of allocations are necessary runtime operations
 - **Memory growth:** Linear with workload size (no leaks detected)
 - **Allocation patterns:** Dominated by standard library I/O operations
 
 **Scalability Estimate:**
+
 - 1K ports: ~2 MB
 - 10K ports: ~5-8 MB (estimated, based on linear scaling)
 - 65K ports: ~15-20 MB (estimated)
@@ -266,24 +292,28 @@ Memory breakdown at peak:
 ### What Changed in Phase 4
 
 #### 1. Lock-Free Result Aggregation (Sprint 4.2-4.3)
+
 - **Implementation:** crossbeam::SegQueue for MPMC operations
 - **Performance:** <100ns latency per result
 - **Scalability:** Linear scaling to 16+ cores
 - **Impact:** **98% reduction in futex calls** (20,373 → 398)
 
 #### 2. Adaptive Parallelism (Sprint 4.4)
+
 - **Implementation:** Automatic scaling (20-1000 concurrent based on port count)
 - **System-aware:** Ulimit integration, respects file descriptor limits
 - **Critical fix:** u16 overflow on port 65535 (infinite loop eliminated)
 - **Impact:** **198x improvement** for full port scans (>180s → 190ms)
 
 #### 3. In-Memory Default (Sprint 4.6)
+
 - **Implementation:** Zero SQLite overhead for default mode
 - **Optional persistence:** --with-db flag for async database writes
 - **Performance:** 39.4ms vs 75.1ms (90.6% overhead when database enabled)
 - **Impact:** **5.2x faster** than old SQLite default (194.9ms → 39.4ms)
 
 #### 4. Async Storage Worker (Sprint 4.6-4.8)
+
 - **Implementation:** Non-blocking writes with background worker
 - **Batch buffering:** 500 results per batch, 100ms periodic flushing
 - **Completion signaling:** tokio::timeout() for proper async coordination (Sprint 4.8 v2 fix)
@@ -292,30 +322,35 @@ Memory breakdown at peak:
 ### Remaining Optimization Opportunities
 
 #### 1. Network-Based Benchmarking (HIGH PRIORITY)
+
 **Current limitation:** Localhost benchmarks 91-2000x faster than network
 **Why it matters:** Real-world performance validation
 **Action required:** Docker test environment with realistic latency (10-50ms RTT)
 **Expected impact:** Timing template differences become measurable
 
 #### 2. Registration Set Pooling (MEDIUM PRIORITY)
+
 **Current bottleneck:** 5.93% CPU time in registration allocation
 **Optimization:** Object pool for tokio I/O registrations
 **Expected impact:** 3-5% performance improvement, reduced allocator pressure
 **Complexity:** Medium (tokio internals integration)
 
 #### 3. NUMA-Aware Scheduling (LOW PRIORITY for single-socket)
+
 **Target systems:** Multi-socket servers (2+ NUMA nodes)
 **Optimizations:** Thread pinning, IRQ affinity, memory locality
 **Expected impact:** 10-30% improvement on multi-socket systems
 **Current system:** Single-socket (not applicable)
 
 #### 4. XDP/eBPF Packet Processing (FUTURE - Linux-specific)
+
 **Implementation:** Kernel bypass for stateless scanning
 **Target throughput:** 10M+ packets/second
 **Complexity:** High (requires kernel 5.3+, eBPF expertise)
 **Phase 5 candidate:** Advanced features phase
 
 #### 5. Service Detection Optimization (MEDIUM PRIORITY)
+
 **Status:** Module exists, not yet integrated (Sprint 4.11 target)
 **Optimizations:** Parallel probing, timeout tuning, probe ordering
 **Expected impact:** 20-40% faster service detection vs sequential
@@ -324,6 +359,7 @@ Memory breakdown at peak:
 ## Tool Configuration & Methodology
 
 ### Build Configuration
+
 ```toml
 # .cargo/config.toml (used for profiling, deleted for final build)
 [profile.release]
@@ -358,11 +394,13 @@ strip = false    # Keep symbols for analysis
 ### Reproducibility
 
 **All benchmarks run on localhost (127.0.0.1) for:**
+
 - Consistency across runs (no network variability)
 - Safety (no external network scanning)
 - Maximum performance (loopback interface, no physical network)
 
 **Commands can be re-run from:**
+
 ```bash
 cd /tmp/ProRT-IP/final-benchmarks/
 # Re-run any hyperfine command
@@ -413,16 +451,19 @@ cd /tmp/ProRT-IP/final-benchmarks/
 ## Recommendations for Phase 5
 
 ### High Priority
+
 1. **Network-based validation:** Deploy Docker test environment
 2. **Service detection integration:** Complete Sprint 4.11 (--sV flag)
 3. **OS fingerprinting optimization:** Parallel probe execution
 
 ### Medium Priority
+
 4. **Registration set pooling:** Reduce allocation overhead
 5. **Batch write optimization:** Tune async storage batch size
 6. **Progress bar enhancement:** Real-time throughput display
 
 ### Low Priority (Future)
+
 7. **NUMA-aware scheduling:** Multi-socket optimization
 8. **XDP/eBPF integration:** Kernel bypass for stateless scans
 9. **GPU acceleration:** Cryptographic operations (idle scanning)

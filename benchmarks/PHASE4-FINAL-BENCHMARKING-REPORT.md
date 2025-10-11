@@ -21,14 +21,17 @@ Successfully completed comprehensive final benchmarking suite for ProRT-IP Phase
 ## Phase 1: Benchmark Organization (COMPLETE ✅)
 
 ### Objective
+
 Organize benchmarks directory with archive structure for historical sprint results.
 
 ### Actions Completed
+
 1. **Verified archive structure:** 11 sprint directories already in `benchmarks/archive/`
 2. **Confirmed flamegraphs directory:** Exists at `benchmarks/flamegraphs/`
 3. **Prepared root level:** Final benchmarks to be placed at `benchmarks/` root
 
 ### Results
+
 - Archive structure: ✅ Complete (11 directories: 01-11)
 - Flamegraphs directory: ✅ Maintained at root level
 - Root level clean: ✅ Ready for final benchmarks
@@ -38,6 +41,7 @@ Organize benchmarks directory with archive structure for historical sprint resul
 ### Build Configuration
 
 **Temporary profiling config created:**
+
 ```toml
 # .cargo/config.toml (deleted after benchmarking)
 [profile.release]
@@ -46,6 +50,7 @@ strip = false    # Keep symbols for analysis
 ```
 
 **Build command:**
+
 ```bash
 cargo clean
 cargo build --release
@@ -53,6 +58,7 @@ cargo build --release
 ```
 
 **Binary verification:**
+
 ```
 target/release/prtip: ELF 64-bit LSB pie executable
   BuildID: 06a1fca592be2b87892f66719b5698d369da3276
@@ -64,6 +70,7 @@ target/release/prtip: ELF 64-bit LSB pie executable
 #### 1. Hyperfine Statistical Analysis (5 Scenarios)
 
 **Scenario 1: 1K Ports**
+
 ```
 Command: prtip -s connect -p 1-1000 127.0.0.1
 Runs: 20 (warmup: 5)
@@ -73,6 +80,7 @@ Throughput: 222,222 ports/sec
 ```
 
 **Scenario 2: 10K Ports** ⭐ **Primary Benchmark**
+
 ```
 Command: prtip -s connect -p 1-10000 127.0.0.1
 Runs: 20 (warmup: 5)
@@ -83,6 +91,7 @@ Improvement: 66.3% faster than Phase 3 (117ms → 39.4ms)
 ```
 
 **Scenario 3: 65K Ports (Full Range)** ⭐ **Critical Validation**
+
 ```
 Command: prtip -s connect -p 1-65535 127.0.0.1
 Runs: 10 (warmup: 3)
@@ -94,6 +103,7 @@ Validation: Sprint 4.4 u16 overflow fix confirmed
 ```
 
 **Scenario 4: 10K Ports with Database**
+
 ```
 Command: prtip -s connect -p 1-10000 --with-db 127.0.0.1
 Runs: 15 (warmup: 3)
@@ -105,6 +115,7 @@ Validation: Sprint 4.8 v2 async fix confirmed (no deadlocks)
 ```
 
 **Scenario 5: Timing Templates (T0, T3, T5)**
+
 ```
 Commands: prtip -s connect -p 1-1000 -T [0|3|5] 127.0.0.1
 Runs: 10 (warmup: 3)
@@ -119,12 +130,14 @@ Note: Network scans would show greater differentiation
 #### 2. CPU Profiling (perf)
 
 **Call Graph Analysis**
+
 ```bash
 perf record --call-graph dwarf -F 997 -o 06-perf-10k-ports.data prtip ...
 perf report --stdio -i 06-perf-10k-ports.data > 06-perf-10k-ports-report.txt
 ```
 
 **Top Functions (by CPU time):**
+
 1. `tokio::time::timeout::Timeout<T>::poll` - 12.60%
 2. `tokio::net::tcp::stream::TcpStream::connect` - 12.31%
 3. `tokio::runtime::io::registration_set::RegistrationSet::allocate` - 5.93%
@@ -132,12 +145,14 @@ perf report --stdio -i 06-perf-10k-ports.data > 06-perf-10k-ports-report.txt
 5. `posix_memalign` (system allocator) - 3.80%
 
 **Analysis:**
+
 - Tokio async runtime operations dominate (expected for async TCP)
 - Registration allocation (5.93%) is optimization opportunity
 - Arc allocations (5.23%) unavoidable for async task management
 - No unexpected bottlenecks or hot paths
 
 **Hardware Counters (perf stat)**
+
 ```
 CPU Utilization: 6.092 CPUs (excellent multi-core scaling)
 Task Clock: 267.22 msec
@@ -164,6 +179,7 @@ Time Breakdown:
 #### 3. Flamegraph Visualization
 
 **Generation:**
+
 ```bash
 flamegraph -o 08-flamegraph-10k-ports.svg -- prtip -s connect -p 1-10000 127.0.0.1
 ```
@@ -171,6 +187,7 @@ flamegraph -o 08-flamegraph-10k-ports.svg -- prtip -s connect -p 1-10000 127.0.0
 **Output:** 190KB SVG with interactive call stack visualization
 
 **Key Observations:**
+
 - Tokio runtime: 60-70% of samples
 - TCP connection setup: 12-15%
 - Memory allocation: 5-8% (Arc/Box)
@@ -180,11 +197,13 @@ flamegraph -o 08-flamegraph-10k-ports.svg -- prtip -s connect -p 1-10000 127.0.0
 #### 4. Syscall Tracing (strace)
 
 **Overall Syscall Count**
+
 ```bash
 strace -c -o 09-strace-10k-ports-summary.txt prtip ...
 ```
 
 **Top Syscalls:**
+
 | Syscall | Calls | % Time | Avg μs/call |
 |---------|-------|--------|-------------|
 | futex | 544 | 89.49% | 128 |
@@ -196,6 +215,7 @@ strace -c -o 09-strace-10k-ports-summary.txt prtip ...
 **Total:** 1,033 syscalls for 10K port scan (<0.1 syscalls/port, very efficient)
 
 **Futex Analysis (Lock Contention)** ⭐ **Critical Metric**
+
 ```bash
 strace -e futex -c -o 10-strace-futex-10k-ports.txt prtip ...
 strace -e futex -c -o 10b-strace-futex-10k-with-db.txt prtip --with-db ...
@@ -207,6 +227,7 @@ strace -e futex -c -o 10b-strace-futex-10k-with-db.txt prtip --with-db ...
 | **--with-db** | 381 | 20,373 | **98.1% reduction** ✅ |
 
 **Analysis:**
+
 - Lock-free aggregator **highly effective** (eliminated 19,975 futex calls)
 - Async storage worker **exceptional** (database mode has FEWER futex than in-memory!)
 - Difference between modes: Only 17 futex calls (4.3% increase)
@@ -215,12 +236,14 @@ strace -e futex -c -o 10b-strace-futex-10k-with-db.txt prtip --with-db ...
 #### 5. Memory Profiling (Valgrind massif)
 
 **Execution:**
+
 ```bash
 valgrind --tool=massif --massif-out-file=11-massif-1k-ports.out prtip -s connect -p 1-1000 127.0.0.1
 ms_print 11-massif-1k-ports.out > 11-massif-1k-ports-report.txt
 ```
 
 **Results:**
+
 ```
 Peak Memory: 1.877 MB
 Snapshots: 67 total (15 detailed)
@@ -233,12 +256,14 @@ Memory Breakdown:
 ```
 
 **Analysis:**
+
 - **Ultra-low footprint:** 1.9 MB peak for 1K ports
 - **Heap efficiency:** 98.2% of allocations are necessary runtime operations
 - **No leaks detected:** All allocations properly freed
 - **Linear scaling:** Memory grows proportionally with workload
 
 **Estimated scaling:**
+
 - 1K ports: ~2 MB
 - 10K ports: ~5-8 MB
 - 65K ports: ~15-20 MB
@@ -261,6 +286,7 @@ Memory Breakdown:
 Created: `benchmarks/12-FINAL-BENCHMARK-SUMMARY.md` (12KB)
 
 **Contents:**
+
 - Executive summary with performance comparison table
 - Detailed results from all 5 benchmark scenarios
 - CPU profiling analysis (call graphs, hardware counters)
@@ -276,6 +302,7 @@ Created: `benchmarks/12-FINAL-BENCHMARK-SUMMARY.md` (12KB)
 ### Cleanup
 
 **Removed temporary profiling config:**
+
 ```bash
 rm .cargo/config.toml
 # Verified: .cargo/ directory now empty
@@ -331,6 +358,7 @@ benchmarks/
 ### Documentation Updates
 
 **Updated `benchmarks/README.md`:**
+
 - Added "Root Level (Final Benchmarks)" section with file table
 - Key results summary (10K: 39.4ms, 65K: 190.9ms, futex: 398, memory: 1.9MB)
 - Archive reference maintained
@@ -370,6 +398,7 @@ benchmarks/
 ### CLAUDE.local.md
 
 **Updated:**
+
 1. **Header:** Phase 4 COMPLETE + Final Benchmarking
 2. **Current Status:** Phase Progress → Sprint 4.1-4.11 (Benchmarking) Complete
 3. **Metrics Table:**
@@ -386,6 +415,7 @@ benchmarks/
 ### benchmarks/README.md
 
 **Updated "Root Level (Final Benchmarks)" section:**
+
 - Added comprehensive file table with descriptions
 - Key results box with 4 critical metrics
 - Reference to 12-FINAL-BENCHMARK-SUMMARY.md
@@ -401,11 +431,13 @@ git add -A
 ```
 
 **Breakdown:**
+
 - **New files:** 29 benchmark files at benchmarks/ root
 - **Modified:** 3 documentation files (CHANGELOG.md, CLAUDE.local.md, benchmarks/README.md)
 - **Deleted:** 85 files (moved to archive/ subdirectories)
 
 **Categories:**
+
 1. Benchmark files: 29 new (hyperfine, perf, strace, massif, summary)
 2. Documentation: 3 modified (CHANGELOG, CLAUDE.local, benchmarks/README)
 3. Archive moves: 85 deletions (sprint folders reorganized)
@@ -466,11 +498,13 @@ git status
 ## Deliverables Checklist
 
 ### Phase 1: Benchmark Organization
+
 - ✅ Archive structure verified (11 sprint directories)
 - ✅ Flamegraphs directory maintained
 - ✅ Root level prepared for final benchmarks
 
 ### Phase 2: Final Benchmarking Suite
+
 - ✅ Build configuration (temporary .cargo/config.toml)
 - ✅ Release build with debug symbols (1m 58s)
 - ✅ Hyperfine benchmarks (5 scenarios, 15 files)
@@ -483,16 +517,19 @@ git status
 - ✅ Cleanup (removed temporary config)
 
 ### Phase 3: Files Organization
+
 - ✅ Flamegraph copied to benchmarks/flamegraphs/
 - ✅ All 29 files moved to benchmarks/ root
 - ✅ benchmarks/README.md updated
 
 ### Phase 4: Documentation
+
 - ✅ CHANGELOG.md updated (comprehensive Phase 4 section)
 - ✅ CLAUDE.local.md updated (session summary + metrics)
 - ✅ benchmarks/README.md updated (final benchmarks section)
 
 ### Phase 5: Git Staging
+
 - ✅ All changes staged (git add -A)
 - ✅ 117 files ready for commit
 - ✅ Zero compilation warnings

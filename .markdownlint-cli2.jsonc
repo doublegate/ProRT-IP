@@ -1,25 +1,48 @@
 {
+  // markdownlint-cli2 configuration
+  // See https://github.com/DavidAnson/markdownlint for rule details
+
   "config": {
-    "default": true,
-    "MD013": {
-      "line_length": 120,
-      "heading_line_length": 120,
-      "code_block_line_length": 120,
-      "tables": false
-    },
-    "MD033": {
-      "allowed_elements": ["div", "img", "br", "details", "summary"]
-    },
+    // Disable line length rule (too strict for technical docs with tables/URLs)
+    "MD013": false,
+
+    // Allow inline HTML (needed for complex tables, badges, etc.)
+    "MD033": false,
+
+    // Allow duplicate headings (common in multi-file docs with same section names)
+    "MD024": false,
+
+    // Allow emphasis as heading (used for sub-sections in some docs)
+    "MD036": false,
+
+    // Allow files starting without heading (benchmark tables, issue templates)
     "MD041": false,
-    "MD051": false
+
+    // Allow inconsistent ordered list numbering (intentional in some docs)
+    "MD029": false,
+
+    // Allow missing alt text on images (external code references)
+    "MD045": false,
+
+    // Allow fenced code blocks without language (output/logs don't need syntax highlighting)
+    "MD040": false,
+
+    // Allow broken link fragments (internal navigation links may change with document evolution)
+    "MD051": false,
+
+    // All other rules use defaults (strict)
+    "default": true
   },
-  "globs": [
-    "**/*.md"
-  ],
+
+  // Ignore generated/external files
   "ignores": [
-    "node_modules",
-    "target",
-    ".cargo",
-    ".cursor"
+    "node_modules/**",
+    "target/**",
+    ".git/**",
+    "**/CHANGELOG.md",  // Generated file with specific formatting
+    "code_ref/**",      // External reference code (not our responsibility)
+    "benchmarks/archive/**",  // Historical benchmark data
+    "bug_fix/**",       // Bug fix documentation (archival)
+    "ref-docs/**"       // Reference documentation (external)
   ]
 }

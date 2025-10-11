@@ -3,21 +3,21 @@
 ## Protocol/Port Real-Time War Scanner for IP Networks
 
 <div align="center">
-  <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="600">
+  <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="800">
 </div>
 
 [![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Release](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
+[![License: GPL v4](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Rust](https://img.shields.io/badge/rust0.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-551_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-550_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
 
 <div align="center">
-  <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="600">
+  <img src="images/prortip-screenshot.png" alt="ProRT-IP CLI Screenshot" width="601">
 </div>
 
 ## Overview
@@ -204,6 +204,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 ### Known Issues
 
 **Service Detection (--sV flag):**
+
 - **Status:** ❌ BROKEN - Empty probe database
 - **Impact:** 0% service detection rate
 - **Root Cause:** `ServiceProbeDb::default()` creates empty Vec

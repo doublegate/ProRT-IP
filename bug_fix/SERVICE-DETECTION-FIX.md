@@ -5,11 +5,13 @@
 Service detection is completely broken (0% detection rate) because `ServiceProbeDb::default()` creates an empty database with zero probes.
 
 **Affected Code:**
+
 - File: `crates/prtip-scanner/src/scheduler.rs`
 - Line: 393
 - Code: `let probe_db = ServiceProbeDb::default();`
 
 **Current Behavior:**
+
 ```rust
 impl Default for ServiceProbeDb {
     fn default() -> Self {
@@ -25,12 +27,14 @@ impl Default for ServiceProbeDb {
 Embed nmap-service-probes directly in binary for zero-dependency operation.
 
 **Advantages:**
+
 - ✅ No external file dependencies
 - ✅ Always available (can't fail to load)
 - ✅ Portable across systems
 - ✅ Faster startup (no file I/O)
 
 **Disadvantages:**
+
 - ❌ Larger binary size (~200KB)
 - ❌ Requires rebuild to update probes
 
@@ -62,6 +66,7 @@ impl Default for ServiceProbeDb {
 ```
 
 **File Setup:**
+
 ```bash
 # Download nmap-service-probes
 mkdir -p crates/prtip-core/data
@@ -77,11 +82,13 @@ head -20 crates/prtip-core/data/nmap-service-probes
 Load probes from standard nmap location with fallback.
 
 **Advantages:**
+
 - ✅ Smaller binary size
 - ✅ Easy to update (just replace file)
 - ✅ Uses system nmap installation
 
 **Disadvantages:**
+
 - ❌ Requires nmap to be installed
 - ❌ May fail if file not found
 - ❌ Path differences across OSes
@@ -128,12 +135,14 @@ impl Default for ServiceProbeDb {
 Combine embedded fallback with optional external file.
 
 **Advantages:**
+
 - ✅ Always works (embedded fallback)
 - ✅ Updatable (external file override)
 - ✅ User control (--probe-db flag)
 - ✅ Best of both worlds
 
 **Disadvantages:**
+
 - ❌ Slightly more complex
 - ❌ Larger binary (embedded probes)
 
@@ -199,6 +208,7 @@ let probe_db = if let Some(path) = config.probe_db_path {
 **Implementation Steps:**
 
 1. **Download nmap-service-probes** (5 minutes)
+
    ```bash
    mkdir -p crates/prtip-core/data
    curl -o crates/prtip-core/data/nmap-service-probes \
@@ -219,6 +229,7 @@ let probe_db = if let Some(path) = config.probe_db_path {
    - Use in scheduler
 
 4. **Test** (30 minutes)
+
    ```bash
    # Test embedded probes
    cargo build --release
@@ -232,6 +243,7 @@ let probe_db = if let Some(path) = config.probe_db_path {
    ```
 
 5. **Add integration test** (15 minutes)
+
    ```rust
    #[tokio::test]
    async fn test_service_detection_http() {
@@ -276,6 +288,7 @@ Service detection complete: 2/2 services identified
 ## License Considerations
 
 **nmap-service-probes License:**
+
 - GPL-compatible (nmap is GPLv2 with exceptions)
 - ProRT-IP is GPL-3.0 (compatible)
 - ✅ OK to include in repository
@@ -283,6 +296,7 @@ Service detection complete: 2/2 services identified
 
 **Attribution:**
 Add to NOTICE or README:
+
 ```
 This software includes nmap-service-probes from the Nmap Security Scanner:
 https://github.com/nmap/nmap
@@ -292,9 +306,9 @@ Licensed under GPL-2.0
 
 ## References
 
-- **nmap source:** https://github.com/nmap/nmap/blob/master/nmap-service-probes
-- **Probe format:** https://nmap.org/book/vscan-fileformat.html
-- **Service detection:** https://nmap.org/book/vscan.html
+- **nmap source:** <https://github.com/nmap/nmap/blob/master/nmap-service-probes>
+- **Probe format:** <https://nmap.org/book/vscan-fileformat.html>
+- **Service detection:** <https://nmap.org/book/vscan.html>
 - **ProRT-IP parser:** `crates/prtip-core/src/service_db.rs` (already implemented)
 
 ## Quick Fix (Minimal)

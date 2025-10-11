@@ -7,10 +7,12 @@ This document recognizes the contributors to ProRT-IP WarScan and acknowledges t
 ### Core Development Team
 
 **Lead Developer**
+
 - **Role**: Project architecture, core implementation, security design
 - **Contact**: Available via GitHub repository
 
 **Contributors**
+
 - Future contributors will be listed here
 
 ## Contributors
@@ -20,6 +22,7 @@ We welcome contributions from the community! Contributors will be recognized her
 ### How to Be Listed
 
 To have your contribution recognized:
+
 1. Submit pull requests following [CONTRIBUTING.md](CONTRIBUTING.md)
 2. Contribute documentation improvements
 3. Report and help fix bugs
@@ -31,18 +34,23 @@ Contributions of all sizes are valued and recognized.
 ### Contribution Categories
 
 **Major Contributors** (10+ significant PRs or equivalent impact):
+
 - Coming soon!
 
 **Code Contributors** (merged pull requests):
+
 - Coming soon!
 
 **Documentation Contributors** (doc improvements, translations):
+
 - Coming soon!
 
 **Community Contributors** (issue reports, discussions, support):
+
 - Coming soon!
 
 **Security Researchers** (responsible vulnerability disclosure):
+
 - Coming soon!
 
 ## Acknowledgments
@@ -52,28 +60,32 @@ ProRT-IP WarScan stands on the shoulders of giants. We acknowledge and thank the
 ### Inspirational Projects
 
 #### Nmap (Network Mapper)
-- **Project**: https://nmap.org/
+
+- **Project**: <https://nmap.org/>
 - **License**: Nmap Public Source License (NPSL) / GPLv2
 - **Contribution**: Pioneer of network scanning, service detection, and OS fingerprinting
 - **Recognition**: ProRT-IP's service detection and OS fingerprinting strategies are inspired by Nmap's proven methodologies. We use compatible probe database formats (nmap-service-probes, nmap-os-db) to leverage decades of collective security research.
 - **Creator**: Gordon "Fyodor" Lyon and the Nmap development team
 
 #### Masscan
-- **Project**: https://github.com/robertdavidgraham/masscan
+
+- **Project**: <https://github.com/robertdavidgraham/masscan>
 - **License**: AGPL-3.0
 - **Contribution**: Demonstrated that stateless scanning can achieve 10M+ packets/second
 - **Recognition**: ProRT-IP's stateless scanning architecture, including SYN cookie techniques and randomized packet ordering, is directly inspired by Masscan's innovations.
 - **Creator**: Robert Graham
 
 #### RustScan
-- **Project**: https://github.com/RustScan/RustScan
+
+- **Project**: <https://github.com/RustScan/RustScan>
 - **License**: GPL-3.0
 - **Contribution**: Proved viability of Rust for high-performance network scanning
 - **Recognition**: RustScan's hybrid approach (fast port discovery → pipe to Nmap) validated the two-phase scanning model that ProRT-IP adopts. Their success in the Rust security tools ecosystem paved the way for projects like ours.
 - **Creators**: RustScan community
 
 #### ZMap
-- **Project**: https://zmap.io/
+
+- **Project**: <https://zmap.io/>
 - **License**: Apache 2.0
 - **Contribution**: Internet-scale scanning capabilities and research
 - **Recognition**: ZMap's academic research on scanning performance, hit rates, and network impact informed ProRT-IP's design decisions. Their publications on stateless scanning are foundational to our approach.
@@ -84,42 +96,48 @@ ProRT-IP WarScan stands on the shoulders of giants. We acknowledge and thank the
 ProRT-IP WarScan is built on excellent Rust libraries and frameworks:
 
 #### Tokio
-- **Project**: https://tokio.rs/
+
+- **Project**: <https://tokio.rs/>
 - **License**: MIT
 - **Contribution**: Async runtime with work-stealing scheduler
 - **Recognition**: Tokio's performance and ergonomics make high-speed async packet processing practical in Rust. Their scheduler design directly enables ProRT-IP's concurrency model.
 - **Maintainers**: Tokio contributors and Carl Lerche
 
 #### pnet (Packet Network)
-- **Project**: https://github.com/libpnet/libpnet
+
+- **Project**: <https://github.com/libpnet/libpnet>
 - **License**: MIT/Apache-2.0
 - **Contribution**: Cross-platform packet manipulation
 - **Recognition**: pnet provides the foundation for ProRT-IP's packet crafting and parsing, abstracting platform differences (AF_PACKET, Npcap, BPF).
 - **Maintainers**: pnet contributors
 
 #### etherparse
-- **Project**: https://github.com/JulianSchmid/etherparse
+
+- **Project**: <https://github.com/JulianSchmid/etherparse>
 - **License**: BSD-3-Clause
 - **Contribution**: Zero-allocation packet parsing
 - **Recognition**: etherparse's safe, efficient parsing is crucial for ProRT-IP's performance at high packet rates.
 - **Creator**: Julian Schmid
 
 #### crossbeam
-- **Project**: https://github.com/crossbeam-rs/crossbeam
+
+- **Project**: <https://github.com/crossbeam-rs/crossbeam>
 - **License**: MIT/Apache-2.0
 - **Contribution**: Lock-free data structures and concurrent algorithms
 - **Recognition**: Crossbeam's channels and atomic utilities enable ProRT-IP's lock-free result collection critical for 1M+ pps performance.
 - **Maintainers**: Crossbeam contributors
 
 #### clap (Command Line Argument Parser)
-- **Project**: https://github.com/clap-rs/clap
+
+- **Project**: <https://github.com/clap-rs/clap>
 - **License**: MIT/Apache-2.0
 - **Contribution**: Ergonomic CLI with derive macros
 - **Recognition**: clap makes ProRT-IP's command-line interface powerful and user-friendly, following Unix conventions.
 - **Maintainers**: clap-rs team
 
 #### serde
-- **Project**: https://serde.rs/
+
+- **Project**: <https://serde.rs/>
 - **License**: MIT/Apache-2.0
 - **Contribution**: Serialization framework
 - **Recognition**: serde's zero-cost abstractions enable ProRT-IP's multiple output formats (JSON, XML, TOML) without performance penalty.
@@ -183,6 +201,7 @@ We acknowledge the broader security research community:
 ### Contributor Recognition
 
 All contributors are recognized based on:
+
 - **Code contributions**: Merged pull requests
 - **Documentation**: Improvements to guides and references
 - **Bug reports**: Well-documented issues that led to fixes
@@ -200,6 +219,7 @@ All contributors are recognized based on:
 ### How to Update
 
 To update your information in AUTHORS.md:
+
 1. Submit a pull request with your changes
 2. Include your preferred name and contact method (optional)
 3. Maintainers will review and merge
@@ -212,9 +232,9 @@ See [LICENSE](LICENSE) for full license text.
 
 ## Contact
 
-- **Project Repository**: https://github.com/doublegate/ProRT-IP
-- **Discussions**: https://github.com/doublegate/ProRT-IP/discussions
-- **Issues**: https://github.com/doublegate/ProRT-IP/issues
+- **Project Repository**: <https://github.com/doublegate/ProRT-IP>
+- **Discussions**: <https://github.com/doublegate/ProRT-IP/discussions>
+- **Issues**: <https://github.com/doublegate/ProRT-IP/issues>
 
 ---
 
@@ -227,6 +247,7 @@ See [LICENSE](LICENSE) for full license text.
 ## Appendix: Full Dependency Credits
 
 For a complete list of all dependencies and their licenses, run:
+
 ```bash
 cargo tree --prefix none --edges normal | sort -u
 cargo license

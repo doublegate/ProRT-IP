@@ -74,6 +74,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 00-ARCHITECTURE.md (23 KB)
 
 **What's Inside:**
+
 - Executive summary of project goals
 - Design philosophy (6 key principles)
 - High-level architecture diagram with 5 layers
@@ -89,6 +90,7 @@ This comprehensive documentation package provides everything needed to develop P
 - 5 design patterns used throughout
 
 **Key Insights:**
+
 - Modular design enables independent testing
 - Async-by-default for maximum concurrency
 - Zero-copy optimizations in hot paths
@@ -99,6 +101,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 01-ROADMAP.md (18 KB)
 
 **What's Inside:**
+
 - 8 development phases spanning 20 weeks
 - Detailed breakdown of 122+ tasks across 14 sprints
 - 6 major milestones with success criteria
@@ -107,6 +110,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Success metrics and KPIs
 
 **Timeline Summary:**
+
 - **Weeks 1-3:** Core Infrastructure
 - **Weeks 4-6:** Advanced Scanning Techniques
 - **Weeks 7-10:** Detection and Fingerprinting
@@ -120,6 +124,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 02-TECHNICAL-SPECS.md (21 KB)
 
 **What's Inside:**
+
 - Complete system requirements (hardware, software, OS)
 - Network protocol specifications (Ethernet, IPv4, TCP, UDP, ICMP)
 - Packet format diagrams with field specifications
@@ -130,6 +135,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Core API specifications
 
 **Key Protocol Details:**
+
 - TCP/UDP/ICMP header formats with bit-level diagrams
 - TCP options (MSS, Window Scale, SACK, Timestamp)
 - SYN scan packet sequence and state determination
@@ -141,6 +147,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 03-DEV-SETUP.md (14 KB)
 
 **What's Inside:**
+
 - Platform-specific setup for Linux, Windows, macOS
 - Required dependencies and installation commands
 - Build configuration options
@@ -151,6 +158,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Troubleshooting guide for 8+ common issues
 
 **Platforms Covered:**
+
 - Linux (Debian, Ubuntu, Fedora, Arch)
 - Windows (Visual Studio, Npcap, OpenSSL)
 - macOS (Xcode, Homebrew, BPF permissions)
@@ -160,6 +168,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 04-IMPLEMENTATION-GUIDE.md (19 KB)
 
 **What's Inside:**
+
 - Complete project structure with workspace layout
 - Core module implementation (Scanner, Scheduler, Rate Limiter)
 - Networking module implementation (TCP/UDP packet builders, capture)
@@ -169,6 +178,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Best practices (builder pattern, type state, channels)
 
 **Code Examples:**
+
 - Scanner orchestrator with async/await
 - TCP packet builder with options
 - Packet capture abstraction
@@ -181,6 +191,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 05-API-REFERENCE.md (18 KB)
 
 **What's Inside:**
+
 - Complete Scanner API documentation
 - Network protocol API (TcpPacketBuilder, PacketCapture)
 - Detection engine API (ServiceDetector, OsDetector)
@@ -190,6 +201,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Error types (Error enum with variants)
 
 **API Coverage:**
+
 - 50+ public APIs documented
 - Rust doc comments with examples
 - Usage examples for all major APIs
@@ -201,6 +213,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 06-TESTING.md (17 KB)
 
 **What's Inside:**
+
 - Testing philosophy (TDD, property-based, regression)
 - 5 test levels with code examples:
   - Unit tests (inline with modules)
@@ -214,6 +227,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Testing checklist (before commit, PR, release)
 
 **Coverage Targets:**
+
 - Core Engine: >90%
 - Network Protocol: >85%
 - Scanning Modules: >80%
@@ -224,6 +238,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 07-PERFORMANCE.md (17 KB)
 
 **What's Inside:**
+
 - Performance targets:
   - 1M+ pps stateless
   - 50K+ pps stateful
@@ -241,6 +256,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Performance troubleshooting guide
 
 **Comparative Benchmarks:**
+
 - Masscan: 10M pps
 - ZMap: 14.23M pps
 - Nmap: ~300K pps
@@ -251,6 +267,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 08-SECURITY.md (20 KB)
 
 **What's Inside:**
+
 - Security principles (Least Privilege, Defense in Depth, Fail Securely)
 - Threat model and attack surfaces
 - Privilege management:
@@ -266,6 +283,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Security audit checklist (50+ items)
 
 **Critical Patterns:**
+
 - Drop privileges immediately after socket creation
 - Never construct shell commands from user input
 - All packet parsing must handle malformed input gracefully
@@ -276,6 +294,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 09-FAQ.md (12 KB)
 
 **What's Inside:**
+
 - 30+ frequently asked questions
 - General questions (What is WarScan? How does it compare to Nmap?)
 - Installation and setup (libpcap not found, OpenSSL errors, running without root)
@@ -286,6 +305,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Best practices (start small, use appropriate timing, save incrementally)
 
 **Most Common Questions:**
+
 - Q: How do I run without root/sudo?
 - Q: Why is my scan slow?
 - Q: How does it compare to Nmap?
@@ -295,6 +315,7 @@ This comprehensive documentation package provides everything needed to develop P
 ### 10-PROJECT-STATUS.md (19 KB)
 
 **What's Inside:**
+
 - Project overview and vision
 - Current status: 0% complete (pre-development)
 - 7 phases broken down into 122+ tracked tasks
@@ -305,6 +326,7 @@ This comprehensive documentation package provides everything needed to develop P
 - Update instructions
 
 **Task Breakdown:**
+
 - Phase 1: 19 tasks
 - Phase 2: 18 tasks
 - Phase 3: 24 tasks
@@ -450,6 +472,7 @@ README.md (Start Here)
 ### Weekly Updates
 
 **Update 10-PROJECT-STATUS.md:**
+
 - Mark completed tasks
 - Update progress percentages
 - Add known issues
@@ -485,6 +508,7 @@ README.md (Start Here)
 ## 🎓 Learning Path
 
 ### Week 1: Foundation
+
 - Day 1: README.md + 00-ARCHITECTURE.md
 - Day 2: 01-ROADMAP.md
 - Day 3: 03-DEV-SETUP.md (setup environment)
@@ -492,6 +516,7 @@ README.md (Start Here)
 - Day 5: 08-SECURITY.md
 
 ### Week 2: Specialization
+
 - Day 1-2: Deep dive into area of focus (performance, security, etc.)
 - Day 3: Review 10-PROJECT-STATUS.md and pick first task
 - Day 4: Implement first feature with tests
@@ -504,6 +529,7 @@ README.md (Start Here)
 ### Reference Documents
 
 Located in `../ref-docs/`:
+
 - ProRT-IP_Overview.md (15 KB)
 - ProRT-IP_WarScan_Technical_Specification.md (190 KB)
 - ProRT-IP_WarScan_Technical_Specification-v2.md (36 KB)
@@ -514,11 +540,11 @@ These were the source materials used to generate this structured documentation.
 
 ### External Links
 
-- **Rust Book:** https://doc.rust-lang.org/book/
-- **Tokio Tutorial:** https://tokio.rs/tokio/tutorial
-- **Async Rust Book:** https://rust-lang.github.io/async-book/
-- **Nmap Book:** https://nmap.org/book/
-- **pnet Docs:** https://docs.rs/pnet/
+- **Rust Book:** <https://doc.rust-lang.org/book/>
+- **Tokio Tutorial:** <https://tokio.rs/tokio/tutorial>
+- **Async Rust Book:** <https://rust-lang.github.io/async-book/>
+- **Nmap Book:** <https://nmap.org/book/>
+- **pnet Docs:** <https://docs.rs/pnet/>
 
 ---
 
@@ -548,4 +574,3 @@ These were the source materials used to generate this structured documentation.
 **Status:** ✅ Ready for development
 
 **Questions?** See [README.md](README.md) for navigation or [09-FAQ.md](09-FAQ.md) for answers.
-

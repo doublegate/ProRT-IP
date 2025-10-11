@@ -55,16 +55,19 @@
 #### Operating Systems
 
 **Linux (Primary Platform):**
+
 - Kernel: 4.15+ (5.x+ recommended for eBPF/XDP)
 - Distributions: Ubuntu 20.04+, Debian 11+, Fedora 35+, Arch, RHEL 8+
 - Packages: libpcap 1.9+, OpenSSL 1.1+, pkg-config
 
 **Windows:**
+
 - Version: Windows 10 (1809+) or Windows 11
 - Requirements: Npcap 1.70+, Visual C++ Redistributable 2019+
 - Privileges: Administrator required for raw packet access
 
 **macOS:**
+
 - Version: macOS 11.0 (Big Sur) or later
 - Requirements: Xcode Command Line Tools, libpcap (included)
 - Privileges: Root or access_bpf group membership
@@ -108,6 +111,7 @@ mlua = "0.9"                # Lua plugins (optional)
 ```
 
 **Field Specifications:**
+
 - **Destination MAC:** 6 bytes - Target MAC address (or broadcast FF:FF:FF:FF:FF:FF)
 - **Source MAC:** 6 bytes - Scanner's MAC address
 - **EtherType:** 2 bytes - 0x0800 (IPv4), 0x0806 (ARP), 0x86DD (IPv6)
@@ -135,6 +139,7 @@ mlua = "0.9"                # Lua plugins (optional)
 ```
 
 **Field Specifications:**
+
 - **Version:** 4 bits - Always 4 for IPv4
 - **IHL:** 4 bits - Header length in 32-bit words (5-15, typically 5)
 - **ToS/DSCP:** 8 bits - Type of Service / Differentiated Services
@@ -171,6 +176,7 @@ mlua = "0.9"                # Lua plugins (optional)
 ```
 
 **Field Specifications:**
+
 - **Source Port:** 16 bits - Scanner's source port (typically random 1024-65535)
 - **Destination Port:** 16 bits - Target port being scanned
 - **Sequence Number:** 32 bits - Random for SYN, or SipHash-derived for stateless
@@ -195,6 +201,7 @@ mlua = "0.9"                # Lua plugins (optional)
 | EOL | 0 | 1 | End of options list |
 
 **Standard Option Ordering (for OS fingerprinting):**
+
 ```
 MSS, NOP, Window Scale, NOP, NOP, Timestamp, SACK Permitted, EOL
 ```
@@ -216,6 +223,7 @@ MSS, NOP, Window Scale, NOP, NOP, Timestamp, SACK Permitted, EOL
 ```
 
 **Field Specifications:**
+
 - **Source Port:** 16 bits - Scanner's source port
 - **Destination Port:** 16 bits - Target port
 - **Length:** 16 bits - Header + payload length
@@ -347,6 +355,7 @@ Scanner                           Target
 ```
 
 **State Determination:**
+
 - **Open:** Received SYN/ACK
 - **Closed:** Received RST
 - **Filtered:** No response after timeout + retries
@@ -411,6 +420,7 @@ Scanner          Zombie                  Target
 ```
 
 **IPID Interpretation:**
+
 - **+2:** Port open (zombie sent RST in response to SYN/ACK)
 - **+1:** Port closed or filtered (no traffic from zombie)
 
@@ -444,20 +454,24 @@ Scanner          Zombie                  Target
 #### Fingerprint Attributes
 
 **TCP ISN Analysis:**
+
 - **GCD:** Greatest common divisor of ISN deltas
 - **ISR:** ISN counter rate (increments per second)
 - **SP:** Sequence predictability index
 
 **TCP Options:**
+
 - **O:** Option ordering (M=MSS, W=WScale, T=Timestamp, S=SACK)
 - **Example:** "MWTS" means MSS, Window Scale, Timestamp, SACK
 
 **IP ID Generation:**
+
 - **TI:** TCP IP ID generation (I=incremental, RI=random incremental, Z=zero)
 - **CI:** Closed port IP ID generation
 - **II:** ICMP IP ID generation
 
 **Window Sizes:**
+
 - **W:** TCP window sizes for each probe
 - **Example:** "W=4000|8000" means 16384 or 32768
 
@@ -702,4 +716,3 @@ pub trait Plugin: Send + Sync {
 - Review [Architecture](00-ARCHITECTURE.md) for system design
 - Consult [Implementation Guide](04-IMPLEMENTATION-GUIDE.md) for coding details
 - See [API Reference](05-API-REFERENCE.md) for complete API documentation
-

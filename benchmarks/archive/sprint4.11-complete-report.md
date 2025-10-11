@@ -20,6 +20,7 @@ Sprint 4.11 successfully completed two of three objectives:
 ### Implementation Details
 
 **Files Modified (9):**
+
 1. `crates/prtip-core/src/types.rs` - Added `version` field to `ScanResult`
 2. `crates/prtip-core/src/config.rs` - Added `ServiceDetectionConfig` struct
 3. `crates/prtip-core/src/lib.rs` - Exported `ServiceDetectionConfig`
@@ -33,6 +34,7 @@ Sprint 4.11 successfully completed two of three objectives:
 ### Architecture
 
 **Service Detection Flow:**
+
 ```
 1. User provides --sV flag (optional: --version-intensity 0-9, --banner-grab)
 2. CLI args parsed → ServiceDetectionConfig(enabled, intensity, banner_grab)
@@ -72,12 +74,14 @@ pub struct ScanResult {
 ### Integration Points
 
 **Scheduler (`scheduler.rs` lines 386-459):**
+
 - After draining aggregator results (line 380)
 - Before storing to database (line 461)
 - Iterates over open ports only
 - Logs detection progress (debug level)
 
 **CLI Output (`output.rs` lines 167-175):**
+
 ```rust
 if let Some(service) = &result.service {
     if let Some(version) = &result.version {
@@ -89,6 +93,7 @@ if let Some(service) = &result.service {
 ```
 
 **Summary Display (`main.rs` lines 374-378):**
+
 ```rust
 let services_detected = results
     .iter()
@@ -117,11 +122,13 @@ prtip --scan-type connect -p 1-1000 --sV --banner-grab 192.168.1.1
 ### Testing
 
 **Manual Testing:**
+
 - Compiled successfully (release build)
 - CLI flags functional (`--sV`, `--version-intensity`, `--banner-grab`)
 - No open ports on localhost (expected, service detection idle)
 
 **Test Fixes:**
+
 - Fixed 4 test files to include `service_detection` field
 - Fixed 1 test file to include `version` field
 - All tests compile cleanly
@@ -228,6 +235,7 @@ None added (service_detector and banner_grabber modules already existed)
 
 **Total Staged:** 127 files
 **Breakdown:**
+
 - 117 files from benchmarking work (pre-existing)
 - 10 files from Sprint 4.11 (service detection + README)
 
@@ -264,11 +272,13 @@ None added (service_detector and banner_grabber modules already existed)
 ### 📊 Impact
 
 **User Experience:**
+
 - Service detection now available via `--sV` flag
 - README easier to navigate (feature-based vs phase-based)
 - Clear usage examples for all features
 
 **Developer Experience:**
+
 - Clean integration pattern (ServiceDetectionConfig)
 - Modular design (detector/grabber separate from scheduler)
 - Easy to extend (add more detection probes)
@@ -287,11 +297,13 @@ None added (service_detector and banner_grabber modules already existed)
 ## Performance Characteristics
 
 **Service Detection Overhead:**
+
 - Per open port: <20ms (5s timeout per probe)
 - Minimal impact: only runs on OPEN ports (not closed/filtered)
 - Concurrent: detection happens after port scan completes (not inline)
 
 **No Regression:**
+
 - Default mode unchanged (service detection disabled by default)
 - In-memory mode still 39ms for 10K ports
 - --with-db mode still ~75ms for 10K ports

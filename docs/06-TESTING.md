@@ -164,6 +164,7 @@ mod tests {
 ```
 
 **Run Commands:**
+
 ```bash
 # All unit tests
 cargo test --lib
@@ -233,6 +234,7 @@ async fn test_syn_scan_filtered_port() {
 ```
 
 **Run Commands:**
+
 ```bash
 # All integration tests
 cargo test --test '*'
@@ -282,6 +284,7 @@ echo "✓ System test passed"
 ```
 
 **Run Commands:**
+
 ```bash
 bash tests/system/test_full_network_scan.sh
 ```
@@ -333,6 +336,7 @@ criterion_main!(benches);
 ```
 
 **Run Commands:**
+
 ```bash
 # Run all benchmarks
 cargo bench
@@ -351,6 +355,7 @@ cargo bench --bench packet_crafting -- --profile-time=5
 **Location:** `fuzz/` directory using cargo-fuzz
 
 **Setup:**
+
 ```bash
 cargo install cargo-fuzz
 cargo fuzz init
@@ -372,6 +377,7 @@ fuzz_target!(|data: &[u8]| {
 ```
 
 **Run Commands:**
+
 ```bash
 # Fuzz TCP parser (runs indefinitely until crash)
 cargo fuzz run tcp_parser
@@ -448,6 +454,7 @@ networks:
 ```
 
 **Usage:**
+
 ```bash
 # Start test environment
 docker-compose -f tests/fixtures/docker-compose.yml up -d
@@ -763,4 +770,3 @@ fn test_scan() {
 - Review [Performance Baselines](07-PERFORMANCE.md) for benchmark targets
 - Consult [Security Guide](08-SECURITY.md) for security testing requirements
 - See [Architecture](00-ARCHITECTURE.md) for component testing boundaries
-

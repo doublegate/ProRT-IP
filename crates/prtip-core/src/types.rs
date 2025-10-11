@@ -990,8 +990,7 @@ mod tests {
         // Verify the IP is either 127.0.0.1 or ::1
         let ip = target.network.ip();
         assert!(
-            ip == "127.0.0.1".parse::<IpAddr>().unwrap()
-                || ip == "::1".parse::<IpAddr>().unwrap(),
+            ip == "127.0.0.1".parse::<IpAddr>().unwrap() || ip == "::1".parse::<IpAddr>().unwrap(),
             "Expected localhost to resolve to 127.0.0.1 or ::1, got {}",
             ip
         );

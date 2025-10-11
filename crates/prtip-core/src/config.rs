@@ -104,6 +104,9 @@ pub struct ScanConfig {
     /// Service detection configuration
     #[serde(default)]
     pub service_detection: ServiceDetectionConfig,
+    /// Enable progress bar display
+    #[serde(default)]
+    pub progress: bool,
 }
 
 impl Default for ScanConfig {
@@ -115,12 +118,13 @@ impl Default for ScanConfig {
             retries: 0,
             scan_delay_ms: 0,
             service_detection: ServiceDetectionConfig::default(),
+            progress: false,
         }
     }
 }
 
 /// Service detection configuration
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceDetectionConfig {
     /// Enable service detection
     pub enabled: bool,
@@ -128,6 +132,9 @@ pub struct ServiceDetectionConfig {
     pub intensity: u8,
     /// Enable banner grabbing
     pub banner_grab: bool,
+    /// Custom probe database file path
+    #[serde(default)]
+    pub probe_db_path: Option<String>,
 }
 
 impl Default for ServiceDetectionConfig {
@@ -136,6 +143,7 @@ impl Default for ServiceDetectionConfig {
             enabled: false,
             intensity: 7,
             banner_grab: false,
+            probe_db_path: None,
         }
     }
 }

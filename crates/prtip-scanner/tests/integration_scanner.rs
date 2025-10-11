@@ -272,6 +272,7 @@ async fn test_scheduler_config_validation() {
             retries: 0,
             scan_delay_ms: 0,
             service_detection: Default::default(),
+            progress: false,
         },
         network: NetworkConfig {
             interface: None,

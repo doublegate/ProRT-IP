@@ -37,6 +37,7 @@ use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::timeout;
+use tracing::debug;
 
 /// Service detection engine
 pub struct ServiceDetector {
@@ -88,22 +89,46 @@ impl ServiceDetector {
 
         // Get probes for this port
         let probes = self.db.probes_for_port(port, protocol);
+        debug!("Port {}: Found {} probes to try (intensity={})", port, probes.len(), self.intensity);
+
+        // Log all probe names and rarities for debugging
+        for (i, p) in probes.iter().enumerate() {
+            debug!("Port {}: Probe[{}] = {} (rarity {})", port, i, p.name, p.rarity);
+        }
 
         // Try NULL probe first (many services self-announce)
         if let Some(null_probe) = probes.iter().find(|p| p.name == "NULL") {
-            if let Ok(info) = self.try_probe(target, null_probe).await {
-                return Ok(info);
+            debug!("Port {}: Trying NULL probe", port);
+            match self.try_probe(target, null_probe).await {
+                Ok(info) => {
+                    debug!("Port {}: NULL probe matched: {}", port, info.service);
+                    return Ok(info);
+                }
+                Err(e) => {
+                    debug!("Port {}: NULL probe failed: {}", port, e);
+                }
             }
         }
 
         // Try other probes in order of rarity
+        let mut probes_tried = 0;
         for probe in probes {
             if probe.rarity <= self.intensity {
-                if let Ok(info) = self.try_probe(target, probe).await {
-                    return Ok(info);
+                probes_tried += 1;
+                debug!("Port {}: Trying probe {} (rarity {})", port, probe.name, probe.rarity);
+                match self.try_probe(target, probe).await {
+                    Ok(info) => {
+                        debug!("Port {}: Probe {} matched: {}", port, probe.name, info.service);
+                        return Ok(info);
+                    }
+                    Err(e) => {
+                        debug!("Port {}: Probe {} failed: {}", port, probe.name, e);
+                    }
                 }
             }
         }
+
+        debug!("Port {}: No match found after trying {} probes", port, probes_tried);
 
         // No match found - return generic info
         Ok(ServiceInfo {

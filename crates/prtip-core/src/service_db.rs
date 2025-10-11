@@ -33,6 +33,9 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::str::FromStr;
 
+// Embed nmap-service-probes at compile time
+const EMBEDDED_SERVICE_PROBES: &str = include_str!("../data/nmap-service-probes");
+
 /// Service probe database
 #[derive(Debug, Clone)]
 pub struct ServiceProbeDb {
@@ -257,9 +260,31 @@ impl ServiceProbeDb {
         result
     }
 
-    /// Parse comma-separated port list
+    /// Parse comma-separated port list (supports ranges like "80-85")
     fn parse_port_list(s: &str) -> Vec<u16> {
-        s.split(',').filter_map(|p| p.trim().parse().ok()).collect()
+        let mut ports = Vec::new();
+
+        for part in s.split(',') {
+            let part = part.trim();
+
+            if part.contains('-') {
+                // Handle port range (e.g., "80-85")
+                if let Some((start_str, end_str)) = part.split_once('-') {
+                    if let (Ok(start), Ok(end)) = (start_str.trim().parse::<u16>(), end_str.trim().parse::<u16>()) {
+                        for port in start..=end {
+                            ports.push(port);
+                        }
+                    }
+                }
+            } else {
+                // Handle single port
+                if let Ok(port) = part.parse() {
+                    ports.push(port);
+                }
+            }
+        }
+
+        ports
     }
 
     /// Parse match or softmatch line
@@ -372,6 +397,17 @@ impl ServiceProbeDb {
             }
         }
 
+        // If no port-specific probes found, add common probes as fallback
+        // This handles non-standard ports (e.g., 2021 instead of 21)
+        if probes.len() <= 1 {  // Only NULL probe or empty
+            for probe in &self.probes {
+                if probe.protocol == protocol && probe.rarity <= 3 && !probe.ports.is_empty() {
+                    // Add common probes (rarity 1-3) regardless of port match
+                    probes.push(probe);
+                }
+            }
+        }
+
         // Sort by rarity (common first)
         probes.sort_by_key(|p| p.rarity);
         probes.dedup();
@@ -396,11 +432,67 @@ impl ServiceProbeDb {
     pub fn is_empty(&self) -> bool {
         self.probes.is_empty()
     }
+
+    /// Create database with embedded probes
+    pub fn with_embedded_probes() -> Result<Self, Error> {
+        Self::parse(EMBEDDED_SERVICE_PROBES)
+    }
+
+    /// Load from standard nmap locations
+    pub fn load_from_system() -> Result<Self, Error> {
+        let paths = [
+            "/usr/share/nmap/nmap-service-probes",           // Linux
+            "/usr/local/share/nmap/nmap-service-probes",     // BSD/macOS Homebrew
+            "/opt/nmap/share/nmap-service-probes",           // Alternative
+            "C:\\Program Files\\Nmap\\nmap-service-probes",  // Windows
+            "C:\\Program Files (x86)\\Nmap\\nmap-service-probes", // Windows 32-bit
+        ];
+
+        for path in &paths {
+            if let Ok(content) = std::fs::read_to_string(path) {
+                return Self::parse(&content);
+            }
+        }
+
+        Err(Error::Config(
+            "nmap-service-probes not found in standard locations".to_string()
+        ))
+    }
+
+    /// Load from custom file path
+    pub fn load_from_file(path: &str) -> Result<Self, Error> {
+        let content = std::fs::read_to_string(path)
+            .map_err(|e| Error::Config(format!("Failed to read {}: {}", path, e)))?;
+        Self::parse(&content)
+    }
+
+    /// Create database with best available source (hybrid approach)
+    pub fn load_default() -> Result<Self, Error> {
+        // 1. Try embedded probes (always available)
+        if let Ok(db) = Self::with_embedded_probes() {
+            eprintln!("Service detection: Using embedded nmap-service-probes");
+            return Ok(db);
+        }
+
+        // 2. Try system installation
+        if let Ok(db) = Self::load_from_system() {
+            eprintln!("Service detection: Using system nmap-service-probes");
+            return Ok(db);
+        }
+
+        // 3. Return empty with warning
+        eprintln!("Warning: No service probes available");
+        eprintln!("Service detection disabled. Install nmap or use --probe-db <file>");
+        Ok(Self::new())
+    }
 }
 
 impl Default for ServiceProbeDb {
     fn default() -> Self {
-        Self::new()
+        Self::load_default().unwrap_or_else(|_| {
+            eprintln!("Error: Failed to load service probes");
+            Self::new()
+        })
     }
 }
 
@@ -458,6 +550,14 @@ match ftp m|^220.*FTP| p/FTP/ v/1.0/
     fn test_parse_port_list() {
         let ports = ServiceProbeDb::parse_port_list("80,443,8080");
         assert_eq!(ports, vec![80, 443, 8080]);
+
+        // Test port ranges
+        let ports = ServiceProbeDb::parse_port_list("80-85");
+        assert_eq!(ports, vec![80, 81, 82, 83, 84, 85]);
+
+        // Test mixed
+        let ports = ServiceProbeDb::parse_port_list("22,80-82,443");
+        assert_eq!(ports, vec![22, 80, 81, 82, 443]);
     }
 
     #[test]
@@ -518,5 +618,46 @@ softmatch http m|^HTTP|
 
         let db = ServiceProbeDb::parse(content).unwrap();
         assert_eq!(db.probes[0].soft_matches.len(), 1);
+    }
+
+    #[test]
+    fn test_embedded_probes_exist() {
+        let db = ServiceProbeDb::default();
+        assert!(!db.is_empty(), "Probe database should not be empty");
+        assert!(db.probes.len() > 100, "Should have >100 probes, got {}", db.probes.len());
+        eprintln!("Loaded {} service probes", db.probes.len());
+    }
+
+    #[test]
+    fn test_http_probe_exists() {
+        let db = ServiceProbeDb::default();
+        let http_probes = db.probes.iter()
+            .filter(|p| p.protocol == Protocol::Tcp && p.name.contains("GetRequest"))
+            .count();
+        assert!(http_probes > 0, "Should have HTTP probes");
+    }
+
+    #[test]
+    fn test_load_from_file() {
+        // Test that load_from_file works with a valid path
+        let content = r#"
+Probe TCP Test q|test|
+match http m|^HTTP|
+"#;
+        let temp_path = "/tmp/test-probes.txt";
+        std::fs::write(temp_path, content).unwrap();
+
+        let result = ServiceProbeDb::load_from_file(temp_path);
+        assert!(result.is_ok());
+        let db = result.unwrap();
+        assert_eq!(db.len(), 1);
+
+        std::fs::remove_file(temp_path).ok();
+    }
+
+    #[test]
+    fn test_load_from_file_invalid_path() {
+        let result = ServiceProbeDb::load_from_file("/nonexistent/path/to/probes.txt");
+        assert!(result.is_err());
     }
 }

@@ -127,6 +127,15 @@ pub struct Args {
     #[arg(long, help_heading = "DETECTION")]
     pub banner_grab: bool,
 
+    /// Custom service probe database file
+    #[arg(
+        long,
+        value_name = "FILE",
+        help_heading = "DETECTION",
+        help = "Load service probes from custom file (default: embedded nmap-service-probes)"
+    )]
+    pub probe_db: Option<String>,
+
     /// Enable host discovery before scanning
     #[arg(short = 'P', long, help_heading = "DETECTION")]
     pub host_discovery: bool,
@@ -363,7 +372,9 @@ impl Args {
                     enabled: self.service_detection,
                     intensity: self.version_intensity,
                     banner_grab: self.banner_grab,
+                    probe_db_path: self.probe_db.clone(),
                 },
+                progress: self.progress && !self.no_progress,
             },
             network: NetworkConfig {
                 interface: self.interface.clone(),

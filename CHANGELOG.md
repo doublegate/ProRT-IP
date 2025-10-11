@@ -41,6 +41,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Duration, scan rate, hosts scanned, port counts
   - Color-coded output sections (Performance, Targets, Results)
 
+- **Sprint 4.12 - Progress Bar Real-Time Updates** (2025-10-11)
+  - Fixed critical bug: Progress bar starting at 100% instead of 0%
+  - Implemented "progress bridge" pattern with 50ms polling
+  - Changed to `scan_ports_with_progress()` with internal `ScanProgress` tracker
+  - Spawned async bridge task for incremental updates based on delta
+  - Progress bar now updates 0% → 100% in real-time
+  - Accurate PPS (ports per second) counter throughout scan
+  - Files modified: scheduler.rs (+40/-15 lines)
+  - All 643 tests passing, zero warnings
+  - Zero performance regressions
+
 - **Comprehensive Validation Suite** (bug_fix/ directory)
   - VALIDATION-REPORT.md (10KB) - Complete validation vs nmap, rustscan, naabu
   - SERVICE-DETECTION-FIX.md (9KB) - Detailed fix guide with 3 options

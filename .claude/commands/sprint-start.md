@@ -39,20 +39,79 @@ fi
 
 ### Step 1.2: Validate Sprint ID Format
 
+```bash
+# Validate format: X.Y (phase.sprint) or descriptive
+if ! [[ "$SPRINT_ID" =~ ^[0-9]+\.[0-9]+$ ]] && ! [[ "$SPRINT_ID" =~ ^phase[0-9]+-[a-z-]+$ ]] && ! [[ "$SPRINT_ID" =~ ^cycle[0-9]+-[a-z-]+$ ]]; then
+  echo "❌ ERROR: Invalid sprint ID format"
+  echo ""
+  echo "Valid formats:"
+  echo "  - Numeric: 4.15, 5.1, 5.2 (phase.sprint)"
+  echo "  - Descriptive: phase5-idle-scanning, cycle9-optimization"
+  echo ""
+  echo "Current: '$SPRINT_ID'"
+  exit 1
+fi
+
+# Extract phase number for reference
+if [[ "$SPRINT_ID" =~ ^[0-9]+\.[0-9]+$ ]]; then
+  PHASE_NUM=$(echo "$SPRINT_ID" | cut -d. -f1)
+  SPRINT_NUM=$(echo "$SPRINT_ID" | cut -d. -f2)
+  echo "Phase: $PHASE_NUM, Sprint: $SPRINT_NUM"
+elif [[ "$SPRINT_ID" =~ ^phase([0-9]+)- ]]; then
+  PHASE_NUM="${BASH_REMATCH[1]}"
+  echo "Phase: $PHASE_NUM (descriptive format)"
+elif [[ "$SPRINT_ID" =~ ^cycle([0-9]+)- ]]; then
+  CYCLE_NUM="${BASH_REMATCH[1]}"
+  echo "Cycle: $CYCLE_NUM (enhancement cycle format)"
+fi
+
+echo "✅ Sprint ID format valid: $SPRINT_ID"
+echo ""
+```
+
 **Expected Formats:**
 - Phase.Sprint: `4.15`, `5.1`, `5.2`
 - Descriptive: `phase5-idle-scanning`, `cycle9-optimization`
 
-### Step 1.3: Check for Existing Sprint Directory
+### Step 1.3: Check for Existing Sprint Directory and Handle Conflicts
 
 ```bash
 SPRINT_DIR="/tmp/ProRT-IP/sprint-${SPRINT_ID}"
 
 if [ -d "$SPRINT_DIR" ]; then
-  echo "WARNING: Sprint directory already exists: $SPRINT_DIR"
-  echo "Do you want to overwrite? (y/n)"
-  # Wait for user confirmation
+  echo "⚠️  WARNING: Sprint directory already exists: $SPRINT_DIR"
+  echo ""
+  echo "Options:"
+  echo "  1. Continue (overwrite existing files)"
+  echo "  2. Archive existing sprint to: ${SPRINT_DIR}-archive-$(date +%s)"
+  echo "  3. Abort"
+  echo ""
+  read -p "Choose option (1/2/3): " -n 1 -r
+  echo ""
+
+  case $REPLY in
+    1)
+      echo "Continuing with existing directory..."
+      echo "⚠️  Existing files may be overwritten"
+      ;;
+    2)
+      ARCHIVE_DIR="${SPRINT_DIR}-archive-$(date +%s)"
+      mv "$SPRINT_DIR" "$ARCHIVE_DIR"
+      echo "✅ Archived to: $ARCHIVE_DIR"
+      ;;
+    3)
+      echo "Aborted by user"
+      exit 0
+      ;;
+    *)
+      echo "❌ Invalid option, aborting"
+      exit 1
+      ;;
+  esac
 fi
+
+echo "✅ Sprint directory path validated"
+echo ""
 ```
 
 ---
@@ -433,6 +492,80 @@ echo ""
 3. **Directory Structure:** 4 subdirectories for organization
 4. **Summary Report:** Console output with next steps
 5. **Memory Bank Update:** CLAUDE.local.md sprint entry
+
+---
+
+## RELATED COMMANDS
+
+**Sprint Workflow:**
+- `/sprint-complete <sprint-id>` - Finalize sprint with comprehensive summary
+- Required after sprint work is complete to generate implementation summary
+
+**Development Workflow:**
+- `/module-create <crate> <module-name> <desc>` - Create new modules during sprint
+- `/rust-check` - Validate code quality throughout sprint development
+- `/test-quick <pattern>` - Run targeted tests during sprint iterations
+
+**Performance Tracking:**
+- `/bench-compare <baseline> <comparison>` - Measure sprint performance impact
+- `/perf-profile <command>` - Profile performance-critical sprint changes
+
+**Documentation:**
+- `/doc-update <type> <desc>` - Document changes throughout sprint
+- Sprint completion automatically updates all documentation
+
+## WORKFLOW INTEGRATION
+
+**Complete Sprint Workflow:**
+
+```
+1. Sprint Planning:
+   /sprint-start 5.X "Implement idle/zombie scanning"
+   # Creates: sprint-plan.md, task-checklist.md, implementation-notes.md
+
+2. Development Iteration:
+   - Work on tasks from task-checklist.md
+   - /test-quick <pattern>  # Quick feedback
+   - /rust-check  # Quality validation
+   - Document decisions in implementation-notes.md
+
+3. Continuous Documentation:
+   - /doc-update feature "Progress update"
+   - Update task-checklist.md (mark tasks complete)
+
+4. Performance Validation:
+   - /bench-compare v0.3.0 HEAD
+   - /perf-profile ./target/release/prtip <args>
+   - Document results in implementation-notes.md
+
+5. Sprint Finalization:
+   - Ensure all tasks complete in task-checklist.md
+   - /rust-check  # Final validation
+   - /sprint-complete 5.X  # Generate comprehensive summary
+
+6. Git Workflow:
+   - Review sprint-5.X/implementation-summary.md
+   - git commit -F /tmp/ProRT-IP/sprint-5.X-commit-message.txt
+   - git push
+```
+
+**Task Tracking Pattern:**
+
+```markdown
+# task-checklist.md format
+- [ ] TASK-1: Implement core functionality
+- [ ] TASK-2: Add comprehensive tests
+- [x] TASK-3: Document API (completed)
+- [ ] TASK-4: Performance optimization
+```
+
+## SEE ALSO
+
+- `docs/01-ROADMAP.md` - Project phases and sprint planning
+- `docs/10-PROJECT-STATUS.md` - Overall project status and task tracking
+- `CLAUDE.local.md` - Recent sessions and current sprint
+- `CONTRIBUTING.md` - Development workflow guidelines
+- `ref-docs/10-Custom-Commands_Analysis.md` - Command usage patterns
 
 ---
 

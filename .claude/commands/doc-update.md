@@ -14,11 +14,11 @@ Quick documentation sync - README, CHANGELOG, CLAUDE.local: $*
 
 ---
 
-## Phase 1: GATHER CURRENT METRICS
+## Phase 0: SAFETY CHECKS AND VALIDATION
 
-**Objective:** Collect all current project metrics for documentation updates
+**Objective:** Ensure safe file modifications and validate parameters
 
-### Step 1.1: Parse Update Type
+### Step 0.1: Parse and Validate Update Type
 
 ```bash
 UPDATE_TYPE="${1:-general}"
@@ -26,13 +26,94 @@ DESCRIPTION="${@:2}"
 
 VALID_TYPES=("feature" "fix" "perf" "docs" "test" "refactor" "chore" "general")
 
-if [[ ! " ${VALID_TYPES[@]} " =~ " ${UPDATE_TYPE} " ]]; then
-  echo "WARNING: Unknown update type '$UPDATE_TYPE' (using 'general')"
-  UPDATE_TYPE="general"
+# Validate update type
+VALID=false
+for type in "${VALID_TYPES[@]}"; do
+  if [ "$UPDATE_TYPE" = "$type" ]; then
+    VALID=true
+    break
+  fi
+done
+
+if [ "$VALID" = false ]; then
+  echo "❌ ERROR: Invalid update type '$UPDATE_TYPE'"
+  echo ""
+  echo "Valid types:"
+  echo "  - feature   : New feature implementation"
+  echo "  - fix       : Bug fix"
+  echo "  - perf      : Performance improvement"
+  echo "  - docs      : Documentation update"
+  echo "  - test      : Test additions/improvements"
+  echo "  - refactor  : Code refactoring"
+  echo "  - chore     : Maintenance tasks"
+  echo "  - general   : General update (default)"
+  echo ""
+  echo "Usage: /doc-update <type> [description]"
+  echo "Example: /doc-update feature \"Added idle scanning support\""
+  exit 1
+fi
+
+echo "✅ Update type validated: $UPDATE_TYPE"
+```
+
+### Step 0.2: Check Git Status
+
+```bash
+# Warn if there are uncommitted changes
+if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+  echo "⚠️  WARNING: Uncommitted changes detected"
+  echo ""
+  git status --short | head -10
+  echo ""
+  read -p "Continue with doc-update? (y/N): " -n 1 -r
+  echo ""
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Aborted by user"
+    exit 0
+  fi
 fi
 ```
 
-### Step 1.2: Collect Code Metrics
+### Step 0.3: Create Backup
+
+```bash
+# Create backup of critical files
+BACKUP_DIR="/tmp/ProRT-IP/doc-backup-$(date +%s)"
+mkdir -p "$BACKUP_DIR"
+
+cp README.md "$BACKUP_DIR/" 2>/dev/null && echo "✅ Backed up README.md"
+cp CHANGELOG.md "$BACKUP_DIR/" 2>/dev/null && echo "✅ Backed up CHANGELOG.md"
+cp CLAUDE.local.md "$BACKUP_DIR/" 2>/dev/null && echo "✅ Backed up CLAUDE.local.md"
+
+echo "Backup location: $BACKUP_DIR"
+```
+
+### Step 0.4: Validate File Existence
+
+```bash
+# Ensure critical files exist
+MISSING_FILES=()
+[ ! -f "README.md" ] && MISSING_FILES+=("README.md")
+[ ! -f "CHANGELOG.md" ] && MISSING_FILES+=("CHANGELOG.md")
+[ ! -f "CLAUDE.local.md" ] && MISSING_FILES+=("CLAUDE.local.md")
+
+if [ ${#MISSING_FILES[@]} -gt 0 ]; then
+  echo "❌ ERROR: Missing required files:"
+  printf '  - %s\n' "${MISSING_FILES[@]}"
+  exit 1
+fi
+
+echo "✅ All required files present"
+echo ""
+```
+
+---
+
+## Phase 1: GATHER CURRENT METRICS
+
+**Objective:** Collect all current project metrics for documentation updates
+
+### Step 1.1: Collect Code Metrics
 
 ```bash
 # Test counts
@@ -344,6 +425,64 @@ echo ""
 2. **Updated CHANGELOG.md:** New entry in [Unreleased]
 3. **Updated CLAUDE.local.md:** Session entry, current metrics
 4. **Summary Report:** Console output with changes
+
+---
+
+## RELATED COMMANDS
+
+**Sprint Workflow:**
+- `/sprint-start <sprint-id> <objective>` - Begin sprint with planning documents
+- `/sprint-complete <sprint-id>` - Finalize sprint with comprehensive documentation update
+- Sprint completion automatically updates README, CHANGELOG, and memory banks
+
+**Development Workflow:**
+- `/rust-check` - Validate changes before documenting (ensure tests pass)
+- `/bench-compare <baseline> <comparison>` - Measure performance for perf updates
+- `/module-create <crate> <module-name> <desc>` - Create new module, then document
+
+**Quality Assurance:**
+- `/ci-status` - Check CI status before documentation updates
+- `/test-quick <pattern>` - Run tests related to documented changes
+
+**Bug Tracking:**
+- `/bug-report <issue> <command>` - Generate bug report, then doc-update fix entry
+
+## WORKFLOW INTEGRATION
+
+**Common Documentation Workflows:**
+
+1. **Feature Addition:**
+   ```
+   Implement feature → /rust-check → /doc-update feature "Description"
+   ```
+
+2. **Bug Fix:**
+   ```
+   Fix bug → /test-quick <pattern> → /doc-update fix "Description"
+   ```
+
+3. **Performance Improvement:**
+   ```
+   Optimize → /bench-compare → /doc-update perf "X → Y (Z% faster)"
+   ```
+
+4. **Sprint Completion:**
+   ```
+   /sprint-complete X.Y → Automatically calls doc-update internally
+   ```
+
+5. **Regular Maintenance:**
+   ```
+   /doc-update general → Sync metrics without specific changes
+   ```
+
+## SEE ALSO
+
+- `README.md` - Project overview and status (updated by this command)
+- `CHANGELOG.md` - Version history (updated by this command)
+- `CLAUDE.local.md` - Memory bank (updated by this command)
+- `CONTRIBUTING.md` - Documentation standards
+- `docs/` - Technical documentation directory
 
 ---
 

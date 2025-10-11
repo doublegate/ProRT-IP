@@ -1,4 +1,4 @@
-Check GitHub Actions CI/CD pipeline status
+Check GitHub Actions CI/CD pipeline status: $*
 
 ---
 
@@ -6,13 +6,40 @@ Check GitHub Actions CI/CD pipeline status
 
 **Purpose:** Check GitHub Actions workflow status, identify failures, and provide debugging guidance
 
-**Usage:** `/ci-status`
+**Usage:** `/ci-status [run-number|workflow-name|--failed]`
 
 **Requirements:** GitHub CLI (`gh`) must be installed and authenticated
 
 ---
 
-## Phase 1: VERIFY GITHUB CLI AVAILABILITY
+## PARAMETERS
+
+**No arguments:** Show last 10 runs across all workflows
+**run-number (digits):** Show specific run by ID number
+**workflow-name (string):** Filter by workflow name (e.g., "CI", "Release")
+**--failed flag:** Show only failed runs from last 50
+
+---
+
+## USAGE PATTERNS
+
+**Basic:** `/ci-status` (show last 10 runs across all workflows)
+**Specific Run:** `/ci-status 1234567890` (show details for run ID)
+**Workflow Filter:** `/ci-status CI` (show only CI workflow runs)
+**Failed Only:** `/ci-status --failed` (show only failed runs)
+
+## USAGE EXAMPLES
+
+```bash
+/ci-status                    # Last 10 runs, all workflows
+/ci-status 1234567890         # Specific run details
+/ci-status CI                 # Filter to CI workflow
+/ci-status --failed           # Only failed runs
+```
+
+---
+
+## Phase 1: VERIFY GITHUB CLI AND PARSE PARAMETERS
 
 **Objective:** Ensure gh CLI is installed and authenticated
 
@@ -46,26 +73,104 @@ fi
 echo "✅ GitHub CLI authenticated"
 ```
 
+### Step 1.3: Parse and Validate Optional Parameters
+
+```bash
+PARAM="$1"
+FILTER_TYPE="all"
+RUN_NUMBER=""
+WORKFLOW_NAME=""
+
+if [ -n "$PARAM" ]; then
+  # Check if parameter is a run number (digits only)
+  if [[ "$PARAM" =~ ^[0-9]+$ ]]; then
+    FILTER_TYPE="run"
+    RUN_NUMBER="$PARAM"
+    echo "🎯 Filter: Specific run #$RUN_NUMBER"
+
+  # Check if --failed flag
+  elif [ "$PARAM" = "--failed" ]; then
+    FILTER_TYPE="failed"
+    echo "🎯 Filter: Failed runs only"
+
+  # Check for invalid flags (starting with --)
+  elif [[ "$PARAM" =~ ^-- ]]; then
+    echo "❌ ERROR: Invalid flag '$PARAM'"
+    echo ""
+    echo "Valid flags:"
+    echo "  --failed  Show only failed runs"
+    echo ""
+    echo "Usage: /ci-status [run-number|workflow-name|--failed]"
+    echo ""
+    echo "Examples:"
+    echo "  /ci-status              # Last 10 runs"
+    echo "  /ci-status 1234567890   # Specific run"
+    echo "  /ci-status CI           # CI workflow only"
+    echo "  /ci-status --failed     # Failed runs only"
+    exit 1
+
+  # Otherwise treat as workflow name
+  else
+    FILTER_TYPE="workflow"
+    WORKFLOW_NAME="$PARAM"
+    echo "🎯 Filter: Workflow '$WORKFLOW_NAME'"
+  fi
+else
+  echo "🎯 Filter: All workflows (last 10 runs)"
+fi
+
+echo ""
+```
+
 ---
 
 ## Phase 2: FETCH WORKFLOW RUNS
 
 **Objective:** Get recent workflow runs for the repository
 
-### Step 2.1: Get Latest Workflow Runs
+### Step 2.1: Fetch Workflow Runs Based on Filter
 
 ```bash
-echo "Fetching latest CI/CD workflow runs..."
+echo "Fetching CI/CD workflow runs..."
 echo ""
 
-# Get last 10 workflow runs
-gh run list --limit 10 --json status,conclusion,name,createdAt,event,number,headBranch > /tmp/gh-runs.json
+# Build gh command based on filter type
+GH_CMD="gh run list --limit 10 --json status,conclusion,name,createdAt,event,number,headBranch"
+
+if [ "$FILTER_TYPE" = "run" ]; then
+  # Fetch specific run details
+  gh run view "$RUN_NUMBER" --json status,conclusion,name,createdAt,event,number,headBranch,jobs > /tmp/gh-run-specific.json
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to fetch run #$RUN_NUMBER"
+    echo "Check run number exists: gh run list"
+    exit 1
+  fi
+  # Convert to array format for consistency
+  jq -s '.' /tmp/gh-run-specific.json > /tmp/gh-runs.json
+
+elif [ "$FILTER_TYPE" = "workflow" ]; then
+  # Filter by workflow name
+  gh run list --workflow "$WORKFLOW_NAME" --limit 10 --json status,conclusion,name,createdAt,event,number,headBranch > /tmp/gh-runs.json
+
+elif [ "$FILTER_TYPE" = "failed" ]; then
+  # Fetch all runs and filter failed
+  gh run list --limit 50 --json status,conclusion,name,createdAt,event,number,headBranch > /tmp/gh-runs-all.json
+  jq '[.[] | select(.conclusion == "failure")]' /tmp/gh-runs-all.json | head -10 > /tmp/gh-runs.json
+
+else
+  # Default: last 10 runs
+  gh run list --limit 10 --json status,conclusion,name,createdAt,event,number,headBranch > /tmp/gh-runs.json
+fi
 
 if [ $? -ne 0 ]; then
-  echo "ERROR: Failed to fetch workflow runs"
+  echo "❌ ERROR: Failed to fetch workflow runs"
   echo "Check repository access and authentication"
   exit 1
 fi
+
+RUNS_COUNT=$(jq '. | length' /tmp/gh-runs.json)
+echo "✅ Fetched $RUNS_COUNT workflow run(s)"
+echo ""
 ```
 
 ### Step 2.2: Parse Workflow Data
@@ -261,6 +366,36 @@ echo "   /rust-check"
 echo ""
 ```
 
+### Step 5.3: Run Local Validation (if failures detected)
+
+```bash
+if [ "$RUN_CONCLUSION" = "failure" ]; then
+  echo "=========================================="
+  echo "Automated Local Validation"
+  echo "=========================================="
+  echo ""
+  echo "Running /rust-check to identify local issues..."
+  echo ""
+
+  # Check if /rust-check command exists
+  if [ -f ".claude/commands/rust-check.md" ]; then
+    echo "💡 Recommended: Execute /rust-check for comprehensive local validation"
+  else
+    echo "Run manual validation:"
+    echo "  cargo fmt --check"
+    echo "  cargo clippy --all-targets -- -D warnings"
+    echo "  cargo test --workspace"
+  fi
+
+  echo ""
+  echo "If local checks pass but CI fails:"
+  echo "  - Check platform-specific issues (Windows, macOS)"
+  echo "  - Review CI logs: gh run view $RUN_NUMBER --log"
+  echo "  - Compare environment: Rust version, dependencies"
+  echo ""
+fi
+```
+
 ---
 
 ## Phase 6: DISPLAY WORKFLOW-SPECIFIC STATUS
@@ -324,13 +459,60 @@ fi
 
 ---
 
+## Phase 7: PR-SPECIFIC STATUS (if applicable)
+
+**Objective:** Show CI status for current PR branch
+
+### Step 7.1: Check for Pull Request
+
+```bash
+CURRENT_BRANCH=$(git branch --show-current 2>/dev/null)
+PR_NUMBER=$(gh pr list --head "$CURRENT_BRANCH" --json number --jq '.[0].number' 2>/dev/null)
+
+if [ -n "$PR_NUMBER" ]; then
+  echo "=========================================="
+  echo "Pull Request CI Status"
+  echo "=========================================="
+  echo ""
+  echo "PR #$PR_NUMBER Status:"
+  echo ""
+
+  gh pr checks "$PR_NUMBER" --watch=false || true
+
+  echo ""
+  echo "PR Details:"
+  gh pr view "$PR_NUMBER" --json title,state,mergeable,statusCheckRollup \
+    --jq '"Title: " + .title, "State: " + .state, "Mergeable: " + (.mergeable // "UNKNOWN")'
+
+  echo ""
+fi
+```
+
+---
+
 ## DELIVERABLES
 
 1. **Latest Run Status:** Success/failure with details
-2. **Recent Runs Table:** Last 10 workflow runs
+2. **Recent Runs Table:** Last 10 workflow runs (or filtered)
 3. **Failure Analysis:** Failed jobs identified (if applicable)
 4. **Debugging Guide:** Commands to investigate and fix issues
 5. **Local Reproduction:** How to reproduce CI failures locally
+6. **PR Status:** Pull request checks (if applicable)
+
+---
+
+## RELATED COMMANDS
+
+- `/rust-check` - Run local quality checks (format, lint, test, build)
+- `/test-quick <pattern>` - Run specific test subsets for debugging
+- `/bug-report <issue> <command>` - Generate comprehensive bug report
+- `/sprint-complete <sprint-id>` - Validates all CI checks pass before completion
+
+**Workflow Integration:**
+- **CI Failure:** `/ci-status` → Identify failures → `/rust-check` locally → Fix → Push
+- **PR Review:** `/ci-status` → Check PR status → `/rust-check` → Merge when green
+- **Pre-Release:** `/ci-status` → Ensure all passing → Tag release
+- **Debugging:** `/ci-status` → View logs → `/bug-report` if needed
 
 ---
 

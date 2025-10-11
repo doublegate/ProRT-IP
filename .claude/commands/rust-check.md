@@ -1,4 +1,4 @@
-Fast Rust quality check pipeline - format, lint, test, build verification
+Fast Rust quality check pipeline - format, lint, test, build verification: $*
 
 ---
 
@@ -6,9 +6,85 @@ Fast Rust quality check pipeline - format, lint, test, build verification
 
 **Purpose:** Execute complete Rust quality checks in optimized phases (fast-fail → comprehensive → build)
 
-**Usage:** `/rust-check` (runs all phases automatically)
+**Usage:** `/rust-check [options]` (runs all phases automatically)
 
 **Phases:** 3 sequential phases with early termination on failure
+
+---
+
+## USAGE PATTERNS
+
+**Basic:** `/rust-check` (full pipeline, all packages)
+**Filtered:** `/rust-check --package prtip-scanner` (single package)
+**Category:** `/rust-check quick` (fast checks only: format + clippy)
+**Test Filter:** `/rust-check "tcp_connect"` (test pattern match)
+
+---
+
+## Phase 0: VALIDATE PREREQUISITES AND PARSE PARAMETERS
+
+**Objective:** Ensure Rust toolchain is available and parse optional arguments
+
+### Step 0.1: Check Rust Toolchain
+
+```bash
+if ! command -v cargo &> /dev/null; then
+  echo "❌ ERROR: cargo not found"
+  echo "Install Rust: https://rustup.rs"
+  exit 1
+fi
+
+if [ ! -f "Cargo.toml" ]; then
+  echo "❌ ERROR: Not in a Rust project (no Cargo.toml)"
+  exit 1
+fi
+```
+
+### Step 0.2: Check Required Tools
+
+```bash
+MISSING_TOOLS=()
+! command -v rustfmt &> /dev/null && MISSING_TOOLS+=("rustfmt")
+! command -v cargo-clippy &> /dev/null && MISSING_TOOLS+=("clippy")
+
+if [ ${#MISSING_TOOLS[@]} -gt 0 ]; then
+  echo "⚠️  WARNING: Missing tools (install with rustup component add):"
+  printf '  - %s\n' "${MISSING_TOOLS[@]}"
+fi
+
+echo "✅ Prerequisites validated"
+echo ""
+```
+
+### Step 0.3: Parse Parameters and Determine Scope
+
+```bash
+ARGS="$*"
+SCOPE="full"
+PACKAGE=""
+FILTER=""
+
+if [ -z "$ARGS" ]; then
+  SCOPE="full"
+elif [[ "$ARGS" =~ ^prtip-(core|network|scanner|cli)$ ]]; then
+  SCOPE="package"
+  PACKAGE="$ARGS"
+  echo "🎯 Scope: Single package ($PACKAGE)"
+elif [ "$ARGS" = "quick" ]; then
+  SCOPE="quick"
+  echo "🎯 Scope: Quick checks (format + clippy only)"
+elif [[ "$ARGS" =~ ^--package\ prtip- ]]; then
+  SCOPE="package"
+  PACKAGE=$(echo "$ARGS" | grep -oP 'prtip-\w+')
+  echo "🎯 Scope: Single package ($PACKAGE)"
+else
+  SCOPE="filter"
+  FILTER="$ARGS"
+  echo "🎯 Scope: Test filter ($FILTER)"
+fi
+
+echo ""
+```
 
 ---
 
@@ -40,37 +116,50 @@ cargo clippy --all-targets --all-features -- -D warnings
 
 ## Phase 2: COMPREHENSIVE TEST SUITE
 
-**Objective:** Run full test suite (643 tests) to validate functionality
+**Objective:** Run test suite based on scope (full/package/filter)
 
-### Step 2.1: Unit Tests (all packages)
+**Note:** Skip this phase entirely if SCOPE="quick"
+
+### Step 2.0: Check if Tests Should Run
 
 ```bash
-cargo test --workspace --lib
+if [ "$SCOPE" = "quick" ]; then
+  echo "⏭️  Skipping tests (quick mode)"
+  exit 0
+fi
 ```
 
-**Expected:** All unit tests pass
+### Step 2.1: Execute Tests Based on Scope
+
+```bash
+if [ "$SCOPE" = "package" ]; then
+  echo "Running tests for package: $PACKAGE"
+  cargo test --package "$PACKAGE"
+
+elif [ "$SCOPE" = "filter" ]; then
+  echo "Running tests matching: $FILTER"
+  cargo test --workspace "$FILTER"
+
+else
+  # Full test suite
+  echo "Running full test suite (643 tests)"
+
+  # Unit tests
+  cargo test --workspace --lib
+
+  # Integration tests
+  cargo test --workspace --test '*'
+
+  # Doc tests
+  cargo test --workspace --doc
+fi
+```
+
+**Expected:** All tests pass for the selected scope
 **Coverage:** Core modules >90%, network >85%, scanner >85%, CLI >80%
 
-### Step 2.2: Integration Tests
-
-```bash
-cargo test --workspace --test '*'
-```
-
-**Expected:** All integration tests pass
-**Key Tests:** TCP connect scanner, SYN scanner, UDP scanner, scheduler orchestration
-
-### Step 2.3: Doc Tests
-
-```bash
-cargo test --workspace --doc
-```
-
-**Expected:** All documentation examples pass
-**Purpose:** Validate code examples in documentation
-
-**Total Tests:** 643 expected (100% pass rate)
-**Duration:** ~5-6 minutes (varies by system)
+**Full Suite:** 643 tests expected (100% pass rate)
+**Duration:** ~5-6 minutes (full), ~10-60s (package), ~5-20s (filter)
 
 ---
 
@@ -188,6 +277,22 @@ ls -lh target/release/prtip
 **Pre-Commit:** Run `/rust-check` before every git commit
 **Pre-Push:** Run `/rust-check` before every git push
 **Pre-Release:** Run `/rust-check` + `/bench-compare` before version tags
+
+---
+
+## RELATED COMMANDS
+
+- `/test-quick <pattern>` - Run specific test subsets (faster iteration)
+- `/bench-compare <baseline> <comparison>` - Validate no performance regressions
+- `/sprint-complete <sprint-id>` - Includes full rust-check as final validation
+- `/ci-status` - Check if CI pipeline passed (same checks)
+- `/bug-report <issue> <command>` - Generate bug report if checks fail
+
+**Workflow Integration:**
+- **Pre-commit:** `/rust-check` → Fix issues → Re-run
+- **Pre-push:** `/rust-check` + `/bench-compare` → Ensure quality + performance
+- **Pre-release:** `/rust-check` + full benchmark suite
+- **Debugging:** `/rust-check` fails → `/test-quick <pattern>` → `/bug-report`
 
 ---
 

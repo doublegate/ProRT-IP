@@ -521,4 +521,64 @@ echo ""
 
 ---
 
+## RELATED COMMANDS
+
+**Development Workflow:**
+- `/rust-check` - Validate module compiles and passes quality checks
+- `/rust-check --package prtip-<crate>` - Check specific crate containing new module
+- `/test-quick <module-name>` - Run module tests quickly during development
+
+**Sprint Management:**
+- `/sprint-start <sprint-id> "Add <module-name> module"` - Initialize sprint for module development
+- `/sprint-complete <sprint-id>` - Finalize sprint after module implementation
+
+**Documentation:**
+- `/doc-update feature "Added <module-name> module"` - Update project documentation
+- Update docs/05-API-REFERENCE.md with module API
+- Update docs/00-ARCHITECTURE.md with component integration
+
+**Debugging:**
+- `/bug-report "Module issue" "cargo test <module-name>"` - Report module-specific issues
+- `/perf-profile "./target/release/prtip ..."` - Profile module performance impact
+
+## WORKFLOW INTEGRATION
+
+**Complete Module Development Workflow:**
+
+```
+1. Planning:
+   /sprint-start 5.X "Implement <module-name> for <purpose>"
+
+2. Creation:
+   /module-create <crate> <module-name> "<description>"
+
+3. Development Iteration:
+   - Edit module implementation
+   - /test-quick <module-name>  # Fast feedback
+   - /rust-check --package prtip-<crate>  # Full validation
+
+4. Integration:
+   - Wire module into existing code
+   - /rust-check  # Full project validation
+   - /bench-compare <baseline> HEAD  # Performance impact
+
+5. Documentation:
+   - Update integration guide
+   - /doc-update feature "Added <module-name>"
+
+6. Completion:
+   - /sprint-complete 5.X
+   - Git commit with comprehensive message
+```
+
+## SEE ALSO
+
+- `docs/04-IMPLEMENTATION-GUIDE.md` - Module implementation patterns
+- `docs/05-API-REFERENCE.md` - API documentation structure
+- `docs/00-ARCHITECTURE.md` - System architecture overview
+- `CONTRIBUTING.md` - Code contribution guidelines
+- `ref-docs/10-Custom-Commands_Analysis.md` - Command usage patterns
+
+---
+
 **Create module: $***

@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+**Custom Commands - Development Workflow Automation** (2025-10-11)
+
+- **10 New Custom Commands** for Claude Code workflow automation:
+  - `/rust-check` - Fast Rust quality pipeline (format, lint, test, build)
+  - `/bench-compare <baseline> <comparison>` - Performance comparison between git refs
+  - `/sprint-start <id> <objective>` - Initialize sprint with planning documents
+  - `/sprint-complete <id>` - Finalize sprint with comprehensive summary
+  - `/perf-profile <command>` - Performance profiling with perf + flamegraph
+  - `/module-create <crate> <module> <desc>` - Generate new Rust module boilerplate
+  - `/doc-update <type> <desc>` - Quick documentation sync (README, CHANGELOG, memory banks)
+  - `/test-quick <pattern>` - Fast targeted test execution (avoid full 643-test suite)
+  - `/ci-status` - GitHub Actions CI/CD pipeline monitoring
+  - `/bug-report <summary> <command>` - Comprehensive bug report generation
+
+- **Reference Documentation** (`ref-docs/10-Custom_Commands.md` - 101KB):
+  - Complete guide to custom command creation
+  - Best practices for Claude Code integration
+  - Parameter passing patterns (`$*` usage)
+  - Phase-based workflow structures
+  - Error handling and validation strategies
+
 **Sprint 4.14 - Network Timeout Optimization & Host Delay Feature** (2025-10-11)
 
 - **New `--host-delay` Flag:** Adds configurable delay between host scans for network rate limiting workarounds

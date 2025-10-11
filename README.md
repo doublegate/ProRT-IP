@@ -298,6 +298,25 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | [Project Status](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
 | [Platform Support](docs/15-PLATFORM-SUPPORT.md) | Comprehensive platform compatibility guide |
 
+### Custom Commands (`.claude/commands/`)
+
+10 custom Claude Code commands for development workflow automation:
+
+| Command | Description | Usage |
+|---------|-------------|-------|
+| `/rust-check` | Fast Rust quality pipeline | Format, lint, test, build verification |
+| `/bench-compare <baseline> <comparison>` | Performance comparison | Compare git refs with hyperfine |
+| `/sprint-start <id> <objective>` | Initialize sprint | Planning documents + task checklist |
+| `/sprint-complete <id>` | Finalize sprint | Comprehensive summary + CHANGELOG |
+| `/perf-profile <command>` | Performance profiling | perf + flamegraph generation |
+| `/module-create <crate> <module> <desc>` | New Rust module | Boilerplate + tests + integration |
+| `/doc-update <type> <desc>` | Documentation sync | README + CHANGELOG + memory banks |
+| `/test-quick <pattern>` | Fast targeted tests | Avoid full 643-test suite |
+| `/ci-status` | CI/CD monitoring | GitHub Actions pipeline status |
+| `/bug-report <summary> <command>` | Bug report | System info + reproduction + logs |
+
+**Reference:** [Custom Commands Guide](ref-docs/10-Custom_Commands.md) (101KB comprehensive guide)
+
 ### Validation & Bug Reports (`bug_fix/`)
 
 Comprehensive issue tracking with 7 categorized directories and detailed analysis:

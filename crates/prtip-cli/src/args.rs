@@ -551,7 +551,7 @@ mod tests {
 
         assert_eq!(config.scan.scan_type, ScanType::Connect);
         assert_eq!(config.scan.timing_template, TimingTemplate::Aggressive);
-        assert_eq!(config.scan.timeout_ms, 1000);  // Changed from 3000ms to 1000ms (new default)
+        assert_eq!(config.scan.timeout_ms, 1000); // Changed from 3000ms to 1000ms (new default)
         assert_eq!(config.output.format, OutputFormat::Text);
     }
 

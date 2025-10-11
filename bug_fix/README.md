@@ -14,13 +14,25 @@ This directory contains validation reports and analysis for service detection de
 - **FINAL-SUMMARY.md** - Sprint 4.11 completion summary
 - **benchmark-comparison.md** - Performance comparison data
 - **new-usage-examples.md** - Feature-based README examples
+- **service-detection-debug-report.md** - Service detection debugging details
+- **service-detection-test.txt** - Service detection test output
+- **service-test-fallback.txt** - Fallback service detection test
+- **debug-*.txt** - Various debug outputs (detection, fallback, HTTP scans)
 
-### analysis/ Subdirectory (Raw Data)
+### Subdirectories
 
-- Text output files from comparison tests (32 files)
-- Tool output captures (nmap, prtip, rustscan, naabu)
-- Debug logs (service detection, DNS resolution)
-- Performance measurements (timing tests)
+- **analysis/** - Raw test output files from validation (33 files)
+  - Tool output captures (nmap, prtip, rustscan, naabu)
+  - Debug logs (service detection, DNS resolution)
+  - Performance measurements (timing tests)
+- **sprint4.12-progress-fixes/** - Progress bar bug investigation and fixes (22 files)
+  - Root cause analysis: Bridge polling intervals too slow for ultra-fast localhost scans
+  - Multiple iterations of fixes (v1, v2, v3 FINAL)
+  - Debug outputs, test results, implementation summaries
+- **sprint4.13-performance-regression/** - Critical performance regression fix (5 files)
+  - Variable shadowing bug causing 10x slowdown on large scans
+  - Total-scan-aware polling implementation
+  - Before/after performance comparison (289 pps → 2,844 pps)
 
 ## Key Findings
 

@@ -40,6 +40,8 @@ All individual sprint benchmark results are archived for historical reference:
 | **archive/09-sprint4.8-async-fix/** | Async storage deadlock fix | 139.9ms → 74.5ms (46.7% faster) |
 | **archive/10-sprint4.9-finalization/** | Sprint 4.9 finalization reports | Phase 4 wrap-up |
 | **archive/11-sprint4.10-cli-improvements/** | Sprint 4.10 CLI improvements | Enhanced user experience |
+| **archive/12-sprint4.14-timeout-optimization/** | Sprint 4.14 network timeout optimization | 3-17x faster filtered port detection |
+| **archive/13-sprint4.8-deep-timing/** | Sprint 4.8 deep timing investigation | Polling overhead analysis |
 
 ### Flamegraphs
 
@@ -147,5 +149,5 @@ Note: Localhost performance is 91-182x faster than real network scanning.
 ---
 
 **Last Updated**: 2025-10-11
-**Phase 4 Status**: COMPLETE ✅
-**Total Tests**: 620/620 passing (100%)
+**Phase 4 Status**: COMPLETE (Sprints 4.1-4.14) ✅
+**Total Tests**: 643/643 passing (100%)

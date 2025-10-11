@@ -270,7 +270,10 @@ impl ServiceProbeDb {
             if part.contains('-') {
                 // Handle port range (e.g., "80-85")
                 if let Some((start_str, end_str)) = part.split_once('-') {
-                    if let (Ok(start), Ok(end)) = (start_str.trim().parse::<u16>(), end_str.trim().parse::<u16>()) {
+                    if let (Ok(start), Ok(end)) = (
+                        start_str.trim().parse::<u16>(),
+                        end_str.trim().parse::<u16>(),
+                    ) {
                         for port in start..=end {
                             ports.push(port);
                         }
@@ -399,7 +402,8 @@ impl ServiceProbeDb {
 
         // If no port-specific probes found, add common probes as fallback
         // This handles non-standard ports (e.g., 2021 instead of 21)
-        if probes.len() <= 1 {  // Only NULL probe or empty
+        if probes.len() <= 1 {
+            // Only NULL probe or empty
             for probe in &self.probes {
                 if probe.protocol == protocol && probe.rarity <= 3 && !probe.ports.is_empty() {
                     // Add common probes (rarity 1-3) regardless of port match
@@ -441,10 +445,10 @@ impl ServiceProbeDb {
     /// Load from standard nmap locations
     pub fn load_from_system() -> Result<Self, Error> {
         let paths = [
-            "/usr/share/nmap/nmap-service-probes",           // Linux
-            "/usr/local/share/nmap/nmap-service-probes",     // BSD/macOS Homebrew
-            "/opt/nmap/share/nmap-service-probes",           // Alternative
-            "C:\\Program Files\\Nmap\\nmap-service-probes",  // Windows
+            "/usr/share/nmap/nmap-service-probes",                // Linux
+            "/usr/local/share/nmap/nmap-service-probes",          // BSD/macOS Homebrew
+            "/opt/nmap/share/nmap-service-probes",                // Alternative
+            "C:\\Program Files\\Nmap\\nmap-service-probes",       // Windows
             "C:\\Program Files (x86)\\Nmap\\nmap-service-probes", // Windows 32-bit
         ];
 
@@ -455,7 +459,7 @@ impl ServiceProbeDb {
         }
 
         Err(Error::Config(
-            "nmap-service-probes not found in standard locations".to_string()
+            "nmap-service-probes not found in standard locations".to_string(),
         ))
     }
 
@@ -624,14 +628,20 @@ softmatch http m|^HTTP|
     fn test_embedded_probes_exist() {
         let db = ServiceProbeDb::default();
         assert!(!db.is_empty(), "Probe database should not be empty");
-        assert!(db.probes.len() > 100, "Should have >100 probes, got {}", db.probes.len());
+        assert!(
+            db.probes.len() > 100,
+            "Should have >100 probes, got {}",
+            db.probes.len()
+        );
         eprintln!("Loaded {} service probes", db.probes.len());
     }
 
     #[test]
     fn test_http_probe_exists() {
         let db = ServiceProbeDb::default();
-        let http_probes = db.probes.iter()
+        let http_probes = db
+            .probes
+            .iter()
             .filter(|p| p.protocol == Protocol::Tcp && p.name.contains("GetRequest"))
             .count();
         assert!(http_probes > 0, "Should have HTTP probes");

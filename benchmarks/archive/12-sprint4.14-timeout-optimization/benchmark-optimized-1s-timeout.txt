@@ -1,0 +1,49 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  192.168.4.1
+Ports:    1-10000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  1000ms
+Parallel: 500 (adaptive)
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 18:14:15 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 10000
+
+Hosts Scanned: 1
+Ports: 4 open, 9494 closed, 502 filtered
+
+Host: 192.168.4.1
+Ports: 4 open, 9494 closed, 502 filtered
+
+Open Ports:
+     22 open         ( 37.40ms)
+     53 open         ( 37.43ms)
+     80 open         ( 80.29ms)
+    443 open         (105.42ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       3.19s
+  Scan Rate:      3132 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    10000
+
+Results:
+  Open Ports:     4
+  Closed Ports:   9494
+  Filtered Ports: 502
+============================================================

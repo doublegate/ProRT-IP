@@ -1,6 +1,6 @@
 //! Real-time progress bar for scan operations
 
-use indicatif::{ProgressBar, ProgressStyle, ProgressDrawTarget};
+use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use std::io::Write;
 use std::time::{Duration, Instant};
 
@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     fn test_remaining_ports() {
-        let pb = ScanProgressBar::new(1000, true);  // enabled = true
+        let pb = ScanProgressBar::new(1000, true); // enabled = true
         pb.set_position(300);
         assert_eq!(pb.remaining_ports(), 700);
 
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_summary_string() {
-        let pb = ScanProgressBar::new(1000, true);  // enabled = true
+        let pb = ScanProgressBar::new(1000, true); // enabled = true
         pb.set_position(250);
         let summary = pb.summary();
         assert!(summary.contains("250/1000"));

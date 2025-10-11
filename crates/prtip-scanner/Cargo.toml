@@ -60,7 +60,7 @@ indicatif = "0.17"
 # Error handling
 thiserror = { workspace = true }
 anyhow = { workspace = true }
-regex = "1.11.3"
+regex = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

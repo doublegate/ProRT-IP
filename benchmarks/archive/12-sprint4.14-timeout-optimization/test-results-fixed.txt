@@ -1,0 +1,88 @@
+   Compiling prtip-scanner v0.3.0 (/home/parobek/Code/ProRT-IP/crates/prtip-scanner)
+   Compiling prtip-cli v0.3.0 (/home/parobek/Code/ProRT-IP/crates/prtip-cli)
+    Finished `release` profile [optimized] target(s) in 49.85s
+     Running unittests src/lib.rs (target/release/deps/prtip_cli-cc6e5fd51ac708f3)
+
+running 64 tests
+test args::tests::test_database_option ... ok
+test args::tests::test_batch_size_option ... ok
+test args::tests::test_host_discovery_flag ... ok
+test args::tests::test_no_progress_flag ... ok
+test args::tests::test_interface_option ... ok
+test args::tests::test_parse_timing_invalid ... ok
+test args::tests::test_parse_multiple_targets ... ok
+test args::tests::test_parse_timing_valid ... ok
+test args::tests::test_interface_list_flag ... ok
+test args::tests::test_parse_basic_args ... ok
+test args::tests::test_output_format_variants ... ok
+test args::tests::test_parse_with_output_format ... ok
+test args::tests::test_parse_with_ports ... ok
+test args::tests::test_parse_with_timing ... ok
+test args::tests::test_parse_with_verbose ... ok
+test args::tests::test_progress_flag ... ok
+test args::tests::test_scan_delay_option ... ok
+test args::tests::test_stats_file ... ok
+test args::tests::test_stats_interval ... ok
+test args::tests::test_scan_type_variants ... ok
+test args::tests::test_to_config_with_batch_and_ulimit ... ok
+test args::tests::test_to_config ... FAILED
+test args::tests::test_to_config_with_options ... ok
+test args::tests::test_ulimit_option ... ok
+test args::tests::test_validate_batch_size_excessive ... ok
+test args::tests::test_validate_conflicting_progress ... ok
+test args::tests::test_validate_batch_size_zero ... ok
+test args::tests::test_validate_excessive_max_rate ... ok
+test args::tests::test_validate_excessive_retries ... ok
+test args::tests::test_validate_excessive_timeout ... ok
+test args::tests::test_validate_invalid_ports ... ok
+test args::tests::test_validate_stats_interval_excessive ... ok
+test args::tests::test_validate_stats_interval_zero ... ok
+test args::tests::test_validate_ulimit_too_low ... ok
+test args::tests::test_validate_valid ... ok
+test args::tests::test_validate_zero_max_concurrent ... ok
+test banner::tests::test_ascii_art_contains_blocks ... ok
+test args::tests::test_validate_zero_max_rate ... ok
+test banner::tests::test_ascii_art_cyber_punk_style ... ok
+test args::tests::test_validate_zero_timeout ... ok
+test banner::tests::test_ascii_art_multicolor ... ok
+test banner::tests::test_ascii_art_multiline ... ok
+test banner::tests::test_ascii_art_not_empty ... ok
+test banner::tests::test_banner_creation ... ok
+test banner::tests::test_banner_creation_with_version ... ok
+test banner::tests::test_banner_version_storage ... ok
+test banner::tests::test_default_banner ... ok
+test output::tests::test_create_formatter_json ... ok
+test output::tests::test_create_formatter_text ... ok
+test output::tests::test_create_formatter_xml ... ok
+test output::tests::test_json_formatter_basic ... ok
+test output::tests::test_json_formatter_statistics ... ok
+test output::tests::test_text_formatter_basic ... ok
+test output::tests::test_text_formatter_colorize ... ok
+test output::tests::test_text_formatter_empty ... ok
+test output::tests::test_text_formatter_long_banner ... ok
+test output::tests::test_text_formatter_multiple_hosts ... ok
+test output::tests::test_text_formatter_multiple_states ... ok
+test output::tests::test_text_formatter_verbose_levels ... ok
+test output::tests::test_text_formatter_with_service ... ok
+test output::tests::test_xml_formatter_basic ... ok
+test output::tests::test_xml_formatter_escape_special_chars ... ok
+test output::tests::test_xml_formatter_ipv6 ... ok
+test output::tests::test_xml_formatter_with_service ... ok
+
+failures:
+
+---- args::tests::test_to_config stdout ----
+
+thread 'args::tests::test_to_config' panicked at crates/prtip-cli/src/args.rs:554:9:
+assertion `left == right` failed
+  left: 1000
+ right: 3000
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    args::tests::test_to_config
+
+test result: FAILED. 63 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p prtip-cli --lib`

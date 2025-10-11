@@ -1,0 +1,46 @@
+# Files Changed Summary
+
+## Task 1: Service Detection Fix
+
+### Created Files:
+- /home/parobek/Code/ProRT-IP/crates/prtip-core/data/nmap-service-probes (17,128 lines)
+- /home/parobek/Code/ProRT-IP/crates/prtip-core/data/ATTRIBUTION.md (14 lines)
+
+### Modified Files:
+- /home/parobek/Code/ProRT-IP/crates/prtip-core/src/service_db.rs (+63 lines)
+- /home/parobek/Code/ProRT-IP/crates/prtip-cli/src/args.rs (+8 lines)
+- /home/parobek/Code/ProRT-IP/crates/prtip-core/src/config.rs (+2 lines)
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/scheduler.rs (+5 lines)
+
+### Test Files Updated (probe_db_path field):
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/scheduler.rs (test module)
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/tests/integration_scanner.rs
+- /home/parobek/Code/ProRT-IP/crates/prtip-cli/src/output.rs (test module)
+
+## Task 2: Real-Time Progress Bar
+
+### Created Files:
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/progress_bar.rs (154 lines, 8 tests)
+
+### Modified Files:
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/lib.rs (+2 lines, module export)
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/scheduler.rs (+23 lines, integration)
+- /home/parobek/Code/ProRT-IP/crates/prtip-core/src/config.rs (+2 lines, progress field)
+- /home/parobek/Code/ProRT-IP/crates/prtip-cli/src/args.rs (+1 line, config wiring)
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/Cargo.toml (+2 lines, dependency)
+
+### Test Files Updated (progress field):
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/scheduler.rs (test module)
+- /home/parobek/Code/ProRT-IP/crates/prtip-scanner/tests/integration_scanner.rs
+- /home/parobek/Code/ProRT-IP/crates/prtip-cli/src/output.rs (test module)
+
+## Summary Documents:
+- /tmp/ProRT-IP/task1-service-detection-summary.md
+- /tmp/ProRT-IP/implementation-summary.md
+- /tmp/ProRT-IP/files-changed.txt (this file)
+
+## Test Results:
+Total: 559+ tests passing (100% success rate)
+- Service detection: 12 tests (8 existing + 4 new)
+- Progress bar: 8 tests (all new)
+- Zero regressions

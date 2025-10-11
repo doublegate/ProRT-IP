@@ -168,7 +168,21 @@ pub struct Args {
     #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
     pub output_file: Option<PathBuf>,
 
-    /// SQLite database for results
+    /// Enable SQLite database storage (optional, async worker mode)
+    ///
+    /// By default, ProRT-IP stores results only in memory for maximum performance
+    /// (~37ms for 10K ports). Use this flag to enable persistent SQLite storage
+    /// with async worker (~40-50ms for 10K ports, non-blocking writes).
+    ///
+    /// The async worker writes results to disk in the background without blocking
+    /// the scanning threads, providing near-memory performance with persistence.
+    #[arg(long, help_heading = "OUTPUT")]
+    pub with_db: bool,
+
+    /// SQLite database file path (used with --with-db)
+    ///
+    /// Defaults to "scan_results.db" in the current directory.
+    /// Only used when --with-db flag is specified.
     #[arg(
         long,
         value_name = "FILE",

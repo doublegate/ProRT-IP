@@ -1,0 +1,64 @@
+# Sprint 4.8 v2 Performance Results
+
+## Before (Sprint 4.7)
+- Default: 39.2ms ± 3.7ms
+- --with-db: 139.9ms ± 4.4ms (BROKEN - async not working)
+- Overhead: 100.7ms (257% slower!)
+
+## After (Sprint 4.8 v2)
+- Default: 41.1ms ± 3.5ms
+- --with-db: 74.5ms ± 8.0ms
+- Overhead: 33.4ms (81% slower)
+
+## Improvement
+- Default: -1.9ms (4.8% slower, within noise margin)
+- --with-db: -65.4ms (46.7% faster!)
+- Overhead reduction: -67.3ms (67% improvement!)
+
+## Success Criteria
+- ✅ Default ~41ms (maintained, within 5% of baseline)
+- ⚠️ --with-db 74.5ms (target was <45ms, achieved 47% improvement)
+- ✅ All tests passing without hangs (620 tests, 100% pass rate)
+- ✅ Database verified working (130K results stored correctly)
+
+## Analysis
+
+The async storage implementation is now WORKING correctly:
+- No deadlocks (all tests pass)
+- True async completion signaling via oneshot channel
+- Proper channel lifecycle management with Option<UnboundedSender>
+
+Performance improvement of 46.7% is significant but not meeting the ~40ms target. The 74.5ms
+includes both:
+1. Scanning overhead: 41.1ms (in-memory)
+2. Database overhead: 33.4ms (async writes + SQLite transactions)
+
+The async worker is functioning correctly, but SQLite write performance on localhost loopback
+with 10K ports is showing overhead. This is acceptable for production use where the bottleneck
+is network latency (scanning 10K ports over network takes ~5-10 seconds, making 74ms negligible).
+
+## Root Cause Analysis (Previous Failure)
+
+**Issue**: tokio::select! with sleep arm prevented `else` branch from triggering
+**Fix**: Use timeout() wrapped around recv() to properly detect channel closure
+**Result**: Worker now correctly detects when all senders are dropped and completes gracefully
+
+## Key Implementation Details
+
+1. **StorageBackend Changes**:
+   - tx: Arc<Mutex<Option<UnboundedSender>>> (allows explicit drop)
+   - completion_rx: Arc<Mutex<Option<oneshot::Receiver>>> (signals completion)
+   - flush() takes ownership of tx, drops it, awaits completion signal
+
+2. **Worker Changes**:
+   - Replaced tokio::select! with timeout() + match
+   - Ok(Some(x)) => received data
+   - Ok(None) => channel closed, final flush, break
+   - Err(_) => timeout, periodic flush
+
+3. **Channel Lifecycle**:
+   - Step 1: flush() takes tx ownership via Option::take()
+   - Step 2: Explicit drop(tx) signals channel closure
+   - Step 3: Worker's recv() returns None
+   - Step 4: Worker sends completion via oneshot::Sender
+   - Step 5: flush() awaits oneshot::Receiver for true async completion

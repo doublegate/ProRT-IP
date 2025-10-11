@@ -1,0 +1,30 @@
+  0.04    0.000006           0         8           mprotect
+  0.04    0.000006           2         3           newfstatat
+  0.03    0.000005           0        13           lseek
+  0.03    0.000005           0         6         2 recvfrom
+  0.03    0.000005           2         2           timerfd_create
+  0.02    0.000004           1         4           sendto
+  0.02    0.000004           1         3           epoll_create1
+  0.01    0.000002           2         1           getpid
+  0.01    0.000002           2         1           geteuid
+  0.01    0.000002           1         2           timerfd_settime
+  0.01    0.000002           0         4           prlimit64
+  0.01    0.000001           0         3           sigaltstack
+  0.00    0.000000           0         1           poll
+  0.00    0.000000           0         6           rt_sigaction
+  0.00    0.000000           0         2           pread64
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           sched_yield
+  0.00    0.000000           0         1           socketpair
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         2           fcntl
+  0.00    0.000000           0         1           arch_prctl
+  0.00    0.000000           0         2           sched_getaffinity
+  0.00    0.000000           0         1           set_tid_address
+  0.00    0.000000           0         1           set_robust_list
+  0.00    0.000000           0         1           eventfd2
+  0.00    0.000000           0         2           getrandom
+  0.00    0.000000           0         9           statx
+  0.00    0.000000           0         1           rseq
+------ ----------- ----------- --------- --------- ------------------
+100.00    0.016719           6      2589       608 total

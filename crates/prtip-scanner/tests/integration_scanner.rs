@@ -87,9 +87,12 @@ async fn test_discovery_integration() {
 
 #[tokio::test]
 async fn test_scheduler_full_workflow() {
+    use prtip_scanner::StorageBackend;
+    use std::sync::Arc;
+
     let config = Config::default();
-    let storage = ScanStorage::new(":memory:").await.unwrap();
-    let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+    let storage_backend = Arc::new(StorageBackend::memory(10000));
+    let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
     let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
     let results = scheduler.execute_scan(targets).await.unwrap();
@@ -100,9 +103,12 @@ async fn test_scheduler_full_workflow() {
 
 #[tokio::test]
 async fn test_scheduler_with_port_range() {
+    use prtip_scanner::StorageBackend;
+    use std::sync::Arc;
+
     let config = Config::default();
-    let storage = ScanStorage::new(":memory:").await.unwrap();
-    let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+    let storage_backend = Arc::new(StorageBackend::memory(100));
+    let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
     let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
     let ports = PortRange::parse("9998-9999").unwrap();
@@ -114,9 +120,12 @@ async fn test_scheduler_with_port_range() {
 
 #[tokio::test]
 async fn test_scheduler_with_discovery() {
+    use prtip_scanner::StorageBackend;
+    use std::sync::Arc;
+
     let config = Config::default();
-    let storage = ScanStorage::new(":memory:").await.unwrap();
-    let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+    let storage_backend = Arc::new(StorageBackend::memory(10000));
+    let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
     let targets = vec![
         ScanTarget::parse("127.0.0.1").unwrap(),
@@ -269,15 +278,18 @@ async fn test_scheduler_config_validation() {
         },
     };
 
-    let storage = ScanStorage::new(":memory:").await.unwrap();
-    let result = ScanScheduler::new(config.clone(), storage).await;
+    use prtip_scanner::StorageBackend;
+    use std::sync::Arc;
+
+    let storage_backend = Arc::new(StorageBackend::memory(100));
+    let result = ScanScheduler::new(config.clone(), storage_backend).await;
 
     // Should fail validation
     assert!(result.is_err());
 
     // Fix config
     config.scan.timeout_ms = 1000;
-    let storage2 = ScanStorage::new(":memory:").await.unwrap();
-    let result2 = ScanScheduler::new(config, storage2).await;
+    let storage_backend2 = Arc::new(StorageBackend::memory(100));
+    let result2 = ScanScheduler::new(config, storage_backend2).await;
     assert!(result2.is_ok());
 }

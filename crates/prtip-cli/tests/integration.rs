@@ -201,6 +201,7 @@ fn test_cli_custom_database() {
 
     let mut cmd = Command::cargo_bin("prtip").unwrap();
     cmd.args([
+        "--with-db",
         "--database",
         db_file.to_str().unwrap(),
         "-p",
@@ -211,7 +212,7 @@ fn test_cli_custom_database() {
     // Run the command
     let output = cmd.output().unwrap();
 
-    // Check if database was created (if scan succeeded)
+    // Check if database was created (if scan succeeded and --with-db was specified)
     if output.status.success() {
         assert!(db_file.exists());
     }

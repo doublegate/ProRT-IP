@@ -1,0 +1,2286 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1200" height="678" onload="init(evt)" viewBox="0 0 1200 678" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+
+		// use GET parameters to restore a flamegraphs state.
+		var params = get_params();
+		if (params.x && params.y)
+			zoom(find_group(document.querySelector('[x="' + params.x + '"][y="' + params.y + '"]')));
+                if (params.s) search(params.s);
+	}
+
+	// event listeners
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom(true);
+			zoom(target);
+			if (!document.querySelector('.parent')) {
+				// we have basically done a clearzoom so clear the url
+				var params = get_params();
+				if (params.x) delete params.x;
+				if (params.y) delete params.y;
+				history.replaceState(null, null, parse_params(params));
+				unzoombtn.classList.add("hide");
+				return;
+			}
+
+			// set parameters for zoom state
+			var el = target.querySelector("rect");
+			if (el && el.attributes && el.attributes.y && el.attributes._orig_x) {
+				var params = get_params()
+				params.x = el.attributes._orig_x.value;
+				params.y = el.attributes.y.value;
+				history.replaceState(null, null, parse_params(params));
+			}
+		}
+		else if (e.target.id == "unzoom") clearzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+		else if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function get_params() {
+		var params = {};
+		var paramsarr = window.location.search.substr(1).split('&');
+		for (var i = 0; i < paramsarr.length; ++i) {
+			var tmp = paramsarr[i].split("=");
+			if (!tmp[0] || !tmp[1]) continue;
+			params[tmp[0]]  = decodeURIComponent(tmp[1]);
+		}
+		return params;
+	}
+	function parse_params(params) {
+		var uri = "?";
+		for (var key in params) {
+			uri += key + '=' + encodeURIComponent(params[key]) + '&';
+		}
+		if (uri.slice(-1) == "&")
+			uri = uri.substring(0, uri.length - 1);
+		if (uri == '?')
+			uri = window.location.href.split('?')[0];
+		return uri;
+	}
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		var sl = t.getSubStringLength(0, txt.length);
+		// check if only whitespace or if we can fit the entire string into width w
+		if (/^ *$/.test(txt) || sl < w)
+			return;
+
+		// this isn't perfect, but gives a good starting point
+		// and avoids calling getSubStringLength too often
+		var start = Math.floor((w/sl) * txt.length);
+		for (var x = start; x > 0; x = x-2) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom(dont_update_text) {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			if(!dont_update_text) update_text(el[i]);
+		}
+		search();
+	}
+	function clearzoom() {
+		unzoom();
+
+		// remove zoom state
+		var params = get_params();
+		if (params.x) delete params.x;
+		if (params.y) delete params.y;
+		history.replaceState(null, null, parse_params(params));
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+		var params = get_params();
+		delete params.s;
+		history.replaceState(null, null, parse_params(params));
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) search(term);
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (term) currentSearchTerm = term;
+		if (currentSearchTerm === null) return;
+
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+		var params = get_params();
+		params.s = currentSearchTerm;
+		history.replaceState(null, null, parse_params(params));
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1200.0" height="678.0" fill="url(#background)"  />
+<text id="title" x="600.00" y="24" >Flame Graph</text>
+<text id="details" x="10.00" y="661" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1090.00" y="24" >Search</text>
+<text id="ignorecase" x="1174.00" y="24" >ic</text>
+<text id="matched" x="1090.00" y="661" > </text>
+<g id="frames">
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::with (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="309" width="33.0" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="1138.49" y="319.5" >st..</text>
+</g>
+<g >
+<title>&lt;lock_api::mutex::MutexGuard&lt;R,T&gt; as core::ops::drop::Drop&gt;::drop (473,069 samples, 0.88%)</title><rect x="924.7" y="485" width="10.4" height="15.0" fill="rgb(232,126,30)" rx="2" ry="2" />
+<text  x="927.73" y="495.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::core::Core&lt;T,S&gt;::poll (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="453" width="43.5" height="15.0" fill="rgb(245,186,44)" rx="2" ry="2" />
+<text  x="1138.49" y="463.5" >toki..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;flume::Chan&lt;core::result::Result&lt;either::Either&lt;sqlx_sqlite::query_result::SqliteQueryResult,sqlx_sqlite::row::SqliteRow&gt;,sqlx_core::error::Error&gt;&gt;&gt; (831,256 samples, 1.55%)</title><rect x="214.7" y="533" width="18.2" height="15.0" fill="rgb(240,161,38)" rx="2" ry="2" />
+<text  x="217.71" y="543.5" ></text>
+</g>
+<g >
+<title>yy_reduce (501,504 samples, 0.93%)</title><rect x="879.0" y="565" width="11.0" height="15.0" fill="rgb(253,225,53)" rx="2" ry="2" />
+<text  x="881.97" y="575.5" ></text>
+</g>
+<g >
+<title>sqlx_core::logger::QueryLogger::finish (1,584,369 samples, 2.95%)</title><rect x="890.0" y="597" width="34.7" height="15.0" fill="rgb(208,15,3)" rx="2" ry="2" />
+<text  x="892.98" y="607.5" >sq..</text>
+</g>
+<g >
+<title>std::sys::backtrace::__rust_begin_short_backtrace (2,912,593 samples, 5.41%)</title><rect x="804.3" y="485" width="63.9" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="807.32" y="495.5" >std::sy..</text>
+</g>
+<g >
+<title>[libc.so.6] (1,317,891 samples, 2.45%)</title><rect x="309.0" y="549" width="28.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="312.01" y="559.5" >[l..</text>
+</g>
+<g >
+<title>tokio::runtime::context::scoped::Scoped&lt;T&gt;::set (500,109 samples, 0.93%)</title><rect x="1109.5" y="165" width="11.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1112.52" y="175.5" ></text>
+</g>
+<g >
+<title>&lt;futures_util::future::future::map::Map&lt;Fut,F&gt; as core::future::future::Future&gt;::poll (922,379 samples, 1.71%)</title><rect x="21.0" y="517" width="20.2" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="24.00" y="527.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicUsize::fetch_add (566,334 samples, 1.05%)</title><rect x="250.0" y="517" width="12.4" height="15.0" fill="rgb(207,12,2)" rx="2" ry="2" />
+<text  x="252.95" y="527.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::time::entry::TimerEntry::driver (501,504 samples, 0.93%)</title><rect x="968.1" y="533" width="11.0" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="971.11" y="543.5" ></text>
+</g>
+<g >
+<title>resolveSelectStep (501,504 samples, 0.93%)</title><rect x="879.0" y="293" width="11.0" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="881.97" y="303.5" ></text>
+</g>
+<g >
+<title>[libnss_systemd.so.2] (775,517 samples, 1.44%)</title><rect x="232.9" y="469" width="17.1" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="235.94" y="479.5" ></text>
+</g>
+<g >
+<title>clock_gettime (1,356,860 samples, 2.52%)</title><rect x="838.4" y="405" width="29.8" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="841.45" y="415.5" >cl..</text>
+</g>
+<g >
+<title>tokio::loom::std::unsafe_cell::UnsafeCell&lt;T&gt;::with_mut (500,109 samples, 0.93%)</title><rect x="1109.5" y="341" width="11.0" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1112.52" y="351.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::time::source::TimeSource::now (501,504 samples, 0.93%)</title><rect x="1054.7" y="549" width="11.0" height="15.0" fill="rgb(237,148,35)" rx="2" ry="2" />
+<text  x="1057.74" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::UnownedTask&lt;S&gt;::run (500,109 samples, 0.93%)</title><rect x="1109.5" y="533" width="11.0" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="1112.52" y="543.5" ></text>
+</g>
+<g >
+<title>&lt;lock_api::mutex::MutexGuard&lt;R,T&gt; as core::ops::drop::Drop&gt;::drop (490,970 samples, 0.91%)</title><rect x="1076.7" y="485" width="10.8" height="15.0" fill="rgb(232,126,30)" rx="2" ry="2" />
+<text  x="1079.75" y="495.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (1,003,008 samples, 1.86%)</title><rect x="262.4" y="133" width="22.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="265.38" y="143.5" >[..</text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::Harness&lt;T,S&gt;::poll (2,484,924 samples, 4.62%)</title><rect x="1135.5" y="581" width="54.5" height="15.0" fill="rgb(219,65,15)" rx="2" ry="2" />
+<text  x="1138.49" y="591.5" >tokio..</text>
+</g>
+<g >
+<title>tokio::runtime::task::raw::poll (2,484,924 samples, 4.62%)</title><rect x="1135.5" y="597" width="54.5" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1138.49" y="607.5" >tokio..</text>
+</g>
+<g >
+<title>moveToRightmost (1,243,563 samples, 2.31%)</title><rect x="661.5" y="485" width="27.2" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="664.45" y="495.5" >m..</text>
+</g>
+<g >
+<title>sqlx_sqlite::connection::worker::ConnectionWorker::execute::{{closure}} (922,379 samples, 1.71%)</title><rect x="21.0" y="469" width="20.2" height="15.0" fill="rgb(242,172,41)" rx="2" ry="2" />
+<text  x="24.00" y="479.5" ></text>
+</g>
+<g >
+<title>sqlite3VdbeHalt (1,471,410 samples, 2.74%)</title><rect x="688.7" y="517" width="32.3" height="15.0" fill="rgb(207,12,2)" rx="2" ry="2" />
+<text  x="691.73" y="527.5" >sq..</text>
+</g>
+<g >
+<title>std::thread::Builder::spawn_unchecked (683,640 samples, 1.27%)</title><rect x="105.3" y="533" width="15.0" height="15.0" fill="rgb(206,5,1)" rx="2" ry="2" />
+<text  x="108.28" y="543.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::Harness&lt;T,S&gt;::poll_inner (500,109 samples, 0.93%)</title><rect x="1109.5" y="469" width="11.0" height="15.0" fill="rgb(217,55,13)" rx="2" ry="2" />
+<text  x="1112.52" y="479.5" ></text>
+</g>
+<g >
+<title>&lt;core::time::Duration as core::cmp::PartialOrd&gt;::partial_cmp (496,913 samples, 0.92%)</title><rect x="1043.8" y="517" width="10.9" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="1046.84" y="527.5" ></text>
+</g>
+<g >
+<title>lock_api::mutex::Mutex&lt;R,T&gt;::lock (501,504 samples, 0.93%)</title><rect x="979.1" y="485" width="11.0" height="15.0" fill="rgb(220,72,17)" rx="2" ry="2" />
+<text  x="982.12" y="495.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;lock_api::mutex::MutexGuard&lt;parking_lot::raw_mutex::RawMutex,tokio::runtime::time::InnerState&gt;&gt; (473,069 samples, 0.88%)</title><rect x="924.7" y="501" width="10.4" height="15.0" fill="rgb(230,115,27)" rx="2" ry="2" />
+<text  x="927.73" y="511.5" ></text>
+</g>
+<g >
+<title>sqlite3VdbeRecordCompareWithSkip (1,436,147 samples, 2.67%)</title><rect x="629.9" y="501" width="31.6" height="15.0" fill="rgb(241,168,40)" rx="2" ry="2" />
+<text  x="632.95" y="511.5" >sq..</text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange_weak (621,084 samples, 1.15%)</title><rect x="284.4" y="501" width="13.6" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="287.38" y="511.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::set_scheduler::{{closure}} (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="277" width="33.0" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="1138.49" y="287.5" >to..</text>
+</g>
+<g >
+<title>&lt;tokio::time::timeout::Timeout&lt;T&gt; as core::future::future::Future&gt;::poll (1,003,008 samples, 1.86%)</title><rect x="935.1" y="597" width="22.0" height="15.0" fill="rgb(222,79,18)" rx="2" ry="2" />
+<text  x="938.11" y="607.5" >&lt;..</text>
+</g>
+<g >
+<title>&lt;tokio::runtime::blocking::task::BlockingTask&lt;T&gt; as core::future::future::Future&gt;::poll (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="405" width="33.0" height="15.0" fill="rgb(253,225,53)" rx="2" ry="2" />
+<text  x="1138.49" y="415.5" >&lt;t..</text>
+</g>
+<g >
+<title>sqlite3RunParser (501,504 samples, 0.93%)</title><rect x="879.0" y="597" width="11.0" height="15.0" fill="rgb(225,95,22)" rx="2" ry="2" />
+<text  x="881.97" y="607.5" ></text>
+</g>
+<g >
+<title>sqlite3Select (501,504 samples, 0.93%)</title><rect x="879.0" y="357" width="11.0" height="15.0" fill="rgb(205,4,0)" rx="2" ry="2" />
+<text  x="881.97" y="367.5" ></text>
+</g>
+<g >
+<title>&lt;sqlx_sqlite::connection::execute::ExecuteIter as core::iter::traits::iterator::Iterator&gt;::next (1,356,860 samples, 2.52%)</title><rect x="838.4" y="373" width="29.8" height="15.0" fill="rgb(237,150,35)" rx="2" ry="2" />
+<text  x="841.45" y="383.5" >&lt;s..</text>
+</g>
+<g >
+<title>alloc::alloc::alloc (1,003,008 samples, 1.86%)</title><rect x="262.4" y="245" width="22.0" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="265.38" y="255.5" >a..</text>
+</g>
+<g >
+<title>sqlx_sqlite::connection::worker::ConnectionWorker::establish::{{closure}}::{{closure}} (2,912,593 samples, 5.41%)</title><rect x="804.3" y="469" width="63.9" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="807.32" y="479.5" >sqlx_sq..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::Handle::current (501,504 samples, 0.93%)</title><rect x="946.1" y="485" width="11.0" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="949.11" y="495.5" ></text>
+</g>
+<g >
+<title>tokio::time::sleep::Sleep::poll_elapsed (501,504 samples, 0.93%)</title><rect x="968.1" y="565" width="11.0" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="971.11" y="575.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="373" width="33.0" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="1138.49" y="383.5" >to..</text>
+</g>
+<g >
+<title>tokio::runtime::blocking::pool::Spawner::spawn_task (683,640 samples, 1.27%)</title><rect x="105.3" y="581" width="15.0" height="15.0" fill="rgb(238,153,36)" rx="2" ry="2" />
+<text  x="108.28" y="591.5" ></text>
+</g>
+<g >
+<title>sqlite3PcacheClear (1,483,716 samples, 2.76%)</title><rect x="721.0" y="389" width="32.6" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="724.01" y="399.5" >sq..</text>
+</g>
+<g >
+<title>&lt;tokio::time::sleep::Sleep as core::future::future::Future&gt;::poll (501,504 samples, 0.93%)</title><rect x="968.1" y="581" width="11.0" height="15.0" fill="rgb(227,105,25)" rx="2" ry="2" />
+<text  x="971.11" y="591.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}} (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="389" width="33.0" height="15.0" fill="rgb(206,4,1)" rx="2" ry="2" />
+<text  x="1138.49" y="399.5" >to..</text>
+</g>
+<g >
+<title>std::time::Instant::duration_since (481,785 samples, 0.90%)</title><rect x="1033.3" y="325" width="10.5" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1036.27" y="335.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::metrics::batch::now (501,504 samples, 0.93%)</title><rect x="1146.5" y="181" width="11.0" height="15.0" fill="rgb(206,6,1)" rx="2" ry="2" />
+<text  x="1149.49" y="191.5" ></text>
+</g>
+<g >
+<title>&lt;alloc::raw_vec::RawVec&lt;T,A&gt; as core::ops::drop::Drop&gt;::drop (831,256 samples, 1.55%)</title><rect x="214.7" y="485" width="18.2" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="217.71" y="495.5" ></text>
+</g>
+<g >
+<title>sqlite3LockAndPrepare (501,504 samples, 0.93%)</title><rect x="879.0" y="453" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="881.97" y="463.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::time::entry::TimerEntry::reset (473,069 samples, 0.88%)</title><rect x="924.7" y="549" width="10.4" height="15.0" fill="rgb(240,165,39)" rx="2" ry="2" />
+<text  x="927.73" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::set_scheduler::{{closure}} (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="261" width="22.0" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="1014.33" y="271.5" >t..</text>
+</g>
+<g >
+<title>[libc.so.6] (1,003,008 samples, 1.86%)</title><rect x="262.4" y="149" width="22.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="265.38" y="159.5" >[..</text>
+</g>
+<g >
+<title>core::core_arch::x86::sse2::_mm_pause (501,504 samples, 0.93%)</title><rect x="1065.7" y="517" width="11.0" height="15.0" fill="rgb(253,222,53)" rx="2" ry="2" />
+<text  x="1068.75" y="527.5" ></text>
+</g>
+<g >
+<title>sqlite3Parser (501,504 samples, 0.93%)</title><rect x="879.0" y="581" width="11.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="881.97" y="591.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicUsize::load (683,640 samples, 1.27%)</title><rect x="1120.5" y="549" width="15.0" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1123.49" y="559.5" ></text>
+</g>
+<g >
+<title>&lt;parking_lot::raw_mutex::RawMutex as lock_api::mutex::RawMutex&gt;::lock (501,504 samples, 0.93%)</title><rect x="979.1" y="469" width="11.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="982.12" y="479.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Context::run (500,109 samples, 0.93%)</title><rect x="1109.5" y="133" width="11.0" height="15.0" fill="rgb(209,18,4)" rx="2" ry="2" />
+<text  x="1112.52" y="143.5" ></text>
+</g>
+<g >
+<title>sqlite3InitOne (501,504 samples, 0.93%)</title><rect x="879.0" y="501" width="11.0" height="15.0" fill="rgb(250,208,49)" rx="2" ry="2" />
+<text  x="881.97" y="511.5" ></text>
+</g>
+<g >
+<title>walIndexClose (501,504 samples, 0.93%)</title><rect x="753.6" y="389" width="11.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="756.56" y="399.5" ></text>
+</g>
+<g >
+<title>std::sys::alloc::unix::&lt;impl core::alloc::global::GlobalAlloc for std::alloc::System&gt;::alloc (1,003,008 samples, 1.86%)</title><rect x="262.4" y="213" width="22.0" height="15.0" fill="rgb(216,50,12)" rx="2" ry="2" />
+<text  x="265.38" y="223.5" >s..</text>
+</g>
+<g >
+<title>bindText (1,356,860 samples, 2.52%)</title><rect x="838.4" y="277" width="29.8" height="15.0" fill="rgb(225,96,23)" rx="2" ry="2" />
+<text  x="841.45" y="287.5" >bi..</text>
+</g>
+<g >
+<title>tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}} (500,109 samples, 0.93%)</title><rect x="1109.5" y="581" width="11.0" height="15.0" fill="rgb(220,70,16)" rx="2" ry="2" />
+<text  x="1112.52" y="591.5" ></text>
+</g>
+<g >
+<title>tokio-runtime-w (12,092,249 samples, 22.48%)</title><rect x="924.7" y="613" width="265.3" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="927.73" y="623.5" >tokio-runtime-w</text>
+</g>
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::try_with (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="293" width="33.0" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="1138.49" y="303.5" >st..</text>
+</g>
+<g >
+<title>sqlite3BtreeLast (1,243,563 samples, 2.31%)</title><rect x="661.5" y="517" width="27.2" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="664.45" y="527.5" >s..</text>
+</g>
+<g >
+<title>tokio::runtime::task::state::State::transition_to_running (501,504 samples, 0.93%)</title><rect x="1179.0" y="549" width="11.0" height="15.0" fill="rgb(221,75,18)" rx="2" ry="2" />
+<text  x="1182.00" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::metrics::batch::MetricsBatch::start_processing_scheduled_tasks (500,109 samples, 0.93%)</title><rect x="1109.5" y="101" width="11.0" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="1112.52" y="111.5" ></text>
+</g>
+<g >
+<title>&lt;futures_util::future::try_future::into_future::IntoFuture&lt;Fut&gt; as core::future::future::Future&gt;::poll (922,379 samples, 1.71%)</title><rect x="21.0" y="501" width="20.2" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="24.00" y="511.5" ></text>
+</g>
+<g >
+<title>sqlite3OsShmUnmap (501,504 samples, 0.93%)</title><rect x="753.6" y="357" width="11.0" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="756.56" y="367.5" ></text>
+</g>
+<g >
+<title>closeCursorsInFrame (672,089 samples, 1.25%)</title><rect x="688.7" y="485" width="14.8" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="691.73" y="495.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (501,504 samples, 0.93%)</title><rect x="957.1" y="581" width="11.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="960.11" y="591.5" ></text>
+</g>
+<g >
+<title>sqlite3Pragma (501,504 samples, 0.93%)</title><rect x="879.0" y="549" width="11.0" height="15.0" fill="rgb(207,11,2)" rx="2" ry="2" />
+<text  x="881.97" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::scoped::Scoped&lt;T&gt;::set (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="245" width="22.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1014.33" y="255.5" >t..</text>
+</g>
+<g >
+<title>tokio::runtime::context::runtime::enter_runtime (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="357" width="33.0" height="15.0" fill="rgb(243,177,42)" rx="2" ry="2" />
+<text  x="1138.49" y="367.5" >to..</text>
+</g>
+<g >
+<title>sqlite3WalkSelect (501,504 samples, 0.93%)</title><rect x="879.0" y="309" width="11.0" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="881.97" y="319.5" ></text>
+</g>
+<g >
+<title>sqlite3_step (17,463,412 samples, 32.47%)</title><rect x="337.9" y="565" width="383.1" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="340.92" y="575.5" >sqlite3_step</text>
+</g>
+<g >
+<title>tokio::task::spawn::spawn_inner (1,003,008 samples, 1.86%)</title><rect x="262.4" y="517" width="22.0" height="15.0" fill="rgb(205,3,0)" rx="2" ry="2" />
+<text  x="265.38" y="527.5" >t..</text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange_weak (478,908 samples, 0.89%)</title><rect x="1168.5" y="245" width="10.5" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="1171.49" y="255.5" ></text>
+</g>
+<g >
+<title>&lt;alloc::alloc::Global as core::alloc::Allocator&gt;::allocate (1,003,008 samples, 1.86%)</title><rect x="262.4" y="277" width="22.0" height="15.0" fill="rgb(225,96,22)" rx="2" ry="2" />
+<text  x="265.38" y="287.5" >&lt;..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;futures_intrusive::sync::mutex::GenericMutex&lt;parking_lot::raw_mutex::RawMutex,sqlx_sqlite::connection::ConnectionState&gt;&gt; (1,985,220 samples, 3.69%)</title><rect x="721.0" y="565" width="43.6" height="15.0" fill="rgb(208,17,4)" rx="2" ry="2" />
+<text  x="724.01" y="575.5" >core..</text>
+</g>
+<g >
+<title>sqlite3VdbeMemSetStr (1,356,860 samples, 2.52%)</title><rect x="838.4" y="245" width="29.8" height="15.0" fill="rgb(232,126,30)" rx="2" ry="2" />
+<text  x="841.45" y="255.5" >sq..</text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::poll_future::{{closure}} (500,109 samples, 0.93%)</title><rect x="1109.5" y="373" width="11.0" height="15.0" fill="rgb(228,109,26)" rx="2" ry="2" />
+<text  x="1112.52" y="383.5" ></text>
+</g>
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::try_with (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="277" width="22.0" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="1014.33" y="287.5" >s..</text>
+</g>
+<g >
+<title>tokio::runtime::context::current::with_current (501,504 samples, 0.93%)</title><rect x="946.1" y="469" width="11.0" height="15.0" fill="rgb(239,159,38)" rx="2" ry="2" />
+<text  x="949.11" y="479.5" ></text>
+</g>
+<g >
+<title>all (53,790,294 samples, 100%)</title><rect x="10.0" y="629" width="1180.0" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="13.00" y="639.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::poll_future (500,109 samples, 0.93%)</title><rect x="1109.5" y="453" width="11.0" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1112.52" y="463.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::runtime::io::registration::Registration&gt; (490,970 samples, 0.91%)</title><rect x="1076.7" y="565" width="10.8" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1079.75" y="575.5" ></text>
+</g>
+<g >
+<title>sqlite3BtreeCloseCursor (672,089 samples, 1.25%)</title><rect x="688.7" y="453" width="14.8" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="691.73" y="463.5" ></text>
+</g>
+<g >
+<title>nix::unistd::Group::from_name::{{closure}} (775,517 samples, 1.44%)</title><rect x="232.9" y="517" width="17.1" height="15.0" fill="rgb(207,13,3)" rx="2" ry="2" />
+<text  x="235.94" y="527.5" ></text>
+</g>
+<g >
+<title>prtip_scanner::tcp_connect::TcpConnectScanner::scan_ports::{{closure}} (621,084 samples, 1.15%)</title><rect x="284.4" y="597" width="13.6" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="287.38" y="607.5" ></text>
+</g>
+<g >
+<title>bindText (1,356,860 samples, 2.52%)</title><rect x="838.4" y="261" width="29.8" height="15.0" fill="rgb(225,96,23)" rx="2" ry="2" />
+<text  x="841.45" y="271.5" >bi..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::queue::Steal&lt;T&gt;::steal_into2 (498,927 samples, 0.93%)</title><rect x="1022.3" y="165" width="11.0" height="15.0" fill="rgb(250,209,50)" rx="2" ry="2" />
+<text  x="1025.33" y="175.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange (490,970 samples, 0.91%)</title><rect x="1076.7" y="437" width="10.8" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="1079.75" y="447.5" ></text>
+</g>
+<g >
+<title>sqlite3BtreeInsert (944,936 samples, 1.76%)</title><rect x="348.7" y="533" width="20.7" height="15.0" fill="rgb(253,221,53)" rx="2" ry="2" />
+<text  x="351.68" y="543.5" ></text>
+</g>
+<g >
+<title>btreeLast (1,243,563 samples, 2.31%)</title><rect x="661.5" y="501" width="27.2" height="15.0" fill="rgb(230,115,27)" rx="2" ry="2" />
+<text  x="664.45" y="511.5" >b..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}} (500,109 samples, 0.93%)</title><rect x="1109.5" y="149" width="11.0" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1112.52" y="159.5" ></text>
+</g>
+<g >
+<title>getAndInitPage (1,796,013 samples, 3.34%)</title><rect x="522.8" y="485" width="39.4" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="525.84" y="495.5" >get..</text>
+</g>
+<g >
+<title>getPageNormal (1,243,563 samples, 2.31%)</title><rect x="661.5" y="421" width="27.2" height="15.0" fill="rgb(249,204,48)" rx="2" ry="2" />
+<text  x="664.45" y="431.5" >g..</text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Instant::checked_sub_instant (481,785 samples, 0.90%)</title><rect x="1033.3" y="293" width="10.5" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="1036.27" y="303.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::raw::poll (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="581" width="32.5" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1014.33" y="591.5" >to..</text>
+</g>
+<g >
+<title>sqlite3PcachePagecount (1,796,013 samples, 3.34%)</title><rect x="522.8" y="421" width="39.4" height="15.0" fill="rgb(253,221,53)" rx="2" ry="2" />
+<text  x="525.84" y="431.5" >sql..</text>
+</g>
+<g >
+<title>tokio::runtime::task::core::Core&lt;T,S&gt;::poll::{{closure}} (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="421" width="43.5" height="15.0" fill="rgb(250,208,49)" rx="2" ry="2" />
+<text  x="1138.49" y="431.5" >toki..</text>
+</g>
+<g >
+<title>sqlite3PagerClose (1,985,220 samples, 3.69%)</title><rect x="721.0" y="421" width="43.6" height="15.0" fill="rgb(242,174,41)" rx="2" ry="2" />
+<text  x="724.01" y="431.5" >sqli..</text>
+</g>
+<g >
+<title>balance_nonroot (1,797,544 samples, 3.34%)</title><rect x="460.8" y="485" width="39.5" height="15.0" fill="rgb(205,1,0)" rx="2" ry="2" />
+<text  x="463.83" y="495.5" >bal..</text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicUsize::fetch_update (683,640 samples, 1.27%)</title><rect x="1120.5" y="565" width="15.0" height="15.0" fill="rgb(222,80,19)" rx="2" ry="2" />
+<text  x="1123.49" y="575.5" ></text>
+</g>
+<g >
+<title>getPageNormal (1,225,503 samples, 2.28%)</title><rect x="562.2" y="437" width="26.9" height="15.0" fill="rgb(249,204,48)" rx="2" ry="2" />
+<text  x="565.23" y="447.5" >g..</text>
+</g>
+<g >
+<title>core::ops::function::FnOnce::call_once{{vtable.shim}} (2,912,593 samples, 5.41%)</title><rect x="804.3" y="597" width="63.9" height="15.0" fill="rgb(226,100,24)" rx="2" ry="2" />
+<text  x="807.32" y="607.5" >core::o..</text>
+</g>
+<g >
+<title>tokio::loom::std::parking_lot::Mutex&lt;T&gt;::lock (501,504 samples, 0.93%)</title><rect x="979.1" y="501" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="982.12" y="511.5" ></text>
+</g>
+<g >
+<title>prtip_scanner::scheduler::ScanScheduler::execute_scan_ports::{{closure}} (1,569,342 samples, 2.92%)</title><rect x="250.0" y="581" width="34.4" height="15.0" fill="rgb(236,146,34)" rx="2" ry="2" />
+<text  x="252.95" y="591.5" >pr..</text>
+</g>
+<g >
+<title>pcache1TruncateUnsafe (1,483,716 samples, 2.76%)</title><rect x="721.0" y="341" width="32.6" height="15.0" fill="rgb(239,159,38)" rx="2" ry="2" />
+<text  x="724.01" y="351.5" >pc..</text>
+</g>
+<g >
+<title>nix::unistd::Group::from_anything (775,517 samples, 1.44%)</title><rect x="232.9" y="533" width="17.1" height="15.0" fill="rgb(252,219,52)" rx="2" ry="2" />
+<text  x="235.94" y="543.5" ></text>
+</g>
+<g >
+<title>sqlx_sqlite::statement::handle::StatementHandle::step (17,463,412 samples, 32.47%)</title><rect x="337.9" y="581" width="383.1" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="340.92" y="591.5" >sqlx_sqlite::statement::handle::StatementHandle::step</text>
+</g>
+<g >
+<title>tokio::loom::std::unsafe_cell::UnsafeCell&lt;T&gt;::with_mut (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="421" width="32.5" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1014.33" y="431.5" >to..</text>
+</g>
+<g >
+<title>sqlite3LockAndPrepare (501,504 samples, 0.93%)</title><rect x="298.0" y="517" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="301.01" y="527.5" ></text>
+</g>
+<g >
+<title>sqlx_sqlite::connection::execute::bind (1,356,860 samples, 2.52%)</title><rect x="838.4" y="357" width="29.8" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="841.45" y="367.5" >sq..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::loom::std::parking_lot::MutexGuard&lt;tokio::runtime::time::InnerState&gt;&gt; (473,069 samples, 0.88%)</title><rect x="924.7" y="517" width="10.4" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="927.73" y="527.5" ></text>
+</g>
+<g >
+<title>vdbeRecordDecodeInt (1,061,737 samples, 1.97%)</title><rect x="589.1" y="469" width="23.3" height="15.0" fill="rgb(220,70,16)" rx="2" ry="2" />
+<text  x="592.12" y="479.5" >v..</text>
+</g>
+<g >
+<title>alloc::boxed::Box&lt;T&gt;::new (1,003,008 samples, 1.86%)</title><rect x="262.4" y="309" width="22.0" height="15.0" fill="rgb(232,124,29)" rx="2" ry="2" />
+<text  x="265.38" y="319.5" >a..</text>
+</g>
+<g >
+<title>sqlite3_free (1,483,716 samples, 2.76%)</title><rect x="721.0" y="293" width="32.6" height="15.0" fill="rgb(219,66,16)" rx="2" ry="2" />
+<text  x="724.01" y="303.5" >sq..</text>
+</g>
+<g >
+<title>__vdso_clock_gettime (501,504 samples, 0.93%)</title><rect x="1135.5" y="165" width="11.0" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="1138.49" y="175.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Context::run (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="229" width="33.0" height="15.0" fill="rgb(209,18,4)" rx="2" ry="2" />
+<text  x="1138.49" y="239.5" >to..</text>
+</g>
+<g >
+<title>tokio::net::tcp::stream::TcpStream::connect::{{closure}} (1,003,008 samples, 1.86%)</title><rect x="935.1" y="581" width="22.0" height="15.0" fill="rgb(252,216,51)" rx="2" ry="2" />
+<text  x="938.11" y="591.5" >t..</text>
+</g>
+<g >
+<title>closeAllCursors (1,471,410 samples, 2.74%)</title><rect x="688.7" y="501" width="32.3" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="691.73" y="511.5" >cl..</text>
+</g>
+<g >
+<title>tokio::runtime::time::entry::TimerEntry::poll_elapsed (473,069 samples, 0.88%)</title><rect x="924.7" y="565" width="10.4" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="927.73" y="575.5" ></text>
+</g>
+<g >
+<title>tokio::loom::std::parking_lot::Mutex&lt;T&gt;::lock (478,908 samples, 0.89%)</title><rect x="1168.5" y="309" width="10.5" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="1171.49" y="319.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::io::poll_evented::PollEvented&lt;mio::net::tcp::stream::TcpStream&gt;&gt; (501,504 samples, 0.93%)</title><rect x="979.1" y="565" width="11.0" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="982.12" y="575.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (1,483,716 samples, 2.76%)</title><rect x="721.0" y="277" width="32.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="724.01" y="287.5" >[l..</text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Instant::checked_sub_instant (501,504 samples, 0.93%)</title><rect x="1054.7" y="469" width="11.0" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="1057.74" y="479.5" ></text>
+</g>
+<g >
+<title>&lt;parking_lot::raw_mutex::RawMutex as lock_api::mutex::RawMutex&gt;::unlock (490,970 samples, 0.91%)</title><rect x="1076.7" y="469" width="10.8" height="15.0" fill="rgb(206,8,2)" rx="2" ry="2" />
+<text  x="1079.75" y="479.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicU8::compare_exchange_weak (478,908 samples, 0.89%)</title><rect x="1168.5" y="261" width="10.5" height="15.0" fill="rgb(251,216,51)" rx="2" ry="2" />
+<text  x="1171.49" y="271.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;flume::Shared&lt;core::result::Result&lt;either::Either&lt;sqlx_sqlite::query_result::SqliteQueryResult,sqlx_sqlite::row::SqliteRow&gt;,sqlx_core::error::Error&gt;&gt;&gt; (831,256 samples, 1.55%)</title><rect x="214.7" y="581" width="18.2" height="15.0" fill="rgb(212,34,8)" rx="2" ry="2" />
+<text  x="217.71" y="591.5" ></text>
+</g>
+<g >
+<title>tokio::task::spawn::spawn (1,003,008 samples, 1.86%)</title><rect x="262.4" y="533" width="22.0" height="15.0" fill="rgb(207,13,3)" rx="2" ry="2" />
+<text  x="265.38" y="543.5" >t..</text>
+</g>
+<g >
+<title>std::panic::catch_unwind (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="533" width="43.5" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="1138.49" y="543.5" >std:..</text>
+</g>
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::try_with (1,003,008 samples, 1.86%)</title><rect x="262.4" y="485" width="22.0" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="265.38" y="495.5" >s..</text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::Harness&lt;T,S&gt;::poll (500,109 samples, 0.93%)</title><rect x="1109.5" y="485" width="11.0" height="15.0" fill="rgb(219,65,15)" rx="2" ry="2" />
+<text  x="1112.52" y="495.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::runtime::task::join::JoinHandle&lt;core::result::Result&lt;prtip_core::types::ScanResult,prtip_core::error::Error&gt;&gt;&gt; (621,084 samples, 1.15%)</title><rect x="284.4" y="565" width="13.6" height="15.0" fill="rgb(226,97,23)" rx="2" ry="2" />
+<text  x="287.38" y="575.5" ></text>
+</g>
+<g >
+<title>&lt;prtip::output::TextFormatter as prtip::output::OutputFormatter&gt;::format_results (982,333 samples, 1.83%)</title><rect x="67.7" y="581" width="21.6" height="15.0" fill="rgb(226,99,23)" rx="2" ry="2" />
+<text  x="70.75" y="591.5" >&lt;..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::io::poll_evented::PollEvented&lt;mio::net::tcp::stream::TcpStream&gt;&gt; (490,970 samples, 0.91%)</title><rect x="1076.7" y="581" width="10.8" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="1079.75" y="591.5" ></text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Timespec::now (501,504 samples, 0.93%)</title><rect x="1135.5" y="197" width="11.0" height="15.0" fill="rgb(227,104,25)" rx="2" ry="2" />
+<text  x="1138.49" y="207.5" ></text>
+</g>
+<g >
+<title>&lt;tokio::sync::semaphore::OwnedSemaphorePermit as core::ops::drop::Drop&gt;::drop (478,908 samples, 0.89%)</title><rect x="1168.5" y="357" width="10.5" height="15.0" fill="rgb(254,229,54)" rx="2" ry="2" />
+<text  x="1171.49" y="367.5" ></text>
+</g>
+<g >
+<title>parking_lot_core::word_lock::WordLock::lock (501,504 samples, 0.93%)</title><rect x="1098.5" y="581" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="1101.52" y="591.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run::{{closure}} (500,109 samples, 0.93%)</title><rect x="1109.5" y="245" width="11.0" height="15.0" fill="rgb(249,206,49)" rx="2" ry="2" />
+<text  x="1112.52" y="255.5" ></text>
+</g>
+<g >
+<title>prtip (13,128,721 samples, 24.41%)</title><rect x="10.0" y="613" width="288.0" height="15.0" fill="rgb(252,218,52)" rx="2" ry="2" />
+<text  x="13.00" y="623.5" >prtip</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::sync::semaphore::OwnedSemaphorePermit&gt; (478,908 samples, 0.89%)</title><rect x="1168.5" y="373" width="10.5" height="15.0" fill="rgb(243,179,42)" rx="2" ry="2" />
+<text  x="1171.49" y="383.5" ></text>
+</g>
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::try_with (500,109 samples, 0.93%)</title><rect x="1109.5" y="197" width="11.0" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="1112.52" y="207.5" ></text>
+</g>
+<g >
+<title>sqlx_sqlite::connection::execute::iter (1,356,860 samples, 2.52%)</title><rect x="838.4" y="453" width="29.8" height="15.0" fill="rgb(236,146,34)" rx="2" ry="2" />
+<text  x="841.45" y="463.5" >sq..</text>
+</g>
+<g >
+<title>tokio::runtime::blocking::pool::Task::run (500,109 samples, 0.93%)</title><rect x="1109.5" y="549" width="11.0" height="15.0" fill="rgb(232,127,30)" rx="2" ry="2" />
+<text  x="1112.52" y="559.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::net::tcp::stream::TcpStream&gt; (501,504 samples, 0.93%)</title><rect x="979.1" y="581" width="11.0" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="982.12" y="591.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::core::Core&lt;T,S&gt;::poll (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="437" width="32.5" height="15.0" fill="rgb(245,186,44)" rx="2" ry="2" />
+<text  x="1014.33" y="447.5" >to..</text>
+</g>
+<g >
+<title>balance (1,797,544 samples, 3.34%)</title><rect x="460.8" y="501" width="39.5" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="463.83" y="511.5" >bal..</text>
+</g>
+<g >
+<title>getAndInitPage (1,225,503 samples, 2.28%)</title><rect x="562.2" y="469" width="26.9" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="565.23" y="479.5" >g..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;std::sync::poison::mutex::Mutex&lt;flume::Chan&lt;core::result::Result&lt;either::Either&lt;sqlx_sqlite::query_result::SqliteQueryResult,sqlx_sqlite::row::SqliteRow&gt;,sqlx_core::error::Error&gt;&gt;&gt;&gt; (831,256 samples, 1.55%)</title><rect x="214.7" y="565" width="18.2" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="217.71" y="575.5" ></text>
+</g>
+<g >
+<title>sqlite3BtreeIndexMoveto (490,496 samples, 0.91%)</title><rect x="868.2" y="597" width="10.8" height="15.0" fill="rgb(215,46,11)" rx="2" ry="2" />
+<text  x="871.21" y="607.5" ></text>
+</g>
+<g >
+<title>sqlite3SelectPrep (501,504 samples, 0.93%)</title><rect x="879.0" y="341" width="11.0" height="15.0" fill="rgb(226,99,23)" rx="2" ry="2" />
+<text  x="881.97" y="351.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::handle::Handle::bind_new_task (1,003,008 samples, 1.86%)</title><rect x="262.4" y="389" width="22.0" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="265.38" y="399.5" >t..</text>
+</g>
+<g >
+<title>sqlx_sqlite::statement::virtual::VirtualStatement::prepare_next (501,504 samples, 0.93%)</title><rect x="298.0" y="581" width="11.0" height="15.0" fill="rgb(229,114,27)" rx="2" ry="2" />
+<text  x="301.01" y="591.5" ></text>
+</g>
+<g >
+<title>alloc::alloc::exchange_malloc (1,003,008 samples, 1.86%)</title><rect x="262.4" y="293" width="22.0" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="265.38" y="303.5" >a..</text>
+</g>
+<g >
+<title>realloc (1,916,236 samples, 3.56%)</title><rect x="135.4" y="533" width="42.1" height="15.0" fill="rgb(246,189,45)" rx="2" ry="2" />
+<text  x="138.44" y="543.5" >rea..</text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange_weak (501,504 samples, 0.93%)</title><rect x="979.1" y="437" width="11.0" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="982.12" y="447.5" ></text>
+</g>
+<g >
+<title>prtip_scanner::tcp_connect::TcpConnectScanner::scan_ports::{{closure}} (1,569,342 samples, 2.92%)</title><rect x="250.0" y="565" width="34.4" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="252.95" y="575.5" >pr..</text>
+</g>
+<g >
+<title>posix_memalign (1,003,008 samples, 1.86%)</title><rect x="262.4" y="181" width="22.0" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="265.38" y="191.5" >p..</text>
+</g>
+<g >
+<title>tokio::runtime::context::current::with_current (1,003,008 samples, 1.86%)</title><rect x="262.4" y="501" width="22.0" height="15.0" fill="rgb(239,159,38)" rx="2" ry="2" />
+<text  x="265.38" y="511.5" >t..</text>
+</g>
+<g >
+<title>vdbeRecordCompareString (799,572 samples, 1.49%)</title><rect x="612.4" y="485" width="17.5" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="615.41" y="495.5" ></text>
+</g>
+<g >
+<title>sqlite3LeaveMutexAndCloseZombie (1,985,220 samples, 3.69%)</title><rect x="721.0" y="469" width="43.6" height="15.0" fill="rgb(232,128,30)" rx="2" ry="2" />
+<text  x="724.01" y="479.5" >sqli..</text>
+</g>
+<g >
+<title>tokio::runtime::io::scheduled_io::ScheduledIo::set_readiness (683,640 samples, 1.27%)</title><rect x="1120.5" y="581" width="15.0" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="1123.49" y="591.5" ></text>
+</g>
+<g >
+<title>std::panic::catch_unwind (2,912,593 samples, 5.41%)</title><rect x="804.3" y="565" width="63.9" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="807.32" y="575.5" >std::pa..</text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange (473,069 samples, 0.88%)</title><rect x="924.7" y="437" width="10.4" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="927.73" y="447.5" ></text>
+</g>
+<g >
+<title>pcache1Truncate (1,483,716 samples, 2.76%)</title><rect x="721.0" y="373" width="32.6" height="15.0" fill="rgb(230,115,27)" rx="2" ry="2" />
+<text  x="724.01" y="383.5" >pc..</text>
+</g>
+<g >
+<title>&lt;parking_lot::raw_mutex::RawMutex as lock_api::mutex::RawMutex&gt;::lock (478,908 samples, 0.89%)</title><rect x="1168.5" y="277" width="10.5" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1171.49" y="287.5" ></text>
+</g>
+<g >
+<title>pcache1Pagecount (1,796,013 samples, 3.34%)</title><rect x="522.8" y="405" width="39.4" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="525.84" y="415.5" >pca..</text>
+</g>
+<g >
+<title>sqlite3PagerGet (1,243,563 samples, 2.31%)</title><rect x="661.5" y="437" width="27.2" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="664.45" y="447.5" >s..</text>
+</g>
+<g >
+<title>alloc::raw_vec::finish_grow (4,304,707 samples, 8.00%)</title><rect x="120.3" y="597" width="94.4" height="15.0" fill="rgb(244,182,43)" rx="2" ry="2" />
+<text  x="123.27" y="607.5" >alloc::raw_..</text>
+</g>
+<g >
+<title>tokio::sync::batch_semaphore::Semaphore::release (478,908 samples, 0.89%)</title><rect x="1168.5" y="325" width="10.5" height="15.0" fill="rgb(245,186,44)" rx="2" ry="2" />
+<text  x="1171.49" y="335.5" ></text>
+</g>
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::with (500,109 samples, 0.93%)</title><rect x="1109.5" y="213" width="11.0" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="1112.52" y="223.5" ></text>
+</g>
+<g >
+<title>std::panicking::catch_unwind (2,912,593 samples, 5.41%)</title><rect x="804.3" y="549" width="63.9" height="15.0" fill="rgb(242,170,40)" rx="2" ry="2" />
+<text  x="807.32" y="559.5" >std::pa..</text>
+</g>
+<g >
+<title>sqlite3GetToken (501,504 samples, 0.93%)</title><rect x="298.0" y="469" width="11.0" height="15.0" fill="rgb(209,18,4)" rx="2" ry="2" />
+<text  x="301.01" y="479.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;alloc::raw_vec::RawVec&lt;core::result::Result&lt;either::Either&lt;sqlx_sqlite::query_result::SqliteQueryResult,sqlx_sqlite::row::SqliteRow&gt;,sqlx_core::error::Error&gt;&gt;&gt; (831,256 samples, 1.55%)</title><rect x="214.7" y="501" width="18.2" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="217.71" y="511.5" ></text>
+</g>
+<g >
+<title>pthread_mutex_lock (1,243,563 samples, 2.31%)</title><rect x="661.5" y="357" width="27.2" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="664.45" y="367.5" >p..</text>
+</g>
+<g >
+<title>tokio::io::poll_evented::PollEvented&lt;E&gt;::new_with_interest (501,504 samples, 0.93%)</title><rect x="946.1" y="501" width="11.0" height="15.0" fill="rgb(211,31,7)" rx="2" ry="2" />
+<text  x="949.11" y="511.5" ></text>
+</g>
+<g >
+<title>sqlite3LockAndPrepare (501,504 samples, 0.93%)</title><rect x="879.0" y="437" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="881.97" y="447.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::io::driver::Handle::deregister_source (501,504 samples, 0.93%)</title><rect x="979.1" y="517" width="11.0" height="15.0" fill="rgb(251,213,50)" rx="2" ry="2" />
+<text  x="982.12" y="527.5" ></text>
+</g>
+<g >
+<title>parking_lot_core::spinwait::SpinWait::spin (501,504 samples, 0.93%)</title><rect x="1065.7" y="565" width="11.0" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="1068.75" y="575.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::blocking::pool::Spawner::spawn_thread (683,640 samples, 1.27%)</title><rect x="105.3" y="565" width="15.0" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="108.28" y="575.5" ></text>
+</g>
+<g >
+<title>&lt;tokio::runtime::scheduler::Handle as core::clone::Clone&gt;::clone (501,504 samples, 0.93%)</title><rect x="946.1" y="389" width="11.0" height="15.0" fill="rgb(222,80,19)" rx="2" ry="2" />
+<text  x="949.11" y="399.5" ></text>
+</g>
+<g >
+<title>std::sys::pal::unix::thread::Thread::new (683,640 samples, 1.27%)</title><rect x="105.3" y="501" width="15.0" height="15.0" fill="rgb(253,224,53)" rx="2" ry="2" />
+<text  x="108.28" y="511.5" ></text>
+</g>
+<g >
+<title>parking_lot_core::spinwait::SpinWait::spin (966,872 samples, 1.80%)</title><rect x="990.1" y="565" width="21.2" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="993.12" y="575.5" ></text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Timespec::now (1,356,860 samples, 2.52%)</title><rect x="838.4" y="421" width="29.8" height="15.0" fill="rgb(227,104,25)" rx="2" ry="2" />
+<text  x="841.45" y="431.5" >st..</text>
+</g>
+<g >
+<title>alloc::sync::Arc&lt;T,A&gt;::drop_slow (831,256 samples, 1.55%)</title><rect x="214.7" y="597" width="18.2" height="15.0" fill="rgb(218,62,14)" rx="2" ry="2" />
+<text  x="217.71" y="607.5" ></text>
+</g>
+<g >
+<title>&lt;core::panic::unwind_safe::AssertUnwindSafe&lt;F&gt; as core::ops::function::FnOnce&lt; (2,912,593 samples, 5.41%)</title><rect x="804.3" y="517" width="63.9" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="807.32" y="527.5" >&lt;core::..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run::{{closure}} (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="341" width="33.0" height="15.0" fill="rgb(249,206,49)" rx="2" ry="2" />
+<text  x="1138.49" y="351.5" >to..</text>
+</g>
+<g >
+<title>tokio::runtime::context::set_scheduler::{{closure}} (500,109 samples, 0.93%)</title><rect x="1109.5" y="181" width="11.0" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="1112.52" y="191.5" ></text>
+</g>
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::with (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="293" width="22.0" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="1014.33" y="303.5" >s..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;alloc::collections::vec_deque::VecDeque&lt;core::result::Result&lt;either::Either&lt;sqlx_sqlite::query_result::SqliteQueryResult,sqlx_sqlite::row::SqliteRow&gt;,sqlx_core::error::Error&gt;&gt;&gt; (831,256 samples, 1.55%)</title><rect x="214.7" y="517" width="18.2" height="15.0" fill="rgb(249,204,49)" rx="2" ry="2" />
+<text  x="217.71" y="527.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_add (566,334 samples, 1.05%)</title><rect x="250.0" y="501" width="12.4" height="15.0" fill="rgb(233,129,31)" rx="2" ry="2" />
+<text  x="252.95" y="511.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::blocking::pool::Inner::run (500,109 samples, 0.93%)</title><rect x="1109.5" y="565" width="11.0" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="1112.52" y="575.5" ></text>
+</g>
+<g >
+<title>&lt;alloc::sync::Arc&lt;T,A&gt; as core::ops::deref::Deref&gt;::deref (922,379 samples, 1.71%)</title><rect x="21.0" y="389" width="20.2" height="15.0" fill="rgb(251,214,51)" rx="2" ry="2" />
+<text  x="24.00" y="399.5" ></text>
+</g>
+<g >
+<title>tokio::sync::semaphore::Semaphore::add_permits (478,908 samples, 0.89%)</title><rect x="1168.5" y="341" width="10.5" height="15.0" fill="rgb(221,75,17)" rx="2" ry="2" />
+<text  x="1171.49" y="351.5" ></text>
+</g>
+<g >
+<title>tokio::net::tcp::stream::TcpStream::connect_addr::{{closure}} (501,504 samples, 0.93%)</title><rect x="946.1" y="565" width="11.0" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="949.11" y="575.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::net::tcp::stream::TcpStream&gt; (490,970 samples, 0.91%)</title><rect x="1076.7" y="597" width="10.8" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="1079.75" y="607.5" ></text>
+</g>
+<g >
+<title>pcache1Fetch (1,243,563 samples, 2.31%)</title><rect x="661.5" y="389" width="27.2" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="664.45" y="399.5" >p..</text>
+</g>
+<g >
+<title>sqlx_core::rt::timeout::{{closure}} (728,508 samples, 1.35%)</title><rect x="89.3" y="565" width="16.0" height="15.0" fill="rgb(222,80,19)" rx="2" ry="2" />
+<text  x="92.30" y="575.5" ></text>
+</g>
+<g >
+<title>pthread_create (683,640 samples, 1.27%)</title><rect x="105.3" y="485" width="15.0" height="15.0" fill="rgb(236,146,35)" rx="2" ry="2" />
+<text  x="108.28" y="495.5" ></text>
+</g>
+<g >
+<title>std::panic::catch_unwind (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="517" width="32.5" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="1014.33" y="527.5" >st..</text>
+</g>
+<g >
+<title>std::panicking::catch_unwind::do_call (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="485" width="32.5" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1014.33" y="495.5" >st..</text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::Harness&lt;T,S&gt;::poll (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="565" width="32.5" height="15.0" fill="rgb(219,65,15)" rx="2" ry="2" />
+<text  x="1014.33" y="575.5" >to..</text>
+</g>
+<g >
+<title>std::panicking::catch_unwind (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="501" width="32.5" height="15.0" fill="rgb(242,170,40)" rx="2" ry="2" />
+<text  x="1014.33" y="511.5" >st..</text>
+</g>
+<g >
+<title>std::time::Instant::saturating_duration_since (501,504 samples, 0.93%)</title><rect x="1054.7" y="501" width="11.0" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="1057.74" y="511.5" ></text>
+</g>
+<g >
+<title>sqlite3RunParser (501,504 samples, 0.93%)</title><rect x="879.0" y="405" width="11.0" height="15.0" fill="rgb(225,95,22)" rx="2" ry="2" />
+<text  x="881.97" y="415.5" ></text>
+</g>
+<g >
+<title>&lt;parking_lot::raw_mutex::RawMutex as lock_api::mutex::RawMutex&gt;::unlock (473,069 samples, 0.88%)</title><rect x="924.7" y="469" width="10.4" height="15.0" fill="rgb(206,8,2)" rx="2" ry="2" />
+<text  x="927.73" y="479.5" ></text>
+</g>
+<g >
+<title>sqlite3Close (1,985,220 samples, 3.69%)</title><rect x="721.0" y="485" width="43.6" height="15.0" fill="rgb(240,163,39)" rx="2" ry="2" />
+<text  x="724.01" y="495.5" >sqli..</text>
+</g>
+<g >
+<title>parking_lot::raw_mutex::RawMutex::lock_slow (966,872 samples, 1.80%)</title><rect x="990.1" y="581" width="21.2" height="15.0" fill="rgb(232,127,30)" rx="2" ry="2" />
+<text  x="993.12" y="591.5" ></text>
+</g>
+<g >
+<title>&lt;alloc::alloc::Global as core::alloc::Allocator&gt;::grow (2,607,571 samples, 4.85%)</title><rect x="120.3" y="581" width="57.2" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="123.27" y="591.5" >&lt;alloc..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;core::cell::UnsafeCell&lt;sqlx_sqlite::connection::ConnectionState&gt;&gt; (1,985,220 samples, 3.69%)</title><rect x="721.0" y="549" width="43.6" height="15.0" fill="rgb(236,144,34)" rx="2" ry="2" />
+<text  x="724.01" y="559.5" >core..</text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::poll_future (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="549" width="43.5" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1138.49" y="559.5" >toki..</text>
+</g>
+<g >
+<title>sqlite3Prepare (501,504 samples, 0.93%)</title><rect x="879.0" y="421" width="11.0" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="881.97" y="431.5" ></text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Timespec::now (1,584,369 samples, 2.95%)</title><rect x="890.0" y="581" width="34.7" height="15.0" fill="rgb(227,104,25)" rx="2" ry="2" />
+<text  x="892.98" y="591.5" >st..</text>
+</g>
+<g >
+<title>[ld-linux-x86-64.so.2] (487,926 samples, 0.91%)</title><rect x="57.0" y="533" width="10.7" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="60.04" y="543.5" ></text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Timespec::sub_timespec (481,785 samples, 0.90%)</title><rect x="1033.3" y="277" width="10.5" height="15.0" fill="rgb(236,142,34)" rx="2" ry="2" />
+<text  x="1036.27" y="287.5" ></text>
+</g>
+<g >
+<title>sqlite3_free (1,483,716 samples, 2.76%)</title><rect x="721.0" y="309" width="32.6" height="15.0" fill="rgb(219,66,16)" rx="2" ry="2" />
+<text  x="724.01" y="319.5" >sq..</text>
+</g>
+<g >
+<title>releaseMemArray (799,321 samples, 1.49%)</title><rect x="703.5" y="469" width="17.5" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="706.48" y="479.5" ></text>
+</g>
+<g >
+<title>releaseMemArray (799,321 samples, 1.49%)</title><rect x="703.5" y="485" width="17.5" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="706.48" y="495.5" ></text>
+</g>
+<g >
+<title>core::core_arch::x86::sse2::_mm_pause (966,872 samples, 1.80%)</title><rect x="990.1" y="517" width="21.2" height="15.0" fill="rgb(253,222,53)" rx="2" ry="2" />
+<text  x="993.12" y="527.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::Handle::driver (501,504 samples, 0.93%)</title><rect x="968.1" y="517" width="11.0" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="971.11" y="527.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::core::Cell&lt;T,S&gt;::new (1,003,008 samples, 1.86%)</title><rect x="262.4" y="325" width="22.0" height="15.0" fill="rgb(207,13,3)" rx="2" ry="2" />
+<text  x="265.38" y="335.5" >t..</text>
+</g>
+<g >
+<title>&lt;alloc::sync::Arc&lt;T,A&gt; as core::clone::Clone&gt;::clone (566,334 samples, 1.05%)</title><rect x="250.0" y="533" width="12.4" height="15.0" fill="rgb(221,75,17)" rx="2" ry="2" />
+<text  x="252.95" y="543.5" ></text>
+</g>
+<g >
+<title>std::sys::backtrace::__rust_begin_short_backtrace (500,109 samples, 0.93%)</title><rect x="1109.5" y="597" width="11.0" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="1112.52" y="607.5" ></text>
+</g>
+<g >
+<title>std::time::Instant::checked_duration_since (501,504 samples, 0.93%)</title><rect x="1054.7" y="485" width="11.0" height="15.0" fill="rgb(217,59,14)" rx="2" ry="2" />
+<text  x="1057.74" y="495.5" ></text>
+</g>
+<g >
+<title>core::mem::drop (478,908 samples, 0.89%)</title><rect x="1168.5" y="389" width="10.5" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="1171.49" y="399.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;sqlx_sqlite::connection::worker::WorkerSharedState&gt; (1,985,220 samples, 3.69%)</title><rect x="721.0" y="581" width="43.6" height="15.0" fill="rgb(228,109,26)" rx="2" ry="2" />
+<text  x="724.01" y="591.5" >core..</text>
+</g>
+<g >
+<title>alloc::alloc::dealloc (831,256 samples, 1.55%)</title><rect x="214.7" y="437" width="18.2" height="15.0" fill="rgb(230,118,28)" rx="2" ry="2" />
+<text  x="217.71" y="447.5" ></text>
+</g>
+<g >
+<title>std::panicking::catch_unwind (500,109 samples, 0.93%)</title><rect x="1109.5" y="421" width="11.0" height="15.0" fill="rgb(242,170,40)" rx="2" ry="2" />
+<text  x="1112.52" y="431.5" ></text>
+</g>
+<g >
+<title>getPageNormal (1,796,013 samples, 3.34%)</title><rect x="522.8" y="453" width="39.4" height="15.0" fill="rgb(249,204,48)" rx="2" ry="2" />
+<text  x="525.84" y="463.5" >get..</text>
+</g>
+<g >
+<title>[unknown] (4,450,513 samples, 8.27%)</title><rect x="968.1" y="597" width="97.6" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="971.11" y="607.5" >[unknown]</text>
+</g>
+<g >
+<title>sqlite3ResolveSelectNames (501,504 samples, 0.93%)</title><rect x="879.0" y="325" width="11.0" height="15.0" fill="rgb(221,75,18)" rx="2" ry="2" />
+<text  x="881.97" y="335.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::Harness&lt;T,S&gt;::poll_inner (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="549" width="32.5" height="15.0" fill="rgb(217,55,13)" rx="2" ry="2" />
+<text  x="1014.33" y="559.5" >to..</text>
+</g>
+<g >
+<title>tokio::runtime::task::state::State::drop_join_handle_fast (621,084 samples, 1.15%)</title><rect x="284.4" y="533" width="13.6" height="15.0" fill="rgb(244,182,43)" rx="2" ry="2" />
+<text  x="287.38" y="543.5" ></text>
+</g>
+<g >
+<title>sqlite3WalClose (501,504 samples, 0.93%)</title><rect x="753.6" y="405" width="11.0" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="756.56" y="415.5" ></text>
+</g>
+<g >
+<title>sqlx_sqlite::statement::handle::StatementHandle::bind_text (1,356,860 samples, 2.52%)</title><rect x="838.4" y="309" width="29.8" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="841.45" y="319.5" >sq..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Core::next_task (501,504 samples, 0.93%)</title><rect x="1157.5" y="213" width="11.0" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1160.49" y="223.5" ></text>
+</g>
+<g >
+<title>prtip_scanner::tcp_connect::TcpConnectScanner::scan_ports_with_progress::{{closure}}::{{closure}} (478,908 samples, 0.89%)</title><rect x="1168.5" y="405" width="10.5" height="15.0" fill="rgb(240,163,39)" rx="2" ry="2" />
+<text  x="1171.49" y="415.5" ></text>
+</g>
+<g >
+<title>std::panicking::catch_unwind::do_call (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="501" width="43.5" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1138.49" y="511.5" >std:..</text>
+</g>
+<g >
+<title>pthreadMutexFree (501,504 samples, 0.93%)</title><rect x="753.6" y="325" width="11.0" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="756.56" y="335.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::stats::Stats::end_processing_scheduled_tasks (501,504 samples, 0.93%)</title><rect x="1135.5" y="213" width="11.0" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="1138.49" y="223.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::time::&lt;impl tokio::runtime::time::handle::Handle&gt;::reregister (473,069 samples, 0.88%)</title><rect x="924.7" y="533" width="10.4" height="15.0" fill="rgb(215,50,12)" rx="2" ry="2" />
+<text  x="927.73" y="543.5" ></text>
+</g>
+<g >
+<title>pcache1FetchWithMutex (1,243,563 samples, 2.31%)</title><rect x="661.5" y="373" width="27.2" height="15.0" fill="rgb(236,145,34)" rx="2" ry="2" />
+<text  x="664.45" y="383.5" >p..</text>
+</g>
+<g >
+<title>sqlite3VdbeExec (16,027,980 samples, 29.80%)</title><rect x="369.4" y="533" width="351.6" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="372.41" y="543.5" >sqlite3VdbeExec</text>
+</g>
+<g >
+<title>core::option::Option&lt;T&gt;::map (501,504 samples, 0.93%)</title><rect x="946.1" y="421" width="11.0" height="15.0" fill="rgb(250,207,49)" rx="2" ry="2" />
+<text  x="949.11" y="431.5" ></text>
+</g>
+<g >
+<title>prtip_network::privilege::drop_privileges (775,517 samples, 1.44%)</title><rect x="232.9" y="581" width="17.1" height="15.0" fill="rgb(241,167,39)" rx="2" ry="2" />
+<text  x="235.94" y="591.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::raw::poll (500,109 samples, 0.93%)</title><rect x="1109.5" y="501" width="11.0" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1112.52" y="511.5" ></text>
+</g>
+<g >
+<title>&lt;futures_util::future::try_future::try_flatten::TryFlatten&lt;Fut,&lt;Fut as futures_core::future::TryFuture&gt;::Ok&gt; as futures_core::stream::Stream&gt;::poll_next (922,379 samples, 1.71%)</title><rect x="21.0" y="581" width="20.2" height="15.0" fill="rgb(222,79,19)" rx="2" ry="2" />
+<text  x="24.00" y="591.5" ></text>
+</g>
+<g >
+<title>core::cmp::impls::&lt;impl core::cmp::PartialOrd&lt;&amp;B&gt; for &amp;A&gt;::ge (481,785 samples, 0.90%)</title><rect x="1033.3" y="261" width="10.5" height="15.0" fill="rgb(253,225,53)" rx="2" ry="2" />
+<text  x="1036.27" y="271.5" ></text>
+</g>
+<g >
+<title>&lt;std::time::Instant as core::ops::arith::Sub&gt;::sub (481,785 samples, 0.90%)</title><rect x="1033.3" y="341" width="10.5" height="15.0" fill="rgb(214,45,10)" rx="2" ry="2" />
+<text  x="1036.27" y="351.5" ></text>
+</g>
+<g >
+<title>alloc::alloc::realloc (2,607,571 samples, 4.85%)</title><rect x="120.3" y="549" width="57.2" height="15.0" fill="rgb(240,162,38)" rx="2" ry="2" />
+<text  x="123.27" y="559.5" >alloc:..</text>
+</g>
+<g >
+<title>sqlite3BtreeInsert (9,145,658 samples, 17.00%)</title><rect x="460.8" y="517" width="200.7" height="15.0" fill="rgb(253,221,53)" rx="2" ry="2" />
+<text  x="463.83" y="527.5" >sqlite3BtreeInsert</text>
+</g>
+<g >
+<title>__rustc::__rdl_alloc (1,003,008 samples, 1.86%)</title><rect x="262.4" y="229" width="22.0" height="15.0" fill="rgb(213,37,8)" rx="2" ry="2" />
+<text  x="265.38" y="239.5" >_..</text>
+</g>
+<g >
+<title>[ld-linux-x86-64.so.2] (487,926 samples, 0.91%)</title><rect x="57.0" y="517" width="10.7" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="60.04" y="527.5" ></text>
+</g>
+<g >
+<title>parking_lot_core::parking_lot::lock_bucket_pair (501,504 samples, 0.93%)</title><rect x="1098.5" y="597" width="11.0" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="1101.52" y="607.5" ></text>
+</g>
+<g >
+<title>alloc::sync::Arc&lt;T,A&gt;::drop_slow (1,985,220 samples, 3.69%)</title><rect x="721.0" y="597" width="43.6" height="15.0" fill="rgb(218,62,14)" rx="2" ry="2" />
+<text  x="724.01" y="607.5" >allo..</text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange (501,504 samples, 0.93%)</title><rect x="1179.0" y="501" width="11.0" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="1182.00" y="511.5" ></text>
+</g>
+<g >
+<title>[libc.so.6] (1,317,891 samples, 2.45%)</title><rect x="309.0" y="565" width="28.9" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="312.01" y="575.5" >[l..</text>
+</g>
+<g >
+<title>[libc.so.6] (1,916,236 samples, 3.56%)</title><rect x="135.4" y="501" width="42.1" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="138.44" y="511.5" >[li..</text>
+</g>
+<g >
+<title>[libc.so.6] (799,572 samples, 1.49%)</title><rect x="612.4" y="469" width="17.5" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="615.41" y="479.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::io::driver::Driver::turn (683,640 samples, 1.27%)</title><rect x="1120.5" y="597" width="15.0" height="15.0" fill="rgb(212,33,8)" rx="2" ry="2" />
+<text  x="1123.49" y="607.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}} (500,109 samples, 0.93%)</title><rect x="1109.5" y="293" width="11.0" height="15.0" fill="rgb(206,4,1)" rx="2" ry="2" />
+<text  x="1112.52" y="303.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run (500,109 samples, 0.93%)</title><rect x="1109.5" y="277" width="11.0" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="1112.52" y="287.5" ></text>
+</g>
+<g >
+<title>sqlx_sqlite::statement::virtual::prepare (501,504 samples, 0.93%)</title><rect x="298.0" y="565" width="11.0" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="301.01" y="575.5" ></text>
+</g>
+<g >
+<title>sqlite3PagerGet (1,225,503 samples, 2.28%)</title><rect x="562.2" y="453" width="26.9" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="565.23" y="463.5" >s..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}} (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="373" width="22.0" height="15.0" fill="rgb(206,4,1)" rx="2" ry="2" />
+<text  x="1014.33" y="383.5" >t..</text>
+</g>
+<g >
+<title>tokio::runtime::time::entry::TimerEntry::poll_elapsed (501,504 samples, 0.93%)</title><rect x="968.1" y="549" width="11.0" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="971.11" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::stats::Stats::start_processing_scheduled_tasks (501,504 samples, 0.93%)</title><rect x="1146.5" y="213" width="11.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1149.49" y="223.5" ></text>
+</g>
+<g >
+<title>prtip_scanner::tcp_connect::TcpConnectScanner::scan_ports_with_progress::{{closure}} (621,084 samples, 1.15%)</title><rect x="284.4" y="581" width="13.6" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="287.38" y="591.5" ></text>
+</g>
+<g >
+<title>sqlx_sqlite::arguments::SqliteArgumentValue::bind (1,356,860 samples, 2.52%)</title><rect x="838.4" y="325" width="29.8" height="15.0" fill="rgb(217,59,14)" rx="2" ry="2" />
+<text  x="841.45" y="335.5" >sq..</text>
+</g>
+<g >
+<title>tokio::runtime::context::runtime::enter_runtime (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="341" width="22.0" height="15.0" fill="rgb(243,177,42)" rx="2" ry="2" />
+<text  x="1014.33" y="351.5" >t..</text>
+</g>
+<g >
+<title>[libc.so.6] (1,916,236 samples, 3.56%)</title><rect x="135.4" y="517" width="42.1" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="138.44" y="527.5" >[li..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="357" width="22.0" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="1014.33" y="367.5" >t..</text>
+</g>
+<g >
+<title>pager_reset (1,483,716 samples, 2.76%)</title><rect x="721.0" y="405" width="32.6" height="15.0" fill="rgb(211,31,7)" rx="2" ry="2" />
+<text  x="724.01" y="415.5" >pa..</text>
+</g>
+<g >
+<title>[libc.so.6] (728,508 samples, 1.35%)</title><rect x="89.3" y="517" width="16.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="92.30" y="527.5" ></text>
+</g>
+<g >
+<title>prtip_scanner::tcp_connect::TcpConnectScanner::scan_port::{{closure}} (481,785 samples, 0.90%)</title><rect x="1033.3" y="373" width="10.5" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="1036.27" y="383.5" ></text>
+</g>
+<g >
+<title>sqlx-sqlite-wor (28,569,324 samples, 53.11%)</title><rect x="298.0" y="613" width="626.7" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="301.01" y="623.5" >sqlx-sqlite-wor</text>
+</g>
+<g >
+<title>pthread_mutex_lock (1,796,013 samples, 3.34%)</title><rect x="522.8" y="389" width="39.4" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="525.84" y="399.5" >pth..</text>
+</g>
+<g >
+<title>sqlite3VdbeRecordCompareWithSkip (1,061,737 samples, 1.97%)</title><rect x="589.1" y="485" width="23.3" height="15.0" fill="rgb(241,168,40)" rx="2" ry="2" />
+<text  x="592.12" y="495.5" >s..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;sqlx_sqlite::connection::handle::ConnectionHandle&gt; (1,985,220 samples, 3.69%)</title><rect x="721.0" y="517" width="43.6" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="724.01" y="527.5" >core..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::queue::pack (498,927 samples, 0.93%)</title><rect x="1022.3" y="149" width="11.0" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="1025.33" y="159.5" ></text>
+</g>
+<g >
+<title>sqlite3PcacheFetch (1,243,563 samples, 2.31%)</title><rect x="661.5" y="405" width="27.2" height="15.0" fill="rgb(221,75,18)" rx="2" ry="2" />
+<text  x="664.45" y="415.5" >s..</text>
+</g>
+<g >
+<title>&lt;flume::async::SendFut&lt;T&gt; as core::future::future::Future&gt;::poll (922,379 samples, 1.71%)</title><rect x="21.0" y="453" width="20.2" height="15.0" fill="rgb(242,170,40)" rx="2" ry="2" />
+<text  x="24.00" y="463.5" ></text>
+</g>
+<g >
+<title>computeCellSize (1,812,335 samples, 3.37%)</title><rect x="764.6" y="597" width="39.7" height="15.0" fill="rgb(236,143,34)" rx="2" ry="2" />
+<text  x="767.56" y="607.5" >com..</text>
+</g>
+<g >
+<title>tokio::runtime::time::&lt;impl tokio::runtime::time::handle::Handle&gt;::process (501,504 samples, 0.93%)</title><rect x="1054.7" y="565" width="11.0" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="1057.74" y="575.5" ></text>
+</g>
+<g >
+<title>tokio::time::instant::Instant::saturating_duration_since (501,504 samples, 0.93%)</title><rect x="1054.7" y="517" width="11.0" height="15.0" fill="rgb(237,151,36)" rx="2" ry="2" />
+<text  x="1057.74" y="527.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::queue::Steal&lt;T&gt;::steal_into (498,927 samples, 0.93%)</title><rect x="1022.3" y="181" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="1025.33" y="191.5" ></text>
+</g>
+<g >
+<title>[prtip] (501,504 samples, 0.93%)</title><rect x="957.1" y="597" width="11.0" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="960.11" y="607.5" ></text>
+</g>
+<g >
+<title>tokio::net::tcp::stream::TcpStream::connect_mio::{{closure}} (501,504 samples, 0.93%)</title><rect x="946.1" y="549" width="11.0" height="15.0" fill="rgb(238,156,37)" rx="2" ry="2" />
+<text  x="949.11" y="559.5" ></text>
+</g>
+<g >
+<title>std::panicking::catch_unwind (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="517" width="43.5" height="15.0" fill="rgb(242,170,40)" rx="2" ry="2" />
+<text  x="1138.49" y="527.5" >std:..</text>
+</g>
+<g >
+<title>sqlite3_exec (501,504 samples, 0.93%)</title><rect x="879.0" y="485" width="11.0" height="15.0" fill="rgb(250,207,49)" rx="2" ry="2" />
+<text  x="881.97" y="495.5" ></text>
+</g>
+<g >
+<title>sqlite3ReadSchema (501,504 samples, 0.93%)</title><rect x="879.0" y="533" width="11.0" height="15.0" fill="rgb(248,197,47)" rx="2" ry="2" />
+<text  x="881.97" y="543.5" ></text>
+</g>
+<g >
+<title>[ld-linux-x86-64.so.2] (487,926 samples, 0.91%)</title><rect x="57.0" y="581" width="10.7" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="60.04" y="591.5" ></text>
+</g>
+<g >
+<title>pcache1Fetch (1,225,503 samples, 2.28%)</title><rect x="562.2" y="405" width="26.9" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="565.23" y="415.5" >p..</text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicUsize::compare_exchange (501,504 samples, 0.93%)</title><rect x="1179.0" y="517" width="11.0" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1182.00" y="527.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicU8::compare_exchange (473,069 samples, 0.88%)</title><rect x="924.7" y="453" width="10.4" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="927.73" y="463.5" ></text>
+</g>
+<g >
+<title>core::cmp::Ord::min (496,913 samples, 0.92%)</title><rect x="1043.8" y="549" width="10.9" height="15.0" fill="rgb(217,55,13)" rx="2" ry="2" />
+<text  x="1046.84" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Context::maintenance (501,504 samples, 0.93%)</title><rect x="1011.3" y="197" width="11.0" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="1014.33" y="207.5" ></text>
+</g>
+<g >
+<title>parking_lot::raw_mutex::RawMutex::lock_slow (501,504 samples, 0.93%)</title><rect x="1087.5" y="597" width="11.0" height="15.0" fill="rgb(232,127,30)" rx="2" ry="2" />
+<text  x="1090.52" y="607.5" ></text>
+</g>
+<g >
+<title>&lt;futures_util::future::try_future::MapOk&lt;Fut,F&gt; as core::future::future::Future&gt;::poll (922,379 samples, 1.71%)</title><rect x="21.0" y="549" width="20.2" height="15.0" fill="rgb(220,70,16)" rx="2" ry="2" />
+<text  x="24.00" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::scoped::Scoped&lt;T&gt;::set (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="261" width="33.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="1138.49" y="271.5" >to..</text>
+</g>
+<g >
+<title>btreeReleaseAllCursorPages (672,089 samples, 1.25%)</title><rect x="688.7" y="421" width="14.8" height="15.0" fill="rgb(244,183,43)" rx="2" ry="2" />
+<text  x="691.73" y="431.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::Harness&lt;T,S&gt;::poll_inner (2,484,924 samples, 4.62%)</title><rect x="1135.5" y="565" width="54.5" height="15.0" fill="rgb(217,55,13)" rx="2" ry="2" />
+<text  x="1138.49" y="575.5" >tokio..</text>
+</g>
+<g >
+<title>tokio::time::timeout::timeout (728,508 samples, 1.35%)</title><rect x="89.3" y="549" width="16.0" height="15.0" fill="rgb(215,48,11)" rx="2" ry="2" />
+<text  x="92.30" y="559.5" ></text>
+</g>
+<g >
+<title>flume::Shared&lt;T&gt;::send (922,379 samples, 1.71%)</title><rect x="21.0" y="437" width="20.2" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="24.00" y="447.5" ></text>
+</g>
+<g >
+<title>alloc::alloc::Global::grow_impl (2,607,571 samples, 4.85%)</title><rect x="120.3" y="565" width="57.2" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="123.27" y="575.5" >alloc:..</text>
+</g>
+<g >
+<title>prtip::run::{{closure}} (2,344,859 samples, 4.36%)</title><rect x="232.9" y="597" width="51.5" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="235.94" y="607.5" >prtip..</text>
+</g>
+<g >
+<title>flume::Shared&lt;T&gt;::send::{{closure}} (922,379 samples, 1.71%)</title><rect x="21.0" y="405" width="20.2" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="24.00" y="415.5" ></text>
+</g>
+<g >
+<title>cfree (831,256 samples, 1.55%)</title><rect x="214.7" y="421" width="18.2" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="217.71" y="431.5" ></text>
+</g>
+<g >
+<title>pcache1FreePage (1,483,716 samples, 2.76%)</title><rect x="721.0" y="325" width="32.6" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="724.01" y="335.5" >pc..</text>
+</g>
+<g >
+<title>tokio::time::sleep::Sleep::poll_elapsed (473,069 samples, 0.88%)</title><rect x="924.7" y="581" width="10.4" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="927.73" y="591.5" ></text>
+</g>
+<g >
+<title>&lt;core::panic::unwind_safe::AssertUnwindSafe&lt;F&gt; as core::ops::function::FnOnce&lt; (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="485" width="43.5" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1138.49" y="495.5" >&lt;cor..</text>
+</g>
+<g >
+<title>sqlite3PcacheFetchStress (1,796,013 samples, 3.34%)</title><rect x="522.8" y="437" width="39.4" height="15.0" fill="rgb(211,28,6)" rx="2" ry="2" />
+<text  x="525.84" y="447.5" >sql..</text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicU8::compare_exchange_weak (501,504 samples, 0.93%)</title><rect x="1087.5" y="581" width="11.0" height="15.0" fill="rgb(251,216,51)" rx="2" ry="2" />
+<text  x="1090.52" y="591.5" ></text>
+</g>
+<g >
+<title>getgrnam_r (775,517 samples, 1.44%)</title><rect x="232.9" y="501" width="17.1" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="235.94" y="511.5" ></text>
+</g>
+<g >
+<title>moveToRoot (1,225,503 samples, 2.28%)</title><rect x="562.2" y="485" width="26.9" height="15.0" fill="rgb(254,229,54)" rx="2" ry="2" />
+<text  x="565.23" y="495.5" >m..</text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicUsize::compare_exchange_weak (621,084 samples, 1.15%)</title><rect x="284.4" y="517" width="13.6" height="15.0" fill="rgb(251,216,51)" rx="2" ry="2" />
+<text  x="287.38" y="527.5" ></text>
+</g>
+<g >
+<title>sqlite3RunParser (501,504 samples, 0.93%)</title><rect x="298.0" y="485" width="11.0" height="15.0" fill="rgb(225,95,22)" rx="2" ry="2" />
+<text  x="301.01" y="495.5" ></text>
+</g>
+<g >
+<title>core::ops::function::FnOnce::call_once (501,504 samples, 0.93%)</title><rect x="946.1" y="405" width="11.0" height="15.0" fill="rgb(246,191,45)" rx="2" ry="2" />
+<text  x="949.11" y="415.5" ></text>
+</g>
+<g >
+<title>pcache1FetchWithMutex (1,225,503 samples, 2.28%)</title><rect x="562.2" y="389" width="26.9" height="15.0" fill="rgb(236,145,34)" rx="2" ry="2" />
+<text  x="565.23" y="399.5" >p..</text>
+</g>
+<g >
+<title>tokio::io::poll_evented::PollEvented&lt;E&gt;::new (501,504 samples, 0.93%)</title><rect x="946.1" y="517" width="11.0" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="949.11" y="527.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::metrics::batch::MetricsBatch::start_processing_scheduled_tasks (501,504 samples, 0.93%)</title><rect x="1146.5" y="197" width="11.0" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="1149.49" y="207.5" ></text>
+</g>
+<g >
+<title>resolveOrderGroupBy (501,504 samples, 0.93%)</title><rect x="879.0" y="277" width="11.0" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="881.97" y="287.5" ></text>
+</g>
+<g >
+<title>sqlite3Init (501,504 samples, 0.93%)</title><rect x="879.0" y="517" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="881.97" y="527.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange_weak (501,504 samples, 0.93%)</title><rect x="1098.5" y="549" width="11.0" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="1101.52" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}} (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="245" width="33.0" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1138.49" y="255.5" >to..</text>
+</g>
+<g >
+<title>sqlx_core::logger::QueryLogger::new (1,356,860 samples, 2.52%)</title><rect x="838.4" y="437" width="29.8" height="15.0" fill="rgb(217,56,13)" rx="2" ry="2" />
+<text  x="841.45" y="447.5" >sq..</text>
+</g>
+<g >
+<title>tokio::runtime::io::registration::Registration::deregister (501,504 samples, 0.93%)</title><rect x="979.1" y="533" width="11.0" height="15.0" fill="rgb(240,161,38)" rx="2" ry="2" />
+<text  x="982.12" y="543.5" ></text>
+</g>
+<g >
+<title>std::time::Instant::checked_duration_since (481,785 samples, 0.90%)</title><rect x="1033.3" y="309" width="10.5" height="15.0" fill="rgb(217,59,14)" rx="2" ry="2" />
+<text  x="1036.27" y="319.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicU8::compare_exchange_weak (501,504 samples, 0.93%)</title><rect x="979.1" y="453" width="11.0" height="15.0" fill="rgb(251,216,51)" rx="2" ry="2" />
+<text  x="982.12" y="463.5" ></text>
+</g>
+<g >
+<title>sqlite3LeaveMutexAndCloseZombie (1,985,220 samples, 3.69%)</title><rect x="721.0" y="453" width="43.6" height="15.0" fill="rgb(232,128,30)" rx="2" ry="2" />
+<text  x="724.01" y="463.5" >sqli..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::handle::Handle::spawn (1,003,008 samples, 1.86%)</title><rect x="262.4" y="405" width="22.0" height="15.0" fill="rgb(225,92,22)" rx="2" ry="2" />
+<text  x="265.38" y="415.5" >t..</text>
+</g>
+<g >
+<title>alloc::raw_vec::RawVecInner&lt;A&gt;::deallocate (831,256 samples, 1.55%)</title><rect x="214.7" y="469" width="18.2" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="217.71" y="479.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_compare_exchange_weak (501,504 samples, 0.93%)</title><rect x="1087.5" y="565" width="11.0" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="1090.52" y="575.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::raw::RawTask::new (1,003,008 samples, 1.86%)</title><rect x="262.4" y="341" width="22.0" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="265.38" y="351.5" >t..</text>
+</g>
+<g >
+<title>sqlite3PcacheFetch (1,225,503 samples, 2.28%)</title><rect x="562.2" y="421" width="26.9" height="15.0" fill="rgb(221,75,18)" rx="2" ry="2" />
+<text  x="565.23" y="431.5" >s..</text>
+</g>
+<g >
+<title>std::thread::local::LocalKey&lt;T&gt;::try_with (501,504 samples, 0.93%)</title><rect x="946.1" y="453" width="11.0" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="949.11" y="463.5" ></text>
+</g>
+<g >
+<title>chrono::offset::utc::Utc::now (501,504 samples, 0.93%)</title><rect x="1065.7" y="597" width="11.0" height="15.0" fill="rgb(215,46,11)" rx="2" ry="2" />
+<text  x="1068.75" y="607.5" ></text>
+</g>
+<g >
+<title>core::cmp::min (496,913 samples, 0.92%)</title><rect x="1043.8" y="565" width="10.9" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="1046.84" y="575.5" ></text>
+</g>
+<g >
+<title>[libnss_systemd.so.2] (775,517 samples, 1.44%)</title><rect x="232.9" y="421" width="17.1" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="235.94" y="431.5" ></text>
+</g>
+<g >
+<title>yy_reduce (501,504 samples, 0.93%)</title><rect x="879.0" y="373" width="11.0" height="15.0" fill="rgb(253,225,53)" rx="2" ry="2" />
+<text  x="881.97" y="383.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::current::with_current::{{closure}} (501,504 samples, 0.93%)</title><rect x="946.1" y="437" width="11.0" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="949.11" y="447.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::set_scheduler (1,504,512 samples, 2.80%)</title><rect x="1135.5" y="325" width="33.0" height="15.0" fill="rgb(228,108,26)" rx="2" ry="2" />
+<text  x="1138.49" y="335.5" >to..</text>
+</g>
+<g >
+<title>sqlite3_prepare_v2 (501,504 samples, 0.93%)</title><rect x="879.0" y="469" width="11.0" height="15.0" fill="rgb(219,66,15)" rx="2" ry="2" />
+<text  x="881.97" y="479.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::metrics::batch::now (500,109 samples, 0.93%)</title><rect x="1109.5" y="85" width="11.0" height="15.0" fill="rgb(206,6,1)" rx="2" ry="2" />
+<text  x="1112.52" y="95.5" ></text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;sqlx_sqlite::connection::ConnectionState&gt; (1,985,220 samples, 3.69%)</title><rect x="721.0" y="533" width="43.6" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="724.01" y="543.5" >core..</text>
+</g>
+<g >
+<title>nix::unistd::Group::from_name (775,517 samples, 1.44%)</title><rect x="232.9" y="549" width="17.1" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="235.94" y="559.5" ></text>
+</g>
+<g >
+<title>&lt;tokio::runtime::task::join::JoinHandle&lt;T&gt; as core::ops::drop::Drop&gt;::drop (621,084 samples, 1.15%)</title><rect x="284.4" y="549" width="13.6" height="15.0" fill="rgb(252,220,52)" rx="2" ry="2" />
+<text  x="287.38" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::time::source::TimeSource::instant_to_tick (501,504 samples, 0.93%)</title><rect x="1054.7" y="533" width="11.0" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="1057.74" y="543.5" ></text>
+</g>
+<g >
+<title>std::thread::Builder::spawn (683,640 samples, 1.27%)</title><rect x="105.3" y="549" width="15.0" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="108.28" y="559.5" ></text>
+</g>
+<g >
+<title>[ld-linux-x86-64.so.2] (487,926 samples, 0.91%)</title><rect x="57.0" y="549" width="10.7" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="60.04" y="559.5" ></text>
+</g>
+<g >
+<title>sqlite3_bind_text64 (1,356,860 samples, 2.52%)</title><rect x="838.4" y="293" width="29.8" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="841.45" y="303.5" >sq..</text>
+</g>
+<g >
+<title>prtip_scanner::tcp_connect::TcpConnectScanner::scan_ports_with_progress::{{closure}} (1,569,342 samples, 2.92%)</title><rect x="250.0" y="549" width="34.4" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="252.95" y="559.5" >pr..</text>
+</g>
+<g >
+<title>&lt;tokio::time::sleep::Sleep as core::future::future::Future&gt;::poll (473,069 samples, 0.88%)</title><rect x="924.7" y="597" width="10.4" height="15.0" fill="rgb(227,105,25)" rx="2" ry="2" />
+<text  x="927.73" y="607.5" ></text>
+</g>
+<g >
+<title>sqlite3LockAndPrepare (501,504 samples, 0.93%)</title><rect x="298.0" y="533" width="11.0" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="301.01" y="543.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::core::Core&lt;T,S&gt;::poll::{{closure}} (500,109 samples, 0.93%)</title><rect x="1109.5" y="325" width="11.0" height="15.0" fill="rgb(250,208,49)" rx="2" ry="2" />
+<text  x="1112.52" y="335.5" ></text>
+</g>
+<g >
+<title>std::sys::alloc::unix::aligned_malloc (1,003,008 samples, 1.86%)</title><rect x="262.4" y="197" width="22.0" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="265.38" y="207.5" >s..</text>
+</g>
+<g >
+<title>core::cmp::PartialOrd::ge (481,785 samples, 0.90%)</title><rect x="1033.3" y="245" width="10.5" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="1036.27" y="255.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::time::Driver::park_internal (998,417 samples, 1.86%)</title><rect x="1043.8" y="581" width="21.9" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="1046.84" y="591.5" >t..</text>
+</g>
+<g >
+<title>sqlite3BtreeClose (1,985,220 samples, 3.69%)</title><rect x="721.0" y="437" width="43.6" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="724.01" y="447.5" >sqli..</text>
+</g>
+<g >
+<title>getAndInitPage (1,243,563 samples, 2.31%)</title><rect x="661.5" y="453" width="27.2" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="664.45" y="463.5" >g..</text>
+</g>
+<g >
+<title>&lt;sqlx_sqlite::connection::handle::ConnectionHandle as core::ops::drop::Drop&gt;::drop (1,985,220 samples, 3.69%)</title><rect x="721.0" y="501" width="43.6" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="724.01" y="511.5" >&lt;sql..</text>
+</g>
+<g >
+<title>[libnss_systemd.so.2] (775,517 samples, 1.44%)</title><rect x="232.9" y="453" width="17.1" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="235.94" y="463.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::stats::Stats::end_processing_scheduled_tasks (501,504 samples, 0.93%)</title><rect x="1011.3" y="181" width="11.0" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="1014.33" y="191.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::raw::RawTask::poll (500,109 samples, 0.93%)</title><rect x="1109.5" y="517" width="11.0" height="15.0" fill="rgb(220,72,17)" rx="2" ry="2" />
+<text  x="1112.52" y="527.5" ></text>
+</g>
+<g >
+<title>lock_api::mutex::Mutex&lt;R,T&gt;::lock (478,908 samples, 0.89%)</title><rect x="1168.5" y="293" width="10.5" height="15.0" fill="rgb(220,72,17)" rx="2" ry="2" />
+<text  x="1171.49" y="303.5" ></text>
+</g>
+<g >
+<title>core::hint::spin_loop (501,504 samples, 0.93%)</title><rect x="1065.7" y="533" width="11.0" height="15.0" fill="rgb(235,138,33)" rx="2" ry="2" />
+<text  x="1068.75" y="543.5" ></text>
+</g>
+<g >
+<title>tokio::net::tcp::stream::TcpStream::new (501,504 samples, 0.93%)</title><rect x="946.1" y="533" width="11.0" height="15.0" fill="rgb(234,136,32)" rx="2" ry="2" />
+<text  x="949.11" y="543.5" ></text>
+</g>
+<g >
+<title>__vdso_clock_gettime (500,109 samples, 0.93%)</title><rect x="1109.5" y="37" width="11.0" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="1112.52" y="47.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::state::State::fetch_update_action (501,504 samples, 0.93%)</title><rect x="1179.0" y="533" width="11.0" height="15.0" fill="rgb(207,12,2)" rx="2" ry="2" />
+<text  x="1182.00" y="543.5" ></text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Timespec::sub_timespec (501,504 samples, 0.93%)</title><rect x="1054.7" y="453" width="11.0" height="15.0" fill="rgb(236,142,34)" rx="2" ry="2" />
+<text  x="1057.74" y="463.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::io::scheduled_io::ScheduledIo::clear_wakers (490,970 samples, 0.91%)</title><rect x="1076.7" y="533" width="10.8" height="15.0" fill="rgb(246,191,45)" rx="2" ry="2" />
+<text  x="1079.75" y="543.5" ></text>
+</g>
+<g >
+<title>std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}} (2,912,593 samples, 5.41%)</title><rect x="804.3" y="501" width="63.9" height="15.0" fill="rgb(252,216,51)" rx="2" ry="2" />
+<text  x="807.32" y="511.5" >std::th..</text>
+</g>
+<g >
+<title>__rustc::__rdl_realloc (691,335 samples, 1.29%)</title><rect x="120.3" y="533" width="15.1" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="123.27" y="543.5" ></text>
+</g>
+<g >
+<title>unixShmUnmap (501,504 samples, 0.93%)</title><rect x="753.6" y="341" width="11.0" height="15.0" fill="rgb(217,58,13)" rx="2" ry="2" />
+<text  x="756.56" y="351.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::Handle::spawn (1,003,008 samples, 1.86%)</title><rect x="262.4" y="421" width="22.0" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="265.38" y="431.5" >t..</text>
+</g>
+<g >
+<title>walIndexClose (501,504 samples, 0.93%)</title><rect x="753.6" y="373" width="11.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="756.56" y="383.5" ></text>
+</g>
+<g >
+<title>sqlite3PagerGet (1,796,013 samples, 3.34%)</title><rect x="522.8" y="469" width="39.4" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="525.84" y="479.5" >sql..</text>
+</g>
+<g >
+<title>[libc.so.6] (1,483,716 samples, 2.76%)</title><rect x="721.0" y="261" width="32.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="724.01" y="271.5" >[l..</text>
+</g>
+<g >
+<title>prtip_scanner::tcp_connect::TcpConnectScanner::scan_ports_with_progress::{{closure}}::{{closure}} (481,785 samples, 0.90%)</title><rect x="1033.3" y="389" width="10.5" height="15.0" fill="rgb(240,163,39)" rx="2" ry="2" />
+<text  x="1036.27" y="399.5" ></text>
+</g>
+<g >
+<title>clock_gettime (500,109 samples, 0.93%)</title><rect x="1109.5" y="53" width="11.0" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="1112.52" y="63.5" ></text>
+</g>
+<g >
+<title>parking_lot::raw_mutex::RawMutex::lock_slow (501,504 samples, 0.93%)</title><rect x="1065.7" y="581" width="11.0" height="15.0" fill="rgb(232,127,30)" rx="2" ry="2" />
+<text  x="1068.75" y="591.5" ></text>
+</g>
+<g >
+<title>std::panicking::catch_unwind::do_call (500,109 samples, 0.93%)</title><rect x="1109.5" y="405" width="11.0" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1112.52" y="415.5" ></text>
+</g>
+<g >
+<title>[prtip] (501,504 samples, 0.93%)</title><rect x="298.0" y="597" width="11.0" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="301.01" y="607.5" ></text>
+</g>
+<g >
+<title>&lt;tokio::runtime::blocking::task::BlockingTask&lt;T&gt; as core::future::future::Future&gt;::poll (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="389" width="22.0" height="15.0" fill="rgb(253,225,53)" rx="2" ry="2" />
+<text  x="1014.33" y="399.5" >&lt;..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;lock_api::mutex::MutexGuard&lt;parking_lot::raw_mutex::RawMutex,tokio::runtime::io::scheduled_io::Waiters&gt;&gt; (490,970 samples, 0.91%)</title><rect x="1076.7" y="501" width="10.8" height="15.0" fill="rgb(253,223,53)" rx="2" ry="2" />
+<text  x="1079.75" y="511.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}} (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="229" width="22.0" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1014.33" y="239.5" >t..</text>
+</g>
+<g >
+<title>[unknown] (18,781,303 samples, 34.92%)</title><rect x="309.0" y="597" width="412.0" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="312.01" y="607.5" >[unknown]</text>
+</g>
+<g >
+<title>pcache1FetchNoMutex (1,225,503 samples, 2.28%)</title><rect x="562.2" y="373" width="26.9" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="565.23" y="383.5" >p..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;core::cell::UnsafeCell&lt;flume::Chan&lt;core::result::Result&lt;either::Either&lt;sqlx_sqlite::query_result::SqliteQueryResult,sqlx_sqlite::row::SqliteRow&gt;,sqlx_core::error::Error&gt;&gt;&gt;&gt; (831,256 samples, 1.55%)</title><rect x="214.7" y="549" width="18.2" height="15.0" fill="rgb(249,204,48)" rx="2" ry="2" />
+<text  x="217.71" y="559.5" ></text>
+</g>
+<g >
+<title>parking_lot_core::spinwait::cpu_relax (966,872 samples, 1.80%)</title><rect x="990.1" y="549" width="21.2" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="993.12" y="559.5" ></text>
+</g>
+<g >
+<title>&lt;futures_util::future::future::Map&lt;Fut,F&gt; as core::future::future::Future&gt;::poll (922,379 samples, 1.71%)</title><rect x="21.0" y="533" width="20.2" height="15.0" fill="rgb(252,220,52)" rx="2" ry="2" />
+<text  x="24.00" y="543.5" ></text>
+</g>
+<g >
+<title>alloc::alloc::Global::alloc_impl (1,003,008 samples, 1.86%)</title><rect x="262.4" y="261" width="22.0" height="15.0" fill="rgb(231,123,29)" rx="2" ry="2" />
+<text  x="265.38" y="271.5" >a..</text>
+</g>
+<g >
+<title>tokio::runtime::task::list::OwnedTasks&lt;S&gt;::bind (1,003,008 samples, 1.86%)</title><rect x="262.4" y="373" width="22.0" height="15.0" fill="rgb(222,78,18)" rx="2" ry="2" />
+<text  x="265.38" y="383.5" >t..</text>
+</g>
+<g >
+<title>[ld-linux-x86-64.so.2] (487,926 samples, 0.91%)</title><rect x="57.0" y="565" width="10.7" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="60.04" y="575.5" ></text>
+</g>
+<g >
+<title>std::time::Instant::elapsed (481,785 samples, 0.90%)</title><rect x="1033.3" y="357" width="10.5" height="15.0" fill="rgb(240,163,39)" rx="2" ry="2" />
+<text  x="1036.27" y="367.5" ></text>
+</g>
+<g >
+<title>std::thread::Builder::spawn_unchecked_ (683,640 samples, 1.27%)</title><rect x="105.3" y="517" width="15.0" height="15.0" fill="rgb(242,172,41)" rx="2" ry="2" />
+<text  x="108.28" y="527.5" ></text>
+</g>
+<g >
+<title>tokio::task::spawn::spawn_inner::{{closure}} (1,003,008 samples, 1.86%)</title><rect x="262.4" y="437" width="22.0" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="265.38" y="447.5" >t..</text>
+</g>
+<g >
+<title>_nss_systemd_getgrnam_r (775,517 samples, 1.44%)</title><rect x="232.9" y="485" width="17.1" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="235.94" y="495.5" ></text>
+</g>
+<g >
+<title>[unknown] (1,483,716 samples, 2.76%)</title><rect x="721.0" y="357" width="32.6" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="724.01" y="367.5" >[u..</text>
+</g>
+<g >
+<title>core::ptr::drop_in_place&lt;tokio::loom::std::parking_lot::MutexGuard&lt;tokio::runtime::io::scheduled_io::Waiters&gt;&gt; (490,970 samples, 0.91%)</title><rect x="1076.7" y="517" width="10.8" height="15.0" fill="rgb(222,81,19)" rx="2" ry="2" />
+<text  x="1079.75" y="527.5" ></text>
+</g>
+<g >
+<title>std::panic::catch_unwind (500,109 samples, 0.93%)</title><rect x="1109.5" y="437" width="11.0" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="1112.52" y="447.5" ></text>
+</g>
+<g >
+<title>clock_gettime (501,504 samples, 0.93%)</title><rect x="1135.5" y="181" width="11.0" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="1138.49" y="191.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::set_scheduler (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="309" width="22.0" height="15.0" fill="rgb(228,108,26)" rx="2" ry="2" />
+<text  x="1014.33" y="319.5" >t..</text>
+</g>
+<g >
+<title>tokio::runtime::task::core::Core&lt;T,S&gt;::poll (500,109 samples, 0.93%)</title><rect x="1109.5" y="357" width="11.0" height="15.0" fill="rgb(245,186,44)" rx="2" ry="2" />
+<text  x="1112.52" y="367.5" ></text>
+</g>
+<g >
+<title>&lt;futures_util::stream::try_stream::try_filter_map::TryFilterMap&lt;St,Fut,F&gt; as futures_core::stream::Stream&gt;::poll_next (720,525 samples, 1.34%)</title><rect x="41.2" y="597" width="15.8" height="15.0" fill="rgb(232,127,30)" rx="2" ry="2" />
+<text  x="44.24" y="607.5" ></text>
+</g>
+<g >
+<title>std::thread::Builder::spawn_unchecked_::{{closure}} (2,912,593 samples, 5.41%)</title><rect x="804.3" y="581" width="63.9" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="807.32" y="591.5" >std::th..</text>
+</g>
+<g >
+<title>moveToChild (1,243,563 samples, 2.31%)</title><rect x="661.5" y="469" width="27.2" height="15.0" fill="rgb(241,167,40)" rx="2" ry="2" />
+<text  x="664.45" y="479.5" >m..</text>
+</g>
+<g >
+<title>tokio::runtime::task::new_task (1,003,008 samples, 1.86%)</title><rect x="262.4" y="357" width="22.0" height="15.0" fill="rgb(209,22,5)" rx="2" ry="2" />
+<text  x="265.38" y="367.5" >t..</text>
+</g>
+<g >
+<title>&lt;futures_util::future::try_future::TryFlattenStream&lt;Fut&gt; as futures_core::stream::Stream&gt;::poll_next (922,379 samples, 1.71%)</title><rect x="21.0" y="597" width="20.2" height="15.0" fill="rgb(237,147,35)" rx="2" ry="2" />
+<text  x="24.00" y="607.5" ></text>
+</g>
+<g >
+<title>[ld-linux-x86-64.so.2] (487,926 samples, 0.91%)</title><rect x="57.0" y="597" width="10.7" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="60.04" y="607.5" ></text>
+</g>
+<g >
+<title>malloc (1,697,136 samples, 3.16%)</title><rect x="177.5" y="581" width="37.2" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="180.48" y="591.5" >mal..</text>
+</g>
+<g >
+<title>sqlite3_prepare_v3 (501,504 samples, 0.93%)</title><rect x="298.0" y="549" width="11.0" height="15.0" fill="rgb(213,36,8)" rx="2" ry="2" />
+<text  x="301.01" y="559.5" ></text>
+</g>
+<g >
+<title>core::option::Option&lt;T&gt;::map (1,003,008 samples, 1.86%)</title><rect x="262.4" y="453" width="22.0" height="15.0" fill="rgb(250,207,49)" rx="2" ry="2" />
+<text  x="265.38" y="463.5" >c..</text>
+</g>
+<g >
+<title>prtip_network::privilege::unix_drop_privileges (775,517 samples, 1.44%)</title><rect x="232.9" y="565" width="17.1" height="15.0" fill="rgb(207,12,3)" rx="2" ry="2" />
+<text  x="235.94" y="575.5" ></text>
+</g>
+<g >
+<title>&lt;tokio::runtime::io::registration::Registration as core::ops::drop::Drop&gt;::drop (490,970 samples, 0.91%)</title><rect x="1076.7" y="549" width="10.8" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="1079.75" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::run::{{closure}} (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="325" width="22.0" height="15.0" fill="rgb(249,206,49)" rx="2" ry="2" />
+<text  x="1014.33" y="335.5" >t..</text>
+</g>
+<g >
+<title>&lt;core::panic::unwind_safe::AssertUnwindSafe&lt;F&gt; as core::ops::function::FnOnce&lt; (500,109 samples, 0.93%)</title><rect x="1109.5" y="389" width="11.0" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1112.52" y="399.5" ></text>
+</g>
+<g >
+<title>[unknown] (2,394,481 samples, 4.45%)</title><rect x="67.7" y="597" width="52.6" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="70.75" y="607.5" >[unkn..</text>
+</g>
+<g >
+<title>&lt;tokio::runtime::blocking::task::BlockingTask&lt;T&gt; as core::future::future::Future&gt;::poll (500,109 samples, 0.93%)</title><rect x="1109.5" y="309" width="11.0" height="15.0" fill="rgb(253,225,53)" rx="2" ry="2" />
+<text  x="1112.52" y="319.5" ></text>
+</g>
+<g >
+<title>sqlite3BtreeIndexMoveto (5,911,967 samples, 10.99%)</title><rect x="500.3" y="501" width="129.6" height="15.0" fill="rgb(215,46,11)" rx="2" ry="2" />
+<text  x="503.26" y="511.5" >sqlite3BtreeInde..</text>
+</g>
+<g >
+<title>&lt;std::sys::pal::unix::time::Timespec as core::cmp::PartialOrd&gt;::partial_cmp (481,785 samples, 0.90%)</title><rect x="1033.3" y="229" width="10.5" height="15.0" fill="rgb(247,197,47)" rx="2" ry="2" />
+<text  x="1036.27" y="239.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::current::with_current::{{closure}} (1,003,008 samples, 1.86%)</title><rect x="262.4" y="469" width="22.0" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="265.38" y="479.5" >t..</text>
+</g>
+<g >
+<title>alloc::collections::vec_deque::VecDeque&lt;T,A&gt;::grow (1,356,860 samples, 2.52%)</title><rect x="838.4" y="389" width="29.8" height="15.0" fill="rgb(241,166,39)" rx="2" ry="2" />
+<text  x="841.45" y="399.5" >al..</text>
+</g>
+<g >
+<title>std::sys::pal::unix::time::Timespec::now (500,109 samples, 0.93%)</title><rect x="1109.5" y="69" width="11.0" height="15.0" fill="rgb(227,104,25)" rx="2" ry="2" />
+<text  x="1112.52" y="79.5" ></text>
+</g>
+<g >
+<title>&lt;core::panic::unwind_safe::AssertUnwindSafe&lt;F&gt; as core::ops::function::FnOnce&lt; (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="469" width="32.5" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1014.33" y="479.5" >&lt;c..</text>
+</g>
+<g >
+<title>&lt;F as futures_core::future::TryFuture&gt;::try_poll (922,379 samples, 1.71%)</title><rect x="21.0" y="565" width="20.2" height="15.0" fill="rgb(243,174,41)" rx="2" ry="2" />
+<text  x="24.00" y="575.5" ></text>
+</g>
+<g >
+<title>sqlx_sqlite::arguments::SqliteArguments::bind (1,356,860 samples, 2.52%)</title><rect x="838.4" y="341" width="29.8" height="15.0" fill="rgb(213,37,9)" rx="2" ry="2" />
+<text  x="841.45" y="351.5" >sq..</text>
+</g>
+<g >
+<title>sqlite3VdbeFreeCursorNN (672,089 samples, 1.25%)</title><rect x="688.7" y="469" width="14.8" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="691.73" y="479.5" ></text>
+</g>
+<g >
+<title>btreeReleaseAllCursorPages (672,089 samples, 1.25%)</title><rect x="688.7" y="437" width="14.8" height="15.0" fill="rgb(244,183,43)" rx="2" ry="2" />
+<text  x="691.73" y="447.5" ></text>
+</g>
+<g >
+<title>&lt;tokio::io::poll_evented::PollEvented&lt;E&gt; as core::ops::drop::Drop&gt;::drop (501,504 samples, 0.93%)</title><rect x="979.1" y="549" width="11.0" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="982.12" y="559.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicUsize::compare_exchange_weak (501,504 samples, 0.93%)</title><rect x="1098.5" y="565" width="11.0" height="15.0" fill="rgb(251,216,51)" rx="2" ry="2" />
+<text  x="1101.52" y="575.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Context::run (1,000,431 samples, 1.86%)</title><rect x="1011.3" y="213" width="22.0" height="15.0" fill="rgb(209,18,4)" rx="2" ry="2" />
+<text  x="1014.33" y="223.5" >t..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::stats::Stats::start_processing_scheduled_tasks (500,109 samples, 0.93%)</title><rect x="1109.5" y="117" width="11.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1112.52" y="127.5" ></text>
+</g>
+<g >
+<title>core::option::Option&lt;T&gt;::map (922,379 samples, 1.71%)</title><rect x="21.0" y="421" width="20.2" height="15.0" fill="rgb(250,207,49)" rx="2" ry="2" />
+<text  x="24.00" y="431.5" ></text>
+</g>
+<g >
+<title>sqlite3Parser (501,504 samples, 0.93%)</title><rect x="879.0" y="389" width="11.0" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="881.97" y="399.5" ></text>
+</g>
+<g >
+<title>core::sync::atomic::AtomicU8::compare_exchange (490,970 samples, 0.91%)</title><rect x="1076.7" y="453" width="10.8" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="1079.75" y="463.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::poll_future (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="533" width="32.5" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1014.33" y="543.5" >to..</text>
+</g>
+<g >
+<title>core::cmp::PartialOrd::lt (496,913 samples, 0.92%)</title><rect x="1043.8" y="533" width="10.9" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="1046.84" y="543.5" ></text>
+</g>
+<g >
+<title>tokio::time::timeout::Timeout&lt;T&gt;::new_with_delay (728,508 samples, 1.35%)</title><rect x="89.3" y="533" width="16.0" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="92.30" y="543.5" ></text>
+</g>
+<g >
+<title>&lt;F as futures_core::future::TryFuture&gt;::try_poll (922,379 samples, 1.71%)</title><rect x="21.0" y="485" width="20.2" height="15.0" fill="rgb(243,174,41)" rx="2" ry="2" />
+<text  x="24.00" y="495.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::poll_future::{{closure}} (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="453" width="32.5" height="15.0" fill="rgb(228,109,26)" rx="2" ry="2" />
+<text  x="1014.33" y="463.5" >to..</text>
+</g>
+<g >
+<title>sqlite3Prepare (501,504 samples, 0.93%)</title><rect x="298.0" y="501" width="11.0" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="301.01" y="511.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::context::runtime::enter_runtime (500,109 samples, 0.93%)</title><rect x="1109.5" y="261" width="11.0" height="15.0" fill="rgb(243,177,42)" rx="2" ry="2" />
+<text  x="1112.52" y="271.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::harness::poll_future::{{closure}} (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="469" width="43.5" height="15.0" fill="rgb(228,109,26)" rx="2" ry="2" />
+<text  x="1138.49" y="479.5" >toki..</text>
+</g>
+<g >
+<title>tokio::runtime::scheduler::multi_thread::worker::Core::steal_work (498,927 samples, 0.93%)</title><rect x="1022.3" y="197" width="11.0" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="1025.33" y="207.5" ></text>
+</g>
+<g >
+<title>alloc::raw_vec::finish_grow (1,317,891 samples, 2.45%)</title><rect x="309.0" y="581" width="28.9" height="15.0" fill="rgb(244,182,43)" rx="2" ry="2" />
+<text  x="312.01" y="591.5" >al..</text>
+</g>
+<g >
+<title>tokio::runtime::context::set_scheduler (500,109 samples, 0.93%)</title><rect x="1109.5" y="229" width="11.0" height="15.0" fill="rgb(228,108,26)" rx="2" ry="2" />
+<text  x="1112.52" y="239.5" ></text>
+</g>
+<g >
+<title>core::hint::spin_loop (966,872 samples, 1.80%)</title><rect x="990.1" y="533" width="21.2" height="15.0" fill="rgb(235,138,33)" rx="2" ry="2" />
+<text  x="993.12" y="543.5" ></text>
+</g>
+<g >
+<title>[libnss_systemd.so.2] (775,517 samples, 1.44%)</title><rect x="232.9" y="437" width="17.1" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="235.94" y="447.5" ></text>
+</g>
+<g >
+<title>parking_lot_core::spinwait::cpu_relax (501,504 samples, 0.93%)</title><rect x="1065.7" y="549" width="11.0" height="15.0" fill="rgb(246,192,46)" rx="2" ry="2" />
+<text  x="1068.75" y="559.5" ></text>
+</g>
+<g >
+<title>tokio::loom::std::unsafe_cell::UnsafeCell&lt;T&gt;::with_mut (1,983,420 samples, 3.69%)</title><rect x="1135.5" y="437" width="43.5" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="1138.49" y="447.5" >toki..</text>
+</g>
+<g >
+<title>&lt;alloc::alloc::Global as core::alloc::Allocator&gt;::deallocate (831,256 samples, 1.55%)</title><rect x="214.7" y="453" width="18.2" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="217.71" y="463.5" ></text>
+</g>
+<g >
+<title>tokio::runtime::task::core::Core&lt;T,S&gt;::poll::{{closure}} (1,482,216 samples, 2.76%)</title><rect x="1011.3" y="405" width="32.5" height="15.0" fill="rgb(250,208,49)" rx="2" ry="2" />
+<text  x="1014.33" y="415.5" >to..</text>
+</g>
+<g >
+<title>sqlite3Step (17,463,412 samples, 32.47%)</title><rect x="337.9" y="549" width="383.1" height="15.0" fill="rgb(222,78,18)" rx="2" ry="2" />
+<text  x="340.92" y="559.5" >sqlite3Step</text>
+</g>
+<g >
+<title>[libc.so.6] (1,003,008 samples, 1.86%)</title><rect x="262.4" y="165" width="22.0" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="265.38" y="175.5" >[..</text>
+</g>
+<g >
+<title>core::sync::atomic::atomic_load (683,640 samples, 1.27%)</title><rect x="1120.5" y="533" width="15.0" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1123.49" y="543.5" ></text>
+</g>
+<g >
+<title>std::panicking::catch_unwind::do_call (2,912,593 samples, 5.41%)</title><rect x="804.3" y="533" width="63.9" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="807.32" y="543.5" >std::pa..</text>
+</g>
+<g >
+<title>sqlx_core::pool::inner::PoolInner&lt;DB&gt;::acquire::{{closure}} (728,508 samples, 1.35%)</title><rect x="89.3" y="581" width="16.0" height="15.0" fill="rgb(219,66,15)" rx="2" ry="2" />
+<text  x="92.30" y="591.5" ></text>
+</g>
+</g>
+</svg>

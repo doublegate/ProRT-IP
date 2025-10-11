@@ -9,11 +9,11 @@
 //! The scheduler manages the scan lifecycle from initialization through completion.
 
 use crate::adaptive_parallelism::calculate_parallelism;
-use crate::{DiscoveryEngine, DiscoveryMethod, RateLimiter, ScanStorage, TcpConnectScanner};
-use prtip_core::{Config, Error, PortRange, Result, ScanResult, ScanTarget};
+use crate::storage_backend::StorageBackend;
+use crate::{DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter, TcpConnectScanner};
+use prtip_core::{Config, PortRange, Result, ScanResult, ScanTarget};
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::RwLock;
 use tracing::{debug, error, info, warn};
 
 /// Scan scheduler that orchestrates the scanning process
@@ -24,13 +24,14 @@ use tracing::{debug, error, info, warn};
 /// # Examples
 ///
 /// ```no_run
-/// use prtip_scanner::{ScanScheduler, ScanStorage};
+/// use prtip_scanner::{ScanScheduler, StorageBackend};
 /// use prtip_core::{Config, ScanTarget};
+/// use std::sync::Arc;
 ///
 /// # async fn example() -> prtip_core::Result<()> {
 /// let config = Config::default();
-/// let storage = ScanStorage::new("results.db").await?;
-/// let scheduler = ScanScheduler::new(config, storage).await?;
+/// let storage_backend = Arc::new(StorageBackend::memory(10000));
+/// let scheduler = ScanScheduler::new(config, storage_backend).await?;
 ///
 /// let targets = vec![ScanTarget::parse("192.168.1.1")?];
 /// let results = scheduler.execute_scan(targets).await?;
@@ -44,7 +45,7 @@ pub struct ScanScheduler {
     tcp_scanner: Arc<TcpConnectScanner>,
     discovery: Arc<DiscoveryEngine>,
     rate_limiter: Arc<RateLimiter>,
-    storage: Arc<RwLock<ScanStorage>>,
+    storage_backend: Arc<StorageBackend>,
 }
 
 impl ScanScheduler {
@@ -53,12 +54,12 @@ impl ScanScheduler {
     /// # Arguments
     ///
     /// * `config` - Scan configuration
-    /// * `storage` - Storage backend for results
+    /// * `storage_backend` - Storage backend for results (Memory or AsyncDatabase)
     ///
     /// # Errors
     ///
     /// Returns an error if the configuration is invalid.
-    pub async fn new(config: Config, storage: ScanStorage) -> Result<Self> {
+    pub async fn new(config: Config, storage_backend: Arc<StorageBackend>) -> Result<Self> {
         // Validate configuration
         config.validate()?;
 
@@ -79,7 +80,7 @@ impl ScanScheduler {
             tcp_scanner,
             discovery,
             rate_limiter,
-            storage: Arc::new(RwLock::new(storage)),
+            storage_backend,
         })
     }
 
@@ -118,25 +119,16 @@ impl ScanScheduler {
     pub async fn execute_scan(&self, targets: Vec<ScanTarget>) -> Result<Vec<ScanResult>> {
         info!("Starting scan of {} targets", targets.len());
 
-        // Create scan record
-        let config_json = serde_json::to_string(&self.config)
-            .map_err(|e| Error::Config(format!("Failed to serialize config: {}", e)))?;
-
-        let scan_id = {
-            let storage = self.storage.write().await;
-            storage.create_scan(&config_json).await?
-        };
-
-        info!("Created scan ID: {}", scan_id);
-
         let mut all_results = Vec::new();
 
         // Scan each target
         for target in targets {
             debug!("Scanning target: {:?}", target);
 
-            match self.scan_target(&target, scan_id).await {
+            match self.scan_target(&target).await {
                 Ok(results) => {
+                    // Store results via storage backend (non-blocking for async!)
+                    self.storage_backend.add_results_batch(results.clone())?;
                     all_results.extend(results);
                 }
                 Err(e) => {
@@ -146,28 +138,28 @@ impl ScanScheduler {
             }
         }
 
-        // Complete scan
-        {
-            let storage = self.storage.write().await;
-            storage.complete_scan(scan_id).await?;
-        }
+        // Flush all pending writes
+        self.storage_backend.flush().await?;
 
         info!("Scan complete: {} results", all_results.len());
         Ok(all_results)
     }
 
     /// Scan a single target
-    async fn scan_target(&self, target: &ScanTarget, scan_id: i64) -> Result<Vec<ScanResult>> {
+    async fn scan_target(&self, target: &ScanTarget) -> Result<Vec<ScanResult>> {
         // Expand target into individual IPs
         let hosts = target.expand_hosts();
         debug!("Target expanded to {} hosts", hosts.len());
-
-        let mut all_results = Vec::new();
 
         // Parse port range from config
         // For Phase 1, we'll scan common ports if none specified
         let ports = self.get_scan_ports()?;
         debug!("Scanning {} ports", ports.len());
+
+        // Create lock-free aggregator for this target
+        let estimated_results = hosts.len().saturating_mul(ports.len()).saturating_mul(2);
+        let max_buffer = estimated_results.min(100_000); // Cap at 100K per target
+        let aggregator = Arc::new(LockFreeAggregator::new(max_buffer));
 
         // Calculate adaptive parallelism based on port count
         // parallelism == 0 means use adaptive, otherwise use configured value
@@ -193,15 +185,20 @@ impl ScanScheduler {
                 .await
             {
                 Ok(results) => {
-                    // Store results immediately (streaming to disk)
-                    {
-                        let storage = self.storage.write().await;
-                        if let Err(e) = storage.store_results_batch(scan_id, &results).await {
-                            warn!("Failed to store results for {}: {}", host, e);
+                    // Push results to lock-free aggregator (zero contention!)
+                    for result in results {
+                        // Try to push result
+                        if let Err(e) = aggregator.push(result.clone()) {
+                            warn!("Failed to push result to aggregator: {}", e);
+                            // If queue is full, drain and store batch
+                            let batch = aggregator.drain_batch(5000);
+                            if !batch.is_empty() {
+                                self.storage_backend.add_results_batch(batch)?;
+                            }
+                            // Retry push (result not moved because we cloned above)
+                            aggregator.push(result)?;
                         }
                     }
-
-                    all_results.extend(results);
                 }
                 Err(e) => {
                     warn!("Error scanning {}: {}", host, e);
@@ -209,6 +206,9 @@ impl ScanScheduler {
                 }
             }
         }
+
+        // Drain all results from aggregator
+        let all_results = aggregator.drain_all();
 
         Ok(all_results)
     }
@@ -311,16 +311,22 @@ impl ScanScheduler {
             ports.count()
         );
 
-        let config_json = serde_json::to_string(&self.config)
-            .map_err(|e| Error::Config(format!("Failed to serialize config: {}", e)))?;
-
-        let scan_id = {
-            let storage = self.storage.write().await;
-            storage.create_scan(&config_json).await?
-        };
-
         let ports_vec: Vec<u16> = ports.iter().collect();
-        let mut all_results = Vec::new();
+
+        // Create lock-free aggregator to collect results without contention
+        // Buffer size = estimated total results (hosts * ports) with 2x safety margin
+        let estimated_hosts: usize = targets.iter().map(|t| t.expand_hosts().len()).sum();
+        let estimated_results = estimated_hosts
+            .saturating_mul(ports_vec.len())
+            .saturating_mul(2);
+        let max_buffer = estimated_results.min(1_000_000); // Cap at 1M results
+        let aggregator = Arc::new(LockFreeAggregator::new(max_buffer));
+
+        info!(
+            "Using lock-free aggregator with buffer size: {} (estimated {} results)",
+            max_buffer,
+            estimated_results / 2
+        );
 
         // Calculate adaptive parallelism based on port count
         // parallelism == 0 means use adaptive, otherwise use configured value
@@ -347,11 +353,20 @@ impl ScanScheduler {
                     .await
                 {
                     Ok(results) => {
-                        {
-                            let storage = self.storage.write().await;
-                            storage.store_results_batch(scan_id, &results).await?;
+                        // Push results to lock-free aggregator (zero contention!)
+                        for result in results {
+                            // Try to push result
+                            if let Err(e) = aggregator.push(result.clone()) {
+                                warn!("Failed to push result to aggregator: {}", e);
+                                // If queue is full, drain a batch to storage immediately
+                                let batch = aggregator.drain_batch(10000);
+                                if !batch.is_empty() {
+                                    self.storage_backend.add_results_batch(batch)?;
+                                }
+                                // Retry push (result not moved because we cloned above)
+                                aggregator.push(result)?;
+                            }
                         }
-                        all_results.extend(results);
                     }
                     Err(e) => {
                         warn!("Error scanning {}: {}", host, e);
@@ -360,10 +375,21 @@ impl ScanScheduler {
             }
         }
 
-        {
-            let storage = self.storage.write().await;
-            storage.complete_scan(scan_id).await?;
+        // Drain all results from aggregator
+        let all_results = aggregator.drain_all();
+        info!(
+            "Collected {} results from lock-free aggregator",
+            all_results.len()
+        );
+
+        // Store all results via storage backend (non-blocking for async!)
+        if !all_results.is_empty() {
+            self.storage_backend
+                .add_results_batch(all_results.clone())?;
         }
+
+        // Flush all pending writes
+        self.storage_backend.flush().await?;
 
         info!("Port scan complete: {} results", all_results.len());
         Ok(all_results)
@@ -413,8 +439,17 @@ mod tests {
     #[tokio::test]
     async fn test_create_scheduler() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(1000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
+
+        assert!(scheduler.config().performance.max_rate.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_create_scheduler_memory_backend() {
+        let config = create_test_config().await;
+        let storage_backend = Arc::new(StorageBackend::memory(10000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         assert!(scheduler.config().performance.max_rate.is_some());
     }
@@ -422,8 +457,8 @@ mod tests {
     #[tokio::test]
     async fn test_execute_scan_empty() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(100));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let results = scheduler.execute_scan(vec![]).await.unwrap();
         assert_eq!(results.len(), 0);
@@ -432,8 +467,21 @@ mod tests {
     #[tokio::test]
     async fn test_execute_scan_localhost() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(1000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
+
+        let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
+        let results = scheduler.execute_scan(targets).await.unwrap();
+
+        // Should have some results (even if all filtered/closed)
+        assert!(!results.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_execute_scan_localhost_memory_backend() {
+        let config = create_test_config().await;
+        let storage_backend = Arc::new(StorageBackend::memory(10000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
         let results = scheduler.execute_scan(targets).await.unwrap();
@@ -445,8 +493,8 @@ mod tests {
     #[tokio::test]
     async fn test_execute_scan_ports() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(100));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
         let ports = PortRange::parse("9999").unwrap();
@@ -460,13 +508,11 @@ mod tests {
     #[tokio::test]
     async fn test_scan_target_single_host() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scan_id = storage.create_scan(r#"{"test": true}"#).await.unwrap();
-
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(1000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let target = ScanTarget::parse("127.0.0.1").unwrap();
-        let results = scheduler.scan_target(&target, scan_id).await.unwrap();
+        let results = scheduler.scan_target(&target).await.unwrap();
 
         assert!(!results.is_empty());
     }
@@ -476,8 +522,8 @@ mod tests {
         let mut config = create_test_config().await;
         config.scan.timeout_ms = 0; // Invalid
 
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let result = ScanScheduler::new(config, storage).await;
+        let storage_backend = Arc::new(StorageBackend::memory(100));
+        let result = ScanScheduler::new(config, storage_backend).await;
 
         assert!(result.is_err());
     }
@@ -485,8 +531,8 @@ mod tests {
     #[tokio::test]
     async fn test_get_scan_ports() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(100));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let ports = scheduler.get_scan_ports().unwrap();
 
@@ -500,8 +546,8 @@ mod tests {
     #[tokio::test]
     async fn test_execute_scan_with_discovery() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(1000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
         let results = scheduler
@@ -516,8 +562,8 @@ mod tests {
     #[tokio::test]
     async fn test_scan_nonexistent_host() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(1000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         // TEST-NET-1 (should be unreachable)
         let targets = vec![ScanTarget::parse("192.0.2.1").unwrap()];
@@ -530,8 +576,8 @@ mod tests {
     #[tokio::test]
     async fn test_multiple_targets() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(5000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let targets = vec![
             ScanTarget::parse("127.0.0.1").unwrap(),
@@ -545,21 +591,20 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_results_stored_in_database() {
+    async fn test_results_stored_in_memory_backend() {
         let config = create_test_config().await;
-        let storage = ScanStorage::new(":memory:").await.unwrap();
+        let storage_backend = Arc::new(StorageBackend::memory(5000));
 
-        let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+        let scheduler = ScanScheduler::new(config, Arc::clone(&storage_backend))
+            .await
+            .unwrap();
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
-        scheduler.execute_scan(targets).await.unwrap();
+        let results = scheduler.execute_scan(targets).await.unwrap();
 
         // Check that results were stored
-        let scan_count = {
-            let storage = scheduler.storage.read().await;
-            storage.get_scan_count().await.unwrap()
-        };
-
-        assert!(scan_count >= 1);
+        let stored_results = storage_backend.get_results().await.unwrap();
+        assert_eq!(stored_results.len(), results.len());
+        assert!(!stored_results.is_empty());
     }
 }

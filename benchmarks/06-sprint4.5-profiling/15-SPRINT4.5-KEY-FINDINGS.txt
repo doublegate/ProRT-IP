@@ -1,0 +1,59 @@
+CRITICAL FINDINGS - Performance Regression Root Cause Analysis
+================================================================
+
+## Hyperfine Statistical Results (10 runs each)
+
+100 ports:  9.5ms ± 0.5ms  (baseline: N/A)
+1K ports:  28.1ms ± 4.5ms  (baseline: 61ms) → 54% FASTER ✅
+10K ports: 189.8ms ± 3.8ms (baseline: 117ms) → 62% SLOWER ❌
+65K ports: 994ms (baseline: >180s HANG) → 198x FASTER ✅
+
+Cargo overhead: 130.6ms (cargo run 163.7ms vs bare binary 33.1ms for 1K ports)
+Previous benchmarks used bare binary, so cargo overhead is NOT the cause.
+
+## CPU Profiling (Perf) - SQLite Dominates
+
+1K ports:  32.47% CPU in SQLite (sqlite3_step → sqlite3VdbeExec)
+10K ports: 39.20% CPU in SQLite (increased from 1K!)
+65K ports: 32.21% CPU in SQLite (back to normal)
+
+Top SQLite functions:
+- sqlite3BtreeInsert: 17-20% CPU (B-tree insertion)
+- sqlite3BtreeIndexMoveto: 8-11% CPU (index navigation)
+- balance/balance_nonroot: 2-5% CPU (B-tree rebalancing)
+
+## Syscall Analysis (Strace) - Lock Contention
+
+1K ports:  93.00% time in futex (2,360 calls, 659 errors)
+10K ports: 95.47% time in futex (20,373 calls, 7,556 errors)
+
+futex = Fast Userspace Mutex (lock contention)
+Errors = failed to acquire lock immediately
+
+## Root Cause Hypothesis (95% confidence)
+
+**SQLite Write Contention in Connection Pool**
+
+The scheduler creates a SQLite database for storing results.
+At 10K ports, multiple worker threads are writing results concurrently.
+SQLite's default mode (WAL) still has lock contention on high concurrent writes.
+
+Why 1K is fast: Fewer workers, less contention
+Why 10K is slow: More workers, HIGH contention (95% futex time!)
+Why 65K is fast: Adaptive parallelism spreads work, less per-thread contention
+
+## Evidence
+
+1. SQLite CPU increases from 32% → 39% from 1K → 10K
+2. futex calls increase 8.6x (2360 → 20373) from 1K → 10K
+3. futex errors increase 11.5x (659 → 7556) from 1K → 10K
+4. Network I/O syscalls (sendto/recvfrom) are <1% of time
+5. Perf flamegraphs show sqlx-sqlite-worker threads dominating
+
+## Conclusion
+
+The regression is NOT in the network scanning code.
+The regression is in RESULT STORAGE (SQLite lock contention).
+
+The 65K scan succeeds because adaptive parallelism (Sprint 4.4) 
+distributes work better, reducing per-thread write pressure.

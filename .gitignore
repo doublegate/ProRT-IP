@@ -59,9 +59,10 @@ secrets/
 # Performance profiling
 perf.data
 perf.data.old
-*.svg
-flamegraph.svg
 *.folded
+# Exclude flamegraph SVGs except in benchmarks/
+*.svg
+!benchmarks/**/*.svg
 
 # Benchmark outputs
 /target/criterion/

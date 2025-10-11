@@ -16,7 +16,8 @@ use prtip_network::check_privileges;
 #[cfg(target_os = "linux")]
 use prtip_network::drop_privileges;
 use prtip_network::interface::enumerate_interfaces;
-use prtip_scanner::{ScanScheduler, ScanStorage};
+use prtip_scanner::{ScanScheduler, ScanStorage, StorageBackend};
+use std::sync::Arc;
 use tracing::{info, warn};
 
 #[tokio::main]
@@ -149,15 +150,35 @@ async fn run() -> Result<()> {
         }
     }
 
-    // Create storage
-    let storage = ScanStorage::new(&args.database).await.context(format!(
-        "Failed to create scan storage at '{}'",
-        args.database
-    ))?;
-    info!("Connected to database: {}", args.database);
+    // Create storage backend
+    let storage_backend = if args.with_db {
+        let storage = Arc::new(ScanStorage::new(&args.database).await.context(format!(
+            "Failed to create scan storage at '{}'",
+            args.database
+        ))?);
+        info!("Connected to database: {} (async mode)", args.database);
+
+        Arc::new(
+            StorageBackend::async_database(
+                storage,
+                config.scan.scan_type,
+                &format!("{:?}", targets),
+            )
+            .await
+            .context("Failed to create async storage backend")?,
+        )
+    } else {
+        info!("Database storage disabled (default in-memory mode)");
+
+        // Calculate estimated capacity for memory backend
+        let estimated_results = targets.len() * ports.count();
+        let capacity = estimated_results.max(10000); // At least 10K capacity
+
+        Arc::new(StorageBackend::memory(capacity))
+    };
 
     // Create scheduler
-    let scheduler = ScanScheduler::new(config.clone(), storage)
+    let scheduler = ScanScheduler::new(config.clone(), storage_backend)
         .await
         .context("Failed to create scan scheduler")?;
 

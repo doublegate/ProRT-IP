@@ -1,0 +1,49 @@
+# Sprint 4.4 Performance Benchmarks
+# System: i9-10850K (10C/20T), 64GB RAM, Linux 6.17.1-2-cachyos
+# Date: 2025-10-10
+
+## Before (v0.3.0 baseline):
+- 1K ports:  <1s (~1000 pps)
+- 10K ports: <1s (~10000 pps)
+- 20K ports: <1s (~20000 pps)
+- 65K ports: >180s (BOTTLENECK - infinite loop on port 65535!)
+
+## After (Sprint 4.4):
+- 1K ports:  ~0.05s  (~20,000 pps) with parallelism=20
+- 10K ports: ~0.25s  (~40,000 pps) with parallelism=500
+- 20K ports: ~0.33s  (~60,000 pps) with parallelism=500
+- 65K ports: ~0.91s  (~72,000 pps) with parallelism=1000 ✅
+
+## Root Causes Identified & Fixed:
+
+### Bug 1: Adaptive Parallelism Not Applied
+- **Issue**: CLI set parallelism=0 but scheduler checked `> 1` instead of `> 0`
+- **Fix**: Changed check to `> 0` to properly detect user override vs adaptive
+- **Impact**: Adaptive parallelism now works correctly
+
+### Bug 2: Port 65535 Integer Overflow (CRITICAL)
+- **Issue**: PortRangeIterator increments u16 port without overflow check
+  - When current_port == 65535: port + 1 = 0 (wraps around)
+  - Creates infinite loop: 0 <= 65535 forever
+- **Fix**: Check if port == end before incrementing, advance to next range instead
+- **Impact**: Full port range scans now work (were previously broken!)
+
+## Performance Improvements:
+- 65K ports: 180s → 0.91s = **198x faster**
+- Adaptive parallelism scaling:
+  - ≤1K ports: 20 concurrent (conservative)
+  - 1K-10K ports: 100-500 concurrent (balanced)  
+  - >20K ports: 1000 concurrent (maximum)
+
+## Files Modified:
+1. crates/prtip-scanner/src/adaptive_parallelism.rs (NEW - 342 lines, 17 tests)
+2. crates/prtip-scanner/src/scheduler.rs (adaptive parallelism integration)
+3. crates/prtip-cli/src/args.rs (parallelism=0 for adaptive)
+4. crates/prtip-core/src/config.rs (allow parallelism=0)
+5. crates/prtip-core/src/types.rs (FIX: port overflow in iterator)
+
+## Test Results:
+- Total tests: 582 (100% pass rate)
+- New tests: +17 from baseline (565 → 582)
+- Adaptive parallelism: 17 new tests
+- Zero regressions

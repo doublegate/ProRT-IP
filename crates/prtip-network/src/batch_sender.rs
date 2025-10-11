@@ -289,11 +289,21 @@ mod linux_impl {
 
             let mut ifreq: libc::ifreq = unsafe { mem::zeroed() };
             let name_bytes = name.as_bytes();
+            // Platform-specific handling for ifreq.ifr_name type differences
+            // musl uses c_char (i8), glibc uses c_char (i8), but safe cast differs
             ifreq.ifr_name[..name_bytes.len()].copy_from_slice(unsafe {
-                std::slice::from_raw_parts(name_bytes.as_ptr() as *const i8, name_bytes.len())
+                std::slice::from_raw_parts(
+                    name_bytes.as_ptr() as *const libc::c_char,
+                    name_bytes.len(),
+                )
             });
 
-            let result = unsafe { libc::ioctl(fd, libc::SIOCGIFINDEX, &ifreq) };
+            // Platform-specific handling for SIOCGIFINDEX type
+            // musl: u64, glibc: c_ulong (varies by arch)
+            // ioctl expects c_ulong on most platforms, but musl defines it differently
+            #[allow(clippy::useless_conversion)]
+            let siocgifindex = libc::SIOCGIFINDEX as libc::c_ulong;
+            let result = unsafe { libc::ioctl(fd, siocgifindex, &ifreq) };
 
             if result < 0 {
                 return Err(Error::Network(format!(
@@ -594,11 +604,21 @@ mod linux_recv_impl {
 
             let mut ifreq: libc::ifreq = unsafe { mem::zeroed() };
             let name_bytes = name.as_bytes();
+            // Platform-specific handling for ifreq.ifr_name type differences
+            // musl uses c_char (i8), glibc uses c_char (i8), but safe cast differs
             ifreq.ifr_name[..name_bytes.len()].copy_from_slice(unsafe {
-                std::slice::from_raw_parts(name_bytes.as_ptr() as *const i8, name_bytes.len())
+                std::slice::from_raw_parts(
+                    name_bytes.as_ptr() as *const libc::c_char,
+                    name_bytes.len(),
+                )
             });
 
-            let result = unsafe { libc::ioctl(fd, libc::SIOCGIFINDEX, &ifreq) };
+            // Platform-specific handling for SIOCGIFINDEX type
+            // musl: u64, glibc: c_ulong (varies by arch)
+            // ioctl expects c_ulong on most platforms, but musl defines it differently
+            #[allow(clippy::useless_conversion)]
+            let siocgifindex = libc::SIOCGIFINDEX as libc::c_ulong;
+            let result = unsafe { libc::ioctl(fd, siocgifindex, &ifreq) };
 
             if result < 0 {
                 return Err(Error::Network(format!(

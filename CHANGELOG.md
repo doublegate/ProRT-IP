@@ -7,22 +7,118 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- **CRITICAL**: DNS hostname resolution now working correctly
-  - Targets can now be hostnames (e.g., `scanme.nmap.org`) or IP addresses
-  - Automatic DNS resolution using `ToSocketAddrs` standard library
-  - Resolved hostnames displayed in banner: "hostname (IP)"
-  - Multiple targets supported (mix of hostnames and IPs)
-  - Fast path: Direct IP parsing (no DNS lookup overhead)
-  - Slow path: DNS resolution for hostnames with clear error messages
-  - Added DNS resolution feedback: `[DNS] Resolved hostname -> IP`
-  - Added 3 new tests for DNS resolution validation
-  - Error handling: Graceful failures for unresolvable hostnames
-  - Total: 458 tests passing (100% success rate)
-
 ### Added
-- **COMPLETE**: Phase 4 comprehensive final benchmarking suite
-  - 29 benchmark files covering performance, CPU profiling, memory analysis
+
+**Phase 4 Final Benchmarking & Comprehensive Validation (2025-10-11)**
+
+- **Comprehensive Benchmarking Suite** (29 files)
+  - hyperfine statistical analysis (5 scenarios, JSON + Markdown)
+  - perf CPU profiling with call graphs + hardware counters
+  - flamegraph interactive visualization (190KB SVG)
+  - strace syscall tracing (futex: 20,373 → 398 = 98% reduction)
+  - massif memory profiling (1.9 MB peak, ultra-low footprint)
+  - 12KB comprehensive summary document
+
+- **Sprint 4.11 - Service Detection Integration**
+  - Integrated ServiceDetector and BannerGrabber into scheduler workflow
+  - Added ServiceDetectionConfig to config system
+  - Wired CLI flags: --sV, --version-intensity, --banner-grab
+  - Enhanced ScanResult with service/version/banner fields
+  - Updated CLI output to display service information
+  - ⚠️ **CRITICAL BUG FOUND**: Empty probe database (0% detection rate)
+  - Fix documented in bug_fix/SERVICE-DETECTION-FIX.md
+
+- **Sprint 4.11 - README Reorganization**
+  - Feature-based usage examples (7 categories: Basic, Scan Types, Detection, Timing, Storage, Advanced, Real-World)
+  - 25+ tested examples with modern CLI syntax
+  - Performance benchmarks section
+  - Industry comparison table
+  - 40% shorter, more user-focused
+
+- **Sprint 4.11 - CLI Improvements**
+  - Fixed "Parallel: 0" bug (now shows adaptive value: 20-1000)
+  - Added comprehensive scan summary statistics
+  - Duration, scan rate, hosts scanned, port counts
+  - Color-coded output sections (Performance, Targets, Results)
+
+- **Comprehensive Validation Suite** (bug_fix/ directory)
+  - VALIDATION-REPORT.md (10KB) - Complete validation vs nmap, rustscan, naabu
+  - SERVICE-DETECTION-FIX.md (9KB) - Detailed fix guide with 3 options
+  - FINAL-VALIDATION-SUMMARY.md (10KB) - Executive summary
+  - analysis/ subdirectory - 32 raw test output files
+
+### Fixed
+
+- **CRITICAL: DNS Hostname Resolution** (Sprint 4.11)
+  - Issue: Hostnames not resolved (scanme.nmap.org → 0.0.0.0)
+  - Solution: Implemented resolve_target() with ToSocketAddrs
+  - Impact: Scanner now works with real-world targets
+  - Testing: Validated with scanme.nmap.org, google.com
+  - Files: crates/prtip-cli/src/main.rs (+77 lines)
+  - Multiple targets supported (mix of hostnames and IPs)
+  - DNS resolution feedback: "[DNS] Resolved hostname -> IP"
+
+- **CRITICAL: 65K Port Infinite Loop** (Sprint 4.4)
+  - Issue: u16 overflow at port 65535 caused infinite loop
+  - Solution: Proper range boundary checking
+  - Impact: Full port scans: >180s → 0.19s (198x faster)
+  - Added adaptive parallelism (20-1000 concurrent based on port count)
+  - 342 lines adaptive parallelism module with 17 comprehensive tests
+
+- **CRITICAL: Async Storage Deadlock** (Sprint 4.8 v2)
+  - Issue: tokio::select! with sleep arm prevented channel closure detection
+  - Fix: Replaced with timeout() wrapped around recv() for proper None detection
+  - Result: All tests passing, no hangs or deadlocks
+  - Performance: --with-db improved from 139.9ms to 74.5ms (46.7% faster!)
+
+### Performance
+
+**Phase 4 Achievements (Phase 3 → Phase 4 Final):**
+
+| Benchmark | Phase 3 | Phase 4 | Improvement |
+|-----------|---------|---------|-------------|
+| 1K ports | 25ms | 4.5ms | 82% faster |
+| 10K ports | 117ms | 39.4ms | 66.3% faster |
+| 65K ports | >180s | 190.9ms | 198x faster |
+| 10K --with-db | 194.9ms | 75.1ms | 61.5% faster |
+
+**Industry Validation (scanme.nmap.org - common ports):**
+
+| Scanner | Duration | vs ProRT-IP | Accuracy |
+|---------|----------|-------------|----------|
+| **ProRT-IP** | **66ms** | **baseline** | 100% ✅ |
+| nmap | 150ms | 2.3x slower | 100% ✅ |
+| rustscan | 223ms | 3.4x slower | 100% ✅ |
+| naabu | 2335ms | 35.4x slower | 100% ✅ |
+
+**ProRT-IP is the fastest validated network scanner tested with perfect accuracy.**
+
+**System Metrics:**
+- CPU utilization: 6.092 CPUs (excellent multi-core scaling)
+- Memory peak: 1.9 MB (ultra-low footprint)
+- Futex calls: 398 in-memory (98% reduction vs Sprint 4.5's 20,373)
+- Cache efficiency: 0.45% LLC miss rate (excellent locality)
+
+### Known Issues
+
+**Service Detection (--sV flag):**
+- **Status:** ❌ BROKEN - Empty probe database
+- **Impact:** 0% service detection rate
+- **Root Cause:** `ServiceProbeDb::default()` creates empty Vec at scheduler.rs:393
+- **Fix Guide:** See `bug_fix/SERVICE-DETECTION-FIX.md` for 3 implementation options
+- **Estimated Fix:** 1-2 hours
+- **Tracking:** Complete issue documentation in bug_fix/ directory
+
+**Workaround:** Use `--banner-grab` flag for basic service identification until fix is implemented.
+
+### Changed
+
+- **BREAKING**: Default behavior is now in-memory (no database) for maximum performance
+  - Previous default (SQLite storage): 194.9ms for 10K ports
+  - New default (in-memory): 39.4ms for 10K ports (5.2x faster!)
+  - Use `--with-db` flag to enable optional SQLite storage
+- Removed `--no-db` flag (now the default behavior)
+- Async storage worker now uses timeout-based recv() pattern instead of tokio::select!
   - Statistical analysis with hyperfine (20 runs per benchmark)
   - CPU profiling with perf (call graphs, hardware counters, flamegraphs)
   - Syscall tracing with strace (futex analysis, lock contention)

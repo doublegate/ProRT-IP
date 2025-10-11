@@ -467,6 +467,7 @@ mod tests {
                 timeout_ms: 3000,
                 retries: 0,
                 scan_delay_ms: 0,
+                host_delay_ms: 0,
                 service_detection: Default::default(),
                 progress: false,
             },

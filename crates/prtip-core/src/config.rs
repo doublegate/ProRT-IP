@@ -101,6 +101,9 @@ pub struct ScanConfig {
     /// Scan delay in milliseconds
     #[serde(default)]
     pub scan_delay_ms: u64,
+    /// Host delay in milliseconds (between hosts)
+    #[serde(default)]
+    pub host_delay_ms: u64,
     /// Service detection configuration
     #[serde(default)]
     pub service_detection: ServiceDetectionConfig,
@@ -114,9 +117,10 @@ impl Default for ScanConfig {
         Self {
             scan_type: ScanType::Connect,
             timing_template: TimingTemplate::Normal,
-            timeout_ms: 3000,
+            timeout_ms: 1000,  // Reduced from 3000ms for faster filtered port detection
             retries: 0,
             scan_delay_ms: 0,
+            host_delay_ms: 0,
             service_detection: ServiceDetectionConfig::default(),
             progress: false,
         }
@@ -239,7 +243,7 @@ mod tests {
         let config = Config::default();
         assert_eq!(config.scan.scan_type, ScanType::Connect);
         assert_eq!(config.scan.timing_template, TimingTemplate::Normal);
-        assert_eq!(config.scan.timeout_ms, 3000);
+        assert_eq!(config.scan.timeout_ms, 1000);  // Changed from 3000ms to 1000ms (new default)
         assert_eq!(config.scan.retries, 0);
         assert_eq!(config.output.format, OutputFormat::Text);
         assert!(config.network.interface.is_none());

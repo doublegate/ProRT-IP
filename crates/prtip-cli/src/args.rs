@@ -68,7 +68,7 @@ pub struct Args {
     #[arg(
         long,
         value_name = "MS",
-        default_value = "3000",
+        default_value = "1000",
         help_heading = "TIMING AND PERFORMANCE"
     )]
     pub timeout: u64,
@@ -161,6 +161,16 @@ pub struct Args {
         help_heading = "SCAN OPTIONS"
     )]
     pub scan_delay: u64,
+
+    /// Delay between hosts (milliseconds) - helps avoid network rate limiting
+    #[arg(
+        long,
+        value_name = "MS",
+        default_value = "0",
+        help_heading = "SCAN OPTIONS",
+        help = "Add delay after completing each host (useful for avoiding IDS/IPS detection)"
+    )]
+    pub host_delay: u64,
 
     /// Output format: text, json, xml
     #[arg(
@@ -368,6 +378,7 @@ impl Args {
                 timeout_ms: self.timeout,
                 retries: self.retries,
                 scan_delay_ms: self.scan_delay,
+                host_delay_ms: self.host_delay,
                 service_detection: ServiceDetectionConfig {
                     enabled: self.service_detection,
                     intensity: self.version_intensity,
@@ -540,7 +551,7 @@ mod tests {
 
         assert_eq!(config.scan.scan_type, ScanType::Connect);
         assert_eq!(config.scan.timing_template, TimingTemplate::Aggressive);
-        assert_eq!(config.scan.timeout_ms, 3000);
+        assert_eq!(config.scan.timeout_ms, 1000);  // Changed from 3000ms to 1000ms (new default)
         assert_eq!(config.output.format, OutputFormat::Text);
     }
 

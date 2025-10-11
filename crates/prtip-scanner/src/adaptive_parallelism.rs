@@ -24,9 +24,9 @@
 //! let parallelism = calculate_parallelism(500, None, None);
 //! assert_eq!(parallelism, 20);
 //!
-//! // Large scan: 65K ports → 1000 concurrent
+//! // Huge scan: 65K ports → 1500 concurrent (updated from 1000)
 //! let parallelism = calculate_parallelism(65535, None, None);
-//! assert_eq!(parallelism, 1000);
+//! assert_eq!(parallelism, 1500);
 //!
 //! // User override takes precedence
 //! let parallelism = calculate_parallelism(65535, Some(50), None);
@@ -78,7 +78,8 @@ pub const MIN_PARALLELISM: usize = 20;
 /// assert_eq!(calculate_parallelism(500, None, None), 20);
 /// assert_eq!(calculate_parallelism(2000, None, None), 100);
 /// assert_eq!(calculate_parallelism(10000, None, None), 500);
-/// assert_eq!(calculate_parallelism(65535, None, None), 1000);
+/// assert_eq!(calculate_parallelism(15000, None, None), 1000);
+/// assert_eq!(calculate_parallelism(65535, None, None), 1500);  // Updated from 1000
 ///
 /// // User override
 /// assert_eq!(calculate_parallelism(65535, Some(50), None), 50);
@@ -112,13 +113,17 @@ pub fn calculate_parallelism(
             // Medium scans: moderate parallelism
             100
         }
-        5001..=20000 => {
+        5001..=10000 => {
             // Large scans: aggressive parallelism
             500
         }
-        _ => {
-            // Very large scans (>20K ports): maximum parallelism
+        10001..=20000 => {
+            // Very large scans: maximum parallelism
             1000
+        }
+        _ => {
+            // Huge scans (>20K ports): ultra-high parallelism
+            1500
         }
     };
 
@@ -247,18 +252,22 @@ mod tests {
 
     #[test]
     fn test_adaptive_parallelism_large_scan() {
-        // Large scans: 500 concurrent
+        // Large scans (5K-10K ports): 500 concurrent
         assert_eq!(calculate_parallelism(5001, None, None), 500);
+        assert_eq!(calculate_parallelism(7500, None, None), 500);
         assert_eq!(calculate_parallelism(10000, None, None), 500);
-        assert_eq!(calculate_parallelism(20000, None, None), 500);
+        // Very large scans (10K-20K ports): 1000 concurrent
+        assert_eq!(calculate_parallelism(10001, None, None), 1000);
+        assert_eq!(calculate_parallelism(15000, None, None), 1000);
+        assert_eq!(calculate_parallelism(20000, None, None), 1000);
     }
 
     #[test]
     fn test_adaptive_parallelism_very_large_scan() {
-        // Very large scans: 1000 concurrent
-        assert_eq!(calculate_parallelism(20001, None, None), 1000);
-        assert_eq!(calculate_parallelism(50000, None, None), 1000);
-        assert_eq!(calculate_parallelism(65535, None, None), 1000);
+        // Huge scans (>20K ports): 1500 concurrent
+        assert_eq!(calculate_parallelism(20001, None, None), 1500);
+        assert_eq!(calculate_parallelism(50000, None, None), 1500);
+        assert_eq!(calculate_parallelism(65535, None, None), 1500);
     }
 
     #[test]

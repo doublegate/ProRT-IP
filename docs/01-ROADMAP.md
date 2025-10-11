@@ -54,6 +54,7 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 **Status:** Completed 2025-10-07 with 215 tests passing
 
 #### Week 1: Project Setup and Basic Packet Capture ✅
+
 **Sprint 1.1**
 
 - [x] Initialize Rust project structure with workspace layout
@@ -64,11 +65,13 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 - [x] Write initial integration tests for packet capture
 
 **Deliverables:**
+
 - [x] Compiling project with all dependencies
 - [x] Packet capture working on Linux/Windows/macOS
 - [x] CI pipeline running tests automatically
 
 #### Week 2: TCP Connect Scan and CLI ✅
+
 **Sprint 1.2**
 
 - [x] Implement TCP connect scan using `tokio::net::TcpStream`
@@ -79,11 +82,13 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 - [x] Add DNS resolution support
 
 **Deliverables:**
+
 - [x] Functional TCP connect scanner
 - [x] CLI accepting targets and port ranges
 - [x] Human-readable text output
 
 #### Week 3: Privilege Management and Configuration ✅
+
 **Sprint 1.3**
 
 - [x] Implement privilege dropping (setuid/setgid on Unix)
@@ -97,6 +102,7 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 - [x] Add host discovery (bonus)
 
 **Deliverables:**
+
 - [x] Secure privilege management system
 - [x] Configuration file support
 - [x] SQLite database storage
@@ -110,6 +116,7 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 **Status:** Completed 2025-10-08 with 278 tests passing, 3,551 lines added
 
 #### Week 4: TCP SYN Scanning ✅
+
 **Sprint 2.1 - Completed**
 
 - [x] Implement raw TCP packet builder with proper checksums (790 lines)
@@ -120,11 +127,13 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 - [x] Create unit tests for packet crafting
 
 **Deliverables:**
+
 - [x] Working SYN scan mode (-sS flag)
 - [x] Response state machine (open/closed/filtered)
 - [x] Packet checksum validation tests
 
 #### Week 5: UDP and Stealth Scans ✅
+
 **Sprint 2.2 - Completed**
 
 - [x] Implement UDP packet builder (258 lines)
@@ -135,11 +144,13 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 - [ ] ~~Add Window scan variant~~ (Deferred to Phase 5)
 
 **Deliverables:**
+
 - [x] UDP scanning (-sU flag)
 - [x] Stealth scan variants (-sF, -sN, -sX, -sA)
 - [x] Protocol-specific probe library (8 protocols)
 
 #### Week 6: Timing and Rate Control ✅
+
 **Sprint 2.3 - Completed**
 
 - [x] Implement timing templates (T0-T5) - 441 lines
@@ -150,11 +161,13 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 - [x] Create performance benchmarks
 
 **Deliverables:**
+
 - [x] All 6 timing templates working (T0-T5)
 - [x] Adaptive rate limiting preventing network saturation
 - [x] Connection pool for efficient concurrent scanning (329 lines)
 
 **Bonus Achievements:**
+
 - [x] Masscan-inspired adaptive rate limiter with circular buffer tracking
 - [x] RustScan-inspired connection pool with FuturesUnordered
 - [x] Reference code analysis across 7+ leading scanners (Masscan, RustScan, Naabu, Nmap, etc.)
@@ -166,34 +179,40 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 Following Phase 2 completion, systematic enhancement cycles incorporated optimization patterns from reference implementations. **All cycles complete.**
 
 #### Cycle 1: Cryptographic Foundation (commit 5782aed) ✅
+
 - SipHash-2-4 implementation (584 lines, 9/9 tests)
 - Blackrock shuffling partial (7/9 tests, completed in Cycle 2)
 - Concurrent scanner with FuturesUnordered (380 lines, 6/6 tests)
 - **Statistics:** Tests 100 → 121 (+21), ~1,074 lines
 
 #### Cycle 2: Complete Crypto + Filtering (commit f5be9c4) ✅
+
 - Blackrock algorithm completion (11/11 tests)
 - Port filtering system (~200 lines, 10 tests)
 - **Statistics:** Tests 121 → 131 (+10), ~250 lines
 
 #### Cycle 3: Resource Management (commits 38b4f3e, 781e880) ✅
+
 - Resource limits module (363 lines, 11 tests)
 - Interface detection module (406 lines, 13 tests)
 - **Statistics:** Tests 131 → 345 (+214), 769 lines, +1 dependency (rlimit)
 
 #### Cycle 4: CLI Integration (commits eec5169, e4e5d54) ✅
+
 - CLI flags (--batch-size, --ulimit, --interface-list, 7 tests)
 - Scanner ulimit-aware integration
 - Main CLI logic enhancements (62 lines)
 - **Statistics:** Tests 345 → 352 (+7), ~200 lines
 
 #### Cycle 5: User Feedback (commits d7f7f38, c1aa10e) ✅
+
 - Progress tracking module (428 lines, 11 tests)
 - Error categorization module (209 lines, 9 tests)
 - CLI integration (4 new flags, 7 tests)
 - **Statistics:** Tests 352 → 391 (+39), ~637 lines, +1 dependency (indicatif)
 
 **Overall Enhancement Impact:**
+
 - **Tests:** 100 → 391 (+291, +291% growth)
 - **Lines:** ~2,930 across 5 cycles
 - **Modules:** 6 new production modules
@@ -213,6 +232,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 **Commit:** 6204882
 
 #### Week 7: OS Fingerprinting Foundation ✅
+
 **Sprint 3.1 - COMPLETE**
 
 - ✅ Design OS fingerprint database schema (os_db.rs - 412 lines)
@@ -223,11 +243,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - ✅ Implement window size analysis
 
 **Deliverables:**
+
 - ✅ Complete 16-probe implementation
 - ✅ Fingerprint database format (nmap-os-db compatible)
 - ✅ OS detection with 2,000+ signatures (OsFingerprinter - 115 lines)
 
 #### Week 8: Service Detection Framework ✅
+
 **Sprint 3.2 - COMPLETE**
 
 - ✅ Implement service probe database schema (service_db.rs - 451 lines)
@@ -238,11 +260,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - ✅ Version info extraction: product, version, CPE, OS hints
 
 **Deliverables:**
+
 - ✅ Service detection engine (ServiceDetector - 264 lines)
 - ✅ 500+ protocol probes with regex patterns
 - ✅ Configurable intensity levels
 
 #### Week 9: Banner Grabbing ✅
+
 **Sprint 3.3 - COMPLETE**
 
 - ✅ Implement banner grabber for TCP services (banner_grabber.rs - 340 lines)
@@ -253,11 +277,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - ✅ Implement generic TCP banner grabbing fallback
 
 **Deliverables:**
+
 - ✅ Comprehensive banner grabbing with 6 protocol handlers
 - ✅ Configurable timeout and max banner size
 - ✅ BannerParser utility for extracting server info
 
 #### Week 10: Testing and CLI Integration ✅
+
 **Sprint 3.4 - COMPLETE**
 
 - ✅ Add CLI flags: -O, --sV, --version-intensity, --osscan-limit, --banner-grab
@@ -268,6 +294,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - ✅ Performance validation and optimization
 
 **Deliverables:**
+
 - ✅ Phase 3 fully integrated with 371 passing tests
 - ✅ CLI documentation and usage examples
 - ✅ Ready for Phase 4: Performance Optimization
@@ -279,6 +306,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 **Goal:** Achieve internet-scale performance (10M+ packets/second)
 
 #### Week 11: Lock-Free Architecture
+
 **Sprint 4.1**
 
 - [ ] Integrate `crossbeam` lock-free queues
@@ -289,11 +317,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Profile with `perf` and flamegraphs
 
 **Deliverables:**
+
 - Lock-free task distribution
 - Separate TX/RX pipeline
 - Performance profiling reports
 
 #### Week 12: Stateless Scanning
+
 **Sprint 4.2**
 
 - [ ] Implement SipHash sequence number generation
@@ -304,11 +334,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Create memory profiling tests
 
 **Deliverables:**
+
 - Stateless scan mode (masscan-like)
 - <1MB memory usage for arbitrary target count
 - Binary output format
 
 #### Week 13: System-Level Optimization
+
 **Sprint 4.3**
 
 - [ ] Add NUMA-aware thread pinning
@@ -319,6 +351,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Build performance test suite
 
 **Deliverables:**
+
 - NUMA optimization guide
 - 10M+ pps capability on appropriate hardware
 - Comprehensive performance benchmarks
@@ -330,6 +363,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 **Goal:** Implement sophisticated stealth and extensibility features
 
 #### Week 14: Idle Scanning and Decoys
+
 **Sprint 5.1**
 
 - [ ] Implement zombie host discovery
@@ -340,11 +374,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Create source port spoofing
 
 **Deliverables:**
+
 - Working idle scan (-sI flag)
 - Decoy scanning (-D flag)
 - Source port manipulation (-g flag)
 
 #### Week 15: Fragmentation and Packet Manipulation
+
 **Sprint 5.2**
 
 - [ ] Implement IP fragmentation (-f, -ff, --mtu)
@@ -355,11 +391,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Implement bad checksum generation
 
 **Deliverables:**
+
 - Fragmentation support
 - Advanced packet manipulation
 - Evasion technique documentation
 
 #### Week 16: Plugin System
+
 **Sprint 5.3**
 
 - [ ] Design plugin API
@@ -370,6 +408,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Implement sandboxing for untrusted scripts
 
 **Deliverables:**
+
 - Lua plugin system
 - 5+ example plugins
 - Plugin developer guide
@@ -381,6 +420,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 **Goal:** Create interactive terminal user interface
 
 #### Week 17: TUI Foundation
+
 **Sprint 6.1**
 
 - [ ] Setup `ratatui` framework
@@ -391,11 +431,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Build result table view
 
 **Deliverables:**
+
 - Functional TUI with basic navigation
 - Real-time scan progress
 - Interactive result browsing
 
 #### Week 18: TUI Advanced Features
+
 **Sprint 6.2**
 
 - [ ] Add result filtering and search
@@ -406,6 +448,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Implement mouse support
 
 **Deliverables:**
+
 - Feature-complete TUI
 - User guide for TUI mode
 - Theme customization
@@ -417,6 +460,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 **Goal:** Prepare for production v1.0 release
 
 #### Week 19: Documentation and Packaging
+
 **Sprint 7.1**
 
 - [ ] Complete user manual
@@ -427,11 +471,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Add man pages
 
 **Deliverables:**
+
 - Complete documentation
 - Multi-platform installers
 - Docker Hub images
 
 #### Week 20: Final Testing and Release
+
 **Sprint 7.2**
 
 - [ ] Conduct security audit
@@ -442,6 +488,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Tag v1.0.0 release
 
 **Deliverables:**
+
 - Security audit report
 - v1.0.0 release on GitHub
 - Announcement blog post
@@ -453,6 +500,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 **Goal:** Expand interface options and capabilities
 
 #### Web Interface (4-6 weeks)
+
 - [ ] Design RESTful API
 - [ ] Implement authentication (JWT/OAuth)
 - [ ] Create React/Vue frontend
@@ -461,6 +509,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Implement multi-user support
 
 #### Desktop GUI (6-8 weeks)
+
 - [ ] Evaluate frameworks (Tauri, iced, egui)
 - [ ] Design GUI layout
 - [ ] Implement scan configuration wizard
@@ -469,6 +518,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [ ] Build native installers
 
 #### Distributed Scanning (8-10 weeks)
+
 - [ ] Design coordinator/worker architecture
 - [ ] Implement work distribution algorithm
 - [ ] Create result aggregation protocol
@@ -485,11 +535,13 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 Each 2-week sprint follows this structure:
 
 **Week 1:**
+
 - Monday: Sprint planning meeting, review acceptance criteria
 - Tuesday-Thursday: Implementation
 - Friday: Code review and integration
 
 **Week 2:**
+
 - Monday-Wednesday: Implementation and testing
 - Thursday: Documentation and examples
 - Friday: Sprint retrospective, demo to stakeholders
@@ -507,62 +559,74 @@ Each 2-week sprint follows this structure:
 ## Milestones and Deliverables
 
 ### Milestone 1: Basic Scanning (End of Phase 1) ✅ COMPLETE
+
 - [x] TCP connect scan working on all platforms
 - [x] CLI with essential flags
 - [x] Text, JSON, and XML output
 - [x] SQLite storage
 
 **Success Criteria:**
+
 - [x] Scan 1000 hosts with 100 ports in <5 minutes (achieved)
 - [x] Pass 215 tests (exceeded 50+ goal)
 - [x] Zero memory leaks (Rust memory safety)
 
 ### Milestone 2: Advanced Scanning (End of Phase 2)
+
 - [ ] SYN, UDP, and stealth scans implemented
 - [ ] Timing templates functional
 - [ ] Adaptive rate limiting
 
 **Success Criteria:**
+
 - SYN scan 10,000 ports in <30 seconds
 - UDP scan detecting 10+ common services
 - Rate limiting prevents network saturation
 
 ### Milestone 3: Detection Capabilities (End of Phase 3)
+
 - [ ] OS fingerprinting with 1000+ signatures
 - [ ] Service detection for 100+ protocols
 - [ ] Banner grabbing with SSL support
 
 **Success Criteria:**
+
 - OS detection accuracy >85% on test network
 - Service detection matches Nmap on test suite
 - SSL banner grabbing for HTTPS/SMTPS/etc.
 
 ### Milestone 4: Performance Target (End of Phase 4)
+
 - [ ] Stateless scanning at 1M+ pps
 - [ ] Lock-free architecture
 - [ ] NUMA optimization
 
 **Success Criteria:**
+
 - 1,000,000+ packets/second on test hardware (10GbE)
 - <100MB memory for 1M target scan
 - CPU usage scales linearly with cores
 
 ### Milestone 5: Feature Complete (End of Phase 5)
+
 - [ ] Idle scan, decoys, fragmentation
 - [ ] Plugin system with examples
 - [ ] All Nmap-equivalent features
 
 **Success Criteria:**
+
 - Idle scan successfully evades attribution
 - 5+ working plugins
 - Feature parity with Nmap for core functionality
 
 ### Milestone 6: Production Ready (End of Phase 7)
+
 - [ ] TUI interface
 - [ ] Complete documentation
 - [ ] Multi-platform packages
 
 **Success Criteria:**
+
 - 200+ page user manual
 - Packages for 5+ platforms
 - <10 open critical bugs
@@ -601,24 +665,28 @@ Each 2-week sprint follows this structure:
 ## Success Metrics
 
 ### Code Quality
+
 - **Test Coverage:** >80% for core modules, >60% overall
 - **Clippy Warnings:** Zero warnings with `clippy::pedantic`
 - **Security Audit:** Pass Cargo audit with no high/critical CVEs
 - **Documentation:** 100% public API documented
 
 ### Performance
+
 - **Throughput:** 1M+ pps stateless, 50K+ pps stateful
 - **Memory:** <100MB for 1M targets, <1GB for 10M targets
 - **Latency:** <1ms per packet crafting operation
 - **Accuracy:** >95% match with Nmap on standardized test suite
 
 ### Usability
+
 - **Installation:** <5 minutes from download to first scan
 - **Documentation:** User finds common tasks in <2 clicks
 - **Error Messages:** Clear guidance on fixing 90%+ of user errors
 - **Discoverability:** `--help` sufficient for 80% of use cases
 
 ### Adoption
+
 - **GitHub Stars:** 1000+ in first 6 months
 - **Downloads:** 10,000+ in first 6 months
 - **Contributors:** 10+ external contributors
@@ -645,5 +713,5 @@ This roadmap is a living document. Expected revisions:
 - **Quarterly:** Review and update based on ecosystem changes
 
 **Document History:**
-- v1.0 (Oct 2025): Initial roadmap creation
 
+- v1.0 (Oct 2025): Initial roadmap creation

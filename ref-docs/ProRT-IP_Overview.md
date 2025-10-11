@@ -94,6 +94,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
   ```bash
   prtip -sS -p 1-1000 -O -D RND:5 --output=json 10.0.0.0/24
   ```
+
 * **TUI:** Interactive curses-style dashboard for configuring scans and monitoring results in real time.
 * **Web interface:** Optional local dashboard with authentication, charts/tables/topology views.
 * **Desktop GUI:** Cross-platform GUI (native toolkit or web-wrapper) akin to Zenmap/Angry IP, built atop the same core.

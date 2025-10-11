@@ -929,4 +929,3 @@ pub type Result<T> = std::result::Result<T, Error>;
 - Review [Architecture](00-ARCHITECTURE.md) for system overview
 - Consult [Implementation Guide](04-IMPLEMENTATION-GUIDE.md) for usage examples
 - See [Testing Strategy](06-TESTING.md) for testing APIs
-

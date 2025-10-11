@@ -46,6 +46,7 @@ WarScan is **not** a replacement for Nmap in all scenarios. Nmap's NSE scripting
 **You must have explicit authorization to scan networks you do not own.** Unauthorized network scanning may be illegal in your jurisdiction and could violate computer fraud laws.
 
 Legitimate use cases:
+
 - Scanning your own networks and systems
 - Authorized penetration testing engagements
 - Bug bounty programs with explicit network scanning permission
@@ -67,6 +68,7 @@ Legitimate use cases:
 ### Q: I get "libpcap not found" during build
 
 **Linux:**
+
 ```bash
 # Debian/Ubuntu
 sudo apt install libpcap-dev
@@ -79,22 +81,25 @@ sudo pacman -S libpcap
 ```
 
 **macOS:**
+
 ```bash
 brew install libpcap
 ```
 
 **Windows:**
-Download and install Npcap from https://npcap.com/dist/npcap-1.70.exe
+Download and install Npcap from <https://npcap.com/dist/npcap-1.70.exe>
 
 ### Q: Build fails with OpenSSL errors
 
 **Linux:**
+
 ```bash
 sudo apt install libssl-dev pkg-config  # Debian/Ubuntu
 sudo dnf install openssl-devel          # Fedora
 ```
 
 **macOS:**
+
 ```bash
 brew install openssl@3
 export PKG_CONFIG_PATH="/usr/local/opt/openssl@3/lib/pkgconfig"
@@ -102,6 +107,7 @@ export PKG_CONFIG_PATH="/usr/local/opt/openssl@3/lib/pkgconfig"
 
 **Windows:**
 Use `rustls` feature instead:
+
 ```bash
 cargo build --no-default-features --features rustls
 ```
@@ -109,6 +115,7 @@ cargo build --no-default-features --features rustls
 ### Q: How do I run without root/sudo?
 
 **Linux (Recommended):**
+
 ```bash
 # Grant capabilities to binary
 sudo setcap cap_net_raw,cap_net_admin=eip target/release/prtip
@@ -118,6 +125,7 @@ sudo setcap cap_net_raw,cap_net_admin=eip target/release/prtip
 ```
 
 **macOS:**
+
 ```bash
 # Add yourself to access_bpf group
 sudo dseditgroup -o edit -a $(whoami) -t user access_bpf
@@ -133,6 +141,7 @@ Must run terminal as Administrator (no alternative for raw packet access).
 You need elevated privileges for raw packet access. See previous question for platform-specific solutions.
 
 Alternatively, use TCP connect scan (slower but requires no privileges):
+
 ```bash
 ./prtip -sT -p 80,443 target.com
 ```
@@ -217,6 +226,7 @@ prtip --resume /tmp/scan.state
 ### Q: Why is my scan slow?
 
 Common causes:
+
 1. **Timing template too conservative:** Try `-T4` or `-T5`
 2. **No privileges (using connect scan):** Use sudo or grant capabilities
 3. **Network latency:** Increase `--max-rtt-timeout`
@@ -224,6 +234,7 @@ Common causes:
 5. **Single target:** Concurrent scanning helps; scan multiple targets
 
 Example optimization:
+
 ```bash
 # Slow (default conservative settings)
 prtip -sS -p 1-1000 target.com
@@ -235,6 +246,7 @@ prtip -sS -p 1-1000 -T5 --max-rate 500000 target.com
 ### Q: How many packets per second can WarScan achieve?
 
 Depends on mode and hardware:
+
 - **Stateless mode:** 1,000,000+ pps on modern hardware (10GbE + 16+ cores)
 - **Stateful SYN scan:** 50,000-100,000 pps
 - **TCP connect scan:** 1,000-5,000 pps (limited by OS)
@@ -243,6 +255,7 @@ Depends on mode and hardware:
 ### Q: Does scanning faster improve performance?
 
 **Not always!** Excessive rates cause:
+
 - **Packet loss:** Network congestion drops packets, requiring retransmissions
 - **IDS/IPS blocking:** Security devices may rate-limit or block
 - **Incomplete results:** Slow servers may not respond to burst traffic
@@ -254,6 +267,7 @@ Depends on mode and hardware:
 **Currently:** No built-in support (planned for future release)
 
 **Workaround:** Manually split targets:
+
 ```bash
 # Machine 1
 prtip -sS -p- 10.0.0.0/25
@@ -271,6 +285,7 @@ prtip -sS -p- 10.0.128.0/25
 **Cause:** Another scan or process is using the same source port
 
 **Solution:**
+
 ```bash
 # Let WarScan choose random source ports (default)
 prtip -sS -p 80 target.com
@@ -284,6 +299,7 @@ prtip -sS --source-port 50000-60000 -p 80 target.com
 **Cause:** OS file descriptor limit too low for large scans
 
 **Solution:**
+
 ```bash
 # Check current limit
 ulimit -n
@@ -307,7 +323,8 @@ echo "* hard nofile 65535" | sudo tee -a /etc/security/limits.conf
 **Cause:** Npcap not installed or not in API-compatible mode
 
 **Solution:**
-1. Download Npcap: https://npcap.com/dist/npcap-1.70.exe
+
+1. Download Npcap: <https://npcap.com/dist/npcap-1.70.exe>
 2. During installation, check "Install Npcap in WinPcap API-compatible mode"
 3. Restart terminal/IDE after installation
 
@@ -316,6 +333,7 @@ echo "* hard nofile 65535" | sudo tee -a /etc/security/limits.conf
 **Cause:** Target is unreachable (network configuration issue)
 
 **Troubleshooting:**
+
 ```bash
 # Verify connectivity
 ping target.com
@@ -392,24 +410,28 @@ watch -n 1 'ps aux | grep prtip'
 If results seem incorrect:
 
 1. **Verify with another tool:**
+
    ```bash
    # Cross-check with Nmap
    nmap -sS -p 80,443 target.com
    ```
 
 2. **Try different scan type:**
+
    ```bash
    # SYN scan might be filtered, try ACK
    prtip -sA -p 80 target.com
    ```
 
 3. **Disable optimizations:**
+
    ```bash
    # Slow but accurate
    prtip -sS -T0 --max-retries 5 -p 80 target.com
    ```
 
 4. **Check for firewalls:**
+
    ```bash
    # Firewall detection
    prtip -sA -p 1-1000 target.com
@@ -426,6 +448,7 @@ If you encounter issues not covered here:
 5. **System info:** OS, version, network setup
 
 **Issue Template:**
+
 ```markdown
 ### Description
 Brief description of the issue
@@ -436,21 +459,26 @@ prtip -sS -p 80 target.com
 ```
 
 ### Expected Behavior
+
 What you expected to happen
 
 ### Actual Behavior
+
 What actually happened
 
 ### Debug Output
+
 ```
 RUST_LOG=debug prtip ... output here
 ```
 
 ### System Information
+
 - OS: Ubuntu 22.04
 - WarScan version: 1.0.0
 - Rust version: 1.70.0
 - Network: 10GbE, local network
+
 ```
 
 ---
@@ -505,4 +533,3 @@ prtip --tui -sS -p- target.com
 - See [Development Setup](03-DEV-SETUP.md) for build instructions
 - Consult [Security Guide](08-SECURITY.md) for safe usage practices
 - Check [Performance Guide](07-PERFORMANCE.md) for optimization tips
-

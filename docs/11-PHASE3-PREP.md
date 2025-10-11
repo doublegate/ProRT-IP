@@ -26,7 +26,9 @@
 Phase 3 focuses on implementing detection systems for OS fingerprinting, service identification, and banner grabbing.
 
 ### Sprint 3.1: OS Fingerprinting Foundation (Week 7)
+
 **Deliverables:**
+
 - OS fingerprint database schema
 - nmap-os-db parser
 - 16-probe sequence implementation
@@ -37,7 +39,9 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 **Estimated Tests:** 20-25
 
 ### Sprint 3.2: Service Detection Framework (Week 8)
+
 **Deliverables:**
+
 - nmap-service-probes parser
 - Service detection engine
 - Probe matching logic
@@ -48,7 +52,9 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 **Estimated Tests:** 15-20
 
 ### Sprint 3.3: Banner Grabbing & Integration (Week 9)
+
 **Deliverables:**
+
 - Banner grabbing module
 - Protocol-specific handlers (HTTP, FTP, SSH, SMTP)
 - SSL/TLS support
@@ -59,7 +65,9 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 **Estimated Tests:** 12-18
 
 ### Sprint 3.4: Testing & Refinement (Week 10)
+
 **Deliverables:**
+
 - Integration testing
 - Database updates
 - Performance tuning
@@ -76,6 +84,7 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 ### Available Infrastructure
 
 **From Phase 2:**
+
 - TCP SYN scanner (syn_scanner.rs)
 - UDP scanner (udp_scanner.rs)
 - Packet builder (packet_builder.rs)
@@ -83,6 +92,7 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 - Timing templates (timing.rs)
 
 **From Enhancements:**
+
 - SipHash for checksums (crypto.rs)
 - Progress tracking (progress.rs)
 - Error categorization (errors.rs)
@@ -92,6 +102,7 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 ### Reference Materials
 
 **In code_ref/:**
+
 - nmap: OS fingerprinting implementation (FPEngine.*, os-db files)
 - nmap: Service detection (service-probes, ServiceProbe.*)
 - nmap: Banner grabbing patterns
@@ -99,6 +110,7 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 - naabu: Banner grabbing implementation
 
 **Documentation:**
+
 - docs/02-TECHNICAL-SPECS.md: Protocol specifications
 - docs/04-IMPLEMENTATION-GUIDE.md: Code patterns
 - ref-docs/: Original technical specifications
@@ -110,12 +122,14 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 ### Sprint 3.1: OS Fingerprinting Foundation
 
 **Database Schema (Week 7, Day 1-2):**
+
 - [ ] Design fingerprint storage structure
 - [ ] Parse nmap-os-db format
 - [ ] Create in-memory fingerprint database
 - [ ] Implement fingerprint lookup functions
 
 **16-Probe Sequence (Week 7, Day 3-4):**
+
 - [ ] 6 TCP SYN probes to open port
   - [ ] SEQ probe (6 packets, different sequences)
   - [ ] OPS probe (TCP options variation)
@@ -128,6 +142,7 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 - [ ] 1 UDP probe to closed port
 
 **Analysis Algorithms (Week 7, Day 5):**
+
 - [ ] ISN (Initial Sequence Number) analysis
   - [ ] GCD calculation
   - [ ] ISR (ISN rate) detection
@@ -140,12 +155,14 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 ### Sprint 3.2: Service Detection Framework
 
 **Service Probe Database (Week 8, Day 1-2):**
+
 - [ ] Parse nmap-service-probes format
 - [ ] Extract probe definitions
 - [ ] Extract match patterns (regex)
 - [ ] Build probe selection logic
 
 **Detection Engine (Week 8, Day 3-4):**
+
 - [ ] NULL probe implementation (self-announcing)
 - [ ] GetRequest probe for HTTP-like services
 - [ ] Protocol-specific probe sending
@@ -154,6 +171,7 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 - [ ] Fallback chain logic
 
 **Service Identification (Week 8, Day 5):**
+
 - [ ] Version string extraction
 - [ ] CPE (Common Platform Enumeration) output
 - [ ] Confidence scoring
@@ -162,6 +180,7 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 ### Sprint 3.3: Banner Grabbing & Integration
 
 **Banner Grabbing (Week 9, Day 1-2):**
+
 - [ ] TCP banner grabber
 - [ ] Timeout handling
 - [ ] Buffer management
@@ -173,12 +192,14 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
   - [ ] POP3/IMAP (wait for banner)
 
 **SSL/TLS Support (Week 9, Day 3):**
+
 - [ ] TLS handshake implementation
 - [ ] Certificate parsing
 - [ ] SNI (Server Name Indication)
 - [ ] Protocol version detection
 
 **Scanner Integration (Week 9, Day 4-5):**
+
 - [ ] Integrate with SYN scanner
 - [ ] Integrate with Connect scanner
 - [ ] CLI flags:
@@ -191,18 +212,21 @@ Phase 3 focuses on implementing detection systems for OS fingerprinting, service
 ### Sprint 3.4: Testing & Refinement
 
 **Integration Testing (Week 10, Day 1-2):**
+
 - [ ] Test OS detection against known systems
 - [ ] Test service detection on common services
 - [ ] Test banner grabbing with SSL
 - [ ] Cross-platform testing
 
 **Documentation (Week 10, Day 3):**
+
 - [ ] Update API documentation
 - [ ] Add usage examples
 - [ ] Document database formats
 - [ ] Update CHANGELOG
 
 **Performance & Bug Fixes (Week 10, Day 4-5):**
+
 - [ ] Profile detection performance
 - [ ] Optimize database lookups
 - [ ] Fix reported bugs
@@ -227,18 +251,21 @@ Phase 3 will be considered complete when:
 ## Key Design Decisions
 
 ### OS Fingerprinting Approach
+
 - **16-probe sequence:** Follows Nmap's proven methodology
 - **Weighted scoring:** Allows fuzzy matching for accuracy
 - **Database format:** Compatible with nmap-os-db for easy updates
 - **Probe optimization:** Send only necessary probes based on initial results
 
 ### Service Detection Strategy
+
 - **NULL probe first:** Many services self-announce (SMTP, FTP, SSH)
 - **Intensity levels:** Balance accuracy vs speed
 - **Probe fallbacks:** Use multiple probes for ambiguous services
 - **Regex matching:** Flexible version string extraction
 
 ### Banner Grabbing Implementation
+
 - **Non-blocking I/O:** Async with timeouts
 - **Protocol awareness:** Different strategies per protocol
 - **SSL/TLS support:** Handle encrypted services
@@ -249,18 +276,21 @@ Phase 3 will be considered complete when:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Fingerprint parsing and matching
 - Probe generation
 - Response interpretation
 - Banner parsing
 
 ### Integration Tests
+
 - End-to-end OS detection
 - Service detection on mock servers
 - SSL banner grabbing
 - Cross-scanner integration
 
 ### System Tests
+
 - Detection against real systems
 - Performance benchmarks
 - Accuracy validation
@@ -271,12 +301,14 @@ Phase 3 will be considered complete when:
 ## Dependencies
 
 **Existing:**
+
 - tokio (async runtime)
 - pnet_packet (packet manipulation)
 - sqlx (database)
 - clap (CLI)
 
 **New (likely):**
+
 - regex (pattern matching)
 - openssl or rustls (SSL/TLS)
 - x509-parser (certificate parsing)
@@ -286,6 +318,7 @@ Phase 3 will be considered complete when:
 ## Risk Mitigation
 
 **Potential Risks:**
+
 1. **Database size:** nmap-os-db is large
    - *Mitigation:* Use efficient data structures, consider compression
 2. **Probe timing:** Too fast may trigger IDS

@@ -2,7 +2,7 @@
 
 **Release Date:** 2025-10-08
 **Version:** v0.3.0
-**Repository:** https://github.com/doublegate/ProRT-IP
+**Repository:** <https://github.com/doublegate/ProRT-IP>
 **License:** GPL-3.0
 
 ---
@@ -10,16 +10,19 @@
 ## 🚀 Major Features
 
 ### Scanning Capabilities
+
 - **7 scan types:** TCP Connect, SYN, UDP, FIN, NULL, Xmas, ACK
 - **Protocol payloads:** 8 protocol-specific UDP payloads (DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
 - **Timing templates:** T0-T5 (Paranoid to Insane) with RTT estimation
 
 ### Detection Systems
+
 - **OS fingerprinting:** 16-probe sequence (6 TCP SYN, 2 ICMP, 1 ECN, 6 unusual TCP, 1 UDP)
 - **Service detection:** nmap-service-probes format with 500+ probes
 - **Banner grabbing:** 6 protocols + TLS support (HTTP, HTTPS, FTP, SSH, SMTP, DNS, SNMP)
 
 ### Performance & Stealth
+
 - **Batch packet sending:** sendmmsg syscall (30-50% improvement at 1M+ pps)
 - **Adaptive rate limiting:** Masscan-inspired circular buffer with dynamic batching
 - **Connection pooling:** RustScan pattern with FuturesUnordered
@@ -27,12 +30,14 @@
 - **CDN/WAF detection:** 8 major providers with O(log n) lookup
 
 ### Infrastructure
+
 - **Network interface detection:** Automatic routing and source IP selection
 - **Resource management:** ulimit detection and batch size optimization
 - **Privilege management:** Immediate drop after socket creation
 - **Cross-platform:** Linux/Windows/macOS support
 
 ### User Experience
+
 - **Professional CLI:** Cyber-punk ASCII banner with gradient colors
 - **Progress tracking:** Real-time statistics with ETA estimation
 - **Error categorization:** 7 categories with actionable suggestions
@@ -53,6 +58,7 @@
 ## 🆕 What's New in v0.3.0
 
 ### Enhancement Cycle 8
+
 1. **Batch Packet Sending (sendmmsg)**
    - Linux kernel syscall batching for 30-50% performance boost
    - Cross-platform fallback support
@@ -70,6 +76,7 @@
    - 505 lines of stealth implementation
 
 ### CI/CD Infrastructure
+
 - GitHub Actions workflows for automated testing
 - Multi-platform CI: Linux, Windows, macOS
 - Security scanning: CodeQL, dependency review, cargo audit
@@ -77,6 +84,7 @@
 - MSRV verification (Rust 1.82+)
 
 ### Quality Improvements
+
 - Fixed 4 previously ignored doc-tests
 - Zero clippy warnings (strict -D warnings mode)
 - 100% test success rate (551 tests)
@@ -96,6 +104,7 @@ Choose the appropriate binary for your platform:
 - **macOS:** `prtip-0.3.0-x86_64-apple-darwin.tar.gz`
 
 ### Linux / macOS
+
 ```bash
 # Extract
 tar xzf prtip-0.3.0-x86_64-unknown-linux-gnu.tar.gz
@@ -108,6 +117,7 @@ chmod +x prtip
 ```
 
 ### Windows
+
 ```cmd
 # Extract the zip file
 # Then run:
@@ -115,6 +125,7 @@ prtip.exe --help
 ```
 
 ### Build from Source
+
 ```bash
 git clone https://github.com/doublegate/ProRT-IP.git
 cd ProRT-IP
@@ -127,31 +138,37 @@ cargo build --release
 ## 🔧 Usage Examples
 
 ### Basic SYN Scan
+
 ```bash
 prtip -sS -p 1-1000 192.168.1.0/24
 ```
 
 ### OS Detection + Service Detection
+
 ```bash
 prtip -sS -O -sV -p 1-1000 10.0.0.1
 ```
 
 ### Stealth Scan with Decoys
+
 ```bash
 prtip -sF -D RND:10 -p 80,443 target.com
 ```
 
 ### Fast Scan with Progress
+
 ```bash
 prtip -T4 -p- --progress 192.168.1.1
 ```
 
 ### CDN Detection
+
 ```bash
 prtip -sS -p 80,443 --detect-cdn example.com
 ```
 
 ### All Features Combined
+
 ```bash
 prtip -sS -O -sV -D RND:5 -T4 --progress --stats-file scan.json -p 1-1000 target.com
 ```
@@ -172,6 +189,7 @@ prtip -sS -O -sV -D RND:5 -T4 --progress --stats-file scan.json -p 1-1000 target
 ## 🔒 Security
 
 This is a **security research tool** intended for:
+
 - Penetration testing
 - Network security auditing
 - Educational purposes
@@ -197,6 +215,7 @@ See [SECURITY.md](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md) 
 ### [0.3.0] - 2025-10-08
 
 #### Added
+
 - Batch packet sending with sendmmsg syscall (30-50% performance improvement at 1M+ pps)
 - CDN/WAF detection for 8 major providers (Cloudflare, Akamai, Fastly, CloudFront, Google, Azure, Imperva, Sucuri)
 - Decoy scanning support (up to 256 decoys for stealth attribution hiding)
@@ -206,22 +225,26 @@ See [SECURITY.md](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md) 
 - Workflow documentation (.github/workflows/README.md)
 
 #### Fixed
+
 - Activated and fixed 4 previously ignored doc-tests (now 551 tests total)
 - Implemented Display trait for Ipv4Cidr (proper Rust idiom)
 - Fixed bool comparison clippy warnings
 - Resolved unused field warnings in batch_sender and decoy_scanner
 
 #### Changed
+
 - Updated all version references to v0.3.0 across codebase
 - Enhanced documentation with CI/CD information
 - Optimized workflow caching (3-tier: registry, index, build)
 
 #### Performance
+
 - 30-50% improvement at 1M+ pps with sendmmsg batching on Linux
 - O(log n) CDN detection with binary search on sorted CIDR ranges
 - Cargo caching: 50-80% faster CI/CD workflow runs
 
 #### Testing
+
 - Total tests: 551 (100% pass rate)
 - Added tests for batch sending, CDN detection, decoy scanning
 - MSRV verification (Rust 1.82+)
@@ -243,6 +266,7 @@ Contributions welcome! We're looking for:
 ### Pull Request Requirements
 
 All pull requests must pass:
+
 - ✅ Format check (`cargo fmt`)
 - ✅ Clippy lint (`cargo clippy -- -D warnings`)
 - ✅ Tests on Linux, Windows, macOS
@@ -271,12 +295,12 @@ See [LICENSE](https://github.com/doublegate/ProRT-IP/blob/main/LICENSE) for full
 
 ## 🔗 Links
 
-- **Repository:** https://github.com/doublegate/ProRT-IP
-- **Issues:** https://github.com/doublegate/ProRT-IP/issues
-- **Discussions:** https://github.com/doublegate/ProRT-IP/discussions
-- **Releases:** https://github.com/doublegate/ProRT-IP/releases
-- **Actions:** https://github.com/doublegate/ProRT-IP/actions
-- **Security:** https://github.com/doublegate/ProRT-IP/security
+- **Repository:** <https://github.com/doublegate/ProRT-IP>
+- **Issues:** <https://github.com/doublegate/ProRT-IP/issues>
+- **Discussions:** <https://github.com/doublegate/ProRT-IP/discussions>
+- **Releases:** <https://github.com/doublegate/ProRT-IP/releases>
+- **Actions:** <https://github.com/doublegate/ProRT-IP/actions>
+- **Security:** <https://github.com/doublegate/ProRT-IP/security>
 
 ---
 

@@ -37,6 +37,7 @@ This directory contains the CI/CD workflows for ProRT-IP WarScan.
    - Includes libpcap-dev for complete build verification
 
 **Performance Optimizations:**
+
 - ✅ Concurrency control: Cancels outdated runs automatically
 - ✅ Swatinem/rust-cache: 50-80% faster than manual caching
 - ✅ Platform-specific caching keys: Prevents cache conflicts
@@ -44,6 +45,7 @@ This directory contains the CI/CD workflows for ProRT-IP WarScan.
 - ✅ CARGO_INCREMENTAL=0: Optimizes CI builds
 
 **Fixes Applied:**
+
 - Fixed missing libpcap-dev on Linux/macOS
 - Fixed cargo-audit reliability issues (replaced with cargo-deny)
 - Fixed inefficient manual caching strategies
@@ -55,6 +57,7 @@ This directory contains the CI/CD workflows for ProRT-IP WarScan.
 ### release.yml - Release Automation
 
 **Triggers:**
+
 - Git tags matching `v*.*.*` (e.g., v0.3.0, v1.0.0) - Automatic
 - Manual workflow dispatch via GitHub Actions UI - Manual
 
@@ -91,6 +94,7 @@ This directory contains the CI/CD workflows for ProRT-IP WarScan.
    - Uses `--clobber` flag to replace existing artifacts if needed
 
 **Features:**
+
 - ✅ Smart release existence checking (prevents duplication)
 - ✅ Manual execution via workflow_dispatch
 - ✅ Preserve existing release notes when attaching artifacts
@@ -104,6 +108,7 @@ This directory contains the CI/CD workflows for ProRT-IP WarScan.
 **Manual Execution:**
 
 Generate artifacts for an existing release without modifying notes:
+
 ```bash
 gh workflow run release.yml \
   --field version=v0.3.0 \
@@ -111,6 +116,7 @@ gh workflow run release.yml \
 ```
 
 Parameters:
+
 - `version`: Version tag (e.g., v0.3.0) - required
 - `attach_only`:
   - `true` (default): Only attach artifacts, preserve existing notes
@@ -119,11 +125,13 @@ Parameters:
 **Release Notes Template:**
 
 Release notes are dynamically generated using:
+
 - **CHANGELOG.md:** Version-specific changes extracted automatically
 - **Project Statistics:** Tests and LOC calculated at runtime
 - **Consistent Sections:** Features, Installation, Usage, Documentation, Security, License
 
 To customize release notes for future versions, update CHANGELOG.md:
+
 ```markdown
 ## [0.3.1] - 2025-10-10
 
@@ -135,6 +143,7 @@ To customize release notes for future versions, update CHANGELOG.md:
 ```
 
 **Fixes Applied:**
+
 - Replaced deprecated `actions/create-release@v1` with GitHub CLI
 - Replaced deprecated `actions/upload-release-asset@v1` with GitHub CLI
 - Added smart release existence checking
@@ -152,6 +161,7 @@ To customize release notes for future versions, update CHANGELOG.md:
 **Triggers:** Push to main, Pull Requests, Weekly schedule (Monday)
 
 **Analysis:**
+
 - CodeQL security scanning for Rust compiled code
 - Checks for common security vulnerabilities
 - Runs automatically on schedule for continuous monitoring
@@ -163,6 +173,7 @@ To customize release notes for future versions, update CHANGELOG.md:
 **Triggers:** Pull Requests
 
 **Checks:**
+
 - Reviews dependency changes in PRs
 - Detects vulnerable or malicious dependencies
 - Prevents introduction of security issues
@@ -174,6 +185,7 @@ To customize release notes for future versions, update CHANGELOG.md:
 ### Caching Strategy
 
 **Old (Inefficient):**
+
 ```yaml
 - uses: actions/cache@v4
   with:
@@ -185,6 +197,7 @@ To customize release notes for future versions, update CHANGELOG.md:
 ```
 
 **New (Optimized):**
+
 ```yaml
 - uses: Swatinem/rust-cache@v2
   with:
@@ -192,6 +205,7 @@ To customize release notes for future versions, update CHANGELOG.md:
 ```
 
 **Benefits:**
+
 - 50-80% faster build times
 - Automatic cache management
 - Platform-aware caching
@@ -200,11 +214,13 @@ To customize release notes for future versions, update CHANGELOG.md:
 ### Security Improvements
 
 **cargo-audit Issues:**
+
 - Required installation on every run (slow)
 - Prone to network failures
 - Less reliable database updates
 
 **cargo-deny Benefits:**
+
 - Pre-installed action (faster)
 - More comprehensive checks
 - Better error messages
@@ -219,6 +235,7 @@ concurrency:
 ```
 
 **Benefits:**
+
 - Cancels outdated workflow runs automatically
 - Saves CI minutes on frequent pushes
 - Faster feedback on latest changes
@@ -228,11 +245,13 @@ concurrency:
 ### Build Failures
 
 **Issue:** Missing libpcap on Linux/macOS
+
 ```
 error: failed to run custom build command for `pcap-sys`
 ```
 
 **Solution:** Added to all relevant jobs:
+
 ```yaml
 - name: Install system dependencies (Linux)
   if: matrix.os == 'ubuntu-latest'
@@ -242,11 +261,13 @@ error: failed to run custom build command for `pcap-sys`
 ---
 
 **Issue:** Windows build fails with unresolved imports
+
 ```
 error[E0432]: unresolved import `windows::Win32::Security::IsUserAnAdmin`
 ```
 
 **Solution:** Updated Cargo.toml with correct Windows feature:
+
 ```toml
 windows = { version = "0.52", features = ["Win32_System_SystemServices"] }
 ```
@@ -256,11 +277,13 @@ windows = { version = "0.52", features = ["Win32_System_SystemServices"] }
 ### Test Failures
 
 **Issue:** Timing-sensitive tests fail on slower CI runners
+
 ```
 assertion failed: elapsed <= Duration::from_millis(200)
 ```
 
 **Solution:** Increased timeout tolerance for CI:
+
 ```rust
 assert!(elapsed <= Duration::from_millis(500), "Elapsed: {:?}", elapsed);
 ```
@@ -268,11 +291,13 @@ assert!(elapsed <= Duration::from_millis(500), "Elapsed: {:?}", elapsed);
 ---
 
 **Issue:** Network tests fail on Windows
+
 ```
 Error: Permission denied (requires Npcap)
 ```
 
 **Solution:** Skip network tests on Windows:
+
 ```yaml
 env:
   SKIP_NETWORK_TESTS: ${{ matrix.os == 'windows-latest' && '1' || '0' }}
@@ -283,11 +308,13 @@ env:
 ### Security Audit Issues
 
 **Issue:** cargo-audit installation failures
+
 ```
 error: failed to download `cargo-audit`
 ```
 
 **Solution:** Use pre-installed cargo-deny action:
+
 ```yaml
 - uses: EmbarkStudios/cargo-deny-action@v2
 ```
@@ -297,11 +324,13 @@ error: failed to download `cargo-audit`
 ### MSRV Build Issues
 
 **Issue:** Crates.io download failures with old Rust
+
 ```
 error: failed to download replaced source registry `crates-io`
 ```
 
 **Solution:** Added dependencies and proper caching:
+
 ```yaml
 - name: Install system dependencies
   run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config
@@ -389,6 +418,7 @@ act
 ### Workflow not triggering
 
 **Check:**
+
 - Branch protection rules
 - Workflow file syntax (use `yamllint`)
 - Permissions (especially for release workflow)
@@ -396,6 +426,7 @@ act
 ### Cache not working
 
 **Check:**
+
 - Cache key uniqueness
 - rust-cache version (use @v2)
 - Cargo.lock committed to repository
@@ -403,6 +434,7 @@ act
 ### Release not creating
 
 **Check:**
+
 - Tag format matches `v*.*.*`
 - Permissions include `contents: write`
 - Using modern release action (softprops@v2)

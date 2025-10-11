@@ -9,11 +9,13 @@
 ## Critical Bug Fixed
 
 ### Issue
+
 - **Symptom:** Hostnames not resolved to IP addresses
 - **Impact:** Scanner completely broken for hostname targets (e.g., `scanme.nmap.org`)
 - **Root Cause:** `ScanTarget::parse()` assigned `0.0.0.0/32` to hostnames instead of performing DNS resolution
 
 ### Before Fix
+
 ```
 $ prtip -s connect -p 22,80,443 scanme.nmap.org
 
@@ -23,6 +25,7 @@ Result: All ports closed (WRONG!)
 ```
 
 ### After Fix
+
 ```
 $ prtip -s connect -p 22,80,443 scanme.nmap.org
 
@@ -54,6 +57,7 @@ Result: 2 open ports (CORRECT!)
 ### Key Features
 
 #### DNS Resolution
+
 ```rust
 // Assume it's a hostname - resolve via DNS
 use std::net::ToSocketAddrs;
@@ -78,6 +82,7 @@ match socket_addr.to_socket_addrs() {
 ```
 
 #### User Feedback
+
 ```rust
 // Print DNS resolution feedback if hostname was resolved
 if let Some(hostname) = &target.hostname {
@@ -93,6 +98,7 @@ if let Some(hostname) = &target.hostname {
 ```
 
 #### Banner Display
+
 ```rust
 // Format targets with resolved IPs
 let target_display = if args.targets.len() == 1 && targets.len() == 1 {
@@ -118,17 +124,20 @@ let target_display = if args.targets.len() == 1 && targets.len() == 1 {
 **Total Tests:** 458 tests passing (100% success rate)
 
 #### New Tests Added (3)
+
 1. `test_scan_target_dns_resolution` - Validates localhost DNS resolution
 2. `test_scan_target_invalid_hostname` - Tests error handling for invalid hostnames
 3. `test_format_scan_banner_with_hostname` - Verifies banner displays hostname (IP)
 
 #### Tests Updated (2)
+
 1. `test_parse_targets_invalid` - Now expects DNS resolution to fail for invalid hostnames
 2. `test_format_scan_banner` - Updated signature to accept targets parameter
 
 ### Real-World Testing
 
 #### Test 1: Hostname Resolution ✅
+
 ```bash
 $ ./target/release/prtip -s connect -p 22,80,443 scanme.nmap.org
 
@@ -154,6 +163,7 @@ Open Ports:
 **Result:** ✅ PASS - Hostname resolved correctly, scan completed successfully
 
 #### Test 2: IP Address (Backward Compatibility) ✅
+
 ```bash
 $ ./target/release/prtip -s connect -p 80,443 8.8.8.8
 
@@ -176,6 +186,7 @@ Open Ports:
 **Result:** ✅ PASS - IP addresses work without DNS resolution (no [DNS] message)
 
 #### Test 3: Invalid Hostname (Error Handling) ✅
+
 ```bash
 $ ./target/release/prtip -s connect -p 80 nonexistent.invalid.hostname.example
 
@@ -189,6 +200,7 @@ Caused by:
 **Result:** ✅ PASS - Graceful error handling with clear error message
 
 #### Test 4: Multiple Mixed Targets ✅
+
 ```bash
 $ ./target/release/prtip -s connect -p 80 scanme.nmap.org 8.8.8.8
 
@@ -247,13 +259,17 @@ $ time ./target/release/prtip -s connect -p 1-1000 scanme.nmap.org
 ## Documentation Updates
 
 ### 1. CHANGELOG.md
+
 Added comprehensive entry in `## [Unreleased] -> ### Fixed` section:
+
 - Critical bug description
 - Feature list (hostname support, DNS resolution, error handling)
 - Test count (458 tests passing)
 
 ### 2. README.md
+
 Added hostname examples in `### Basic Scanning` section:
+
 ```bash
 # Scan hostname (DNS resolution automatic)
 prtip --scan-type connect -p 22,80,443 scanme.nmap.org
@@ -263,7 +279,9 @@ prtip --scan-type connect -p 80,443 scanme.nmap.org 8.8.8.8 192.168.1.1
 ```
 
 ### 3. CLAUDE.local.md
+
 Added comprehensive session summary with:
+
 - Root cause analysis
 - Implementation details
 - Testing validation
@@ -275,6 +293,7 @@ Added comprehensive session summary with:
 ## Git Status
 
 ### Files Staged (5)
+
 1. `crates/prtip-core/src/types.rs` (+27 lines)
 2. `crates/prtip-cli/src/main.rs` (+50 lines)
 3. `CHANGELOG.md` (DNS fix section)
@@ -282,6 +301,7 @@ Added comprehensive session summary with:
 5. `CLAUDE.local.md` (session summary)
 
 ### Total Staged Files
+
 **130+ files** (includes 127 from previous Sprint 4.11 + 5 DNS fix files)
 
 ---
@@ -304,6 +324,7 @@ Added comprehensive session summary with:
 ## Comparison with Expectations
 
 ### Expected Behavior (from task description)
+
 ```
 Targets:  scanme.nmap.org (45.33.32.156)
 Host: 45.33.32.156
@@ -311,6 +332,7 @@ Ports: 2 open, 1 closed, 0 filtered
 ```
 
 ### Actual Behavior (after fix)
+
 ```
 [DNS] Resolved scanme.nmap.org -> 45.33.32.156
 

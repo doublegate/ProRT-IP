@@ -17,6 +17,7 @@ Comprehensive final benchmarking suite from Phase 4 completion:
 | **11-massif-*.{out,txt}** | Memory profiling (heap analysis, peak usage) |
 
 **Key Results:**
+
 - 10K ports: **39.4ms ± 3.1ms** (66.3% faster than Phase 3 baseline)
 - 65K ports: **190.9ms ± 7.1ms** (198x faster, infinite loop fixed)
 - Futex calls: **398** (98% reduction from Sprint 4.5 SQLite contention)
@@ -83,6 +84,7 @@ Historical sprint benchmark results are preserved in the `archive/` directory fo
 ### Flamegraphs
 
 Interactive CPU profiling visualizations:
+
 - Open SVG files in browser for interactive call stack exploration
 - Shows hot paths and performance bottlenecks
 - Generated from perf call graph data
@@ -105,6 +107,7 @@ firefox benchmarks/flamegraphs/10k-ports-flamegraph.svg
 ## Benchmark Methodology
 
 All benchmarks use:
+
 - **Target**: 127.0.0.1 (localhost, minimal network latency)
 - **Ports**: 1-10000 (10K ports) unless specified
 - **Runs**: 10 with 3 warmup iterations
@@ -120,6 +123,7 @@ Note: Localhost performance is 91-182x faster than real network scanning.
 **Status**: ✅ **COMPLETE**
 
 ### Key Achievements
+
 1. **65K Port Fix** (Sprint 4.4): >180s hang → 0.91s (198x faster!)
 2. **Default Mode** (Sprint 4.6): 117ms → 41.1ms (5.2x faster!)
 3. **Async Storage** (Sprint 4.8 v2): Deadlock fixed, 46.7% improvement
@@ -127,6 +131,7 @@ Note: Localhost performance is 91-182x faster than real network scanning.
 5. **Production Ready**: 620 tests passing, zero warnings
 
 ### Performance Targets
+
 - ✅ Default mode: <50ms (achieved 41.1ms)
 - ✅ --with-db mode: <100ms (achieved 74.5ms)
 - ✅ Full port range: <1s (achieved 0.91s)

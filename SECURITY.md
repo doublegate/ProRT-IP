@@ -87,6 +87,7 @@ We follow coordinated disclosure practices:
 6. **Day 30+**: Public disclosure (coordinated with reporter)
 
 **Exceptions:**
+
 - **Critical vulnerabilities**: Expedited 7-14 day timeline
 - **Already public**: Immediate disclosure and patching
 - **Extended embargo**: By mutual agreement for complex issues
@@ -98,12 +99,14 @@ We follow coordinated disclosure practices:
 ⚠️ **IMPORTANT**: ProRT-IP WarScan is a powerful network scanning tool. **Use only on networks you own or have explicit written permission to test.**
 
 **Prohibited Uses:**
+
 - Scanning networks without authorization
 - Unauthorized penetration testing
 - Network reconnaissance for malicious purposes
 - Any illegal activity
 
 **Authorized Uses:**
+
 - Internal network security assessments
 - Penetration testing with client authorization
 - Security research on owned infrastructure
@@ -203,11 +206,13 @@ ProRT-IP WarScan requires elevated privileges for raw packet operations:
 ### Packet Crafting Risks
 
 Raw packet crafting can potentially:
+
 - Trigger firewall rules
 - Generate IDS/IPS alerts
 - Cause network instability if misconfigured
 
 **Mitigation**:
+
 - Comprehensive testing before release
 - Rate limiting by default
 - Clear documentation of risks
@@ -215,11 +220,13 @@ Raw packet crafting can potentially:
 ### Stateless Scanning Risks
 
 High-speed stateless scanning (1M+ pps) can:
+
 - Overwhelm network infrastructure
 - Trigger DoS protections
 - Consume excessive bandwidth
 
 **Mitigation**:
+
 - Adaptive rate limiting
 - User confirmation for high-rate scans
 - Conservative defaults (T3 Normal)
@@ -229,6 +236,7 @@ High-speed stateless scanning (1M+ pps) can:
 No security vulnerabilities reported yet (pre-release phase).
 
 Future security advisories will be listed here with:
+
 - CVE identifiers
 - Affected versions
 - Severity ratings
@@ -240,6 +248,7 @@ Future security advisories will be listed here with:
 ### For Deployment
 
 1. **Containerization**
+
    ```bash
    # Run in Docker with restricted capabilities
    docker run --rm --cap-drop=ALL --cap-add=NET_RAW prtip:latest
@@ -251,6 +260,7 @@ Future security advisories will be listed here with:
    - Enforce privilege boundaries
 
 3. **Separate User Account**
+
    ```bash
    # Create dedicated user
    sudo useradd -r -s /bin/false prtip-scanner
@@ -260,6 +270,7 @@ Future security advisories will be listed here with:
    ```
 
 4. **Audit Logging**
+
    ```bash
    # Log all scans
    prtip --audit-log /var/log/prtip/audit.log ...
@@ -268,6 +279,7 @@ Future security advisories will be listed here with:
 ### For Development
 
 1. **Dependency Auditing**
+
    ```bash
    # Check for vulnerable dependencies
    cargo audit
@@ -277,6 +289,7 @@ Future security advisories will be listed here with:
    ```
 
 2. **Fuzzing**
+
    ```bash
    # Fuzz packet parsers
    cargo fuzz run tcp_parser
@@ -284,6 +297,7 @@ Future security advisories will be listed here with:
    ```
 
 3. **Static Analysis**
+
    ```bash
    # Clippy with security lints
    cargo clippy -- -D warnings
@@ -293,6 +307,7 @@ Future security advisories will be listed here with:
    ```
 
 4. **Memory Safety**
+
    ```bash
    # Test with Miri
    cargo +nightly miri test
@@ -325,12 +340,14 @@ For security-related questions or concerns:
 ## Acknowledgments
 
 We appreciate security researchers who:
+
 - Follow responsible disclosure practices
 - Provide detailed vulnerability reports
 - Work with us on coordinated disclosure
 - Help improve security for all users
 
 Security researchers will be credited in:
+
 - CHANGELOG.md security fix entries
 - Security advisories
 - AUTHORS.md acknowledgments section
@@ -338,12 +355,14 @@ Security researchers will be credited in:
 ## Legal Notice
 
 **ProRT-IP WarScan is provided "as is" without warranty of any kind.** Users are responsible for:
+
 - Obtaining proper authorization before scanning
 - Compliance with applicable laws and regulations
 - Understanding and accepting risks
 - Proper configuration and usage
 
 **The developers are not liable for:**
+
 - Unauthorized or illegal use
 - Network damage or service disruption
 - Legal consequences of misuse

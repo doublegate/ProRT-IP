@@ -72,6 +72,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Comprehensive system architecture documentation
 
 **Key Sections:**
+
 - Design philosophy and principles
 - High-level component diagram
 - Core components (Scanner Scheduler, Rate Controller, Result Aggregator, etc.)
@@ -81,6 +82,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Design patterns used
 
 **When to Read:**
+
 - Before starting any development work
 - When designing new features
 - During architectural discussions
@@ -93,6 +95,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Development timeline and sprint planning
 
 **Key Sections:**
+
 - 8-phase development plan (20 weeks total)
 - Detailed sprint breakdowns with tasks
 - Milestones and deliverables
@@ -100,6 +103,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Success metrics and KPIs
 
 **When to Read:**
+
 - At project start to understand scope
 - Weekly during sprint planning
 - When estimating timelines
@@ -112,6 +116,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Detailed technical specifications for protocols and formats
 
 **Key Sections:**
+
 - Complete system requirements (hardware, software, OS)
 - Network protocol specifications (Ethernet, IPv4, TCP, UDP, ICMP)
 - Packet format diagrams with field specifications
@@ -122,6 +127,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Core API specifications
 
 **When to Read:**
+
 - When implementing protocol-level code
 - Before packet crafting/parsing
 - When designing data structures
@@ -134,6 +140,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Environment configuration and build instructions
 
 **Key Sections:**
+
 - Platform-specific setup (Linux, Windows, macOS)
 - Required dependencies and libraries
 - Build commands and options
@@ -143,6 +150,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Troubleshooting common build issues
 
 **When to Read:**
+
 - First time setting up development environment
 - When encountering build errors
 - Before contributing to the project
@@ -155,6 +163,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Practical guide for implementing scanner components
 
 **Key Sections:**
+
 - Complete project structure with workspace layout
 - Core module implementation (Scanner, Scheduler, Rate Limiter)
 - Networking module implementation (TCP/UDP packet builders, capture)
@@ -164,6 +173,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Best practices (builder pattern, type state, channels)
 
 **When to Read:**
+
 - Before starting implementation
 - When structuring new modules
 - When unsure about code organization
@@ -176,6 +186,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Complete API documentation for all public interfaces
 
 **Key Sections:**
+
 - Complete Scanner API documentation
 - Network protocol API (TcpPacketBuilder, PacketCapture)
 - Detection engine API (ServiceDetector, OsDetector)
@@ -185,6 +196,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Error types (Error enum with variants)
 
 **When to Read:**
+
 - When using scanner APIs
 - Before integrating with external code
 - When developing plugins
@@ -197,6 +209,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Comprehensive testing strategy
 
 **Key Sections:**
+
 - Testing philosophy (TDD, property-based, regression)
 - Test levels (unit, integration, system, performance, fuzz)
 - Test infrastructure (Docker test networks, mock services)
@@ -205,6 +218,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Testing anti-patterns to avoid
 
 **When to Read:**
+
 - Before implementing new features (write tests first!)
 - When debugging test failures
 - During code review (verify test coverage)
@@ -217,6 +231,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Performance targets and optimization techniques
 
 **Key Sections:**
+
 - Performance goals (1M+ pps stateless, 50K+ pps stateful)
 - Benchmark baselines for comparison
 - Profiling tools (perf, flamegraphs, Criterion)
@@ -225,6 +240,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Performance troubleshooting
 
 **When to Read:**
+
 - When optimizing hot paths
 - Before making performance-sensitive changes
 - When benchmarking features
@@ -237,6 +253,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Security implementation and best practices
 
 **Key Sections:**
+
 - Privilege management (capabilities, setuid, dropping privileges)
 - Input validation (IP addresses, CIDR, ports, filenames)
 - Packet parsing safety (bounds checking, error handling)
@@ -246,6 +263,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Security audit checklist
 
 **When to Read:**
+
 - Before implementing any network-facing code
 - During code review for security issues
 - Before release (security audit)
@@ -259,6 +277,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** User-facing questions and troubleshooting
 
 **Key Sections:**
+
 - General questions about the project
 - Installation and setup help
 - Usage examples and best practices
@@ -267,6 +286,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Detailed troubleshooting guide
 
 **When to Read:**
+
 - When encountering errors
 - Before asking for help (check if already answered)
 - When learning how to use the scanner
@@ -279,6 +299,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Living document tracking project progress
 
 **Key Sections:**
+
 - Overall progress summary
 - Phase-by-phase task lists with checkboxes
 - Milestone status
@@ -287,6 +308,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Recent activity log
 
 **When to Read:**
+
 - Daily during active development
 - During standups to report progress
 - When planning next sprint
@@ -301,6 +323,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Comprehensive implementation log for all development work
 
 **Key Sections:**
+
 - Phase 1-3 implementations with code examples
 - Enhancement Cycles 1-8 detailed breakdowns
 - TODO implementations and fixes
@@ -309,6 +332,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Testing additions
 
 **When to Read:**
+
 - When understanding what has been implemented
 - During code review to see implementation patterns
 - When debugging to understand feature history
@@ -321,6 +345,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Official v0.3.0 release documentation
 
 **Key Sections:**
+
 - Complete feature list (7 scan types, detection systems, performance)
 - What's new in v0.3.0 (Enhancement Cycle 8)
 - Installation instructions for all platforms
@@ -329,6 +354,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Contributing and support information
 
 **When to Read:**
+
 - Before downloading/installing the scanner
 - When sharing release information
 - For feature reference and capabilities
@@ -341,6 +367,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 **Purpose:** Documentation audit history and quality tracking
 
 **Key Sections:**
+
 - Audit summary and scope
 - Files updated with change details
 - Content updates applied
@@ -349,6 +376,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 - Cross-reference validation
 
 **When to Read:**
+
 - When conducting documentation audits
 - Before making doc updates (check consistency)
 - To understand documentation standards
@@ -371,6 +399,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 ### Code Examples
 
 All code examples should:
+
 - Be syntactically correct and compile
 - Include necessary imports
 - Show both wrong (❌) and correct (✅) approaches when illustrating pitfalls
@@ -400,6 +429,7 @@ All code examples should:
 ### Documentation Issues
 
 When filing doc issues, include:
+
 - **Document:** Which file needs improvement
 - **Section:** Specific section if applicable
 - **Issue:** What's missing, wrong, or unclear
@@ -470,18 +500,18 @@ The **`../bug_fix/`** directory contains comprehensive validation reports:
 
 ### External References
 
-- **Rust Documentation:** https://doc.rust-lang.org/
-- **Tokio Guide:** https://tokio.rs/tokio/tutorial
-- **Nmap Reference:** https://nmap.org/book/
-- **Masscan GitHub:** https://github.com/robertdavidgraham/masscan
-- **pnet Documentation:** https://docs.rs/pnet/
+- **Rust Documentation:** <https://doc.rust-lang.org/>
+- **Tokio Guide:** <https://tokio.rs/tokio/tutorial>
+- **Nmap Reference:** <https://nmap.org/book/>
+- **Masscan GitHub:** <https://github.com/robertdavidgraham/masscan>
+- **pnet Documentation:** <https://docs.rs/pnet/>
 
 ### Related Projects
 
-- **Nmap:** https://nmap.org/ - Network Mapper (inspiration)
-- **Masscan:** https://github.com/robertdavidgraham/masscan - Fast port scanner
-- **ZMap:** https://zmap.io/ - Internet-wide scanner
-- **RustScan:** https://github.com/RustScan/RustScan - Modern port scanner in Rust
+- **Nmap:** <https://nmap.org/> - Network Mapper (inspiration)
+- **Masscan:** <https://github.com/robertdavidgraham/masscan> - Fast port scanner
+- **ZMap:** <https://zmap.io/> - Internet-wide scanner
+- **RustScan:** <https://github.com/RustScan/RustScan> - Modern port scanner in Rust
 
 ---
 
@@ -490,7 +520,7 @@ The **`../bug_fix/`** directory contains comprehensive validation reports:
 - **Questions:** Open GitHub Discussion
 - **Bugs:** File GitHub Issue with `bug` label
 - **Features:** File GitHub Issue with `enhancement` label
-- **Security:** Email security@example.com (use PGP)
+- **Security:** Email <security@example.com> (use PGP)
 - **Chat:** Join project Discord/Matrix (TBD)
 
 ---
@@ -506,4 +536,3 @@ The **`../bug_fix/`** directory contains comprehensive validation reports:
 
 **Maintained by:** ProRT-IP WarScan Development Team
 **Questions?** See [09-FAQ.md](09-FAQ.md) or open a GitHub issue
-

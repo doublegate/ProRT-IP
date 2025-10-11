@@ -60,14 +60,17 @@ ProRT-IP Log Output:
 ### Issue 1: Service Detection - Empty Probe Database ❌ OPEN
 
 **Root Cause:**
+
 - `scheduler.rs` line 393: `let probe_db = ServiceProbeDb::default();`
 - `ServiceProbeDb::default()` creates empty database (line 403: `Self::new()`)
 - `ServiceProbeDb::new()` initializes with `probes: Vec::new()` (line 107-108)
 - **Result:** Zero service probes loaded, 0% detection rate
 
 **Expected Behavior:**
+
 - Load nmap-service-probes database from file or embedded resource
 - Example patterns from reference tools:
+
   ```rust
   // nmap approach (from nmap/service_scan.cc)
   const char *default_path = "/usr/share/nmap/nmap-service-probes";
@@ -79,7 +82,9 @@ ProRT-IP Log Output:
   ```
 
 **Fix Required:**
+
 1. **Option A (Embedded):** Include nmap-service-probes in binary
+
    ```rust
    // In scheduler.rs or service_detector.rs
    const NMAP_SERVICE_PROBES: &str = include_str!("../data/nmap-service-probes");
@@ -87,6 +92,7 @@ ProRT-IP Log Output:
    ```
 
 2. **Option B (External File):** Load from filesystem
+
    ```rust
    let probe_path = "/usr/share/nmap/nmap-service-probes";
    let content = std::fs::read_to_string(probe_path)?;
@@ -94,6 +100,7 @@ ProRT-IP Log Output:
    ```
 
 3. **Option C (Hybrid):** Fallback chain
+
    ```rust
    let probe_db = ServiceProbeDb::load_default()
        .or_else(|_| ServiceProbeDb::load_from_file("/usr/share/nmap/nmap-service-probes"))
@@ -120,12 +127,14 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
 ```
 
 **Rankings:**
+
 1. 🥇 ProRT-IP - 66ms (fastest)
 2. 🥈 nmap - 150ms
 3. 🥉 rustscan - 223ms
 4. naabu - 2335ms
 
 **ProRT-IP Advantages:**
+
 - ✅ 2.3x faster than nmap
 - ✅ 3.4x faster than rustscan
 - ✅ 35x faster than naabu
@@ -138,6 +147,7 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
 ### Helpful Patterns Found
 
 **nmap (service_scan.cc):**
+
 - Loads `/usr/share/nmap/nmap-service-probes` at startup
 - NULL probe sent first (many services self-announce)
 - Intensity-based probe selection (0-9)
@@ -145,16 +155,19 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
 - **Key Learning:** Always load probe database before scanning
 
 **rustscan (scanner.rs):**
+
 - Uses nmap as subprocess for service detection (`-sV` flag)
 - Fast port discovery, then delegates to nmap
 - **Key Learning:** Simple delegation to proven tool works
 
 **masscan (transmit.c):**
+
 - Stateless design, no service detection
 - Pure port enumeration focus
 - **Key Learning:** ProRT-IP's hybrid approach is unique
 
 **Applied to ProRT-IP:**
+
 - ✅ Already has `ServiceProbeDb::parse()` implementation
 - ✅ NULL probe logic in `service_detector.rs` (line 93)
 - ✅ Intensity-based filtering (line 383-388)
@@ -163,6 +176,7 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
 ## Code Quality Assessment
 
 ### Strengths ✅
+
 1. **Clean Architecture:** Well-organized modules (tcp_connect, service_detector, scheduler)
 2. **Error Handling:** Comprehensive Result<> usage, detailed error messages
 3. **Async Design:** Tokio-based, semaphore-controlled concurrency
@@ -171,6 +185,7 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
 6. **Documentation:** Extensive inline docs, examples in comments
 
 ### Weaknesses ❌
+
 1. **Service Detection:** Empty probe database (critical bug)
 2. **Banner Grabbing:** Likely also affected (no probes to match)
 3. **OS Fingerprinting:** Not tested (separate issue)
@@ -228,6 +243,7 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
 ## Testing Methodology
 
 ### Tools Used
+
 - **nmap 7.98:** Industry standard, TCP connect + service detection
 - **rustscan:** Modern Rust scanner, fast discovery + nmap delegation
 - **naabu:** Go-based scanner, focus on speed
@@ -237,6 +253,7 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
 - **telnet:** Manual connection verification
 
 ### Test Targets
+
 1. **scanme.nmap.org (45.33.32.156)**
    - Authorized scanning target
    - Ports tested: 22 (SSH), 80 (HTTP), 443 (HTTPS)
@@ -248,6 +265,7 @@ naabu        | 2335ms   | ~1 p/s    | 35.4x slower
    - Results: Both ports open, sub-10ms response
 
 ### Test Execution
+
 ```bash
 # Port detection comparison
 ./target/release/prtip -s connect -p 22,80,443 scanme.nmap.org
@@ -267,6 +285,7 @@ time nmap -sT -p 80,443 example.com
 ## Conclusion
 
 **ProRT-IP Port Scanning:** 🏆 Production Ready
+
 - ✅ 100% accuracy vs industry standards
 - ✅ 2.3-35x faster than competitors
 - ✅ Clean, professional output
@@ -274,6 +293,7 @@ time nmap -sT -p 80,443 example.com
 - ✅ Comprehensive test coverage (551 tests)
 
 **ProRT-IP Service Detection:** ❌ Broken (Empty Probe Database)
+
 - ❌ 0% detection rate
 - ❌ Critical bug: `ServiceProbeDb::default()` creates empty DB
 - ✅ Architecture is sound (parser, detector, scheduler all implemented)
@@ -283,11 +303,13 @@ time nmap -sT -p 80,443 example.com
 ProRT-IP demonstrates **excellent core scanning capabilities** with industry-leading performance. However, **service detection is completely non-functional** due to missing probe database initialization. The fix is straightforward (add probe file loading), but without it, the `--sV` flag is unusable.
 
 **Production Readiness:**
+
 - **Port Scanning:** ✅ READY (better than nmap for speed)
 - **Service Detection:** ❌ NOT READY (must fix Issue #1)
 - **Overall:** ⚠️ PARTIAL (90% ready, needs service detection fix)
 
 **Next Steps:**
+
 1. Fix Issue #1 (service detection probe loading) - **HIGH PRIORITY**
 2. Test banner grabbing and OS fingerprinting
 3. Run full benchmarks (1-65535 ports)

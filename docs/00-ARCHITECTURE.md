@@ -143,30 +143,35 @@ impl ScanState {
 ### Layer Responsibilities
 
 #### 1. User Interface Layer
+
 - Parse command-line arguments and configuration files
 - Present real-time progress and results
 - Handle user interrupts and control signals
 - Format output for human consumption
 
 #### 2. Orchestration Layer
+
 - Coordinate multi-phase scans (discovery → enumeration → deep inspection)
 - Distribute work across worker threads
 - Implement adaptive rate limiting and congestion control
 - Aggregate and deduplicate results from multiple workers
 
 #### 3. Scanning Engine Layer
+
 - Implement specific scan techniques (SYN, UDP, ICMP, etc.)
 - Perform service version detection and OS fingerprinting
 - Execute stealth transformations (fragmentation, decoys, timing)
 - Run plugin scripts for custom logic
 
 #### 4. Network Protocol Layer
+
 - Craft raw packets at Ethernet/IP/TCP/UDP layers
 - Capture and parse network responses
 - Implement custom TCP/IP stack for stateless operation
 - Apply BPF filters for efficient packet capture
 
 #### 5. Operating System Layer
+
 - Platform-specific packet injection (AF_PACKET, BPF, Npcap)
 - Privilege management (capabilities, setuid)
 - Network interface enumeration and configuration
@@ -180,12 +185,14 @@ impl ScanState {
 **Purpose:** Orchestrates scan jobs, manages target queues, distributes work across threads
 
 **Key Responsibilities:**
+
 - Parse and expand target specifications (CIDR, ranges, hostname lists)
 - Randomize target order using permutation functions
 - Shard targets across worker pools for parallel execution
 - Coordinate multi-phase scans with dependency management
 
 **Implementation Pattern:**
+
 ```rust
 pub struct ScannerScheduler {
     targets: TargetRandomizer,
@@ -213,6 +220,7 @@ impl ScannerScheduler {
 **Purpose:** Adaptive rate limiting to prevent network saturation and detection
 
 **Key Responsibilities:**
+
 - Track packet transmission rates and response rates
 - Monitor timeouts and packet loss as congestion indicators
 - Implement TCP-inspired congestion control (additive increase, multiplicative decrease)
@@ -220,6 +228,7 @@ impl ScannerScheduler {
 - Dynamic adjustment based on network feedback
 
 **Congestion Control Algorithm:**
+
 ```rust
 pub struct RateController {
     current_rate: AtomicU64,      // packets per second
@@ -258,6 +267,7 @@ impl RateController {
 **Purpose:** Collect, deduplicate, and merge scan results from multiple workers
 
 **Key Responsibilities:**
+
 - Thread-safe result collection using lock-free queues
 - Merge partial results for the same host/port (e.g., from retransmissions)
 - Maintain canonical port state (open/closed/filtered)
@@ -265,6 +275,7 @@ impl RateController {
 - Handle out-of-order results from parallel workers
 
 **Result Merging Logic:**
+
 ```rust
 pub struct ResultAggregator {
     results: DashMap<TargetKey, TargetResult>,
@@ -291,12 +302,14 @@ impl ResultAggregator {
 **Purpose:** Generate raw network packets for all scan types
 
 **Key Responsibilities:**
+
 - Build complete packets from Ethernet layer upward
 - Apply stealth transformations (fragmentation, TTL manipulation, decoys)
 - Calculate checksums including pseudo-headers
 - Support source address/port spoofing
 
 **Builder Pattern:**
+
 ```rust
 let packet = TcpPacketBuilder::new()
     .source(local_ip, random_port())
@@ -316,12 +329,14 @@ let packet = TcpPacketBuilder::new()
 **Purpose:** Receive and parse network responses efficiently
 
 **Key Responsibilities:**
+
 - Configure BPF filters to reduce captured traffic (e.g., only TCP/UDP/ICMP to scanner)
 - Parse responses into structured data with zero-copy where possible
 - Match responses to probes using connection tracking or stateless validation
 - Handle out-of-order packets and duplicates
 
 **BPF Filter Example:**
+
 ```rust
 // Capture only packets destined to our scanner
 let filter = format!(
@@ -341,6 +356,7 @@ pcap_handle.filter(&filter, true)?;
 **Use Case:** Large-scale initial discovery (internet-wide sweeps)
 
 **Characteristics:**
+
 - No connection state maintained per target
 - SipHash-based sequence numbers encode target identity
 - Maximum transmission speed (10M+ packets/second capable)
@@ -348,6 +364,7 @@ pcap_handle.filter(&filter, true)?;
 - Target randomization via permutation functions
 
 **Validation Without State:**
+
 ```rust
 // Encode target in sequence number
 fn generate_seq(ip: Ipv4Addr, port: u16, key: (u64, u64)) -> u32 {
@@ -378,6 +395,7 @@ fn validate_response(packet: &TcpPacket, key: (u64, u64)) -> Option<TargetId> {
 **Use Case:** Detailed enumeration, stealth scanning, service detection
 
 **Characteristics:**
+
 - Per-connection state tracking in hash map
 - Retransmission support with exponential backoff
 - Congestion control based on RTT estimates
@@ -385,6 +403,7 @@ fn validate_response(packet: &TcpPacket, key: (u64, u64)) -> Option<TargetId> {
 - Deep packet inspection for OS fingerprinting
 
 **State Machine:**
+
 ```rust
 enum ConnectionState {
     Pending,
@@ -400,11 +419,13 @@ enum ConnectionState {
 **Use Case:** Balanced speed and depth (recommended for most scans)
 
 **Workflow:**
+
 1. **Fast Discovery:** Stateless SYN sweep across all targets (Phase 1)
 2. **Filter Responsive:** Identify hosts/ports that responded (Phase 2)
 3. **Deep Enumeration:** Stateful service detection on responsive targets only (Phase 3)
 
 **Benefits:**
+
 - 90%+ time reduction vs. full stateful scan
 - Maintains accuracy for service detection
 - Automatic fallback to stateful if response rate is low
@@ -497,6 +518,7 @@ Phase 3: Deep Inspection
 ## Technology Stack
 
 ### Core Language
+
 - **Rust 1.70+** (MSRV - Minimum Supported Rust Version)
   - Memory safety without garbage collection
   - Zero-cost abstractions
@@ -504,6 +526,7 @@ Phase 3: Deep Inspection
   - Excellent cross-platform support
 
 ### Async Runtime
+
 - **Tokio 1.35+** with multi-threaded scheduler
   - Work-stealing task scheduler
   - Efficient I/O event loop (epoll/kqueue/IOCP)
@@ -511,22 +534,26 @@ Phase 3: Deep Inspection
   - Timer wheels for timeout management
 
 ### Networking
+
 - **pnet 0.34+** for packet crafting and parsing
 - **pcap 1.1+** for libpcap bindings
 - **socket2 0.5+** for low-level socket operations
 - **etherparse 0.14+** for fast zero-copy packet parsing
 
 ### Concurrency
+
 - **crossbeam 0.8+** for lock-free data structures (queues, deques)
 - **parking_lot 0.12+** for efficient mutexes (when locks are necessary)
 - **rayon 1.8+** for data parallelism in analysis phases
 
 ### Data Storage
+
 - **rusqlite 0.30+** for SQLite backend (default)
 - **sqlx 0.7+** for PostgreSQL support (optional)
 - **serde 1.0+** for JSON/TOML/XML serialization
 
 ### Platform-Specific
+
 - **Linux:** `nix` crate for capabilities, `libc` for syscalls
 - **Windows:** `winapi` for Winsock2, Npcap SDK
 - **macOS:** `nix` crate for BPF device access
@@ -633,24 +660,28 @@ impl Scanner<Configured> {
 ## Architecture Benefits
 
 ### Performance
+
 - **Async I/O** prevents blocking on slow network operations
 - **Lock-free queues** eliminate contention in hot paths
 - **Zero-copy parsing** reduces memory bandwidth requirements
 - **NUMA awareness** keeps data local to processing cores
 
 ### Safety
+
 - **Memory safety** prevents buffer overflows and use-after-free
 - **Type safety** catches logic errors at compile time
 - **Error handling** forces explicit handling of failures
 - **Bounds checking** prevents array overruns (with negligible overhead)
 
 ### Maintainability
+
 - **Modular design** enables independent testing and development
 - **Clear interfaces** reduce coupling between components
 - **Comprehensive logging** aids debugging and troubleshooting
 - **Documentation tests** keep examples synchronized with code
 
 ### Extensibility
+
 - **Plugin architecture** supports custom scan logic
 - **Scripting engine** enables rapid prototyping
 - **Output formatters** are independent and pluggable
@@ -664,4 +695,3 @@ impl Scanner<Configured> {
 - Consult [Technical Specifications](02-TECHNICAL-SPECS.md) for detailed component design
 - See [Development Setup Guide](03-DEV-SETUP.md) for build environment configuration
 - Examine [Testing Strategy](06-TESTING.md) for quality assurance approach
-

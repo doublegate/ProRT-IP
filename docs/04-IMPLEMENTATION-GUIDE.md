@@ -962,4 +962,3 @@ impl Display for ScanResult {
 - Consult [Technical Specs](02-TECHNICAL-SPECS.md) for protocol details
 - See [API Reference](05-API-REFERENCE.md) for complete API
 - Check [Testing Strategy](06-TESTING.md) for test guidelines
-

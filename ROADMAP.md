@@ -5,6 +5,7 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 ## Project Vision
 
 **Goal**: Create a modern, high-performance network scanner that combines:
+
 - **Speed of Masscan**: 1M+ packets/second stateless scanning
 - **Depth of Nmap**: Comprehensive service detection and OS fingerprinting
 - **Safety of Rust**: Memory safety, concurrency safety, and modern error handling
@@ -67,10 +68,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 ## Development Phases
 
 ### Phase 1: Core Infrastructure
+
 **Timeline**: Weeks 1-3
 **Status**: ✅ COMPLETE (2025-10-07)
 
 **Key Deliverables**:
+
 - ✅ Cross-platform packet capture (Linux/Windows/macOS)
 - ✅ Basic TCP connect scanning
 - ✅ CLI with argument parsing
@@ -83,10 +86,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Milestone**: ✅ M1 - Basic scanning capability (Achieved)
 
 ### Phase 2: Advanced Scanning
+
 **Timeline**: Weeks 4-6
 **Status**: ✅ COMPLETE (2025-10-08)
 
 **Key Deliverables**:
+
 - ✅ TCP SYN scanning (stateless) - syn_scanner.rs (437 lines)
 - ✅ UDP scanning with protocol-specific probes - udp_scanner.rs (258 lines), protocol_payloads.rs (199 lines)
 - ✅ Stealth scan variants (FIN, NULL, Xmas, ACK) - stealth_scanner.rs (388 lines)
@@ -98,10 +103,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Milestone**: ✅ M2 - Advanced scanning complete (Achieved)
 
 ### Phase 3: Detection Systems
+
 **Timeline**: Weeks 7-10
 **Status**: ✅ COMPLETE (2025-10-08)
 
 **Key Deliverables**:
+
 - ✅ OS fingerprinting (16-probe sequence) - os_probe.rs, os_fingerprinter.rs, os_db.rs
 - ✅ Service version detection (nmap-service-probes format) - service_detector.rs, service_db.rs
 - ✅ Banner grabbing with protocol-specific handlers - banner_grabber.rs
@@ -111,10 +118,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Milestone**: ✅ M3 - Comprehensive detection (Achieved)
 
 ### Phase 4: Performance Optimization
+
 **Timeline**: Weeks 11-13
 **Status**: Planned
 
 **Key Deliverables**:
+
 - Lock-free data structures for result collection
 - Stateless scanning mode (1M+ pps target)
 - NUMA-aware thread placement
@@ -125,10 +134,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Milestone**: M4 - High-performance scanning
 
 ### Phase 5: Advanced Features
+
 **Timeline**: Weeks 14-16
 **Status**: Planned
 
 **Key Deliverables**:
+
 - Idle (zombie) scanning for complete anonymity
 - Decoy scanning with configurable placement
 - Packet fragmentation support
@@ -139,10 +150,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Milestone**: M5 - Enterprise features
 
 ### Phase 6: User Interfaces
+
 **Timeline**: Weeks 17-18
 **Status**: Planned
 
 **Key Deliverables**:
+
 - Terminal User Interface (TUI) with real-time progress
 - Interactive result exploration
 - Live packet statistics dashboard
@@ -151,10 +164,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Milestone**: M6 - Enhanced usability
 
 ### Phase 7: Release Preparation
+
 **Timeline**: Weeks 19-20
 **Status**: Planned
 
 **Key Deliverables**:
+
 - Security audit and penetration testing
 - Cross-platform testing (Linux, Windows, macOS)
 - Performance benchmarking suite
@@ -165,10 +180,12 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Milestone**: M7 - Version 1.0 release
 
 ### Phase 8: Post-Release (Future)
+
 **Timeline**: Beyond Week 20
 **Status**: Future planning
 
 **Potential Features**:
+
 - Web UI with browser-based interface
 - Desktop GUI (Tauri or Iced)
 - IPv6 full support with extension headers
@@ -220,12 +237,14 @@ See [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) for detailed architecture
 ## Release Strategy
 
 ### Version 0.x (Pre-Release)
+
 - **0.1.0**: ✅ Phase 1-3 complete (basic scanning + advanced scanning + detection systems)
 - **0.2.0**: Phase 4 complete (performance optimization) - Planned
 - **0.3.0**: Phase 5 complete (advanced features) - Planned
 - **0.4.0**: Phase 6 complete (TUI) - Planned
 
 ### Version 1.0 (Stable Release)
+
 - **1.0.0**: Phase 7 complete
   - All planned features implemented
   - Security audit passed
@@ -234,6 +253,7 @@ See [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) for detailed architecture
   - >80% test coverage
 
 ### Version 2.0+ (Future)
+
 - Web UI and desktop GUI
 - Advanced IPv6 support
 - Distributed scanning
@@ -242,18 +262,21 @@ See [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) for detailed architecture
 ## Community Goals
 
 ### Short-Term (Months 1-6)
+
 - Establish active contributor base
 - Regular development updates
 - Community-driven feature prioritization
 - GitHub Discussions for Q&A
 
 ### Mid-Term (Months 7-12)
+
 - Monthly community calls
 - Conference presentations (DEF CON, Black Hat, BSides)
 - Academic paper on performance innovations
 - 100+ stars on GitHub
 
 ### Long-Term (Year 2+)
+
 - Industry adoption for penetration testing
 - Integration with security tool suites (Kali Linux, etc.)
 - Training materials and certifications
@@ -264,6 +287,7 @@ See [docs/00-ARCHITECTURE.md](docs/00-ARCHITECTURE.md) for detailed architecture
 We welcome contributions at all stages! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Current Priorities**:
+
 1. **Phase 1 Implementation**: Core infrastructure (packet capture, CLI, privilege management)
 2. **Testing Infrastructure**: Unit tests, integration tests, Docker test environments
 3. **Documentation**: Improvements, examples, tutorials
@@ -275,6 +299,7 @@ We welcome contributions at all stages! See [CONTRIBUTING.md](CONTRIBUTING.md) f
 **Current Status**: Community-driven, no funding
 
 **Future Considerations**:
+
 - GitHub Sponsors for core maintainers
 - OpenCollective for transparent community funding
 - Commercial support services
@@ -283,11 +308,13 @@ We welcome contributions at all stages! See [CONTRIBUTING.md](CONTRIBUTING.md) f
 ## Risk Management
 
 ### Technical Risks
+
 - **Cross-platform compatibility**: Mitigated by abstraction layers and extensive testing
 - **Performance targets**: Requires careful optimization and profiling
 - **Security vulnerabilities**: Addressed through Rust's safety, code review, and security audits
 
 ### Project Risks
+
 - **Contributor availability**: Seeking multiple active maintainers
 - **Scope creep**: Strict phase boundaries and feature prioritization
 - **Competition**: Differentiating through modern architecture and Rust ecosystem
@@ -295,6 +322,7 @@ We welcome contributions at all stages! See [CONTRIBUTING.md](CONTRIBUTING.md) f
 ## Success Metrics
 
 ### Phase 1-3 (Months 1-10) ✅ COMPLETE
+
 - ✅ Packet capture working on all 3 platforms
 - ✅ Basic TCP connect scan completing successfully
 - ✅ Advanced scanning (SYN, UDP, stealth scans)
@@ -304,6 +332,7 @@ We welcome contributions at all stages! See [CONTRIBUTING.md](CONTRIBUTING.md) f
 - ✅ 15,237 lines of production code
 
 ### Version 1.0 (Month 12)
+
 - [ ] All 7 phases complete
 - [ ] 1M+ pps stateless scanning achieved
 - [ ] >90% OS fingerprint accuracy
@@ -312,6 +341,7 @@ We welcome contributions at all stages! See [CONTRIBUTING.md](CONTRIBUTING.md) f
 - [ ] 10+ active contributors
 
 ### Long-Term (Year 2+)
+
 - [ ] 1000+ GitHub stars
 - [ ] Kali Linux package inclusion
 - [ ] Conference presentation accepted
@@ -333,6 +363,7 @@ Month 20+:   Version 1.0 Release & Phase 8 Planning
 ## Detailed Planning
 
 For comprehensive roadmap details, including:
+
 - Sprint-by-sprint task breakdowns
 - 122+ tracked implementation tasks
 - Technical specifications for each phase

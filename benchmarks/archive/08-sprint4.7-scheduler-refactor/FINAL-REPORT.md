@@ -13,6 +13,7 @@ Sprint 4.7 successfully completed the **scheduler refactor** to use `StorageBack
 However, performance testing revealed that the `--with-db` mode is **slower than expected** (139.9ms vs 40ms target), with clear root causes identified and solutions designed for Sprint 4.8.
 
 ### Key Achievements
+
 - ✅ **Scheduler refactor:** Clean architecture, all tests passing
 - ✅ **Default mode:** Maintained at 39.2ms (target ~37ms)
 - ❌ **--with-db mode:** 139.9ms (target <45ms, regression from 68.5ms)
@@ -25,7 +26,8 @@ However, performance testing revealed that the `--with-db` mode is **slower than
 
 ### Architectural Changes
 
-#### Before (Sprint 4.6):
+#### Before (Sprint 4.6)
+
 ```rust
 pub struct ScanScheduler {
     storage: Option<Arc<RwLock<ScanStorage>>>,  // Tight coupling!
@@ -34,7 +36,8 @@ pub struct ScanScheduler {
 pub async fn new(config: Config, storage: Option<ScanStorage>) -> Result<Self>
 ```
 
-#### After (Sprint 4.7):
+#### After (Sprint 4.7)
+
 ```rust
 pub struct ScanScheduler {
     storage_backend: Arc<StorageBackend>,  // Clean abstraction!
@@ -77,6 +80,7 @@ pub async fn new(config: Config, storage_backend: Arc<StorageBackend>) -> Result
 ## PHASE 2: PERFORMANCE TESTING
 
 ### Benchmark Setup
+
 - **Command:** hyperfine --warmup 3 --runs 10
 - **System:** i9-10850K (10C/20T), 64GB RAM, Linux 6.17.1-2-cachyos
 - **Target:** 127.0.0.1 (localhost)
@@ -85,21 +89,25 @@ pub async fn new(config: Config, storage_backend: Arc<StorageBackend>) -> Result
 ### Results
 
 #### Default Mode (In-Memory)
+
 ```
 Command: ./target/release/prtip -s syn -p 1-10000 127.0.0.1
 
 Time (mean ± σ):     39.2 ms ±  3.7 ms
 Range (min … max):   32.2 ms … 45.8 ms    (10 runs)
 ```
+
 **Status:** ✅ **PASS** (maintained ~37ms target)
 
 #### --with-db Mode (Async Database)
+
 ```
 Command: ./target/release/prtip -s syn -p 1-10000 --with-db --database=/tmp/test.db 127.0.0.1
 
 Time (mean ± σ):    139.9 ms ±  4.4 ms
 Range (min … max):  134.3 ms … 146.3 ms    (10 runs)
 ```
+
 **Status:** ❌ **FAIL** (target <45ms, regression from 68.5ms baseline)
 
 ### Comparison Table
@@ -110,6 +118,7 @@ Range (min … max):  134.3 ms … 146.3 ms    (10 runs)
 | --with-db | 68.5ms | 139.9ms | <45ms | ❌ | +104% |
 
 ### Database Verification
+
 ```bash
 $ sqlite3 /tmp/sprint4.7-test.db "SELECT COUNT(*) FROM scan_results;"
 130000  # ✅ Correct (10K ports × 13 runs)
@@ -127,6 +136,7 @@ $ sqlite3 /tmp/sprint4.7-test.db "SELECT COUNT(*) FROM scans;"
 The performance regression is due to **sleep-based async synchronization** instead of proper async completion signals.
 
 #### Issue #1: flush() Uses Sleep Instead of Signaling
+
 ```rust
 // crates/prtip-scanner/src/storage_backend.rs:154-155
 pub async fn flush(&self) -> Result<()> {
@@ -139,11 +149,13 @@ pub async fn flush(&self) -> Result<()> {
     }
 }
 ```
+
 - **Impact:** Minimum 100ms latency on every scan
 - **Why:** No way to know when async worker actually completes
 - **Fix:** Use `tokio::sync::oneshot` channel for completion signal
 
 #### Issue #2: Async Worker Has No Completion Handle
+
 ```rust
 // storage_backend.rs:84-88
 tokio::spawn(async move {
@@ -153,15 +165,18 @@ tokio::spawn(async move {
 });
 // ^^ No handle returned! Can't await completion!
 ```
+
 - **Impact:** Main thread doesn't know when worker finishes
 - **Why:** Spawn returns JoinHandle but we ignore it
 - **Fix:** Return oneshot::Receiver for completion signaling
 
 #### Issue #3: complete_scan() Has Additional 300ms Sleep
+
 ```rust
 // storage_backend.rs:195
 tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
 ```
+
 - **Impact:** Additional latency (not called in benchmark, but in full workflow)
 - **Why:** Placeholder for proper synchronization
 - **Fix:** Use same oneshot channel as flush()
@@ -169,6 +184,7 @@ tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
 ### Why Was Sprint 4.6 68.5ms?
 
 Sprint 4.6 showed 68.5ms, which suggests either:
+
 1. The async path wasn't fully exercised
 2. The benchmark measured something different
 3. OR the 100ms sleep was hidden by other operations
@@ -198,6 +214,7 @@ The Sprint 4.7 refactor **exposes the true cost** by making the async path expli
 ### Task 1: Replace Sleep with Proper Async Signaling (2 hours)
 
 **Current Implementation:**
+
 ```rust
 pub struct StorageBackend {
     AsyncDatabase {
@@ -211,6 +228,7 @@ pub async fn flush(&self) -> Result<()> {
 ```
 
 **New Implementation:**
+
 ```rust
 use tokio::sync::oneshot;
 
@@ -284,6 +302,7 @@ let scan_id = storage.create_scan(...).await?;  // Create on first use
 **Expected Impact:** Remove 5-10ms of synchronous I/O
 
 ### Combined Expected Performance
+
 - **Current:** 139.9ms
 - **After Task 1:** 40-50ms (signaling fix)
 - **After Task 2:** 35-45ms (transaction batching)
@@ -295,6 +314,7 @@ let scan_id = storage.create_scan(...).await?;  // Create on first use
 ## DELIVERABLES
 
 ### Code
+
 - ✅ scheduler.rs refactored (87 lines)
 - ✅ main.rs updated (32 lines)
 - ✅ integration_scanner.rs updated (25 lines)
@@ -302,12 +322,14 @@ let scan_id = storage.create_scan(...).await?;  // Create on first use
 - ✅ Zero warnings
 
 ### Documentation
+
 - ✅ implementation-summary.md (12KB)
 - ✅ FINAL-REPORT.md (this file)
 - ✅ CLAUDE.local.md updated
 - ✅ Benchmark results (JSON + Markdown)
 
 ### Benchmarks
+
 - ✅ default-benchmark.md/json
 - ✅ withdb-benchmark.md/json
 - ✅ Database verification
@@ -336,11 +358,13 @@ let scan_id = storage.create_scan(...).await?;  // Create on first use
 ## TECHNICAL DEBT
 
 ### Created in Sprint 4.7
+
 - ❌ Async worker completion uses sleep() instead of signaling
 - ❌ No transaction batching in async_storage_worker
 - ❌ Scan_id created too early (in constructor vs on-demand)
 
 ### Paid Off in Sprint 4.7
+
 - ✅ Scheduler no longer tightly coupled to ScanStorage
 - ✅ Clean storage abstraction (Memory vs AsyncDatabase)
 - ✅ Proper separation of concerns
@@ -351,12 +375,14 @@ let scan_id = storage.create_scan(...).await?;  // Create on first use
 ## NEXT ACTIONS (HIGH PRIORITY)
 
 ### For Sprint 4.8 (3-4 hours)
+
 1. **Implement oneshot channel signaling** (~2 hours)
 2. **Add SQLite transaction batching** (~1 hour)
 3. **Implement lazy scan_id creation** (~30 min)
 4. **Benchmark and verify <45ms** (~30 min)
 
 ### For Sprint 4.9+ (DEFERRED)
+
 - Service detection implementation (-V flag)
 - CLI improvements (statistics, progress bar enhancements)
 - Advanced Phase 4 optimizations (NUMA, XDP/eBPF)
@@ -366,6 +392,7 @@ let scan_id = storage.create_scan(...).await?;  // Create on first use
 ## CONCLUSION
 
 **Sprint 4.7 Phase 1 is COMPLETE and SUCCESSFUL.** The scheduler refactor achieved its architectural goals:
+
 - Clean separation of concerns ✅
 - All tests passing ✅
 - Zero technical warnings ✅
@@ -380,6 +407,7 @@ The --with-db performance regression (139.9ms vs 40ms target) has a **clear root
 ## APPENDIX: FILE LOCATIONS
 
 ### Implementation
+
 - `/home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/scheduler.rs`
 - `/home/parobek/Code/ProRT-IP/crates/prtip-cli/src/main.rs`
 - `/home/parobek/Code/ProRT-IP/crates/prtip-scanner/tests/integration_scanner.rs`
@@ -387,6 +415,7 @@ The --with-db performance regression (139.9ms vs 40ms target) has a **clear root
 - `/home/parobek/Code/ProRT-IP/crates/prtip-scanner/src/async_storage.rs` (Issue #2 location)
 
 ### Documentation
+
 - `/home/parobek/Code/ProRT-IP/benchmarks/sprint4.7/implementation-summary.md`
 - `/home/parobek/Code/ProRT-IP/benchmarks/sprint4.7/FINAL-REPORT.md` (this file)
 - `/home/parobek/Code/ProRT-IP/CLAUDE.local.md`
@@ -394,6 +423,7 @@ The --with-db performance regression (139.9ms vs 40ms target) has a **clear root
 - `/home/parobek/Code/ProRT-IP/benchmarks/sprint4.7/withdb-benchmark.{md,json}`
 
 ### Build Artifacts
+
 - `/home/parobek/Code/ProRT-IP/target/release/prtip` (CLI binary)
 - `/tmp/sprint4.7-test.db` (benchmark database, 15MB, 130K results)
 

@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Current Status:** Phase 3 COMPLETE + Enhancement Cycles 1-8 COMPLETE (v0.3.0). All detection systems fully implemented with 551 passing tests (100% success rate). Complete OS fingerprinting, service detection, banner grabbing, 7 scan types, professional cyber-punk CLI, sendmmsg batching (30-50% perf boost), CDN/WAF detection (8 providers), and decoy scanning (up to 256 decoys). GitHub Actions CI/CD implemented with multi-platform testing and automated releases. Zero TODOs, stubs, or incomplete code. Production-ready with zero technical debt.
 
-**Repository:** https://github.com/doublegate/ProRT-IP
+**Repository:** <https://github.com/doublegate/ProRT-IP>
 
 **License:** GPL-3.0 (LICENSE file in repository)
 
@@ -34,17 +34,20 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 ### Key Technical Decisions
 
 **Async Runtime:** Tokio with multi-threaded scheduler
+
 - Worker threads matching physical CPU cores (not hyperthreads)
 - Lock-free coordination using crossbeam for scan state
 - Zero-copy techniques where applicable (>10KB payloads only)
 
 **Packet Handling:** Cross-platform raw socket abstraction
+
 - Linux: AF_PACKET sockets with CAP_NET_RAW capability
 - Windows: Npcap (requires Administrator privileges)
 - macOS/BSD: BPF devices via /dev/bpf*
 - Use `pnet` crate for cross-platform compatibility
 
 **Privilege Management:** Immediate drop after resource creation
+
 - Create raw sockets/capture handles with elevated privileges
 - Drop to unprivileged user via setuid/setgid (Linux capabilities preferred)
 - Never run scanning logic with root privileges
@@ -54,6 +57,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 ### Multi-Protocol Support
 
 **TCP Scanning:**
+
 - SYN (half-open) - default stealth technique
 - Connect scans (OS sockets fallback)
 - FIN/NULL/Xmas stealth scans (exploit RFC 793 loopholes)
@@ -61,11 +65,13 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 - Idle (zombie) scanning for complete anonymity
 
 **UDP Scanning:**
+
 - Protocol-specific payloads for DNS (53), SNMP (161), NetBIOS (137)
 - ICMP port unreachable interpretation for closed port detection
 - ~10-100x slower than TCP due to ICMP rate limiting
 
 **Host Discovery:**
+
 - ICMP echo/timestamp/netmask requests
 - TCP SYN/ACK pings
 - UDP pings to common services
@@ -74,12 +80,14 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 ### Detection Engines
 
 **Service Version Detection:**
+
 - Use nmap-service-probes database format
 - Intensity levels 0-9 (balance coverage vs speed)
 - SSL/TLS handshake for encrypted services
 - NULL probes first (many services self-announce)
 
 **OS Fingerprinting:**
+
 - 16-probe sequence exploiting TCP/IP stack implementation differences
 - Weighted scoring system against nmap-os-db database
 - Key discriminators: ISN patterns, TCP timestamps, IP ID generation, TCP options ordering
@@ -87,6 +95,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 ### Stealth and Evasion
 
 **Timing Templates (T0-T5):**
+
 - T0 (Paranoid): 5-minute probe delays
 - T2 (Polite): 0.4-second delays for bandwidth reduction
 - T3 (Normal): Default balanced behavior
@@ -94,6 +103,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 - T5 (Insane): Maximum speed, sacrifices accuracy
 
 **Evasion Techniques:**
+
 - Packet fragmentation (8-byte or custom MTU)
 - Decoy scanning (intermix real probes with spoofed sources)
 - Source port manipulation (trust common ports: 20, 53, 80, 88)
@@ -103,6 +113,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 ## Implementation Roadmap
 
 ### Phase 1: Core Infrastructure (Weeks 1-3) - COMPLETE ✅
+
 - Cross-platform packet capture using `pnet`
 - Basic TCP connect scanning with Tokio async/await
 - Privilege management (capabilities/setuid)
@@ -112,6 +123,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 - Full CLI implementation with multiple output formats
 
 ### Phase 2: Advanced Scanning (Weeks 4-6) - COMPLETE ✅
+
 - TCP SYN scanning with raw sockets
 - UDP scanning with protocol-specific payloads (8 protocols: DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
 - Stealth scan variants (FIN/NULL/Xmas/ACK)
@@ -121,6 +133,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 - 278 tests passing after Phase 2
 
 ### Phase 3: Detection Systems (Weeks 7-10) - COMPLETE ✅
+
 - OS fingerprinting (16-probe Nmap sequence with weighted scoring)
 - Banner grabbing and application-level identification
 - Service version detection (nmap-service-probes format parser)
@@ -128,6 +141,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 - 391 tests passing after Phase 3 + initial enhancement cycles
 
 ### Enhancement Cycles 1-8 - COMPLETE ✅
+
 - Cycle 1: Cryptographic foundation (SipHash, Blackrock)
 - Cycle 2: Concurrent scanning patterns (FuturesUnordered)
 - Cycle 3: Resource management (ulimit detection, interface selection) - 345 tests
@@ -140,6 +154,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 - Professional cyber-punk CLI banner with multi-color output
 
 ### Phase 4: Performance Optimization (Weeks 11-13)
+
 - Lock-free data structures (crossbeam)
 - Adaptive rate limiting based on response feedback
 - sendmmsg/recvmmsg batching on Linux
@@ -147,6 +162,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 - Profiling with perf and flamegraph analysis
 
 ### Phase 5: Advanced Features (Weeks 14-16)
+
 - Idle (zombie) scanning
 - Decoy scanning with configurable placement
 - Packet fragmentation support
@@ -156,6 +172,7 @@ This mirrors RustScan's successful design: scan all 65,535 ports in ~3 seconds, 
 ## Critical Dependencies
 
 **Core Crates:**
+
 ```toml
 tokio = "1.35"           # Async runtime
 pnet = "0.34"            # Packet capture/manipulation
@@ -171,6 +188,7 @@ mlua = "0.9"             # Lua scripting (optional feature)
 ```
 
 **System Requirements:**
+
 - Linux: Kernel 4.15+, libpcap 1.9+, setcap for capabilities
 - Windows: Windows 10+, Npcap 1.70+, Administrator privileges
 - macOS: 11.0+, ChmodBPF or root for packet capture
@@ -194,6 +212,7 @@ lua-plugins = ["mlua"]
 ```
 
 **Development Build with Profiling:**
+
 ```bash
 RUSTFLAGS="-C debuginfo=2 -C force-frame-pointers=yes" cargo build --release
 perf record --call-graph dwarf -F 997 ./target/release/prtip
@@ -203,12 +222,14 @@ perf script | stackcollapse-perf.pl | flamegraph.pl > flame.svg
 ## Security Requirements
 
 ### Input Validation
+
 - Use `IpAddr::parse()` for IP address validation
 - Use `ipnetwork` crate for CIDR notation parsing
 - Allowlist validation at API boundaries
 - **Never** construct shell commands from user input - use `std::process::Command` directly
 
 ### Privilege Management Pattern
+
 ```rust
 // 1. Create privileged resources (raw sockets, capture handles)
 let socket = create_raw_socket()?;
@@ -222,6 +243,7 @@ run_scan_engine(socket, capture)?;
 ```
 
 ### Packet Parsing Safety
+
 - Use `pnet` or `etherparse` with automatic bounds checking
 - Return `Option`/`Result` for parsing operations
 - **Never** use `panic!` in packet parsing - malformed packets are expected
@@ -229,6 +251,7 @@ run_scan_engine(socket, capture)?;
 - Implement resource limits: max concurrent scans, per-target rate limits, scan duration timeouts
 
 ### DoS Prevention
+
 - Bound concurrent operations via `tokio::sync::Semaphore`
 - Stream results to disk immediately (don't accumulate in memory)
 - Monitor file descriptor usage and set limits
@@ -262,6 +285,7 @@ CREATE INDEX idx_port ON scan_results(port);
 ```
 
 **Performance Tips:**
+
 - SQLite: Enable WAL mode (`PRAGMA journal_mode=WAL`)
 - Batch inserts in transactions (1000-10000 per transaction)
 - PostgreSQL: Use COPY for bulk loading (10-100x faster than INSERT)
@@ -271,6 +295,7 @@ CREATE INDEX idx_port ON scan_results(port);
 **Binary Name:** `prtip`
 
 **Example Commands:**
+
 ```bash
 # Basic SYN scan of common ports
 prtip -sS -p 1-1000 10.0.0.0/24
@@ -330,6 +355,7 @@ The project has complete technical documentation (237 KB across 12 documents):
 | **README.md** (14 KB) | Documentation navigation guide | Finding relevant documentation |
 
 **Quick Start for Development:**
+
 1. Read `00-ARCHITECTURE.md` - understand the system design
 2. Follow `03-DEV-SETUP.md` - set up environment
 3. Check `10-PROJECT-STATUS.md` - find next task in current sprint
@@ -339,11 +365,13 @@ The project has complete technical documentation (237 KB across 12 documents):
 ### Reference Documentation (`ref-docs/`)
 
 Original technical specifications (241 KB total):
+
 - `ProRT-IP_Overview.md`: High-level feature blueprint and project goals
 - `ProRT-IP_WarScan_Technical_Specification.md` (190 KB): Comprehensive implementation details
 - `ProRT-IP_WarScan_Technical_Specification-v2.md` (36 KB): Condensed technical guide
 
 **Key Insights from References:**
+
 - ZMap hit rates: 97% at 4Mpps, 63% at 14.23Mpps (network congestion limits)
 - Tokio scheduler redesign: 10x performance improvement via work-stealing and LIFO slots
 - Nmap's weighted OS fingerprinting: 2,600+ fingerprint database
@@ -352,6 +380,7 @@ Original technical specifications (241 KB total):
 ### Local Memory Bank
 
 **CLAUDE.local.md** - Living document tracking:
+
 - Current development status and phase
 - Recent session summaries
 - Decision log with rationales
@@ -362,18 +391,21 @@ Original technical specifications (241 KB total):
 ## Important Notes
 
 **Security Scope:** This is a **defensive security tool** for penetration testing and red team operations. Implementation must include:
+
 - Explicit user confirmation for internet-scale scans
 - Audit logging of all scan activity
 - Clear documentation of legal/ethical usage requirements
 - Rate limiting to prevent unintentional DoS
 
 **Performance Considerations:**
+
 - Zero-copy benefits only apply to >10KB payloads (not typical 40-100 byte scan packets)
 - sendmmsg/recvmmsg syscall batching provides largest performance gains at >1M pps
 - NUMA penalties (10-30%) require IRQ affinity and thread pinning
 - Lock contention becomes dominant bottleneck above 1M pps
 
 **Cross-Platform Caveats:**
+
 - Windows: Npcap initialization causes 90-second network loss on old versions (0.993+ fixed)
 - macOS: Requires ChmodBPF launch daemon or root access
 - FIN/NULL/Xmas scans fail on Windows and Cisco devices (send RST regardless of port state)

@@ -139,11 +139,12 @@ getcap target/release/prtip
 #### Prerequisites
 
 1. **Visual Studio Build Tools**
-   - Download from: https://visualstudio.microsoft.com/downloads/
+   - Download from: <https://visualstudio.microsoft.com/downloads/>
    - Install "Desktop development with C++"
    - Include: MSVC compiler, Windows SDK
 
 2. **Npcap**
+
    ```powershell
    # Download Npcap installer from:
    # https://npcap.com/dist/npcap (latest version)
@@ -154,6 +155,7 @@ getcap target/release/prtip
    ```
 
 3. **Npcap SDK**
+
    ```powershell
    # Download SDK from:
    # https://npcap.com/dist/npcap-sdk-1.13.zip
@@ -572,18 +574,21 @@ autocmd FileType rust set expandtab shiftwidth=4 softtabstop=4
 #### "libpcap not found"
 
 **Linux:**
+
 ```bash
 sudo apt install libpcap-dev  # Debian/Ubuntu
 sudo dnf install libpcap-devel  # Fedora
 ```
 
 **macOS:**
+
 ```bash
 brew install libpcap
 export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
 ```
 
 **Windows:**
+
 ```
 Ensure Npcap SDK is installed and NPCAP_SDK environment variable is set
 ```
@@ -591,17 +596,20 @@ Ensure Npcap SDK is installed and NPCAP_SDK environment variable is set
 #### "OpenSSL not found"
 
 **Linux:**
+
 ```bash
 sudo apt install libssl-dev pkg-config
 ```
 
 **macOS:**
+
 ```bash
 brew install openssl@3
 export PKG_CONFIG_PATH="/usr/local/opt/openssl@3/lib/pkgconfig"
 ```
 
 **Windows:**
+
 ```powershell
 # Install OpenSSL via vcpkg or download binaries
 # Set OPENSSL_DIR environment variable
@@ -611,6 +619,7 @@ setx OPENSSL_DIR "C:\Program Files\OpenSSL-Win64"
 #### "Permission denied" on packet capture
 
 **Linux:**
+
 ```bash
 # Option 1: Use capabilities (recommended)
 sudo setcap cap_net_raw,cap_net_admin=eip target/release/prtip
@@ -620,6 +629,7 @@ sudo ./target/release/prtip [args]
 ```
 
 **macOS:**
+
 ```bash
 # Ensure you're in access_bpf group
 groups | grep access_bpf
@@ -629,6 +639,7 @@ sudo dseditgroup -o edit -a $(whoami) -t user access_bpf
 ```
 
 **Windows:**
+
 ```
 Run terminal as Administrator
 ```
@@ -728,6 +739,7 @@ The project uses GitHub Actions for CI/CD with automated testing and release man
 ### CI Workflows
 
 **ci.yml** - Continuous Integration:
+
 - Format check: `cargo fmt --check`
 - Clippy lint: `cargo clippy -- -D warnings`
 - Multi-platform testing: Linux, Windows, macOS
@@ -735,6 +747,7 @@ The project uses GitHub Actions for CI/CD with automated testing and release man
 - MSRV verification: Rust 1.82+
 
 **release.yml** - Release Automation:
+
 - Triggers on git tags: `v*.*.*`
 - Multi-platform binary builds:
   - `x86_64-unknown-linux-gnu` (glibc)
@@ -745,11 +758,13 @@ The project uses GitHub Actions for CI/CD with automated testing and release man
 - Binary artifacts upload
 
 **dependency-review.yml** - PR Security:
+
 - Scans for vulnerable dependencies
 - Detects malicious packages
 - Automated on all pull requests
 
 **codeql.yml** - Security Analysis:
+
 - Advanced security scanning with CodeQL
 - Weekly scheduled runs
 - SARIF upload to GitHub Security tab
@@ -785,6 +800,7 @@ The CI pipeline uses aggressive 3-tier caching:
 3. **Build cache** (~500 MB - 2 GB): Compiled dependencies
 
 **Performance benefits:**
+
 - Clean build: 5-10 minutes
 - Cached build: 1-2 minutes (80-90% speedup)
 - Cache hit rate: ~80-90% for typical changes
@@ -794,6 +810,7 @@ The CI pipeline uses aggressive 3-tier caching:
 Check workflow runs: [GitHub Actions](https://github.com/doublegate/ProRT-IP/actions)
 
 **Status badges** (add to README):
+
 ```markdown
 [![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Release](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml)
@@ -821,4 +838,3 @@ After completing setup:
 - **Discussions:** GitHub Discussions for questions
 - **CI/CD:** `.github/workflows/README.md` for workflow documentation
 - **Chat:** Join project Discord/Matrix (TBD)
-

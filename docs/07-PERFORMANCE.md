@@ -135,6 +135,7 @@ perf report
 ```
 
 **Key Metrics to Monitor:**
+
 - **CPU cycles** in packet crafting functions (<10% of total)
 - **Cache misses** in hot paths (<5% L1d misses)
 - **Branch mispredictions** (<2% of branches)
@@ -160,6 +161,7 @@ valgrind --leak-check=full \
 ```
 
 **Expected Results:**
+
 - **Definitely lost:** 0 bytes (no memory leaks)
 - **Possibly lost:** <1KB (from static initializers)
 - **Peak heap usage:** Matches expected memory targets above
@@ -183,6 +185,7 @@ firefox target/criterion/report/index.html
 ```
 
 **Example Output:**
+
 ```
 tcp_syn_packet          time:   [850.23 ns 862.41 ns 875.19 ns]
                         change: [-2.3421% -1.1234% +0.4521%] (p = 0.18 > 0.05)
@@ -243,12 +246,14 @@ As of v0.3.0, the following lock-free optimizations have been implemented:
    - Lock-free fast path for common operations: `wait()`, `report_response()`
 
 **Expected Performance Impact:**
+
 - 10-30% throughput improvement on multi-core scans
 - Reduced CPU cycles in synchronization primitives (<5% target)
 - Better scaling to 10+ cores
 - Network benchmarking needed to measure real-world impact
 
 **Benchmarking Plan:**
+
 - Requires Metasploitable2 Docker container for realistic network latency
 - Measure before/after lock contention with `perf record -e lock:contention_begin`
 - Compare CPU utilization across cores
@@ -668,11 +673,13 @@ jobs:
 ### Symptom: Low throughput (<10K pps)
 
 **Possible Causes:**
+
 1. Running without root/capabilities (falling back to connect scan)
 2. Network interface limit (check with `ethtool`)
 3. CPU bottleneck (check with `htop`)
 
 **Debug:**
+
 ```bash
 # Check privileges
 getcap ./target/release/prtip
@@ -687,11 +694,13 @@ perf top
 ### Symptom: High CPU usage (>80% on all cores)
 
 **Possible Causes:**
+
 1. Inefficient packet parsing
 2. Lock contention
 3. Allocation overhead
 
 **Debug:**
+
 ```bash
 # Profile CPU usage
 perf record -g ./target/release/prtip [args]
@@ -706,11 +715,13 @@ perf report
 ### Symptom: Memory growth over time
 
 **Possible Causes:**
+
 1. Connection state not being cleaned up
 2. Result buffer not flushing
 3. Memory leak
 
 **Debug:**
+
 ```bash
 # Check for leaks
 valgrind --leak-check=full ./target/debug/prtip [args]
@@ -726,4 +737,3 @@ watch -n 1 'ps aux | grep prtip'
 - Review [Architecture](00-ARCHITECTURE.md) for system design
 - Consult [Security Guide](08-SECURITY.md) for secure optimization practices
 - See [Testing](06-TESTING.md) for performance test implementation
-

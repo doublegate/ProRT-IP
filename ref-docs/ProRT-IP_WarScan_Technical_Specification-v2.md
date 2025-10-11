@@ -50,7 +50,7 @@ For SSL/TLS encrypted services, the detection engine performs a full TLS handsha
 
 **Nmap's OS detection achieves 2,600+ fingerprint accuracy** by sending a carefully crafted sequence of 16 probe packets designed to elicit OS-specific responses. The technique exploits implementation variations in TCP/IP stacks that, while technically RFC-compliant, differ in timing, option handling, field initialization, and error conditions. The probe sequence includes: six TCP SYN packets to an open port spaced 100ms apart (testing ISN generation, TCP options, window sizes, and timestamps), two ICMP echo requests with different TOS and code values, one ECN probe with CWR+ECE flags, six unusual TCP packets to open and closed ports (NULL, SYN+FIN+URG+PSH, ACK with various window sizes and DF bit settings), and one UDP packet to a closed port.
 
-The resulting fingerprint contains dozens of test values extracted from responses. **Key discriminators include:** GCD (greatest common divisor of ISN sequence differences, typically 64000-128000 for most systems), ISR (ISN counter rate per second), TI/CI/II (IP ID generation patterns for TCP/CLOSED/ICMP showing incremental, random, or zero sequences), TS (TCP timestamp algorithm), O (TCP option ordering using M=MSS, W=WScale, T=Timestamp, S=SACK notation), W (window size patterns across probes), and DF (Don't Fragment bit preferences). 
+The resulting fingerprint contains dozens of test values extracted from responses. **Key discriminators include:** GCD (greatest common divisor of ISN sequence differences, typically 64000-128000 for most systems), ISR (ISN counter rate per second), TI/CI/II (IP ID generation patterns for TCP/CLOSED/ICMP showing incremental, random, or zero sequences), TS (TCP timestamp algorithm), O (TCP option ordering using M=MSS, W=WScale, T=Timestamp, S=SACK notation), W (window size patterns across probes), and DF (Don't Fragment bit preferences).
 
 Matching employs a weighted scoring system where unusual behaviors receive more points than common patterns. For instance, the TCP timestamp option carries significant weight because implementation algorithms vary substantially (BSD increments by frequency/100, Linux by frequency/1000), while TTL values receive less weight due to correlation with other fields. The database format encodes all values as hexadecimal or symbolic constants, with ranges indicating acceptable variation (W=4000|8000 means window could be either value).
 
@@ -258,6 +258,7 @@ Develop idle scanning with zombie detection and binary search for port identific
 ## Critical dependencies and toolchain
 
 **Core Rust Crates:**
+
 - tokio (1.35+): Async runtime with optimized scheduler
 - pnet (0.34+): Cross-platform packet capture and manipulation
 - socket2 (0.5+): Cross-platform raw socket API
@@ -272,6 +273,7 @@ Develop idle scanning with zombie detection and binary search for port identific
 - mlua (0.9+): Lua scripting integration
 
 **System Requirements:**
+
 - Linux: Kernel 4.15+ for optimal performance, libpcap 1.9+, setcap for capabilities
 - Windows: Windows 10+, Npcap 1.70+, Administrator privileges
 - macOS: 11.0+, ChmodBPF or root access for packet capture
@@ -279,6 +281,7 @@ Develop idle scanning with zombie detection and binary search for port identific
 - Storage: SSD recommended for result database, 100MB+ for program and fingerprint databases
 
 **Build Configuration:**
+
 ```toml
 [profile.release]
 opt-level = 3

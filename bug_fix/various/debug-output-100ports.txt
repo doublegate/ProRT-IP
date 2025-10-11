@@ -1,0 +1,62 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    1-100
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 20 (adaptive)
+============================================================
+
+[DEBUG INIT] ProgressBar created: len=100, pos=0
+[DEBUG INIT] ProgressBar after setup: pos=0
+[DEBUG SCHED] Progress bar created: total=100
+[DEBUG SCHED] Bridge task spawned: total_ports=100, poll_interval=1ms
+[DEBUG SCAN] scan_ports_with_progress started: target=127.0.0.1, ports=100, max_concurrent=20
+[DEBUG SCAN] Port scan progress: 1/100
+[DEBUG SCAN] Port scan progress: 2/100
+[DEBUG SCAN] Port scan progress: 3/100
+[DEBUG SCAN] Port scan progress: 4/100
+[DEBUG SCAN] Port scan progress: 5/100
+[DEBUG SCAN] Port scan progress: 6/100
+[DEBUG SCAN] Port scan progress: 7/100
+[DEBUG SCAN] Port scan progress: 8/100
+[DEBUG SCAN] Port scan progress: 9/100
+[DEBUG SCAN] Port scan progress: 10/100
+[DEBUG SCAN] Port scan progress: 100/100
+[DEBUG BRIDGE] Poll: current=100, last=0, delta=100, total=100
+[DEBUG INC] inc(100) called, pos before=0, pos after will be=100
+[DEBUG BRIDGE] Scan complete: 100/100
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 13:15:59 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 100
+
+Hosts Scanned: 1
+Ports: 0 open, 100 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 0 open, 100 closed, 0 filtered
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       2ms
+  Scan Rate:      39414 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    100
+
+Results:
+  Open Ports:     0
+  Closed Ports:   100
+  Filtered Ports: 0
+============================================================

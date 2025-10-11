@@ -1,0 +1,170 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  192.168.4.0/28
+Ports:    1-100
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 20 (adaptive)
+============================================================
+
+[DEBUG] Host 1/16: 192.168.4.0 - Starting
+[DEBUG] Scan ports complete: 9.148527574s, 100 results
+[DEBUG] Host 1 total: 9.150575559s
+
+[DEBUG] Host 2/16: 192.168.4.1 - Starting
+[DEBUG] Scan ports complete: 27.53139ms, 100 results
+[DEBUG] Host 2 total: 28.641307ms
+
+[DEBUG] Host 3/16: 192.168.4.2 - Starting
+[DEBUG] Scan ports complete: 77.825486ms, 100 results
+[DEBUG] Host 3 total: 78.956018ms
+
+[DEBUG] Host 4/16: 192.168.4.3 - Starting
+[DEBUG] Scan ports complete: 26.159569ms, 100 results
+[DEBUG] Host 4 total: 27.227061ms
+
+[DEBUG] Host 5/16: 192.168.4.4 - Starting
+[DEBUG] Scan ports complete: 22.617295ms, 100 results
+[DEBUG] Host 5 total: 23.687876ms
+
+[DEBUG] Host 6/16: 192.168.4.5 - Starting
+[DEBUG] Scan ports complete: 36.788185ms, 100 results
+[DEBUG] Host 6 total: 37.894888ms
+
+[DEBUG] Host 7/16: 192.168.4.6 - Starting
+[DEBUG] Scan ports complete: 38.486338ms, 100 results
+[DEBUG] Host 7 total: 40.563763ms
+
+[DEBUG] Host 8/16: 192.168.4.7 - Starting
+[DEBUG] Scan ports complete: 9.16822587s, 100 results
+[DEBUG] Host 8 total: 9.169321507s
+
+[DEBUG] Host 9/16: 192.168.4.8 - Starting
+[DEBUG] Scan ports complete: 9.150907105s, 100 results
+[DEBUG] Host 9 total: 9.152072391s
+
+[DEBUG] Host 10/16: 192.168.4.9 - Starting
+[DEBUG] Scan ports complete: 9.149801289s, 100 results
+[DEBUG] Host 10 total: 9.150935356s
+
+[DEBUG] Host 11/16: 192.168.4.10 - Starting
+[DEBUG] Scan ports complete: 1.782474ms, 100 results
+[DEBUG] Host 11 total: 2.921661ms
+
+[DEBUG] Host 12/16: 192.168.4.11 - Starting
+[DEBUG] Scan ports complete: 9.147114662s, 100 results
+[DEBUG] Host 12 total: 9.148321712s
+
+[DEBUG] Host 13/16: 192.168.4.12 - Starting
+[DEBUG] Scan ports complete: 9.15264898s, 100 results
+[DEBUG] Host 13 total: 9.15372159s
+
+[DEBUG] Host 14/16: 192.168.4.13 - Starting
+[DEBUG] Scan ports complete: 9.151016391s, 100 results
+[DEBUG] Host 14 total: 9.152096588s
+
+[DEBUG] Host 15/16: 192.168.4.14 - Starting
+[DEBUG] Scan ports complete: 9.150351135s, 100 results
+[DEBUG] Host 15 total: 9.152454168s
+
+[DEBUG] Host 16/16: 192.168.4.15 - Starting
+[DEBUG] Scan ports complete: 9.149518199s, 100 results
+[DEBUG] Host 16 total: 9.150583144s
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 18:08:01 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 1600
+
+Hosts Scanned: 16
+Ports: 8 open, 692 closed, 900 filtered
+
+Host: 192.168.4.0
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.1
+Ports: 3 open, 97 closed, 0 filtered
+
+Open Ports:
+     22 open         (  3.95ms)
+     53 open         (  7.12ms)
+     80 open         (  3.81ms)
+
+
+Host: 192.168.4.2
+Ports: 1 open, 99 closed, 0 filtered
+
+Open Ports:
+     22 open         (  9.84ms)
+
+
+Host: 192.168.4.3
+Ports: 1 open, 99 closed, 0 filtered
+
+Open Ports:
+     80 open         (  4.05ms)
+
+
+Host: 192.168.4.4
+Ports: 1 open, 99 closed, 0 filtered
+
+Open Ports:
+     80 open         (  5.74ms)
+
+
+Host: 192.168.4.5
+Ports: 1 open, 99 closed, 0 filtered
+
+Open Ports:
+     80 open         (  8.63ms)
+
+
+Host: 192.168.4.6
+Ports: 1 open, 99 closed, 0 filtered
+
+Open Ports:
+     22 open         ( 11.29ms)
+
+
+Host: 192.168.4.7
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.8
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.9
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.10
+Ports: 0 open, 100 closed, 0 filtered
+
+
+Host: 192.168.4.11
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.12
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.13
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.14
+Ports: 0 open, 0 closed, 100 filtered
+
+
+Host: 192.168.4.15
+Ports: 0 open, 0 closed, 100 filtered
+
+

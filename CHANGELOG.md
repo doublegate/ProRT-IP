@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced ScanResult with service/version/banner fields
   - Updated CLI output to display service information
   - ⚠️ **CRITICAL BUG FOUND**: Empty probe database (0% detection rate)
-  - Fix documented in bug_fix/SERVICE-DETECTION-FIX.md
+  - Fix documented in bug_fix/01-Service-Detection/03-Fix-Guide.md
 
 - **Sprint 4.11 - README Reorganization**
   - Feature-based usage examples (7 categories: Basic, Scan Types, Detection, Timing, Storage, Advanced, Real-World)
@@ -148,13 +148,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Status:** ❌ BROKEN - Empty probe database
 - **Impact:** 0% service detection rate
 - **Root Cause:** `ServiceProbeDb::default()` creates empty Vec at scheduler.rs:393
-- **Fix Guide:** See `bug_fix/SERVICE-DETECTION-FIX.md` for 3 implementation options
+- **Fix Guide:** See `bug_fix/01-Service-Detection/03-Fix-Guide.md` for 3 implementation options
 - **Estimated Fix:** 1-2 hours
 - **Tracking:** Complete issue documentation in bug_fix/ directory
 
 **Workaround:** Use `--banner-grab` flag for basic service identification until fix is implemented.
 
 ### Changed
+
+**Documentation Reorganization - Complete** (2025-10-11)
+
+Comprehensive file reorganization across benchmarks/, bug_fix/, and docs/ directories for improved navigation, professional organization, and maintainability.
+
+**Phase 1-2: bug_fix/ and docs/ Reorganization (60%)**
+- Created 7 issue-based subdirectories in bug_fix/:
+  - 01-Service-Detection/ - Empty probe database (❌ OPEN - Critical)
+  - 02-Progress-Bar/ - Progress bar starting at 100% (✅ FIXED Sprint 4.12)
+  - 03-Performance-Regression/ - Variable shadowing (✅ FIXED Sprint 4.13)
+  - 04-Network-Timeout/ - Timeout optimization (✅ OPTIMIZED Sprint 4.14)
+  - 05-Deep-Timing-Investigation/ - Timing analysis (✅ RESOLVED)
+  - 06-Validation-Suite/ - Industry comparison (✅ COMPLETE - 100% accuracy)
+  - 07-DNS-Resolution/ - Hostname resolution (✅ FIXED)
+- Moved 18 files from bug_fix/ root to proper subdirectories
+- Created 8 comprehensive README.md files in bug_fix/ (700+ lines)
+- Established mixed-case naming convention with numerical prefixes
+- Moved 9 files from docs/archive/ to benchmarks/ or bug_fix/
+- Moved 12 historical/session files from docs/ to docs/archive/
+- Deleted 6 temporary/redundant files from docs/
+- Established strict MAJOR docs only policy (13 core technical docs in docs/ root)
+- Renumbered docs/ for sequential ordering (11, 12, 13)
+
+**Phase 3: benchmarks/ Organization (40%)**
+- Created benchmarks/01-Phase4_PreFinal-Bench/ for Sprint 4.9 final suite
+- Moved 29 benchmark files to 01-Phase4_PreFinal-Bench/ with proper naming
+- Generated comprehensive README.md (400+ lines) with:
+  - Complete file inventory and categorization
+  - Key performance achievements (198x speedup on 65K ports)
+  - System metrics validation (98% futex reduction, 1.9 MB memory peak)
+  - Benchmark methodology and tool documentation
+  - Sprint 4.1-4.9 validation summary
+- Created benchmarks/02-Phase4_Final-Bench/ (empty, pending v0.4.0 benchmarks)
+- Generated placeholder README.md (200+ lines) with:
+  - Sprint 4.10-4.14 validation plan
+  - Performance targets and expected improvements
+  - Benchmark execution plan
+  - Success criteria for v0.4.0 release
+- Renamed all 15 benchmarks/archive/ subdirectories to mixed-case:
+  - Examples: sprint4.1-network-infra → Sprint-4.1-Network-Infra
+  - Consistent with bug_fix/ naming convention
+- Migrated /tmp/ files to proper locations (permanent files preserved, temporary files deleted)
+
+**Impact:**
+- **Total Files:** 302 → 307 files (8 new READMEs, 3 archive docs, 6 deleted duplicates)
+- **Git Operations:** 115+ file moves/renames (all history preserved via git mv)
+- **Documentation:** 1,500+ lines of new README content
+- **Organization Quality:** Professional issue-based tracking, clear chronological organization
+- **Navigation:** Comprehensive indexes in all three directories
+- **Maintainability:** Clear categorization, easy to find files, consistent naming
+
+**Benefits:**
+- ✅ Clear issue-based bug tracking with status summary
+- ✅ Chronological benchmark organization by Phase/Sprint
+- ✅ Strict MAJOR docs convention (only core technical docs in docs/ root)
+- ✅ Consistent mixed-case naming across all directories
+- ✅ Comprehensive README files for easy navigation
+- ✅ Zero data loss (all files accounted for, git history preserved)
+- ✅ Production-ready documentation structure
 
 - **BREAKING (Sprint 4.14):** Default timeout reduced from 3000ms to 1000ms
   - **Reason:** 3s timeout caused worst-case 166 pps on filtered ports (500 concurrent / 3s)

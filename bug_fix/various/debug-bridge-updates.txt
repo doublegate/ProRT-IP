@@ -1,0 +1,5 @@
+[DEBUG BRIDGE] Poll: current=5631, last=0, delta=5631, total=10000
+[DEBUG INC] inc(5631) called, pos before=0, pos after will be=5631
+[DEBUG BRIDGE] Poll: current=10000, last=5631, delta=4369, total=10000
+[DEBUG INC] inc(4369) called, pos before=5631, pos after will be=10000
+[DEBUG BRIDGE] Scan complete: 10000/10000

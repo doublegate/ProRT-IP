@@ -4,18 +4,47 @@ Comprehensive performance benchmarking and profiling results across all developm
 
 ## Directory Structure
 
+### Root Level (Final Benchmarks)
+
+Comprehensive final benchmarking suite from Phase 4 completion:
+
+| File | Description |
+|------|-------------|
+| **12-FINAL-BENCHMARK-SUMMARY.md** | Complete Phase 4 performance analysis (12KB document) |
+| **01-06-hyperfine-*.{json,md,txt}** | Statistical benchmarks (1K, 10K, 65K ports, timing templates) |
+| **06-08-perf-*.txt / 08-flamegraph-*.svg** | CPU profiling (call graphs, flamegraph visualization) |
+| **09-10-strace-*.txt** | Syscall tracing (futex analysis, lock contention) |
+| **11-massif-*.{out,txt}** | Memory profiling (heap analysis, peak usage) |
+
+**Key Results:**
+- 10K ports: **39.4ms ± 3.1ms** (66.3% faster than Phase 3 baseline)
+- 65K ports: **190.9ms ± 7.1ms** (198x faster, infinite loop fixed)
+- Futex calls: **398** (98% reduction from Sprint 4.5 SQLite contention)
+- Memory peak: **1.9 MB** (Valgrind massif, ultra-low footprint)
+
+### Archive (Historical Sprint Benchmarks)
+
+All individual sprint benchmark results are archived for historical reference:
+
 | Directory | Description | Key Metrics |
 |-----------|-------------|-------------|
-| **01-phase3-baseline/** | Phase 3 completion baseline (v0.3.0, 551 tests) | 10K: 117ms (old default SQLite) |
-| **02-sprint4.1-network-infra/** | Network testing infrastructure + Metasploitable2 | Latency simulation scripts |
-| **03-sprint4.2-lockfree/** | Lock-free result aggregator implementation | 10M+ results/sec, <100ns latency |
-| **04-sprint4.3-integration/** | Lock-free + recvmmsg integration | TCP connect integration |
-| **05-sprint4.4-65k-fix/** | Critical 65K port bottleneck fix | >180s → 0.91s (198x faster!) |
-| **06-sprint4.5-profiling/** | Performance regression investigation | Root cause: SQLite contention |
-| **07-sprint4.6-inmemory-default/** | Default in-memory mode switch | 37.4ms (5.2x faster!) |
-| **08-sprint4.7-scheduler-refactor/** | Scheduler uses StorageBackend | Architecture cleanup |
-| **09-sprint4.8-async-fix/** | Async storage deadlock fix | 139.9ms → 74.5ms (46.7% faster) |
-| **flamegraphs/** | CPU profiling flamegraph visualizations | SVG files for hot path analysis |
+| **archive/01-phase3-baseline/** | Phase 3 completion baseline (v0.3.0, 551 tests) | 10K: 117ms (old default SQLite) |
+| **archive/02-sprint4.1-network-infra/** | Network testing infrastructure + Metasploitable2 | Latency simulation scripts |
+| **archive/03-sprint4.2-lockfree/** | Lock-free result aggregator implementation | 10M+ results/sec, <100ns latency |
+| **archive/04-sprint4.3-integration/** | Lock-free + recvmmsg integration | TCP connect integration |
+| **archive/05-sprint4.4-65k-fix/** | Critical 65K port bottleneck fix | >180s → 0.91s (198x faster!) |
+| **archive/06-sprint4.5-profiling/** | Performance regression investigation | Root cause: SQLite contention |
+| **archive/07-sprint4.6-inmemory-default/** | Default in-memory mode switch | 37.4ms (5.2x faster!) |
+| **archive/08-sprint4.7-scheduler-refactor/** | Scheduler uses StorageBackend | Architecture cleanup |
+| **archive/09-sprint4.8-async-fix/** | Async storage deadlock fix | 139.9ms → 74.5ms (46.7% faster) |
+| **archive/10-sprint4.9-finalization/** | Sprint 4.9 finalization reports | Phase 4 wrap-up |
+| **archive/11-sprint4.10-cli-improvements/** | Sprint 4.10 CLI improvements | Enhanced user experience |
+
+### Flamegraphs
+
+| Directory | Description |
+|-----------|-------------|
+| **flamegraphs/** | CPU profiling flamegraph visualizations (SVG files for hot path analysis) |
 
 ## Quick Reference
 
@@ -40,77 +69,23 @@ Comprehensive performance benchmarking and profiling results across all developm
 - ✅ **Lock-Free Aggregation**: Zero contention, <100ns latency
 - ✅ **Production Ready**: 620 tests passing, zero warnings
 
-## Directory Contents
+## Archive Contents
 
-### 01-phase3-baseline/
-Phase 3 completion benchmarks (v0.3.0, 551 tests):
-- `1-BASELINE-RESULTS.md` - Comprehensive baseline report (49KB)
-- `3-SPRINT4-COMPREHENSIVE-REPORT.md` - Sprint 4.3-4.4 analysis (31KB)
-- `4-EXECUTIVE-SUMMARY.txt` - Quick reference summary
-- Scenario outputs (5-12): Service discovery, medium/large/full range, timing templates
+Historical sprint benchmark results are preserved in the `archive/` directory for reference. See individual sprint directories for detailed results and analysis.
 
-### 02-sprint4.1-network-infra/
-Network testing infrastructure:
-- `2-PHASE4-NETWORK-BENCHMARKS.md` - Network setup guide (28KB)
-- Docker test environment with Metasploitable2
-- Latency simulation scripts
+### Key Historical Achievements (from Archive)
 
-### 03-sprint4.2-lockfree/
-Lock-free result aggregator implementation (empty - code in crates/):
-- Module: `crates/prtip-scanner/src/lockfree_aggregator.rs`
-- Performance: 10M+ results/sec, <100ns latency
-- Tests: 8 unit + 2 doc-tests
+- **Sprint 4.4** (archive/05-sprint4.4-65k-fix/): 65K port scan fix (>180s → 0.91s, 198x faster!)
+- **Sprint 4.5** (archive/06-sprint4.5-profiling/): Root cause analysis of SQLite contention (95.47% futex time)
+- **Sprint 4.6** (archive/07-sprint4.6-inmemory-default/): Default in-memory mode (37.4ms, 5.2x faster!)
+- **Sprint 4.8** (archive/09-sprint4.8-async-fix/): Async storage deadlock fix (139.9ms → 74.5ms, 46.7% improvement)
 
-### 04-sprint4.3-integration/
-Lock-free + recvmmsg integration (empty - code in crates/):
-- TCP connect integration: `crates/prtip-scanner/src/tcp_connect.rs`
-- Batch receiver: `crates/prtip-network/src/batch_sender.rs`
-- Tests: 9 integration + 6 unit
+### Flamegraphs
 
-### 05-sprint4.4-65k-fix/
-Critical 65K port bottleneck fix:
-- `sprint-4.4-benchmarks.txt` - Performance validation
-- `65k-ports-flamegraph.svg` - CPU profiling visualization
-- **Result**: >180s hang → 0.91s (198x faster!)
-
-### 06-sprint4.5-profiling/
-Comprehensive performance profiling (27MB raw data):
-- `14-SPRINT4.5-PROFILING-SUMMARY.md` - Executive summary (23KB)
-- `15-SPRINT4.5-KEY-FINDINGS.txt` - Root cause analysis
-- Flamegraphs: 1k-ports, 10k-ports, 65k-ports (116KB-590KB)
-- Raw data: perf.data, collapsed stacks, hyperfine JSON
-- **Root Cause**: SQLite write contention (95.47% futex time)
-
-### 07-sprint4.6-inmemory-default/
-Default in-memory mode switch (breaking change):
-- Implementation: `crates/prtip-scanner/src/storage/`
-- **Breaking**: `--no-db` removed, `--with-db` added
-- **Performance**: 37.4ms default (5.2x faster than old default!)
-- Async storage worker with channel communication
-
-### 08-sprint4.7-scheduler-refactor/
-Scheduler refactor to use StorageBackend enum:
-- `default-benchmark.json/md` - Performance validation
-- `withdb-benchmark.json/md` - Async storage validation
-- `implementation-summary.md` - Technical details (12KB)
-- `FINAL-REPORT.md` - Sprint summary (13KB)
-- **Result**: Architecture cleanup, all 620 tests passing
-
-### 09-sprint4.8-async-fix/
-Async storage deadlock fix (Sprint 4.8 v2):
-- `sprint4.8-v2-default-benchmark.json/md` - Default mode validation
-- `sprint4.8-v2-withdb-benchmark.json/md` - Async mode validation
-- `sprint4.8-v2-performance-comparison.txt` - Before/after analysis
-- `sprint4.8-v2-implementation-summary.md` - Technical details (10KB)
-- `sprint4.8-v2-FINAL-REPORT.md` - Comprehensive summary (11KB)
-- **Critical Fix**: Replaced tokio::select! with timeout() pattern
-- **Result**: 139.9ms → 74.5ms (46.7% improvement), zero hangs
-
-### flamegraphs/
 Interactive CPU profiling visualizations:
-- `1k-ports-flamegraph.svg` - 1K port scan (116KB)
-- `10k-ports-flamegraph.svg` - 10K port scan (305KB)
-- Open in browser for interactive call stack exploration
+- Open SVG files in browser for interactive call stack exploration
+- Shows hot paths and performance bottlenecks
+- Generated from perf call graph data
 
 ## Tools Used
 

@@ -1,0 +1,100 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 248  of event 'cycles:Pu'
+# Event count (approx.): 138320722
+#
+# Children      Self  Command          Shared Object         Symbol                                                                                                                                                                                                                                                        
+# ........  ........  ...............  ....................  ..............................................................................................................................................................................................................................................................
+#
+    12.60%     6.02%  tokio-runtime-w  prtip                 [.] <tokio::time::timeout::Timeout<T> as core::future::future::Future>::poll
+            |          
+            |--7.31%--<tokio::time::timeout::Timeout<T> as core::future::future::Future>::poll
+            |          tokio::net::tcp::stream::TcpStream::connect::{{closure}} (inlined)
+            |          tokio::net::tcp::stream::TcpStream::connect_addr::{{closure}} (inlined)
+            |          |          
+            |          |--6.32%--tokio::net::tcp::stream::TcpStream::connect_mio::{{closure}} (inlined)
+            |          |          |          
+            |          |           --5.61%--tokio::net::tcp::stream::TcpStream::new (inlined)
+            |          |                     tokio::io::poll_evented::PollEvented<E>::new (inlined)
+            |          |                     tokio::io::poll_evented::PollEvented<E>::new_with_interest (inlined)
+            |          |                     tokio::io::poll_evented::PollEvented<E>::new_with_interest_and_handle (inlined)
+            |          |                     tokio::runtime::io::registration::Registration::new_with_interest_and_handle (inlined)
+            |          |                     tokio::runtime::io::driver::Handle::add_source (inlined)
+            |          |                     |          
+            |          |                      --5.23%--tokio::runtime::io::registration_set::RegistrationSet::allocate (inlined)
+            |          |                                alloc::sync::Arc<T>::new (inlined)
+            |          |                                alloc::boxed::Box<T>::new (inlined)
+            |          |                                alloc::alloc::exchange_malloc (inlined)
+            |          |                                <alloc::alloc::Global as core::alloc::Allocator>::allocate (inlined)
+            |          |                                alloc::alloc::Global::alloc_impl (inlined)
+            |          |                                alloc::alloc::alloc (inlined)
+            |          |                                __rustc::__rdl_alloc
+            |          |                                std::sys::alloc::unix::<impl core::alloc::global::GlobalAlloc for std::alloc::System>::alloc (inlined)
+            |          |                                std::sys::alloc::unix::aligned_malloc (inlined)
+            |          |                                posix_memalign
+            |          |                                |          
+            |          |                                 --3.80%--0x7fa43b8ba25f
+            |          |                                           |          
+            |          |                                            --2.14%--0x7fa43b8b935f
+            |          |          
+            |           --0.99%--mio::net::tcp::stream::TcpStream::connect (inlined)
+            |                     |          
+            |                      --0.63%--mio::sys::unix::tcp::connect (inlined)
+            |                                connect
+            |          
+            |--1.09%--0x2
+            |          <tokio::time::timeout::Timeout<T> as core::future::future::Future>::poll
+            |          tokio::net::tcp::stream::TcpStream::connect::{{closure}} (inlined)
+            |          
+            |--0.70%--0x3
+            |          <tokio::time::timeout::Timeout<T> as core::future::future::Future>::poll
+            |          tokio::net::tcp::stream::TcpStream::connect::{{closure}} (inlined)
+            |          tokio::net::tcp::stream::TcpStream::connect_addr::{{closure}} (inlined)
+            |          tokio::net::tcp::stream::TcpStream::connect_mio::{{closure}} (inlined)
+            |          tokio::net::tcp::stream::TcpStream::new (inlined)
+            |          tokio::io::poll_evented::PollEvented<E>::new (inlined)
+            |          tokio::io::poll_evented::PollEvented<E>::new_with_interest (inlined)
+            |          
+             --0.69%--0x9
+                       <tokio::time::timeout::Timeout<T> as core::future::future::Future>::poll
+                       tokio::net::tcp::stream::TcpStream::connect::{{closure}} (inlined)
+                       tokio::net::tcp::stream::TcpStream::connect_addr::{{closure}} (inlined)
+                       tokio::net::tcp::stream::TcpStream::connect_mio::{{closure}} (inlined)
+                       tokio::net::tcp::stream::TcpStream::new (inlined)
+                       tokio::io::poll_evented::PollEvented<E>::new (inlined)
+                       tokio::io::poll_evented::PollEvented<E>::new_with_interest (inlined)
+                       tokio::io::poll_evented::PollEvented<E>::new_with_interest_and_handle (inlined)
+                       tokio::runtime::io::registration::Registration::new_with_interest_and_handle (inlined)
+                       tokio::runtime::io::driver::Handle::add_source (inlined)
+
+    12.31%     0.00%  tokio-runtime-w  prtip                 [.] tokio::net::tcp::stream::TcpStream::connect::{{closure}} (inlined)
+            |
+            ---tokio::net::tcp::stream::TcpStream::connect::{{closure}} (inlined)
+               |          
+                --11.22%--tokio::net::tcp::stream::TcpStream::connect_addr::{{closure}} (inlined)
+                          |          
+                          |--9.51%--tokio::net::tcp::stream::TcpStream::connect_mio::{{closure}} (inlined)
+                          |          |          
+                          |           --8.46%--tokio::net::tcp::stream::TcpStream::new (inlined)
+                          |                     tokio::io::poll_evented::PollEvented<E>::new (inlined)
+                          |                     tokio::io::poll_evented::PollEvented<E>::new_with_interest (inlined)
+                          |                     |          
+                          |                      --8.13%--tokio::io::poll_evented::PollEvented<E>::new_with_interest_and_handle (inlined)
+                          |                                tokio::runtime::io::registration::Registration::new_with_interest_and_handle (inlined)
+                          |                                tokio::runtime::io::driver::Handle::add_source (inlined)
+                          |                                |          
+                          |                                |--5.93%--tokio::runtime::io::registration_set::RegistrationSet::allocate (inlined)
+                          |                                |          |          
+                          |                                |          |--5.23%--alloc::sync::Arc<T>::new (inlined)
+                          |                                |          |          alloc::boxed::Box<T>::new (inlined)
+                          |                                |          |          alloc::alloc::exchange_malloc (inlined)
+                          |                                |          |          <alloc::alloc::Global as core::alloc::Allocator>::allocate (inlined)
+                          |                                |          |          alloc::alloc::Global::alloc_impl (inlined)
+                          |                                |          |          alloc::alloc::alloc (inlined)
+                          |                                |          |          __rustc::__rdl_alloc
+                          |                                |          |          std::sys::alloc::unix::<impl core::alloc::global::GlobalAlloc for std::alloc::System>::alloc (inlined)
+                          |                                |          |          std::sys::alloc::unix::aligned_malloc (inlined)
+                          |                                |          |          posix_memalign

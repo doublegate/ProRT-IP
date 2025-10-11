@@ -380,6 +380,7 @@ impl DecoyScanner {
             timestamp: Utc::now(),
             banner: None,
             service: None,
+            version: None,
         })
     }
 

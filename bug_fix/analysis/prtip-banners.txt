@@ -1,0 +1,52 @@
+[2m2025-10-11T06:54:00.021055Z[0m [33m WARN[0m Insufficient privileges for raw sockets: Insufficient privileges: Insufficient privileges for raw socket access. Run with sudo or grant CAP_NET_RAW capability with: sudo setcap cap_net_raw+eip /path/to/prtip. Using TCP connect scan fallback.
+[DNS] Resolved scanme.nmap.org -> 45.33.32.156
+[2m2025-10-11T06:54:00.022288Z[0m [33m WARN[0m Failed to drop privileges: Insufficient privileges: Group not found: nogroup. Continuing as current user.
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  scanme.nmap.org (45.33.32.156)
+Ports:    22,80
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 20 (adaptive)
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 06:54:03 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 2
+
+Hosts Scanned: 1
+Ports: 1 open, 0 closed, 1 filtered
+
+Host: 45.33.32.156
+Ports: 1 open, 0 closed, 1 filtered
+
+Open Ports:
+     80 open         ( 66.81ms)
+
+Filtered Ports:
+     22 filtered    
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       3.00s
+  Scan Rate:      1 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    2
+
+Results:
+  Open Ports:     1
+  Closed Ports:   0
+  Filtered Ports: 1
+============================================================

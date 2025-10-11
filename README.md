@@ -237,69 +237,117 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 
 ## Usage Examples
 
-**Phase 2 Features Implemented:**
+### Basic Scanning
 
 ```bash
-# TCP SYN scan (half-open)
-prtip -sS -p 1-1000 192.168.1.0/24
+# Scan hostname (DNS resolution automatic)
+prtip --scan-type connect -p 22,80,443 scanme.nmap.org
 
-# TCP connect scan (full 3-way handshake)
-prtip -sT -p 80,443 target.com
+# Scan IP address
+prtip --scan-type connect -p 80,443,8080 192.168.1.1
 
-# UDP scan with protocol-specific payloads
-prtip -sU -p 53,123,161 target.com
+# Scan subnet (CIDR notation)
+prtip --scan-type connect -p 1-1000 192.168.1.0/24
 
-# Stealth FIN scan
-prtip -sF -p 1-1000 192.168.1.0/24
+# Multiple targets (mix hostnames and IPs)
+prtip --scan-type connect -p 80,443 scanme.nmap.org 8.8.8.8 192.168.1.1
 
-# NULL scan (no flags)
-prtip -sN -p 80,443 target.com
-
-# Xmas scan (FIN, PSH, URG flags)
-prtip -sX -p 1-1000 192.168.1.0/24
-
-# ACK scan (firewall detection)
-prtip -sA -p 80,443 target.com
-
-# Aggressive timing template
-prtip -sS -T4 -p 1-1000 192.168.1.0/24
-
-# Paranoid timing (stealth)
-prtip -sS -T0 -p 80,443 target.com
-
-# Output formats
-prtip -sS -p 80,443 --output json target.com  # JSON
-prtip -sS -p 80,443 --output xml target.com   # XML
-prtip -sS -p 80,443 --output text target.com  # Text (default)
+# Full port range (65535 ports in ~190ms on localhost!)
+prtip --scan-type connect -p 1-65535 192.168.1.1
 ```
 
-**Phase 3 Features Implemented:**
+### Scan Types
+
+```bash
+# TCP Connect (no privileges required)
+prtip --scan-type connect -p 1-1000 192.168.1.1
+
+# SYN scan (stealth, requires root/CAP_NET_RAW)
+prtip --scan-type syn -p 1-1000 192.168.1.1
+
+# UDP scan (protocol-specific payloads: DNS, SNMP, NTP, etc.)
+prtip --scan-type udp -p 53,161,123 192.168.1.1
+
+# Stealth scans
+prtip --scan-type fin -p 1-1000 192.168.1.1     # FIN scan
+prtip --scan-type null -p 1-1000 192.168.1.1    # NULL scan (no flags)
+prtip --scan-type xmas -p 1-1000 192.168.1.1    # Xmas scan (FIN+PSH+URG)
+prtip --scan-type ack -p 1-1000 192.168.1.1     # ACK scan (firewall detection)
+```
+
+### Detection Features
 
 ```bash
 # Service version detection
-prtip -sS --sV -p 80,443 target.com
+prtip --scan-type connect -p 1-1000 --sV 192.168.1.1
 
-# OS fingerprinting
-prtip -sS -O -T4 target.com
+# Adjust detection intensity (0=light, 9=aggressive)
+prtip --scan-type connect -p 22,80,443 --sV --version-intensity 9 192.168.1.1
 
 # Banner grabbing
-prtip -sS --banner -p 21-25,80,443 target.com
+prtip --scan-type connect -p 22,80,443 --banner-grab 192.168.1.1
 
-# Full scan with all Phase 3 features
-prtip -sS --sV -O --banner -p 1-1000 --output json target.com
-
-# Service detection with intensity level
-prtip -sS --sV --version-intensity 7 -p 80,443 target.com
+# Service detection + banner grabbing
+prtip --scan-type connect -p 1-1000 --sV --banner-grab 192.168.1.1
 ```
 
-**Planned Features (Phase 4+):**
+### Timing & Performance
 
 ```bash
-# High-performance scanning (Phase 4)
-prtip --fast-scan -p- 192.168.1.0/24  # Lock-free, 1M+ pps
+# Timing templates (T0-T5)
+prtip --scan-type connect -p 1-1000 -T 0 192.168.1.1  # Paranoid (5min delays)
+prtip --scan-type connect -p 1-1000 -T 2 192.168.1.1  # Polite (0.4s delays)
+prtip --scan-type connect -p 1-1000 -T 3 192.168.1.1  # Normal (default)
+prtip --scan-type connect -p 1-1000 -T 4 192.168.1.1  # Aggressive (fast)
+prtip --scan-type connect -p 1-1000 -T 5 192.168.1.1  # Insane (maximum speed)
 
-# Distributed scanning (Phase 5)
-prtip --distributed --workers 10 -p- target-list.txt
+# Adaptive parallelism (automatic: 20 for small, 1000 for large scans)
+prtip --scan-type connect -p 1-65535 192.168.1.1
+
+# Manual parallelism override
+prtip --scan-type connect -p 1-1000 --max-concurrent 500 192.168.1.1
+```
+
+### Storage & Output
+
+```bash
+# In-memory mode (default, fastest - 39ms for 10K ports)
+prtip --scan-type connect -p 1-10000 192.168.1.1
+
+# Database storage (async writes - 75ms for 10K ports)
+prtip --scan-type connect -p 1-10000 --with-db 192.168.1.1
+
+# Output formats
+prtip --scan-type connect -p 1-1000 --output-format json 192.168.1.1 > results.json
+prtip --scan-type connect -p 1-1000 --output-format xml 192.168.1.1 > results.xml
+```
+
+### Real-World Scenarios
+
+```bash
+# Web server reconnaissance
+prtip --scan-type connect -p 80,443,8080,8443 --sV --banner-grab example.com
+
+# Network inventory audit
+prtip --scan-type connect -p 22,80,443,3389 --with-db --sV 192.168.0.0/16
+
+# Quick security assessment
+prtip --scan-type syn -p 1-65535 -T 4 --sV 192.168.1.1
+
+# Stealth reconnaissance
+prtip --scan-type syn -p 1-1000 -T 0 192.168.1.1
+```
+
+### Performance Benchmarks
+
+```bash
+# Localhost performance (CachyOS Linux, i9-10850K)
+$ time prtip --scan-type connect -p 1-1000 127.0.0.1      # ~4.5ms
+$ time prtip --scan-type connect -p 1-10000 127.0.0.1     # ~39ms
+$ time prtip --scan-type connect -p 1-65535 127.0.0.1     # ~190ms
+
+# With database storage
+$ time prtip --scan-type connect -p 1-10000 --with-db 127.0.0.1  # ~75ms
 ```
 
 ---

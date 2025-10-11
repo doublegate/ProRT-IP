@@ -1,0 +1,15 @@
+Scan Summary
+============================================================
+Performance:
+  Duration:       39ms
+  Scan Rate:      251343 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    10000
+
+Results:
+  Open Ports:     13
+  Closed Ports:   9987
+  Filtered Ports: 0
+============================================================

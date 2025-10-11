@@ -1,0 +1,4 @@
+Benchmark 1: /home/parobek/Code/ProRT-IP/target/release/prtip -s connect -p 1-10000 127.0.0.1
+  Time (mean ± σ):      39.4 ms ±   3.1 ms    [User: 36.0 ms, System: 236.3 ms]
+  Range (min … max):    34.5 ms …  45.3 ms    20 runs
+ 

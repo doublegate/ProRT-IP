@@ -40,14 +40,35 @@ impl ScanTarget {
             });
         }
 
-        // Assume it's a hostname
-        Ok(Self {
-            network: IpNetwork::V4(ipnetwork::Ipv4Network::new(
-                std::net::Ipv4Addr::UNSPECIFIED,
-                32,
-            )?),
-            hostname: Some(input.to_string()),
-        })
+        // Assume it's a hostname - resolve via DNS
+        use std::net::ToSocketAddrs;
+
+        let socket_addr = format!("{}:0", input); // Port 0 is placeholder for DNS lookup
+
+        match socket_addr.to_socket_addrs() {
+            Ok(mut addrs) => {
+                if let Some(addr) = addrs.next() {
+                    let ip = addr.ip();
+                    let network = match ip {
+                        IpAddr::V4(addr) => IpNetwork::V4(ipnetwork::Ipv4Network::new(addr, 32)?),
+                        IpAddr::V6(addr) => IpNetwork::V6(ipnetwork::Ipv6Network::new(addr, 128)?),
+                    };
+                    Ok(Self {
+                        network,
+                        hostname: Some(input.to_string()),
+                    })
+                } else {
+                    Err(Error::InvalidTarget(format!(
+                        "No IP addresses found for hostname: {}",
+                        input
+                    )))
+                }
+            }
+            Err(e) => Err(Error::InvalidTarget(format!(
+                "Failed to resolve hostname '{}': {}",
+                input, e
+            ))),
+        }
     }
 
     /// Check if this is a single host (not a network range)
@@ -466,6 +487,8 @@ pub struct ScanResult {
     pub banner: Option<String>,
     /// Optional service name
     pub service: Option<String>,
+    /// Optional service version
+    pub version: Option<String>,
 }
 
 impl ScanResult {
@@ -479,6 +502,7 @@ impl ScanResult {
             timestamp: Utc::now(),
             banner: None,
             service: None,
+            version: None,
         }
     }
 
@@ -497,6 +521,12 @@ impl ScanResult {
     /// Set service name
     pub fn with_service(mut self, service: String) -> Self {
         self.service = Some(service);
+        self
+    }
+
+    /// Set service version
+    pub fn with_version(mut self, version: String) -> Self {
+        self.version = Some(version);
         self
     }
 
@@ -946,5 +976,44 @@ mod tests {
         let filter = PortFilter::default();
         assert!(filter.is_empty());
         assert!(filter.allows(80));
+    }
+
+    #[test]
+    fn test_scan_target_dns_resolution() {
+        // Test DNS resolution with a well-known hostname
+        // Note: This test requires internet connectivity
+        let target = ScanTarget::parse("localhost").unwrap();
+        assert!(target.hostname.is_some());
+        assert_eq!(target.hostname.as_ref().unwrap(), "localhost");
+        assert!(target.is_single_host());
+
+        // Verify the IP is either 127.0.0.1 or ::1
+        let ip = target.network.ip();
+        assert!(
+            ip == "127.0.0.1".parse::<IpAddr>().unwrap()
+                || ip == "::1".parse::<IpAddr>().unwrap(),
+            "Expected localhost to resolve to 127.0.0.1 or ::1, got {}",
+            ip
+        );
+    }
+
+    #[test]
+    fn test_scan_target_invalid_hostname() {
+        // Test with an invalid hostname that should fail DNS resolution
+        let result = ScanTarget::parse("nonexistent.invalid.hostname.example");
+        assert!(result.is_err());
+        let err_msg = format!("{}", result.unwrap_err());
+        assert!(err_msg.contains("Failed to resolve hostname"));
+    }
+
+    #[test]
+    fn test_scan_target_ip_no_dns() {
+        // Test that direct IP addresses don't trigger DNS lookup
+        let target = ScanTarget::parse("192.168.1.1").unwrap();
+        assert!(target.hostname.is_none());
+        assert_eq!(
+            target.network.ip(),
+            "192.168.1.1".parse::<IpAddr>().unwrap()
+        );
     }
 }

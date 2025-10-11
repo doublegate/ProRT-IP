@@ -165,7 +165,13 @@ impl OutputFormatter for TextFormatter {
                     ));
 
                     if let Some(service) = &result.service {
-                        output.push_str(&format!(" [{}]", service));
+                        if let Some(version) = &result.version {
+                            output.push_str(&format!(" [{} ({})]", service, version));
+                        } else {
+                            output.push_str(&format!(" [{}]", service));
+                        }
+                    } else if let Some(version) = &result.version {
+                        output.push_str(&format!(" [version: {}]", version));
                     }
 
                     output.push('\n');
@@ -461,6 +467,7 @@ mod tests {
                 timeout_ms: 3000,
                 retries: 0,
                 scan_delay_ms: 0,
+                service_detection: Default::default(),
             },
             network: NetworkConfig {
                 interface: None,

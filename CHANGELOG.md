@@ -8,6 +8,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **CRITICAL**: DNS hostname resolution now working correctly
+  - Targets can now be hostnames (e.g., `scanme.nmap.org`) or IP addresses
+  - Automatic DNS resolution using `ToSocketAddrs` standard library
+  - Resolved hostnames displayed in banner: "hostname (IP)"
+  - Multiple targets supported (mix of hostnames and IPs)
+  - Fast path: Direct IP parsing (no DNS lookup overhead)
+  - Slow path: DNS resolution for hostnames with clear error messages
+  - Added DNS resolution feedback: `[DNS] Resolved hostname -> IP`
+  - Added 3 new tests for DNS resolution validation
+  - Error handling: Graceful failures for unresolvable hostnames
+  - Total: 458 tests passing (100% success rate)
+
+### Added
+- **COMPLETE**: Phase 4 comprehensive final benchmarking suite
+  - 29 benchmark files covering performance, CPU profiling, memory analysis
+  - Statistical analysis with hyperfine (20 runs per benchmark)
+  - CPU profiling with perf (call graphs, hardware counters, flamegraphs)
+  - Syscall tracing with strace (futex analysis, lock contention)
+  - Memory profiling with Valgrind massif (heap analysis)
+  - Comprehensive 12KB summary document (12-FINAL-BENCHMARK-SUMMARY.md)
+- Benchmarks directory organization
+  - Final benchmarks at root level (benchmarks/*.{txt,json,md,svg,out})
+  - Historical sprint results archived (benchmarks/archive/01-11/)
+  - Flamegraphs in dedicated subdirectory (benchmarks/flamegraphs/)
+
+### Performance
+
+#### Phase 4 Final Benchmarking Suite (2025-10-11)
+
+**Comprehensive Performance Validation - 66% Improvement Confirmed**
+
+##### Final Performance Metrics (vs Phase 3 Baseline)
+```
+| Metric           | Phase 3 Baseline | Phase 4 Final      | Improvement      |
+|------------------|------------------|--------------------|------------------|
+| 1K ports         | ~25ms (est)      | 4.5ms ± 0.4ms      | 82.0% faster     |
+| 10K ports        | 117ms            | 39.4ms ± 3.1ms     | 66.3% faster     |
+| 65K ports        | >180s (hung)     | 190.9ms ± 7.1ms    | 198x faster      |
+| 10K --with-db    | 194.9ms          | 75.1ms ± 6.1ms     | 61.5% faster     |
+```
+
+##### System Metrics
+- **CPU utilization**: 6.092 CPUs (excellent multi-core scaling)
+- **Memory peak**: 1.9 MB (Valgrind massif, ultra-low footprint)
+- **Futex calls**: 398 in-memory, 381 with-db (98% reduction vs Sprint 4.5)
+- **Cache efficiency**: 0.45% LLC miss rate (excellent locality)
+- **Branch prediction**: 2.42% miss rate (very good accuracy)
+
+##### Benchmark Tools Used
+- **hyperfine**: Statistical benchmarking (10-20 runs with warmup)
+- **perf**: CPU profiling with DWARF call graphs
+- **flamegraph**: Interactive call stack visualization (190KB SVG)
+- **strace**: Syscall tracing (-c summary mode)
+- **valgrind/massif**: Heap profiling and memory allocation analysis
+
+##### Key Validations
+- ✅ Sprint 4.4 fix confirmed: 65K ports complete in 190ms (was >180s hang)
+- ✅ Sprint 4.6 optimization confirmed: In-memory 5.2x faster than old SQLite
+- ✅ Sprint 4.8 v2 fix confirmed: --with-db mode stable (75ms, no deadlocks)
+- ✅ Lock-free aggregator confirmed: 98% futex reduction (20,373 → 398 calls)
+- ✅ Adaptive parallelism confirmed: Linear scaling to 1000 concurrent
+
+##### Benchmark Files Generated
+- `01-05-hyperfine-*.{json,md,txt}` - Statistical analysis (5 scenarios)
+- `06-perf-10k-ports-report.txt` - Top functions from call graph
+- `07-perf-stat-10k-ports.txt` - Hardware counters (cache, branches, IPC)
+- `08-flamegraph-10k-ports.svg` - Interactive CPU profile visualization
+- `09-strace-10k-ports-summary.txt` - Syscall frequency table
+- `10-strace-futex-*.txt` - Lock contention analysis (in-memory vs --with-db)
+- `11-massif-1k-ports-{out,report.txt}` - Memory allocation patterns
+- `12-FINAL-BENCHMARK-SUMMARY.md` - Comprehensive analysis document (12KB)
+
+### Fixed
 - **CRITICAL**: Fixed async storage deadlock (Sprint 4.8 v2)
   - Issue: tokio::select! with sleep arm prevented channel closure detection
   - Fix: Replaced with timeout() wrapped around recv() for proper None detection

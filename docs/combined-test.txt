@@ -1,0 +1,56 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    2000-3000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 100 (adaptive)
+============================================================
+
+Service detection: Using embedded nmap-service-probes
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 08:55:33 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 1001
+
+Hosts Scanned: 1
+Ports: 7 open, 994 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 7 open, 994 closed, 0 filtered
+
+Open Ports:
+   2021 open         (  0.22ms)
+   2025 open         (  0.23ms) [smtp]
+   2053 open         (  0.24ms)
+   2023 open         (  0.19ms)
+   2022 open         (  0.24ms)
+   2139 open         (  0.08ms)
+   2445 open         (  0.13ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       4.18s
+  Scan Rate:      239 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    1001
+
+Results:
+  Open Ports:     7
+  Closed Ports:   994
+  Filtered Ports: 0
+
+Detection:
+  Services:       1
+============================================================

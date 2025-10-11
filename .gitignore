@@ -60,12 +60,19 @@ secrets/
 perf.data
 perf.data.old
 *.folded
+*.collapsed
+perf.script
+massif.out.*
+callgrind.out.*
+cachegrind.out.*
 # Exclude flamegraph SVGs except in benchmarks/
 *.svg
 !benchmarks/**/*.svg
 
 # Benchmark outputs
 /target/criterion/
+*.hyperfine.json
+*.bench.json
 
 # Temporary files
 /tmp/

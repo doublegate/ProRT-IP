@@ -1,0 +1,107 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  192.168.4.1/30
+Ports:    1-10000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 500 (adaptive)
+============================================================
+
+[DEBUG] Host 1/4: 192.168.4.0 - Starting
+[DEBUG] Scan ports complete: 57.753978715s, 10000 results
+[DEBUG] Host 1 total: 57.755052845s
+
+[DEBUG] Host 2/4: 192.168.4.1 - Starting
+[DEBUG] Scan ports complete: 3.326314539s, 10000 results
+[DEBUG] Host 2 total: 3.326645095s
+
+[DEBUG] Host 3/4: 192.168.4.2 - Starting
+[DEBUG] Scan ports complete: 9.982697644s, 10000 results
+[DEBUG] Host 3 total: 9.984475145s
+
+[DEBUG] Host 4/4: 192.168.4.3 - Starting
+[DEBUG] Scan ports complete: 4.034819865s, 10000 results
+[DEBUG] Host 4 total: 4.036714666s
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 18:09:36 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 40000
+
+Hosts Scanned: 4
+Ports: 30 open, 29860 closed, 10110 filtered
+
+Host: 192.168.4.0
+Ports: 0 open, 0 closed, 10000 filtered
+
+
+Host: 192.168.4.1
+Ports: 4 open, 9920 closed, 76 filtered
+
+Open Ports:
+     22 open         ( 82.07ms)
+     80 open         ( 82.39ms)
+     53 open         ( 87.81ms)
+    443 open         (1099.93ms)
+
+
+Host: 192.168.4.2
+Ports: 1 open, 9999 closed, 0 filtered
+
+Open Ports:
+     22 open         (1039.45ms)
+
+
+Host: 192.168.4.3
+Ports: 25 open, 9941 closed, 34 filtered
+
+Open Ports:
+     80 open         ( 81.93ms)
+    443 open         (119.39ms)
+   5355 open         ( 84.32ms)
+   6081 open         (142.19ms)
+   6443 open         ( 79.77ms)
+   6789 open         ( 67.76ms)
+   7441 open         ( 81.36ms)
+   7442 open         ( 81.34ms)
+   7444 open         ( 81.21ms)
+   7451 open         ( 78.48ms)
+   7550 open         ( 91.28ms)
+   7600 open         ( 87.91ms)
+   7443 open         (147.94ms)
+   7445 open         (147.03ms)
+   7446 open         (146.78ms)
+   7447 open         (146.77ms)
+   7552 open         (153.27ms)
+   8080 open         ( 86.10ms)
+   7888 open         (155.97ms)
+   8443 open         ( 73.94ms)
+   8444 open         (144.21ms)
+   8843 open         (154.09ms)
+   8880 open         (150.68ms)
+   9443 open         (173.10ms)
+   9780 open         (111.72ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       1m 15s
+  Scan Rate:      533 ports/sec
+
+Targets:
+  Hosts Scanned:  4
+  Total Ports:    40000
+
+Results:
+  Open Ports:     30
+  Closed Ports:   29860
+  Filtered Ports: 10110
+============================================================

@@ -1,0 +1,58 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    1-10000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 500 (adaptive)
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 09:57:05 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 10000
+
+Hosts Scanned: 1
+Ports: 13 open, 9987 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 13 open, 9987 closed, 0 filtered
+
+Open Ports:
+   1716 open         (  0.20ms)
+   2139 open         (  0.17ms)
+   2025 open         (  0.52ms)
+   2445 open         (  0.13ms)
+   2021 open         (  0.98ms)
+   2022 open         (  1.16ms)
+   2053 open         (  1.25ms)
+   2023 open         (  1.33ms)
+   3306 open         (  0.61ms)
+   5355 open         (  0.14ms)
+   5432 open         (  0.68ms)
+   8180 open         (  0.28ms)
+   8080 open         (  1.45ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       53ms
+  Scan Rate:      188012 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    10000
+
+Results:
+  Open Ports:     13
+  Closed Ports:   9987
+  Filtered Ports: 0
+============================================================

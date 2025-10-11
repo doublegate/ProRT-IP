@@ -17,7 +17,7 @@ use crate::{
 use prtip_core::{Config, PortRange, PortState, Result, ScanResult, ScanTarget, ServiceProbeDb};
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
 
 /// Scan scheduler that orchestrates the scanning process
@@ -322,10 +322,7 @@ impl ScanScheduler {
 
         // Create progress bar for real-time feedback
         let total_ports = (estimated_hosts * ports_vec.len()) as u64;
-        let progress = Arc::new(ScanProgressBar::new(
-            total_ports,
-            self.config.scan.progress,
-        ));
+        let progress = Arc::new(ScanProgressBar::new(total_ports, self.config.scan.progress));
         progress.set_message("Port scanning...");
 
         // Create lock-free aggregator to collect results without contention
@@ -363,10 +360,38 @@ impl ScanScheduler {
             let hosts = target.expand_hosts();
 
             for (host_idx, host) in hosts.iter().enumerate() {
+                let host_start = Instant::now();
+                eprintln!(
+                    "\n[TIMING] ═══ HOST {}/{} START: {} ═══",
+                    host_idx + 1,
+                    hosts.len(),
+                    host
+                );
+
+                // Identify storage backend type at start
+                match self.storage_backend.as_ref() {
+                    StorageBackend::Memory(_) => {
+                        eprintln!("[TIMING] Storage backend: In-Memory (fast, no database)");
+                    }
+                    StorageBackend::AsyncDatabase { .. } => {
+                        eprintln!("[TIMING] Storage backend: AsyncDatabase (may have delays)");
+                    }
+                }
+
+                // Rate limiter
+                let t1 = Instant::now();
                 self.rate_limiter.acquire().await?;
+                let rate_time = t1.elapsed();
+                eprintln!("[TIMING] Rate limiter acquire: {:?}", rate_time);
+                if rate_time.as_millis() > 100 {
+                    eprintln!("[WARNING] Rate limiter took > 100ms!");
+                }
 
                 // Create a progress tracker for this host's ports
+                let t2 = Instant::now();
                 let host_progress = Arc::new(prtip_core::ScanProgress::new(ports_vec.len()));
+                let progress_time = t2.elapsed();
+                eprintln!("[TIMING] Progress tracker creation: {:?}", progress_time);
 
                 // Spawn a task to bridge host progress to main progress bar
                 // This updates the progress bar in real-time as each port completes,
@@ -387,17 +412,18 @@ impl ScanScheduler {
                 //   - Old (1ms): 7.2M polls over 2 hours = 2,160s overhead (30%!)
                 //   - New (10ms): 720K polls = 216s overhead (3%, acceptable)
                 let poll_interval = if total_scan_ports < 1_000 {
-                    Duration::from_micros(200)   // 0.2ms - tiny scans (1 host × 1K ports)
+                    Duration::from_micros(200) // 0.2ms - tiny scans (1 host × 1K ports)
                 } else if total_scan_ports < 10_000 {
-                    Duration::from_micros(500)   // 0.5ms - small scans (1 host × 10K ports)
+                    Duration::from_micros(500) // 0.5ms - small scans (1 host × 10K ports)
                 } else if total_scan_ports < 100_000 {
-                    Duration::from_millis(1)     // 1ms - medium scans (10 hosts × 10K ports)
+                    Duration::from_millis(1) // 1ms - medium scans (10 hosts × 10K ports)
                 } else if total_scan_ports < 1_000_000 {
-                    Duration::from_millis(5)     // 5ms - large scans (100 hosts × 10K ports)
+                    Duration::from_millis(5) // 5ms - large scans (100 hosts × 10K ports)
                 } else {
-                    Duration::from_millis(10)    // 10ms - huge scans (256+ hosts × 10K ports)
+                    Duration::from_millis(10) // 10ms - huge scans (256+ hosts × 10K ports)
                 };
 
+                let t3 = Instant::now();
                 let bridge_handle = tokio::spawn(async move {
                     let mut last_completed = 0;
                     loop {
@@ -413,47 +439,115 @@ impl ScanScheduler {
                         }
                     }
                 });
+                let spawn_time = t3.elapsed();
+                eprintln!("[TIMING] Bridge spawn: {:?}", spawn_time);
+
+                // Port scanning
+                let scan_start = Instant::now();
+                eprintln!(
+                    "[TIMING] Starting port scan for {} ports...",
+                    ports_vec.len()
+                );
 
                 match self
                     .tcp_scanner
-                    .scan_ports_with_progress(*host, ports_vec.clone(), parallelism, Some(&host_progress))
+                    .scan_ports_with_progress(
+                        *host,
+                        ports_vec.clone(),
+                        parallelism,
+                        Some(&host_progress),
+                    )
                     .await
                 {
                     Ok(results) => {
+                        let scan_time = scan_start.elapsed();
+                        eprintln!(
+                            "[TIMING] Port scan complete: {:?} ({} results)",
+                            scan_time,
+                            results.len()
+                        );
+
                         // Wait for progress bridge to finish
+                        let bridge_start = Instant::now();
                         let _ = bridge_handle.await;
+                        let bridge_time = bridge_start.elapsed();
+                        eprintln!("[TIMING] Bridge await: {:?}", bridge_time);
+                        if bridge_time.as_millis() > 1000 {
+                            eprintln!("[WARNING] Bridge await took > 1 second!");
+                        }
 
                         // Push results to lock-free aggregator (zero contention!)
-                        for result in results {
+                        let process_start = Instant::now();
+                        for result in results.iter() {
                             // Try to push result
                             if let Err(e) = aggregator.push(result.clone()) {
                                 warn!("Failed to push result to aggregator: {}", e);
                                 // If queue is full, drain a batch to storage immediately
+                                let drain_start = Instant::now();
                                 let batch = aggregator.drain_batch(10000);
+                                let drain_time = drain_start.elapsed();
+                                eprintln!(
+                                    "[TIMING] Aggregator drain: {:?} ({} results)",
+                                    drain_time,
+                                    batch.len()
+                                );
+
                                 if !batch.is_empty() {
+                                    let storage_start = Instant::now();
                                     self.storage_backend.add_results_batch(batch)?;
+                                    let storage_time = storage_start.elapsed();
+                                    eprintln!("[TIMING] Storage write: {:?}", storage_time);
+                                    if storage_time.as_secs() > 5 {
+                                        eprintln!(
+                                            "[WARNING] Storage write took {} seconds!",
+                                            storage_time.as_secs()
+                                        );
+                                    }
                                 }
                                 // Retry push (result not moved because we cloned above)
-                                aggregator.push(result)?;
+                                aggregator.push(result.clone())?;
                             }
                         }
+                        let process_time = process_start.elapsed();
+                        eprintln!("[TIMING] Result processing: {:?}", process_time);
 
                         // Apply host delay if configured (helps avoid network rate limiting)
                         if self.config.scan.host_delay_ms > 0 {
+                            let delay_start = Instant::now();
                             debug!(
                                 "Applying host delay: {}ms (host {}/{})",
                                 self.config.scan.host_delay_ms,
                                 host_idx + 1,
                                 hosts.len()
                             );
-                            tokio::time::sleep(Duration::from_millis(self.config.scan.host_delay_ms))
-                                .await;
+                            tokio::time::sleep(Duration::from_millis(
+                                self.config.scan.host_delay_ms,
+                            ))
+                            .await;
+                            let delay_time = delay_start.elapsed();
+                            eprintln!("[TIMING] Host delay: {:?}", delay_time);
+                        }
+
+                        let total_time = host_start.elapsed();
+                        eprintln!(
+                            "[TIMING] ═══ HOST {}/{} COMPLETE: {:?} ═══\n",
+                            host_idx + 1,
+                            hosts.len(),
+                            total_time
+                        );
+
+                        if total_time.as_secs() > 15 {
+                            eprintln!(
+                                "[WARNING] Host took {} seconds (expected ~10s)",
+                                total_time.as_secs()
+                            );
                         }
                     }
                     Err(e) => {
                         warn!("Error scanning {}: {}", host, e);
                         // Cancel bridge task
                         bridge_handle.abort();
+                        eprintln!("[TIMING] Scan error, bridge aborted");
                     }
                 }
             }
@@ -477,7 +571,8 @@ impl ScanScheduler {
 
             if open_count > 0 {
                 // Create service detector and banner grabber
-                let probe_db = if let Some(path) = &self.config.scan.service_detection.probe_db_path {
+                let probe_db = if let Some(path) = &self.config.scan.service_detection.probe_db_path
+                {
                     ServiceProbeDb::load_from_file(path)?
                 } else {
                     ServiceProbeDb::default()

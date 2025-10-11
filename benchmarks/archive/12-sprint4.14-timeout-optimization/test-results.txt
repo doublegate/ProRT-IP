@@ -1,0 +1,215 @@
+   Compiling cfg-if v1.0.3
+   Compiling once_cell v1.21.3
+   Compiling memchr v2.7.6
+   Compiling smallvec v1.15.1
+   Compiling scopeguard v1.2.0
+   Compiling pin-project-lite v0.2.16
+   Compiling libc v0.2.176
+   Compiling serde_core v1.0.228
+   Compiling num-traits v0.2.19
+   Compiling equivalent v1.0.2
+   Compiling stable_deref_trait v1.2.0
+   Compiling log v0.4.28
+   Compiling zerofrom v0.1.6
+   Compiling regex-syntax v0.8.6
+   Compiling hashbrown v0.16.0
+   Compiling crossbeam-utils v0.8.21
+   Compiling itoa v1.0.15
+   Compiling bitflags v2.9.4
+   Compiling ryu v1.0.20
+   Compiling bytes v1.10.1
+   Compiling lock_api v0.4.14
+   Compiling iana-time-zone v0.1.64
+   Compiling futures-core v0.3.31
+   Compiling portable-atomic v1.11.1
+   Compiling no-std-net v0.6.0
+   Compiling yoke v0.8.0
+   Compiling unicode-width v0.2.2
+   Compiling writeable v0.6.1
+   Compiling tracing-core v0.1.34
+   Compiling winnow v0.7.13
+   Compiling toml_write v0.1.2
+   Compiling litemap v0.8.0
+   Compiling pnet_base v0.35.0
+   Compiling zerovec v0.11.4
+   Compiling zerotrie v0.2.2
+   Compiling futures-sink v0.3.31
+   Compiling number_prefix v0.4.0
+   Compiling anyhow v1.0.100
+   Compiling thiserror v1.0.69
+   Compiling zerocopy v0.8.27
+   Compiling typenum v1.19.0
+   Compiling futures-channel v0.3.31
+   Compiling pnet_macros_support v0.35.0
+   Compiling icu_properties_data v2.0.1
+   Compiling icu_normalizer_data v2.0.0
+   Compiling futures-task v0.3.31
+   Compiling aho-corasick v1.1.3
+   Compiling futures-io v0.3.31
+   Compiling tracing v0.1.41
+   Compiling slab v0.4.11
+   Compiling pin-utils v0.1.0
+   Compiling pnet_packet v0.35.0
+   Compiling percent-encoding v2.3.2
+   Compiling foldhash v0.1.5
+   Compiling indexmap v2.11.4
+   Compiling futures-util v0.3.31
+   Compiling form_urlencoded v1.2.2
+   Compiling allocator-api2 v0.2.21
+   Compiling utf8_iter v1.0.4
+   Compiling arrayvec v0.7.6
+   Compiling crossbeam-queue v0.3.12
+   Compiling concurrent-queue v2.5.0
+   Compiling parking v2.2.1
+   Compiling cpufeatures v0.2.17
+   Compiling crc-catalog v2.4.0
+   Compiling foreign-types-shared v0.1.1
+   Compiling spin v0.9.8
+   Compiling thiserror v2.0.17
+   Compiling crc v3.3.0
+   Compiling foreign-types v0.3.2
+   Compiling base64 v0.22.1
+   Compiling hashbrown v0.14.5
+   Compiling etherparse v0.15.0
+   Compiling event-listener v5.4.1
+   Compiling atoi v2.0.0
+   Compiling flume v0.11.1
+   Compiling crossbeam-epoch v0.9.18
+   Compiling hashbrown v0.15.5
+   Compiling libsqlite3-sys v0.30.1
+   Compiling generic-array v0.14.7
+   Compiling raw-cpuid v11.6.0
+   Compiling openssl-probe v0.1.6
+   Compiling crossbeam-channel v0.5.15
+   Compiling spinning_top v0.3.0
+   Compiling tinystr v0.8.1
+   Compiling potential_utf v0.1.3
+   Compiling crossbeam-deque v0.8.6
+   Compiling anstyle v1.0.13
+   Compiling no-std-compat v0.4.1
+   Compiling icu_collections v2.0.0
+   Compiling icu_locale_core v2.0.0
+   Compiling futures-timer v3.0.3
+   Compiling nonzero_ext v0.3.0
+   Compiling getrandom v0.3.3
+   Compiling rustix v1.1.2
+   Compiling utf8parse v0.2.2
+   Compiling linux-raw-sys v0.11.0
+   Compiling anstyle-parse v0.2.7
+   Compiling parking_lot_core v0.9.12
+   Compiling signal-hook-registry v1.4.6
+   Compiling socket2 v0.6.0
+   Compiling mio v1.0.4
+   Compiling console v0.15.11
+   Compiling rlimit v0.10.2
+   Compiling getrandom v0.2.16
+   Compiling pnet_sys v0.35.0
+   Compiling parking_lot v0.12.5
+   Compiling rand_core v0.6.4
+   Compiling crypto-common v0.1.6
+   Compiling block-buffer v0.10.4
+   Compiling icu_provider v2.0.0
+   Compiling digest v0.10.7
+   Compiling socket2 v0.5.10
+   Compiling tokio v1.47.1
+   Compiling indicatif v0.17.11
+   Compiling ppv-lite86 v0.2.21
+   Compiling regex-automata v0.4.11
+   Compiling nix v0.27.1
+   Compiling sha2 v0.10.9
+   Compiling futures-intrusive v0.5.0
+   Compiling icu_properties v2.0.1
+   Compiling icu_normalizer v2.0.0
+   Compiling hashlink v0.10.0
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.145
+   Compiling rand_chacha v0.3.1
+   Compiling openssl-sys v0.9.109
+   Compiling dashmap v5.5.3
+   Compiling dashmap v6.1.0
+   Compiling rand v0.8.5
+   Compiling quanta v0.12.6
+   Compiling chrono v0.4.42
+   Compiling serde_spanned v0.6.9
+   Compiling ipnetwork v0.20.0
+   Compiling toml_datetime v0.6.11
+   Compiling either v1.15.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling pnet_datalink v0.35.0
+   Compiling toml_edit v0.22.27
+   Compiling pnet_transport v0.35.0
+   Compiling idna_adapter v1.2.1
+   Compiling futures-executor v0.3.31
+   Compiling crossbeam v0.8.4
+   Compiling idna v1.1.0
+   Compiling pnet v0.35.0
+   Compiling futures v0.3.31
+   Compiling fastrand v2.3.0
+   Compiling colorchoice v1.0.4
+   Compiling lazy_static v1.5.0
+   Compiling anstyle-query v1.1.4
+   Compiling governor v0.6.3
+   Compiling is_terminal_polyfill v1.70.1
+   Compiling clap_lex v0.7.5
+   Compiling doc-comment v0.3.3
+   Compiling anstream v0.6.21
+   Compiling strsim v0.11.1
+   Compiling predicates-core v1.0.9
+   Compiling openssl v0.10.73
+   Compiling sharded-slab v0.1.7
+   Compiling url v2.5.7
+   Compiling clap_builder v4.5.48
+   Compiling float-cmp v0.10.0
+   Compiling tracing-log v0.2.0
+   Compiling thread_local v1.1.9
+   Compiling difflib v0.4.0
+   Compiling nu-ansi-term v0.50.1
+   Compiling assert_cmd v2.0.17
+   Compiling normalize-line-endings v0.3.0
+   Compiling termtree v0.5.1
+   Compiling colored v2.2.0
+   Compiling quick-xml v0.31.0
+   Compiling predicates-tree v1.0.12
+   Compiling wait-timeout v0.2.1
+   Compiling num_cpus v1.17.0
+   Compiling prtip-network v0.3.0 (/home/parobek/Code/ProRT-IP/crates/prtip-network)
+   Compiling tempfile v3.23.0
+   Compiling toml v0.8.23
+   Compiling regex v1.11.3
+   Compiling matchers v0.2.0
+   Compiling bstr v1.12.0
+   Compiling tracing-subscriber v0.3.20
+   Compiling prtip-core v0.3.0 (/home/parobek/Code/ProRT-IP/crates/prtip-core)
+   Compiling predicates v3.1.3
+   Compiling clap v4.5.48
+   Compiling native-tls v0.2.14
+   Compiling tokio-stream v0.1.17
+   Compiling tokio-native-tls v0.3.1
+   Compiling prtip-scanner v0.3.0 (/home/parobek/Code/ProRT-IP/crates/prtip-scanner)
+   Compiling sqlx-core v0.8.6
+   Compiling sqlx-sqlite v0.8.6
+   Compiling prtip-cli v0.3.0 (/home/parobek/Code/ProRT-IP/crates/prtip-cli)
+   Compiling sqlx v0.8.6
+error[E0063]: missing field `host_delay_ms` in initializer of `ScanConfig`
+   --> crates/prtip-scanner/tests/integration_scanner.rs:268:15
+    |
+268 |         scan: ScanConfig {
+    |               ^^^^^^^^^^ missing `host_delay_ms`
+
+For more information about this error, try `rustc --explain E0063`.
+error: could not compile `prtip-scanner` (test "integration_scanner") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error[E0063]: missing field `host_delay_ms` in initializer of `ScanConfig`
+   --> crates/prtip-cli/src/output.rs:464:19
+    |
+464 |             scan: ScanConfig {
+    |                   ^^^^^^^^^^ missing `host_delay_ms`
+
+error: could not compile `prtip-cli` (lib test) due to 1 previous error
+error[E0063]: missing field `host_delay_ms` in initializer of `ScanConfig`
+   --> crates/prtip-scanner/src/scheduler.rs:598:19
+    |
+598 |             scan: ScanConfig {
+    |                   ^^^^^^^^^^ missing `host_delay_ms`
+
+error: could not compile `prtip-scanner` (lib test) due to 1 previous error

@@ -1,0 +1,4 @@
+Error: Invalid target specification: '192.168.4.1-192.168.4.5'
+
+Caused by:
+  1: Invalid target: Failed to resolve hostname '192.168.4.1-192.168.4.5': failed to lookup address information: Name or service not known

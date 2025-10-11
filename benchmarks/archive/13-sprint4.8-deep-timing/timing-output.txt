@@ -1,0 +1,155 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  192.168.4.0/28
+Ports:    1-10000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  1000ms
+Parallel: 500 (adaptive)
+============================================================
+
+
+[TIMING] ═══ HOST 1/16 START: 192.168.4.0 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 631ns
+[TIMING] Progress tracker creation: 60ns
+[TIMING] Bridge spawn: 2.928µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 20.033695467s (10000 results)
+[TIMING] Bridge await: 2.373031ms
+[TIMING] Result processing: 391.194µs
+[TIMING] ═══ HOST 1/16 COMPLETE: 20.036485803s ═══
+
+[WARNING] Host took 20 seconds (expected ~10s)
+
+[TIMING] ═══ HOST 2/16 START: 192.168.4.1 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 473ns
+[TIMING] Progress tracker creation: 82ns
+[TIMING] Bridge spawn: 3.113µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 3.151115869s (10000 results)
+[TIMING] Bridge await: 1.96µs
+[TIMING] Result processing: 1.569189ms
+[TIMING] ═══ HOST 2/16 COMPLETE: 3.152744343s ═══
+
+
+[TIMING] ═══ HOST 3/16 START: 192.168.4.2 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 1.147µs
+[TIMING] Progress tracker creation: 369ns
+[TIMING] Bridge spawn: 8.075µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 9.120598558s (10000 results)
+[TIMING] Bridge await: 1.397535ms
+[TIMING] Result processing: 259.717µs
+[TIMING] ═══ HOST 3/16 COMPLETE: 9.122318826s ═══
+
+
+[TIMING] ═══ HOST 4/16 START: 192.168.4.3 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 579ns
+[TIMING] Progress tracker creation: 62ns
+[TIMING] Bridge spawn: 1.861µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 3.116513846s (10000 results)
+[TIMING] Bridge await: 2.938487ms
+[TIMING] Result processing: 1.600362ms
+[TIMING] ═══ HOST 4/16 COMPLETE: 3.121111454s ═══
+
+
+[TIMING] ═══ HOST 5/16 START: 192.168.4.4 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 914ns
+[TIMING] Progress tracker creation: 396ns
+[TIMING] Bridge spawn: 8.612µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 3.258560416s (10000 results)
+[TIMING] Bridge await: 5.228711ms
+[TIMING] Result processing: 302.337µs
+[TIMING] ═══ HOST 5/16 COMPLETE: 3.264156299s ═══
+
+
+[TIMING] ═══ HOST 6/16 START: 192.168.4.5 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 632ns
+[TIMING] Progress tracker creation: 66ns
+[TIMING] Bridge spawn: 2.055µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 3.095766292s (10000 results)
+[TIMING] Bridge await: 2.298µs
+[TIMING] Result processing: 1.576031ms
+[TIMING] ═══ HOST 6/16 COMPLETE: 3.097397209s ═══
+
+
+[TIMING] ═══ HOST 7/16 START: 192.168.4.6 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 1.178µs
+[TIMING] Progress tracker creation: 349ns
+[TIMING] Bridge spawn: 9.257µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 3.118621443s (10000 results)
+[TIMING] Bridge await: 2.137µs
+[TIMING] Result processing: 1.546669ms
+[TIMING] ═══ HOST 7/16 COMPLETE: 3.120260306s ═══
+
+
+[TIMING] ═══ HOST 8/16 START: 192.168.4.7 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 1.075µs
+[TIMING] Progress tracker creation: 352ns
+[TIMING] Bridge spawn: 8.959µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 20.034212389s (10000 results)
+[TIMING] Bridge await: 1.264435ms
+[TIMING] Result processing: 278.366µs
+[TIMING] ═══ HOST 8/16 COMPLETE: 20.035816525s ═══
+
+[WARNING] Host took 20 seconds (expected ~10s)
+
+[TIMING] ═══ HOST 9/16 START: 192.168.4.8 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 693ns
+[TIMING] Progress tracker creation: 83ns
+[TIMING] Bridge spawn: 2.235µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 20.036227487s (10000 results)
+[TIMING] Bridge await: 2.21524ms
+[TIMING] Result processing: 295.855µs
+[TIMING] ═══ HOST 9/16 COMPLETE: 20.03876295s ═══
+
+[WARNING] Host took 20 seconds (expected ~10s)
+
+[TIMING] ═══ HOST 10/16 START: 192.168.4.9 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 388ns
+[TIMING] Progress tracker creation: 89ns
+[TIMING] Bridge spawn: 1.927µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 20.037238586s (10000 results)
+[TIMING] Bridge await: 4.092521ms
+[TIMING] Result processing: 1.577389ms
+[TIMING] ═══ HOST 10/16 COMPLETE: 20.042969473s ═══
+
+[WARNING] Host took 20 seconds (expected ~10s)
+
+[TIMING] ═══ HOST 11/16 START: 192.168.4.10 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 1.052µs
+[TIMING] Progress tracker creation: 393ns
+[TIMING] Bridge spawn: 15.333µs
+[TIMING] Starting port scan for 10000 ports...
+[TIMING] Port scan complete: 28.00119ms (10000 results)
+[TIMING] Bridge await: 2.907145ms
+[TIMING] Result processing: 294.599µs
+[TIMING] ═══ HOST 11/16 COMPLETE: 31.280815ms ═══
+
+
+[TIMING] ═══ HOST 12/16 START: 192.168.4.11 ═══
+[TIMING] Storage backend: In-Memory (fast, no database)
+[TIMING] Rate limiter acquire: 559ns
+[TIMING] Progress tracker creation: 80ns
+[TIMING] Bridge spawn: 2.829µs
+[TIMING] Starting port scan for 10000 ports...

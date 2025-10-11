@@ -6,13 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ProRT-IP WarScan** is a modern network scanner and "war dialer" for IP networks, implemented in **Rust**. The project aims to combine the speed of Masscan/ZMap (1M+ packets/second stateless) with the depth of Nmap's service detection and OS fingerprinting.
 
-**Current Status:** Phase 3 COMPLETE + Enhancement Cycles 1-8 COMPLETE (v0.3.0). All detection systems fully implemented with 551 passing tests (100% success rate). Complete OS fingerprinting, service detection, banner grabbing, 7 scan types, professional cyber-punk CLI, sendmmsg batching (30-50% perf boost), CDN/WAF detection (8 providers), and decoy scanning (up to 256 decoys). GitHub Actions CI/CD implemented with multi-platform testing and automated releases. Zero TODOs, stubs, or incomplete code. Production-ready with zero technical debt.
+**Current Status:** Phase 4 COMPLETE (Sprints 4.1-4.14) + Enhancement Cycles 1-8 (v0.3.0). All detection systems fully implemented with 643 passing tests (100% success rate). Complete OS fingerprinting, service detection, banner grabbing, 7 scan types, professional cyber-punk CLI, sendmmsg batching (30-50% perf boost), CDN/WAF detection (8 providers), decoy scanning (up to 256 decoys), adaptive parallelism (20-1000 concurrent), optimized network timeouts (1s), and host delay feature. GitHub Actions CI/CD with multi-platform testing (9 targets, 5 working) and automated releases. Sprint 4.8-4.14 resolved critical performance regressions (polling overhead, timeout behavior) and progress bar bugs. Zero TODOs, stubs, or incomplete code. Production-ready with zero technical debt.
 
 **Repository:** <https://github.com/doublegate/ProRT-IP>
 
 **License:** GPL-3.0 (LICENSE file in repository)
 
-**Last Updated:** 2025-10-08
+**Last Updated:** 2025-10-11
 
 ## Architecture and Design Philosophy
 

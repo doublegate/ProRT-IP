@@ -1,0 +1,178 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    1-10000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 500 (adaptive)
+============================================================
+
+[DEBUG INIT] ProgressBar created: len=10000, pos=0
+[DEBUG INIT] ProgressBar after setup: pos=0
+[DEBUG SCHED] Progress bar created: total=10000
+[DEBUG SCHED] Bridge task spawned: total_ports=10000, poll_interval=5ms
+[DEBUG SCAN] scan_ports_with_progress started: target=127.0.0.1, ports=10000, max_concurrent=500
+[DEBUG SCAN] Port scan progress: 1/10000
+[DEBUG SCAN] Port scan progress: 2/10000
+[DEBUG SCAN] Port scan progress: 3/10000
+[DEBUG SCAN] Port scan progress: 4/10000
+[DEBUG SCAN] Port scan progress: 5/10000
+[DEBUG SCAN] Port scan progress: 6/10000
+[DEBUG SCAN] Port scan progress: 7/10000
+[DEBUG SCAN] Port scan progress: 8/10000
+[DEBUG SCAN] Port scan progress: 9/10000
+[DEBUG SCAN] Port scan progress: 10/10000
+[DEBUG SCAN] Port scan progress: 100/10000
+[DEBUG SCAN] Port scan progress: 200/10000
+[DEBUG SCAN] Port scan progress: 300/10000
+[DEBUG SCAN] Port scan progress: 400/10000
+[DEBUG SCAN] Port scan progress: 500/10000
+[DEBUG SCAN] Port scan progress: 600/10000
+[DEBUG SCAN] Port scan progress: 700/10000
+[DEBUG SCAN] Port scan progress: 800/10000
+[DEBUG SCAN] Port scan progress: 900/10000
+[DEBUG SCAN] Port scan progress: 1000/10000
+[DEBUG SCAN] Port scan progress: 1100/10000
+[DEBUG SCAN] Port scan progress: 1200/10000
+[DEBUG SCAN] Port scan progress: 1300/10000
+[DEBUG SCAN] Port scan progress: 1400/10000
+[DEBUG SCAN] Port scan progress: 1500/10000
+[DEBUG SCAN] Port scan progress: 1600/10000
+[DEBUG SCAN] Port scan progress: 1700/10000
+[DEBUG SCAN] Port scan progress: 1800/10000
+[DEBUG SCAN] Port scan progress: 1900/10000
+[DEBUG SCAN] Port scan progress: 2000/10000
+[DEBUG SCAN] Port scan progress: 2100/10000
+[DEBUG SCAN] Port scan progress: 2200/10000
+[DEBUG SCAN] Port scan progress: 2300/10000
+[DEBUG SCAN] Port scan progress: 2400/10000
+[DEBUG SCAN] Port scan progress: 2500/10000
+[DEBUG SCAN] Port scan progress: 2600/10000
+[DEBUG SCAN] Port scan progress: 2700/10000
+[DEBUG BRIDGE] Poll: current=2716, last=0, delta=2716, total=10000
+[DEBUG SCAN] Port scan progress: 2800/10000
+[DEBUG INC] inc(2716) called, pos before=0, pos after will be=2716
+[DEBUG SCAN] Port scan progress: 2900/10000
+[DEBUG SCAN] Port scan progress: 3000/10000
+[DEBUG SCAN] Port scan progress: 3100/10000
+[DEBUG SCAN] Port scan progress: 3200/10000
+[DEBUG SCAN] Port scan progress: 3300/10000
+[DEBUG SCAN] Port scan progress: 3400/10000
+[DEBUG SCAN] Port scan progress: 3500/10000
+[DEBUG SCAN] Port scan progress: 3600/10000
+[DEBUG SCAN] Port scan progress: 3700/10000
+[DEBUG SCAN] Port scan progress: 3800/10000
+[DEBUG SCAN] Port scan progress: 3900/10000
+[DEBUG SCAN] Port scan progress: 4000/10000
+[DEBUG SCAN] Port scan progress: 4100/10000
+[DEBUG SCAN] Port scan progress: 4200/10000
+[DEBUG SCAN] Port scan progress: 4300/10000
+[DEBUG SCAN] Port scan progress: 4400/10000
+[DEBUG SCAN] Port scan progress: 4500/10000
+[DEBUG SCAN] Port scan progress: 4600/10000
+[DEBUG SCAN] Port scan progress: 4700/10000
+[DEBUG SCAN] Port scan progress: 4800/10000
+[DEBUG SCAN] Port scan progress: 4900/10000
+[DEBUG SCAN] Port scan progress: 5000/10000
+[DEBUG SCAN] Port scan progress: 5100/10000
+[DEBUG SCAN] Port scan progress: 5200/10000
+[DEBUG SCAN] Port scan progress: 5300/10000
+[DEBUG SCAN] Port scan progress: 5400/10000
+[DEBUG SCAN] Port scan progress: 5500/10000
+[DEBUG SCAN] Port scan progress: 5600/10000
+[DEBUG SCAN] Port scan progress: 5700/10000
+[DEBUG SCAN] Port scan progress: 5800/10000
+[DEBUG SCAN] Port scan progress: 5900/10000
+[DEBUG SCAN] Port scan progress: 6000/10000
+[DEBUG SCAN] Port scan progress: 6100/10000
+[DEBUG SCAN] Port scan progress: 6200/10000
+[DEBUG SCAN] Port scan progress: 6300/10000
+[DEBUG SCAN] Port scan progress: 6400/10000
+[DEBUG SCAN] Port scan progress: 6500/10000
+[DEBUG SCAN] Port scan progress: 6600/10000
+[DEBUG SCAN] Port scan progress: 6700/10000
+[DEBUG SCAN] Port scan progress: 6800/10000
+[DEBUG SCAN] Port scan progress: 6900/10000
+[DEBUG SCAN] Port scan progress: 7000/10000
+[DEBUG SCAN] Port scan progress: 7100/10000
+[DEBUG SCAN] Port scan progress: 7200/10000
+[DEBUG SCAN] Port scan progress: 7300/10000
+[DEBUG SCAN] Port scan progress: 7400/10000
+[DEBUG SCAN] Port scan progress: 7500/10000
+[DEBUG SCAN] Port scan progress: 7600/10000
+[DEBUG SCAN] Port scan progress: 7700/10000
+[DEBUG SCAN] Port scan progress: 7800/10000
+[DEBUG SCAN] Port scan progress: 7900/10000
+[DEBUG SCAN] Port scan progress: 8000/10000
+[DEBUG SCAN] Port scan progress: 8100/10000
+[DEBUG SCAN] Port scan progress: 8200/10000
+[DEBUG SCAN] Port scan progress: 8300/10000
+[DEBUG SCAN] Port scan progress: 8400/10000
+[DEBUG SCAN] Port scan progress: 8500/10000
+[DEBUG SCAN] Port scan progress: 8600/10000
+[DEBUG SCAN] Port scan progress: 8700/10000
+[DEBUG SCAN] Port scan progress: 8800/10000
+[DEBUG SCAN] Port scan progress: 8900/10000
+[DEBUG SCAN] Port scan progress: 9000/10000
+[DEBUG SCAN] Port scan progress: 9100/10000
+[DEBUG SCAN] Port scan progress: 9200/10000
+[DEBUG SCAN] Port scan progress: 9300/10000
+[DEBUG SCAN] Port scan progress: 9400/10000
+[DEBUG SCAN] Port scan progress: 9500/10000
+[DEBUG SCAN] Port scan progress: 9600/10000
+[DEBUG SCAN] Port scan progress: 9700/10000
+[DEBUG SCAN] Port scan progress: 9800/10000
+[DEBUG SCAN] Port scan progress: 9900/10000
+[DEBUG SCAN] Port scan progress: 10000/10000
+[DEBUG BRIDGE] Poll: current=10000, last=2716, delta=7284, total=10000
+[DEBUG INC] inc(7284) called, pos before=2716, pos after will be=10000
+[DEBUG BRIDGE] Scan complete: 10000/10000
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 13:16:12 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 10000
+
+Hosts Scanned: 1
+Ports: 13 open, 9987 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 13 open, 9987 closed, 0 filtered
+
+Open Ports:
+   1716 open         (  0.30ms)
+   2021 open         (  0.24ms)
+   2022 open         (  0.57ms)
+   2139 open         (  0.29ms)
+   2053 open         (  0.64ms)
+   2445 open         (  0.15ms)
+   2023 open         (  1.08ms)
+   2025 open         (  1.48ms)
+   3306 open         (  0.32ms)
+   5432 open         (  0.65ms)
+   5355 open         (  1.29ms)
+   8080 open         (  0.23ms)
+   8180 open         (  0.64ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       44ms
+  Scan Rate:      224852 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    10000
+
+Results:
+  Open Ports:     13
+  Closed Ports:   9987
+  Filtered Ports: 0
+============================================================

@@ -24,8 +24,9 @@ impl ScanProgressBar {
                     .progress_chars("█▓░")
             );
             pb.set_draw_target(ProgressDrawTarget::stderr());
-            // Force updates every 100ms for better visibility
-            pb.enable_steady_tick(Duration::from_millis(100));
+            // Note: steady_tick disabled - manual inc() calls provide updates
+            // Steady tick can interfere with manual progress updates on fast localhost scans
+            // pb.enable_steady_tick(Duration::from_millis(100));
             pb
         } else {
             ProgressBar::hidden()

@@ -259,13 +259,18 @@ impl TcpConnectScanner {
             handles.push(handle);
         }
 
-        // Wait for all workers and update progress
-        for handle in handles {
-            match handle.await {
-                Ok(Ok(result)) => {
+        // Wait for all workers and update progress AS THEY COMPLETE
+        // Using FuturesUnordered ensures we process results as soon as they're ready
+        use futures::stream::{FuturesUnordered, StreamExt};
+
+        let mut futures_unordered = handles.into_iter().collect::<FuturesUnordered<_>>();
+
+        while let Some(result) = futures_unordered.next().await {
+            match result {
+                Ok(Ok(scan_result)) => {
                     if let Some(p) = progress {
                         p.increment_completed();
-                        match result.state {
+                        match scan_result.state {
                             PortState::Open => p.increment_open(),
                             PortState::Closed => p.increment_closed(),
                             PortState::Filtered => p.increment_filtered(),

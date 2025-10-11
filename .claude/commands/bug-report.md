@@ -437,4 +437,92 @@ echo ""
 
 ---
 
+## RELATED COMMANDS
+
+**Debugging Workflow:**
+- `/rust-check` - Run comprehensive quality checks to identify issues
+- `/test-quick <pattern>` - Run targeted tests to isolate failing test cases
+- `/ci-status` - Check if bug also occurs in CI/CD pipeline
+
+**Performance Investigation:**
+- `/perf-profile <command>` - Profile command if bug is performance-related
+- `/bench-compare <baseline> <comparison>` - Measure performance regression
+
+**Sprint Management:**
+- `/sprint-start` - Create bug-fix sprint for critical issues
+- `/sprint-complete` - Document bug fix with comprehensive summary
+- `/doc-update fix "Bug description"` - Update documentation after fix
+
+## WORKFLOW INTEGRATION
+
+**Bug Investigation and Resolution Workflow:**
+
+```
+1. Bug Detection:
+   - User reports issue or tests fail
+   - /rust-check  # Identify scope of problem
+
+2. Bug Report Generation:
+   /bug-report "Issue summary" "./target/release/prtip <args>"
+   # Generates comprehensive report with logs, traces, system info
+
+3. Analysis:
+   - Review BUG-REPORT.md
+   - Analyze verbose logs in reproduction-verbose-stderr.txt
+   - Check strace-summary.txt for system call issues
+   - Review flamegraph if performance-related
+
+4. Reproduction:
+   - Use exact reproduction command from report
+   - /test-quick <pattern>  # Isolate failing tests
+   - Modify code to fix issue
+
+5. Validation:
+   - Run reproduction command again (should succeed)
+   - /rust-check  # Ensure fix doesn't break other things
+   - /test-quick <pattern>  # Verify tests pass
+
+6. Documentation:
+   - /doc-update fix "Fixed: <bug description>"
+   - Update CHANGELOG.md with fix details
+   - Close GitHub issue (if applicable)
+
+7. GitHub Issue Creation (Optional):
+   - Review generated BUG-REPORT.md
+   - gh issue create --title "Bug: <summary>" --body "$(cat BUG-REPORT.md)"
+   - Attach flamegraph.svg and logs if relevant
+```
+
+**Common Bug Patterns:**
+
+1. **Test Failure:**
+   ```
+   /test-quick <pattern> fails → /bug-report → analyze logs → fix → /rust-check
+   ```
+
+2. **Performance Regression:**
+   ```
+   /bench-compare shows slowdown → /perf-profile → /bug-report → optimize → /bench-compare
+   ```
+
+3. **Crash/Panic:**
+   ```
+   Command crashes → /bug-report captures backtrace → fix → /rust-check
+   ```
+
+4. **CI Failure:**
+   ```
+   /ci-status shows failure → /bug-report reproduces locally → fix → /ci-status validates
+   ```
+
+## SEE ALSO
+
+- `docs/08-SECURITY.md` - Security bug reporting procedures
+- `docs/09-FAQ.md` - Common issues and solutions
+- `CONTRIBUTING.md` - Bug reporting guidelines
+- `bug_fix/` - Historical bug reports and resolutions
+- GitHub Issues: https://github.com/doublegate/ProRT-IP/issues
+
+---
+
 **Generate bug report: $***

@@ -20,24 +20,42 @@ Fast targeted test execution - avoid full 643-test suite: $*
 
 **Objective:** Determine test filtering strategy based on user pattern
 
-### Step 1.1: Parse Pattern Argument
+### Step 1.1: Parse and Validate Pattern Argument
 
 ```bash
 PATTERN="$*"
 
 if [ -z "$PATTERN" ]; then
-  echo "ERROR: Test pattern required"
-  echo "Usage: /test-quick <pattern>"
+  echo "❌ ERROR: Test pattern required"
   echo ""
-  echo "Examples:"
+  echo "USAGE: /test-quick <pattern>"
+  echo ""
+  echo "COMMON PATTERNS:"
+  echo "  Packages:    prtip-core, prtip-network, prtip-scanner, prtip-cli"
+  echo "  Categories:  integration, unit, doc"
+  echo "  Modules:     tcp_connect, syn_scanner, scheduler, progress"
+  echo "  Features:    timing, rate_limit, blackrock, decoy"
+  echo ""
+  echo "EXAMPLES:"
   echo "  /test-quick tcp_connect    - Run TCP connect tests"
-  echo "  /test-quick scheduler      - Run scheduler tests"
-  echo "  /test-quick prtip-network  - Run network package"
-  echo "  /test-quick integration    - Run integration tests"
+  echo "  /test-quick prtip-network  - Run network package tests"
+  echo "  /test-quick integration    - Run integration tests only"
+  echo ""
   exit 1
 fi
 
-echo "Test Pattern: $PATTERN"
+# Validate pattern doesn't contain dangerous characters
+if [[ "$PATTERN" =~ [;\&\|\`\$\(\)] ]]; then
+  echo "❌ ERROR: Pattern contains invalid/dangerous characters"
+  echo "Invalid characters: ; & | \` $ ( )"
+  echo "Pattern: $PATTERN"
+  echo ""
+  echo "Use alphanumeric characters, underscores, hyphens, and spaces only"
+  exit 1
+fi
+
+echo "✅ Test pattern validated: $PATTERN"
+echo ""
 ```
 
 ### Step 1.2: Detect Pattern Type
@@ -121,6 +139,35 @@ FAILED_TESTS=$(grep -oP '\d+(?= failed)' /tmp/test-output.txt | tail -1 || echo 
 TEST_DURATION=$(grep -oP 'finished in \K[\d.]+s' /tmp/test-output.txt | tail -1 || echo "unknown")
 ```
 
+### Step 2.3: Extract Failed Tests (if any)
+
+```bash
+if [ "$TEST_RESULT" -ne 0 ] && [ "$FAILED_TESTS" != "0" ]; then
+  echo ""
+  echo "Extracting failed test details..."
+
+  # Extract failed test names
+  FAILED_LIST=$(grep -A 3 "^test " /tmp/test-output.txt 2>/dev/null | grep "FAILED" | awk '{print $2}' || echo "")
+
+  if [ -n "$FAILED_LIST" ]; then
+    echo ""
+    echo "Failed Tests:"
+    echo "============="
+    echo "$FAILED_LIST" | while read -r test_name; do
+      echo "  ❌ $test_name"
+    done
+
+    # Save to file for easy re-running
+    echo "$FAILED_LIST" > /tmp/failed-tests.txt
+    echo ""
+    echo "Failed test list saved to: /tmp/failed-tests.txt"
+    echo ""
+    echo "Re-run failed tests:"
+    echo "  while read test; do cargo test \$test -- --exact; done < /tmp/failed-tests.txt"
+  fi
+fi
+```
+
 ---
 
 ## Phase 3: DISPLAY RESULTS AND RECOMMENDATIONS
@@ -178,6 +225,29 @@ else
 fi
 
 echo ""
+```
+
+### Step 3.3: Optional Full Quality Check
+
+```bash
+if [ "$TEST_RESULT" -eq 0 ]; then
+  echo "🔧 POST-TEST VALIDATION"
+  echo ""
+  read -p "Run full rust-check after tests? (y/N): " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "Running comprehensive quality checks..."
+
+    if [ -f ".claude/commands/rust-check.md" ]; then
+      echo "💡 Execute: /rust-check for comprehensive validation"
+      echo "   This will run format, clippy, all tests, and build checks"
+    else
+      echo "Running cargo clippy..."
+      cargo clippy --all-targets -- -D warnings
+    fi
+  fi
+fi
 ```
 
 ---

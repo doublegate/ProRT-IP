@@ -23,21 +23,80 @@ Finalize sprint with comprehensive summary and documentation: $*
 SPRINT_ID="$1"
 
 if [ -z "$SPRINT_ID" ]; then
-  echo "ERROR: Sprint ID required"
+  echo "❌ ERROR: Sprint ID required"
+  echo ""
   echo "Usage: /sprint-complete <sprint-id>"
+  echo "Example: /sprint-complete 4.15"
   exit 1
 fi
 
 SPRINT_DIR="/tmp/ProRT-IP/sprint-${SPRINT_ID}"
 
 if [ ! -d "$SPRINT_DIR" ]; then
-  echo "ERROR: Sprint directory not found: $SPRINT_DIR"
+  echo "❌ ERROR: Sprint directory not found: $SPRINT_DIR"
+  echo ""
   echo "Did you run /sprint-start first?"
+  echo ""
+  echo "To create sprint: /sprint-start $SPRINT_ID \"<objective>\""
   exit 1
 fi
+
+echo "✅ Sprint directory found: $SPRINT_DIR"
+echo ""
 ```
 
-### Step 1.2: Gather Test Metrics
+### Step 1.2: Validate Sprint Completion Readiness
+
+```bash
+# Check task-checklist.md for incomplete tasks
+if [ -f "$SPRINT_DIR/task-checklist.md" ]; then
+  INCOMPLETE=$(grep -c '^\- \[ \]' "$SPRINT_DIR/task-checklist.md" 2>/dev/null || echo "0")
+  TOTAL=$(grep -c '^\- \[' "$SPRINT_DIR/task-checklist.md" 2>/dev/null || echo "0")
+
+  if [ "$INCOMPLETE" -gt 0 ] && [ "$TOTAL" -gt 0 ]; then
+    COMPLETE=$((TOTAL - INCOMPLETE))
+    PERCENT=$((COMPLETE * 100 / TOTAL))
+
+    echo "⚠️  WARNING: $INCOMPLETE/$TOTAL tasks still incomplete ($PERCENT% complete)"
+    echo ""
+    read -p "Continue with sprint completion anyway? (y/N): " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Aborted - complete remaining tasks first"
+      echo ""
+      echo "View tasks: cat $SPRINT_DIR/task-checklist.md"
+      exit 1
+    fi
+  else
+    echo "✅ All tasks marked complete ($TOTAL/$TOTAL)"
+  fi
+fi
+
+# Verify all tests passing
+echo "Verifying test status..."
+cargo test --workspace --quiet > /tmp/test-final.txt 2>&1
+TEST_EXIT_CODE=$?
+
+if [ "$TEST_EXIT_CODE" -ne 0 ]; then
+  echo "❌ ERROR: Tests are failing - cannot complete sprint with failing tests"
+  echo ""
+  echo "Run /rust-check to identify issues"
+  echo "Or run /test-quick <pattern> for targeted testing"
+  echo ""
+  read -p "Override and complete sprint anyway? (NOT RECOMMENDED) (y/N): " -n 1 -r
+  echo ""
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+  echo "⚠️  WARNING: Completing sprint with failing tests"
+else
+  echo "✅ All tests passing"
+fi
+
+echo ""
+```
+
+### Step 1.3: Gather Test Metrics
 
 ```bash
 # Run full test suite and capture results
@@ -92,6 +151,13 @@ INCOMPLETE_TASKS=$((TOTAL_TASKS - COMPLETED_TASKS))
 **Started:** [Extract from sprint-plan.md]
 **Completed:** $(date +%Y-%m-%d)
 **Duration:** [Calculate days between start and completion]
+
+## Git Information
+
+**Commit Hash:** $(git rev-parse --short HEAD 2>/dev/null || echo "Not committed")
+**Branch:** $(git branch --show-current 2>/dev/null || echo "Unknown")
+**Staged Files:** $(git diff --cached --name-only 2>/dev/null | wc -l)
+**Unstaged Changes:** $(git diff --name-only 2>/dev/null | wc -l)
 
 ## Objective Achievement
 
@@ -504,6 +570,74 @@ echo ""
 3. **Memory Bank Update:** CLAUDE.local.md session entry
 4. **Commit Message:** Ready-to-use git commit message
 5. **Completion Summary:** Console output with metrics
+
+---
+
+## RELATED COMMANDS
+
+**Sprint Workflow:**
+- `/sprint-start <sprint-id> <objective>` - Initialize sprint (required before completion)
+- Complete workflow pair for sprint-based development
+
+**Quality Validation:**
+- `/rust-check` - Final quality check before sprint completion
+- `/test-quick <pattern>` - Debug failing tests identified during completion
+- Sprint completion validates all tests passing automatically
+
+**Performance Tracking:**
+- `/bench-compare <baseline> <comparison>` - Measure sprint performance impact
+- `/perf-profile <command>` - Profile optimizations implemented during sprint
+- Results integrated into implementation-summary.md
+
+**Documentation:**
+- `/doc-update <type> <desc>` - Sprint completion internally updates documentation
+- README.md, CHANGELOG.md, and CLAUDE.local.md all synchronized
+
+## WORKFLOW INTEGRATION
+
+**Sprint Completion Workflow:**
+
+```
+1. Pre-Completion Validation:
+   - Review task-checklist.md (ensure all tasks marked complete)
+   - /rust-check  # Verify quality standards met
+   - /bench-compare <last-sprint> HEAD  # Measure impact
+
+2. Sprint Finalization:
+   /sprint-complete X.Y
+   # Validates tests, gathers metrics, generates summary
+
+3. Review Generated Artifacts:
+   - implementation-summary.md  # Comprehensive sprint report
+   - CHANGELOG.md updated entry
+   - CLAUDE.local.md session entry
+   - Commit message template ready
+
+4. Git Commit:
+   git add .
+   git commit -F /tmp/ProRT-IP/sprint-X.Y-commit-message.txt
+   git push
+
+5. Next Sprint Planning:
+   /sprint-start X.Z "Next objective"
+```
+
+**Sprint Success Criteria:**
+
+- ✅ All tasks in task-checklist.md marked complete
+- ✅ All 643 tests passing (100% success rate)
+- ✅ Zero clippy warnings
+- ✅ Documentation updated (README, CHANGELOG, CLAUDE.local)
+- ✅ Performance metrics documented (if applicable)
+- ✅ Git commit message generated and reviewed
+
+## SEE ALSO
+
+- `docs/01-ROADMAP.md` - Project roadmap and sprint planning
+- `docs/10-PROJECT-STATUS.md` - Overall project task tracking
+- `CLAUDE.local.md` - Sprint history and sessions
+- `CONTRIBUTING.md` - Sprint workflow guidelines
+- `ref-docs/10-Custom-Commands_Analysis.md` - Command patterns
 
 ---
 

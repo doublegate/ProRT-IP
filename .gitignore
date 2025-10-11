@@ -111,7 +111,8 @@ Session.vim
 CLAUDE.local.md
 *.local.md
 .claude-session
-.claude/
+.claude/*
+!.claude/commands/
 .claude/settings.local.json
 
 # Documentation build

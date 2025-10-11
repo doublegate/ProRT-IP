@@ -315,7 +315,9 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | `/ci-status` | CI/CD monitoring | GitHub Actions pipeline status |
 | `/bug-report <summary> <command>` | Bug report | System info + reproduction + logs |
 
-**Reference:** [Custom Commands Guide](ref-docs/10-Custom_Commands.md) (101KB comprehensive guide)
+**Documentation:**
+- [Commands README](.claude/commands/README.md) - Complete guide with usage examples (23KB)
+- [Analysis Document](ref-docs/10-Custom-Commands_Analysis.md) - Implementation analysis (101KB)
 
 ### Validation & Bug Reports (`bug_fix/`)
 

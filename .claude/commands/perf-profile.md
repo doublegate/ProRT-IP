@@ -428,4 +428,75 @@ sudo sysctl -w kernel.perf_event_paranoid=1
 
 ---
 
+## RELATED COMMANDS
+
+**Benchmarking Workflow:**
+- `/bench-compare <baseline> <comparison>` - Compare performance before/after optimization
+- Statistical benchmarking with hyperfine for accurate metrics
+- Complements perf profiling with wall-clock time comparison
+
+**Development Workflow:**
+- `/rust-check` - Ensure code compiles and passes tests before profiling
+- `/test-quick <pattern>` - Run specific tests to isolate performance issues
+- `/module-create` - Create optimized replacement modules based on profiling insights
+
+**Sprint Management:**
+- `/sprint-start` - Initialize performance optimization sprint
+- `/sprint-complete` - Document performance improvements with benchmarks
+
+**Debugging:**
+- `/bug-report` - Report performance bugs with profile data attached
+
+## WORKFLOW INTEGRATION
+
+**Performance Optimization Workflow:**
+
+```
+1. Baseline Measurement:
+   /bench-compare baseline HEAD  # Measure current performance
+
+2. Identify Bottlenecks:
+   /perf-profile ./target/release/prtip <args>
+   # Analyze flamegraph - find hot functions
+
+3. Implement Optimizations:
+   - Edit code based on profile insights
+   - /rust-check  # Validate changes
+   - /test-quick <pattern>  # Targeted testing
+
+4. Validate Improvement:
+   /bench-compare baseline HEAD  # Confirm speedup
+   /perf-profile ./target/release/prtip <args>  # Verify hotspots reduced
+
+5. Document Results:
+   /doc-update perf "10K ports: 117ms → 39ms (66% faster)"
+```
+
+**Common Optimization Patterns:**
+
+1. **CPU-bound optimization:**
+   ```
+   perf-profile → identify hot function → optimize algorithm → bench-compare
+   ```
+
+2. **I/O-bound optimization:**
+   ```
+   perf-profile (off-CPU) → find blocking I/O → add async → bench-compare
+   ```
+
+3. **Lock contention optimization:**
+   ```
+   perf-profile → find lock hotspots → replace with lock-free → bench-compare
+   ```
+
+## SEE ALSO
+
+- `docs/07-PERFORMANCE.md` - Performance optimization guide
+- `docs/04-IMPLEMENTATION-GUIDE.md` - Implementation patterns
+- `benchmarks/` - Historical benchmark results
+- Brendan Gregg's flamegraph documentation: http://www.brendangregg.com/flamegraphs.html
+- Linux perf tutorial: https://perf.wiki.kernel.org/index.php/Tutorial
+
+---
+
 **Profile command: $***

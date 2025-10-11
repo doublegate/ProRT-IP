@@ -1,0 +1,80 @@
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  127.0.0.1
+Ports:    1-10000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 500 (adaptive)
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 05:56:38 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 10000
+
+Hosts Scanned: 1
+Ports: 13 open, 9987 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 13 open, 9987 closed, 0 filtered
+
+Open Ports:
+   1716 open         (  0.31ms)
+   2025 open         (  0.21ms)
+   2022 open         (  0.08ms)
+   2023 open         (  0.07ms)
+   2021 open         (  0.18ms)
+   2053 open         (  0.27ms)
+   2139 open         (  0.30ms)
+   2445 open         (  0.35ms)
+   3306 open         (  0.21ms)
+   5355 open         (  0.60ms)
+   5432 open         (  1.28ms)
+   8180 open         (  0.21ms)
+   8080 open         (  0.51ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       39ms
+  Scan Rate:      250364 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    10000
+
+Results:
+  Open Ports:     13
+  Closed Ports:   9987
+  Filtered Ports: 0
+============================================================
+
+ Performance counter stats for '/home/parobek/Code/ProRT-IP/target/release/prtip -s connect -p 1-10000 127.0.0.1':
+
+            267.22 msec task-clock:u                     #    6.092 CPUs utilized             
+                 0      context-switches:u               #    0.000 /sec                      
+                 0      cpu-migrations:u                 #    0.000 /sec                      
+             3,750      page-faults:u                    #   14.033 K/sec                     
+        76,434,170      instructions:u                   #    0.44  insn per cycle              (55.10%)
+       173,969,925      cycles:u                         #    0.651 GHz                         (67.69%)
+        12,123,371      branches:u                       #   45.369 M/sec                       (74.68%)
+           293,232      branch-misses:u                  #    2.42% of all branches             (76.61%)
+        17,709,268      L1-dcache-loads:u                #   66.272 M/sec                       (77.56%)
+         3,569,166      L1-dcache-load-misses:u          #   20.15% of all L1-dcache accesses   (78.12%)
+         1,261,025      LLC-loads:u                      #    4.719 M/sec                       (47.76%)
+             5,690      LLC-load-misses:u                #    0.45% of all LL-cache accesses    (45.27%)
+
+       0.043864769 seconds time elapsed
+
+       0.034838000 seconds user
+       0.206983000 seconds sys
+
+

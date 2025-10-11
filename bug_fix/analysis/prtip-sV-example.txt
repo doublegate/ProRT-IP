@@ -1,0 +1,76 @@
+[2m2025-10-11T07:14:16.799223Z[0m [32m INFO[0m ProRT-IP WarScan v0.3.0
+[2m2025-10-11T07:14:16.799237Z[0m [32m INFO[0m High-performance network scanner
+[2m2025-10-11T07:14:16.799241Z[0m [34mDEBUG[0m Not running as root, checking for CAP_NET_RAW capability
+[2m2025-10-11T07:14:16.799243Z[0m [33m WARN[0m Insufficient privileges for raw sockets: Insufficient privileges: Insufficient privileges for raw socket access. Run with sudo or grant CAP_NET_RAW capability with: sudo setcap cap_net_raw+eip /path/to/prtip. Using TCP connect scan fallback.
+[DNS] Resolved example.com -> 23.215.0.136
+[2m2025-10-11T07:14:16.800032Z[0m [32m INFO[0m Parsed 1 scan target(s)
+[2m2025-10-11T07:14:16.800038Z[0m [32m INFO[0m Scanning 2 port(s) per host
+[2m2025-10-11T07:14:16.800043Z[0m [32m INFO[0m Scan configuration: type=Connect, timing=Normal, timeout=3000ms
+[2m2025-10-11T07:14:16.800047Z[0m [32m INFO[0m Using recommended batch size: 1000
+[2m2025-10-11T07:14:16.800048Z[0m [32m INFO[0m Database storage disabled (default in-memory mode)
+[2m2025-10-11T07:14:16.800052Z[0m [32m INFO[0m Storage backend: Memory (capacity: 10000)
+[2m2025-10-11T07:14:16.800062Z[0m [32m INFO[0m Attempting to drop privileges to nobody:nogroup
+[2m2025-10-11T07:14:16.800614Z[0m [33m WARN[0m Failed to drop privileges: Insufficient privileges: Group not found: nogroup. Continuing as current user.
+[2m2025-10-11T07:14:16.800619Z[0m [32m INFO[0m Starting scan...
+[2m2025-10-11T07:14:16.800625Z[0m [32m INFO[0m Using adaptive parallelism: 20 for 2 ports
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  example.com (23.215.0.136)
+Ports:    80,443
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 20 (adaptive)
+============================================================
+
+[2m2025-10-11T07:14:16.800631Z[0m [32m INFO[0m Starting port scan: 1 targets, 2 ports
+[2m2025-10-11T07:14:16.800634Z[0m [32m INFO[0m Using lock-free aggregator with buffer size: 4 (estimated 2 results)
+[2m2025-10-11T07:14:16.800636Z[0m [32m INFO[0m Using adaptive parallelism: 20 for 2 ports
+[2m2025-10-11T07:14:16.808084Z[0m [34mDEBUG[0m Port 443 open on 23.215.0.136
+[2m2025-10-11T07:14:16.808138Z[0m [34mDEBUG[0m Port 80 open on 23.215.0.136
+[2m2025-10-11T07:14:16.808159Z[0m [34mDEBUG[0m Drained all 2 results from aggregator
+[2m2025-10-11T07:14:16.808166Z[0m [34mDEBUG[0m Collected 2 results from lock-free aggregator
+[2m2025-10-11T07:14:16.808171Z[0m [34mDEBUG[0m Drained all 2 results from aggregator
+[2m2025-10-11T07:14:16.808174Z[0m [32m INFO[0m Collected 2 results from lock-free aggregator
+[2m2025-10-11T07:14:16.808176Z[0m [32m INFO[0m Starting service detection on open ports
+[2m2025-10-11T07:14:16.808178Z[0m [34mDEBUG[0m Detecting services on 2 open ports
+[2m2025-10-11T07:14:16.808181Z[0m [32m INFO[0m Service detection complete: 0/2 services identified
+[2m2025-10-11T07:14:16.808189Z[0m [32m INFO[0m Port scan complete: 2 results
+[2m2025-10-11T07:14:16.808192Z[0m [32m INFO[0m Scan complete: 2 results
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 07:14:16 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 2
+
+Hosts Scanned: 1
+Ports: 2 open, 0 closed, 0 filtered
+
+Host: 23.215.0.136
+Ports: 2 open, 0 closed, 0 filtered
+
+Open Ports:
+    443 open         (  7.48ms)
+     80 open         (  7.49ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       7ms
+  Scan Rate:      264 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    2
+
+Results:
+  Open Ports:     2
+  Closed Ports:   0
+  Filtered Ports: 0
+============================================================

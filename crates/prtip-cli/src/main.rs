@@ -199,7 +199,11 @@ async fn run() -> Result<()> {
 
     // Execute scan
     info!("Starting scan...");
-    println!("\n{}", format_scan_banner(&args, &config));
+    let scan_start = std::time::Instant::now();
+    println!(
+        "\n{}",
+        format_scan_banner(&args, &config, ports.count(), &targets)
+    );
 
     let results = if args.host_discovery {
         info!("Performing host discovery before port scanning");
@@ -212,6 +216,7 @@ async fn run() -> Result<()> {
             .await?
     };
 
+    let scan_duration = scan_start.elapsed();
     info!("Scan complete: {} results", results.len());
 
     // Format and output results
@@ -234,8 +239,8 @@ async fn run() -> Result<()> {
         }
     }
 
-    // Print summary
-    print_summary(&results);
+    // Print summary with scan statistics
+    print_summary(&results, scan_duration);
 
     Ok(())
 }
@@ -267,11 +272,25 @@ fn init_logging(verbose: u8) {
 
 /// Parse target specifications into ScanTarget structures
 fn parse_targets(target_specs: &[String]) -> Result<Vec<ScanTarget>> {
+    use colored::*;
     let mut targets = Vec::new();
 
     for spec in target_specs {
         let target =
             ScanTarget::parse(spec).context(format!("Invalid target specification: '{}'", spec))?;
+
+        // Print DNS resolution feedback if hostname was resolved
+        if let Some(hostname) = &target.hostname {
+            let ip = target.network.ip();
+            println!(
+                "{} {} {} {}",
+                "[DNS]".bright_blue(),
+                "Resolved".green(),
+                hostname.bright_yellow(),
+                format!("-> {}", ip).bright_cyan()
+            );
+        }
+
         targets.push(target);
     }
 
@@ -296,8 +315,14 @@ fn expand_targets_with_ports(
 }
 
 /// Format a nice banner for the scan
-fn format_scan_banner(args: &Args, config: &prtip_core::Config) -> String {
+fn format_scan_banner(
+    args: &Args,
+    config: &prtip_core::Config,
+    port_count: usize,
+    targets: &[prtip_core::ScanTarget],
+) -> String {
     use colored::*;
+    use prtip_scanner::adaptive_parallelism::calculate_parallelism;
 
     let mut banner = String::new();
 
@@ -307,7 +332,21 @@ fn format_scan_banner(args: &Args, config: &prtip_core::Config) -> String {
     banner.push_str(&"=".repeat(60).bright_cyan().to_string());
     banner.push('\n');
 
-    banner.push_str(&format!("Targets:  {}\n", args.targets.join(", ")));
+    // Format targets with resolved IPs
+    let target_display = if args.targets.len() == 1 && targets.len() == 1 {
+        // Single target - show hostname (IP) if hostname was resolved
+        if let Some(hostname) = &targets[0].hostname {
+            let ip = targets[0].network.ip();
+            format!("{} ({})", hostname, ip)
+        } else {
+            args.targets[0].clone()
+        }
+    } else {
+        // Multiple targets - just show original input
+        args.targets.join(", ")
+    };
+
+    banner.push_str(&format!("Targets:  {}\n", target_display));
     banner.push_str(&format!("Ports:    {}\n", args.ports));
     banner.push_str(&format!("Type:     {}\n", config.scan.scan_type));
     banner.push_str(&format!("Timing:   {}\n", config.scan.timing_template));
@@ -317,15 +356,36 @@ fn format_scan_banner(args: &Args, config: &prtip_core::Config) -> String {
         banner.push_str(&format!("Max Rate: {} pps\n", rate));
     }
 
-    banner.push_str(&format!("Parallel: {}\n", config.performance.parallelism));
+    // Calculate actual parallelism (fix for "Parallel: 0" bug)
+    let user_override = if config.performance.parallelism > 0 {
+        Some(config.performance.parallelism)
+    } else {
+        None
+    };
+    let actual_parallelism = calculate_parallelism(
+        port_count,
+        user_override,
+        config.performance.requested_ulimit,
+    );
+
+    banner.push_str(&format!(
+        "Parallel: {}{}",
+        actual_parallelism,
+        if config.performance.parallelism == 0 {
+            " (adaptive)".dimmed().to_string()
+        } else {
+            "".to_string()
+        }
+    ));
+    banner.push('\n');
     banner.push_str(&"=".repeat(60).bright_cyan().to_string());
     banner.push('\n');
 
     banner
 }
 
-/// Print a summary of scan results
-fn print_summary(results: &[prtip_core::ScanResult]) {
+/// Print a summary of scan results with comprehensive statistics
+fn print_summary(results: &[prtip_core::ScanResult], duration: std::time::Duration) {
     use colored::*;
     use std::collections::HashSet;
 
@@ -347,23 +407,82 @@ fn print_summary(results: &[prtip_core::ScanResult]) {
         .filter(|r| r.state() == prtip_core::PortState::Filtered)
         .count();
 
+    // Calculate services detected (ports with service name)
+    let services_detected = results
+        .iter()
+        .filter(|r| r.service().is_some())
+        .count();
+
+    // Calculate scan rate (ports/second)
+    let duration_secs = duration.as_secs_f64();
+    let scan_rate = if duration_secs > 0.0 {
+        results.len() as f64 / duration_secs
+    } else {
+        0.0
+    };
+
+    // Format duration
+    let duration_ms = duration.as_millis();
+    let duration_str = if duration_ms < 1000 {
+        format!("{}ms", duration_ms)
+    } else if duration_ms < 60_000 {
+        format!("{:.2}s", duration_ms as f64 / 1000.0)
+    } else {
+        let mins = duration_ms / 60_000;
+        let secs = (duration_ms % 60_000) / 1000;
+        format!("{}m {}s", mins, secs)
+    };
+
     println!("\n{}", "=".repeat(60).bright_cyan());
     println!("{}", "Scan Summary".bright_white().bold());
     println!("{}", "=".repeat(60).bright_cyan());
+
+    // Scan statistics
+    println!("{}", "Performance:".bright_white().bold());
     println!(
-        "Hosts Scanned:    {}",
-        hosts.len().to_string().bright_white().bold()
+        "  Duration:       {}",
+        duration_str.bright_white()
     );
     println!(
-        "Total Ports:      {}",
-        results.len().to_string().bright_white().bold()
+        "  Scan Rate:      {:.0} ports/sec",
+        scan_rate
+    );
+
+    println!();
+    println!("{}", "Targets:".bright_white().bold());
+    println!(
+        "  Hosts Scanned:  {}",
+        hosts.len().to_string().bright_white()
     );
     println!(
-        "Open Ports:       {}",
+        "  Total Ports:    {}",
+        results.len().to_string().bright_white()
+    );
+
+    println!();
+    println!("{}", "Results:".bright_white().bold());
+    println!(
+        "  Open Ports:     {}",
         open_ports.to_string().green().bold()
     );
-    println!("Closed Ports:     {}", closed_ports.to_string().red());
-    println!("Filtered Ports:   {}", filtered_ports.to_string().yellow());
+    println!(
+        "  Closed Ports:   {}",
+        closed_ports.to_string().red()
+    );
+    println!(
+        "  Filtered Ports: {}",
+        filtered_ports.to_string().yellow()
+    );
+
+    if services_detected > 0 {
+        println!();
+        println!("{}", "Detection:".bright_white().bold());
+        println!(
+            "  Services:       {}",
+            services_detected.to_string().cyan()
+        );
+    }
+
     println!("{}", "=".repeat(60).bright_cyan());
 }
 
@@ -491,8 +610,8 @@ mod tests {
     fn test_parse_targets_invalid() {
         let specs = vec!["not-a-valid-target!!!".to_string()];
         let targets = parse_targets(&specs);
-        // Should still parse as hostname
-        assert!(targets.is_ok());
+        // Should fail DNS resolution for invalid hostname
+        assert!(targets.is_err());
     }
 
     #[test]
@@ -506,7 +625,8 @@ mod tests {
     fn test_format_scan_banner() {
         let args = Args::parse_from(["prtip", "-p", "80", "192.168.1.1"]);
         let config = args.to_config();
-        let banner = format_scan_banner(&args, &config);
+        let targets = vec![ScanTarget::parse("192.168.1.1").unwrap()];
+        let banner = format_scan_banner(&args, &config, 1, &targets);
 
         assert!(banner.contains("ProRT-IP"));
         assert!(banner.contains("192.168.1.1"));
@@ -514,10 +634,29 @@ mod tests {
     }
 
     #[test]
+    fn test_format_scan_banner_with_hostname() {
+        let args = Args::parse_from(["prtip", "-p", "80", "127.0.0.1"]);
+        let config = args.to_config();
+        // Create a target with a hostname (simulate DNS resolution result)
+        let mut target = ScanTarget::parse("127.0.0.1").unwrap();
+        // Manually add hostname to simulate DNS resolution
+        target.hostname = Some("example.com".to_string());
+
+        let targets = vec![target];
+        let banner = format_scan_banner(&args, &config, 1, &targets);
+
+        assert!(banner.contains("ProRT-IP"));
+        assert!(banner.contains("example.com"));
+        assert!(banner.contains("127.0.0.1"));
+        assert!(banner.contains("80"));
+    }
+
+    #[test]
     fn test_print_summary_empty() {
         let results = vec![];
+        let duration = std::time::Duration::from_secs(1);
         // Should not panic
-        print_summary(&results);
+        print_summary(&results, duration);
     }
 
     #[test]
@@ -538,8 +677,9 @@ mod tests {
             ),
         ];
 
+        let duration = std::time::Duration::from_millis(100);
         // Should not panic
-        print_summary(&results);
+        print_summary(&results, duration);
     }
 
     #[test]

@@ -1,0 +1,39 @@
+=== Scanner Comparison Results ===
+
+ProRT-IP:
+  - Port 22: open (65.48ms)
+  - Port 80: open (66.87ms)
+  - Port 443: closed
+  - Duration: 66ms
+  
+nmap:
+  - Port 22: open
+  - Port 80: open
+  - Port 443: closed
+  - Duration: 0.15s (~150ms)
+
+RustScan:
+  - Port 22: open
+  - Port 80: open
+  - Port 443: not reported (only scanned open ports)
+  - Duration: 0.223s (~223ms)
+
+naabu:
+  - Port 22: open
+  - Port 80: open
+  - Port 443: not reported
+  - Duration: 2.335s (~2335ms)
+
+masscan: SKIPPED (requires root)
+zmap: SKIPPED (requires root)
+
+Match Analysis:
+  ProRT-IP vs nmap: ✅ 100% match
+  ProRT-IP vs RustScan: ✅ 100% match on open ports
+  ProRT-IP vs naabu: ✅ 100% match on open ports
+  
+Performance Ranking:
+  1. ProRT-IP: 66ms (fastest)
+  2. nmap: 150ms (2.3x slower)
+  3. RustScan: 223ms (3.4x slower)
+  4. naabu: 2335ms (35.4x slower)

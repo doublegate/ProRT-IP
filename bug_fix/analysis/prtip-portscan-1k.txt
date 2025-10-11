@@ -1,0 +1,49 @@
+[DNS] Resolved scanme.nmap.org -> 45.33.32.156
+
+============================================================
+ProRT-IP WarScan
+============================================================
+Targets:  scanme.nmap.org (45.33.32.156)
+Ports:    1-1000
+Type:     TCP Connect
+Timing:   T3 (Normal)
+Timeout:  3000ms
+Parallel: 20 (adaptive)
+============================================================
+
+
+=== ProRT-IP Scan Results ===
+Scan Time: 2025-10-11 06:52:02 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 1000
+
+Hosts Scanned: 1
+Ports: 3 open, 997 closed, 0 filtered
+
+Host: 45.33.32.156
+Ports: 3 open, 997 closed, 0 filtered
+
+Open Ports:
+     22 open         ( 68.60ms)
+     53 open         (  1.95ms)
+     80 open         ( 69.01ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       3.35s
+  Scan Rate:      298 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    1000
+
+Results:
+  Open Ports:     3
+  Closed Ports:   997
+  Filtered Ports: 0
+============================================================

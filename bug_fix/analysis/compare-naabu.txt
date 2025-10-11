@@ -1,0 +1,2 @@
+scanme.nmap.org:80
+scanme.nmap.org:22

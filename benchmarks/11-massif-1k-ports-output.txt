@@ -1,0 +1,30 @@
+Scan Time: 2025-10-11 05:59:19 UTC
+Scan Type: TCP Connect
+Timing Template: T3 (Normal)
+Total Results: 1000
+
+Hosts Scanned: 1
+Ports: 0 open, 1000 closed, 0 filtered
+
+Host: 127.0.0.1
+Ports: 0 open, 1000 closed, 0 filtered
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       66ms
+  Scan Rate:      14944 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    1000
+
+Results:
+  Open Ports:     0
+  Closed Ports:   1000
+  Filtered Ports: 0
+============================================================
+==1277196== 

@@ -101,6 +101,9 @@ pub struct ScanConfig {
     /// Scan delay in milliseconds
     #[serde(default)]
     pub scan_delay_ms: u64,
+    /// Service detection configuration
+    #[serde(default)]
+    pub service_detection: ServiceDetectionConfig,
 }
 
 impl Default for ScanConfig {
@@ -111,6 +114,28 @@ impl Default for ScanConfig {
             timeout_ms: 3000,
             retries: 0,
             scan_delay_ms: 0,
+            service_detection: ServiceDetectionConfig::default(),
+        }
+    }
+}
+
+/// Service detection configuration
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct ServiceDetectionConfig {
+    /// Enable service detection
+    pub enabled: bool,
+    /// Detection intensity (0-9, higher = more thorough)
+    pub intensity: u8,
+    /// Enable banner grabbing
+    pub banner_grab: bool,
+}
+
+impl Default for ServiceDetectionConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            intensity: 7,
+            banner_grab: false,
         }
     }
 }

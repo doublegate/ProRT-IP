@@ -1,0 +1,30 @@
+   2022 open         (  0.47ms)
+   2023 open         (  0.60ms)
+   2139 open         (  0.55ms)
+   2053 open         (  0.81ms)
+   2025 open         (  0.83ms)
+   2445 open         (  0.47ms)
+   3306 open         (  0.51ms)
+   5355 open         (  0.88ms)
+   5432 open         (  1.37ms)
+   8080 open         (  0.79ms)
+   8180 open         (  0.45ms)
+
+
+
+============================================================
+Scan Summary
+============================================================
+Performance:
+  Duration:       34ms
+  Scan Rate:      291867 ports/sec
+
+Targets:
+  Hosts Scanned:  1
+  Total Ports:    10000
+
+Results:
+  Open Ports:     13
+  Closed Ports:   9987
+  Filtered Ports: 0
+============================================================

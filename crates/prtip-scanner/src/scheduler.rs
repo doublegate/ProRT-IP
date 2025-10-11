@@ -10,8 +10,9 @@
 
 use crate::adaptive_parallelism::calculate_parallelism;
 use crate::storage_backend::StorageBackend;
-use crate::{DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter, TcpConnectScanner};
-use prtip_core::{Config, PortRange, Result, ScanResult, ScanTarget};
+use crate::{BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter, ServiceDetector, TcpConnectScanner};
+use prtip_core::{Config, PortRange, PortState, Result, ScanResult, ScanTarget, ServiceProbeDb};
+use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tracing::{debug, error, info, warn};
@@ -376,11 +377,86 @@ impl ScanScheduler {
         }
 
         // Drain all results from aggregator
-        let all_results = aggregator.drain_all();
+        let mut all_results = aggregator.drain_all();
         info!(
             "Collected {} results from lock-free aggregator",
             all_results.len()
         );
+
+        // Perform service detection if enabled
+        if self.config.scan.service_detection.enabled {
+            info!("Starting service detection on open ports");
+            let open_count = all_results.iter().filter(|r| r.state == PortState::Open).count();
+
+            if open_count > 0 {
+                // Create service detector and banner grabber
+                let probe_db = ServiceProbeDb::default();
+                let detector = ServiceDetector::new(
+                    probe_db,
+                    self.config.scan.service_detection.intensity
+                );
+                let grabber = BannerGrabber::new();
+
+                debug!("Detecting services on {} open ports", open_count);
+
+                // Process each open port
+                for result in all_results.iter_mut() {
+                    if result.state == PortState::Open {
+                        let target = SocketAddr::new(result.target_ip, result.port);
+
+                        // Try service detection first
+                        match detector.detect_service(target).await {
+                            Ok(service_info) => {
+                                if service_info.service != "unknown" {
+                                    result.service = Some(service_info.service.clone());
+
+                                    // Combine product and version
+                                    if let Some(product) = service_info.product {
+                                        if let Some(version) = service_info.version {
+                                            result.version = Some(format!("{} {}", product, version));
+                                        } else {
+                                            result.version = Some(product);
+                                        }
+                                    } else if let Some(version) = service_info.version {
+                                        result.version = Some(version);
+                                    }
+
+                                    debug!("Detected service on {}:{}: {} {}",
+                                        result.target_ip, result.port,
+                                        result.service.as_ref().unwrap_or(&"unknown".to_string()),
+                                        result.version.as_ref().unwrap_or(&"".to_string())
+                                    );
+                                    continue;
+                                }
+                            }
+                            Err(e) => {
+                                debug!("Service detection failed for {}:{}: {}", result.target_ip, result.port, e);
+                            }
+                        }
+
+                        // If service detection failed and banner grabbing is enabled, try that
+                        if self.config.scan.service_detection.banner_grab {
+                            match grabber.grab_banner(target).await {
+                                Ok(banner) => {
+                                    if !banner.is_empty() {
+                                        result.banner = Some(banner);
+                                        debug!("Grabbed banner from {}:{}", result.target_ip, result.port);
+                                    }
+                                }
+                                Err(e) => {
+                                    debug!("Banner grab failed for {}:{}: {}", result.target_ip, result.port, e);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                let detected = all_results.iter()
+                    .filter(|r| r.service.is_some() || r.banner.is_some())
+                    .count();
+                info!("Service detection complete: {}/{} services identified", detected, open_count);
+            }
+        }
 
         // Store all results via storage backend (non-blocking for async!)
         if !all_results.is_empty() {
@@ -417,6 +493,7 @@ mod tests {
                 timeout_ms: 1000,
                 retries: 0,
                 scan_delay_ms: 0,
+                service_detection: Default::default(),
             },
             network: NetworkConfig {
                 interface: None,

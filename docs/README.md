@@ -459,6 +459,15 @@ These documents were used to generate the structured documentation in this direc
 
 ## Additional Resources
 
+### Validation & Bug Reports
+
+The **`../bug_fix/`** directory contains comprehensive validation reports:
+
+- **VALIDATION-REPORT.md** - Complete validation against nmap, rustscan, naabu (100% accuracy)
+- **SERVICE-DETECTION-FIX.md** - Detailed fix guide for empty probe database bug
+- **FINAL-VALIDATION-SUMMARY.md** - Executive summary of validation findings
+- **analysis/** - Raw test outputs and debug logs (32 files)
+
 ### External References
 
 - **Rust Documentation:** https://doc.rust-lang.org/

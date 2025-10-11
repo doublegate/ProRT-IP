@@ -3,7 +3,7 @@
 use clap::{Parser, ValueEnum};
 use prtip_core::{
     Config, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, PortRange, ScanConfig,
-    ScanType, TimingTemplate,
+    ScanType, ServiceDetectionConfig, TimingTemplate,
 };
 use std::path::PathBuf;
 
@@ -359,6 +359,11 @@ impl Args {
                 timeout_ms: self.timeout,
                 retries: self.retries,
                 scan_delay_ms: self.scan_delay,
+                service_detection: ServiceDetectionConfig {
+                    enabled: self.service_detection,
+                    intensity: self.version_intensity,
+                    banner_grab: self.banner_grab,
+                },
             },
             network: NetworkConfig {
                 interface: self.interface.clone(),

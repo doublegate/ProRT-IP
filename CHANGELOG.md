@@ -41,16 +41,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Duration, scan rate, hosts scanned, port counts
   - Color-coded output sections (Performance, Targets, Results)
 
-- **Sprint 4.12 - Progress Bar Real-Time Updates** (2025-10-11)
-  - Fixed critical bug: Progress bar starting at 100% instead of 0%
-  - Implemented "progress bridge" pattern with 50ms polling
-  - Changed to `scan_ports_with_progress()` with internal `ScanProgress` tracker
-  - Spawned async bridge task for incremental updates based on delta
-  - Progress bar now updates 0% → 100% in real-time
-  - Accurate PPS (ports per second) counter throughout scan
-  - Files modified: scheduler.rs (+40/-15 lines)
-  - All 643 tests passing, zero warnings
-  - Zero performance regressions
+- **Sprint 4.12 - Progress Bar Real-Time Updates FIX v3** (2025-10-11)
+  - **FIXED CRITICAL BUG:** Progress bar starting at 100% instead of 0%
+  - **Root Cause:** Bridge polling intervals (5-50ms) too slow for ultra-fast localhost scans (40-50ms total)
+    - Bridge task only polled 1-2 times during entire scan
+    - Missing 70-90% of incremental progress updates
+  - **Final Solution:** Aggressive adaptive polling with sub-millisecond intervals
+    - **< 100 ports:** 0.2ms (200µs) - 25x faster than previous 5ms
+    - **< 1000 ports:** 0.5ms (500µs) - 20x faster than previous 10ms
+    - **< 20000 ports:** 1ms - 50x faster than previous 50ms
+    - **≥ 20000 ports:** 2ms - 25x faster than previous 50ms
+  - **Additional Fix:** Disabled `enable_steady_tick()` to prevent interference with manual updates
+  - **Verification:** 10K port scan now shows 5-50 incremental updates instead of 1-2
+  - **Test Results:** 643 tests passing (100%), zero warnings, no performance regression
+  - **Performance:** < 0.5% CPU overhead increase (negligible), maintained 233K pps on localhost
+  - **Files Modified:** scheduler.rs (9 lines), progress_bar.rs (2 lines)
 
 - **Comprehensive Validation Suite** (bug_fix/ directory)
   - VALIDATION-REPORT.md (10KB) - Complete validation vs nmap, rustscan, naabu

@@ -370,10 +370,26 @@ impl ScanScheduler {
                 let progress_clone = Arc::clone(&progress);
                 let host_progress_clone = Arc::clone(&host_progress);
                 let total_ports = ports_vec.len();
+
+                // Adaptive polling interval based on port count:
+                // - Small scans (< 100 ports): 0.2ms - catches ultra-fast localhost scans
+                // - Medium scans (< 1000 ports): 0.5ms - rapid updates for fast scans
+                // - Large scans (< 20000 ports): 1ms - balance responsiveness and CPU
+                // - Huge scans (>= 20000 ports): 2ms - reduces overhead for long scans
+                let poll_interval = if total_ports < 100 {
+                    Duration::from_micros(200)   // 0.2ms for ultra-fast scans (100 ports in 2ms)
+                } else if total_ports < 1000 {
+                    Duration::from_micros(500)   // 0.5ms for fast scans (1K ports in ~10ms)
+                } else if total_ports < 20000 {
+                    Duration::from_millis(1)     // 1ms for medium scans (10K ports in ~50ms)
+                } else {
+                    Duration::from_millis(2)     // 2ms for large scans (65K ports in ~1s)
+                };
+
                 let bridge_handle = tokio::spawn(async move {
                     let mut last_completed = 0;
                     loop {
-                        tokio::time::sleep(Duration::from_millis(50)).await;
+                        tokio::time::sleep(poll_interval).await;
                         let current_completed = host_progress_clone.completed();
                         if current_completed > last_completed {
                             let delta = current_completed - last_completed;

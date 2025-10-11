@@ -112,6 +112,7 @@ CLAUDE.local.md
 *.local.md
 .claude-session
 .claude/
+.claude/settings.local.json
 
 # Documentation build
 /docs/book/

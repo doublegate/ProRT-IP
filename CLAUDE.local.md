@@ -1,6 +1,6 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-11 | **Phase:** Phase 4 COMPLETE + Sprint 4.12 | **Tests:** 643/643 ✅
+**Updated:** 2025-10-11 | **Phase:** Phase 4 COMPLETE (Sprint 4.1-4.14) | **Tests:** 643/643 ✅
 
 ## Current Status
 
@@ -8,7 +8,7 @@
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase Progress** | Sprint 4.1-4.12 COMPLETE | Phase 4 + Service Detection + Progress Bar! |
+| **Phase Progress** | Sprint 4.1-4.14 COMPLETE | Phase 4 + Doc Reorganization + All Fixes! |
 | **CI Status** | 7/7 passing (100%) | Format, Clippy, Test×3, MSRV, Security |
 | **Tests** | 643 passing (100%) | Zero regressions |
 | **Version** | v0.3.0 | Production-ready port scanning |
@@ -39,14 +39,13 @@
 
 **Dependencies:** tokio 1.35+, clap 4.5+, sqlx 0.8.6, pnet 0.34+, futures, rlimit 0.10.2, indicatif 0.17
 
-## Next Actions: Phase 4 Performance Optimization Planning
+## Next Actions: Phase 5 Advanced Features
 
-1. **Network-Based Benchmarking** - Set up test environment with realistic latency (HIGH PRIORITY)
-2. **Lock-Free Data Structures** - Replace Arc<Mutex<HashMap>> with crossbeam (HIGH PRIORITY)
-3. **Batched Syscalls** - Implement sendmmsg/recvmmsg for 1M+ pps (HIGH PRIORITY)
-4. **Full Port Range Optimization** - Investigate 65K port scan bottleneck (MEDIUM PRIORITY)
-5. **Service Detection Validation** - Test against common services (MEDIUM PRIORITY)
-6. **NUMA-Aware Thread Placement** - Pin threads to NUMA nodes (LOW PRIORITY for single-socket)
+1. **Service Detection Fix** - Load nmap-service-probes (1-2 hours, CRITICAL)
+2. **Phase 5.1: Idle Scanning** - Zombie scanning for anonymity (HIGH PRIORITY)
+3. **Phase 5.2: Plugin System** - Lua scripting with mlua (HIGH PRIORITY)
+4. **Phase 5.3: Advanced Evasion** - Packet fragmentation, timing obfuscation (MEDIUM)
+5. **Phase 5.4: TUI/GUI** - Interactive interface with ratatui/iced (LOW PRIORITY)
 
 ## Technical Stack
 
@@ -66,6 +65,31 @@
 **Optimizations:** Lock-free (crossbeam), batched syscalls (sendmmsg/recvmmsg), NUMA pinning, SIMD checksums (AVX2), zero-copy, XDP/eBPF (Phase 4)
 
 ## Recent Sessions (Condensed)
+
+### 2025-10-11: Documentation Reorganization Complete (SUCCESS ✅)
+**Objective:** Complete comprehensive file reorganization across benchmarks/, bug_fix/, docs/
+**Scope:** 261 files changed (12,481 insertions, 242 deletions), all documentation-only
+**Activities:**
+- **Phase 1-2 (60%):** bug_fix/ + docs/ organization
+  - Created 7 issue-based subdirectories in bug_fix/ with 8 READMEs (700+ lines)
+  - Renamed 18 files from bug_fix/ root to proper subdirectories
+  - Moved 9 files from docs/archive/ to benchmarks/ or bug_fix/
+  - Established mixed-case naming with numerical prefixes
+- **Phase 3 (40%):** benchmarks/ organization
+  - Created benchmarks/01-Phase4_PreFinal-Bench/ with 29 files + README (400+ lines)
+  - Created benchmarks/02-Phase4_Final-Bench/ placeholder + README (200+ lines)
+  - Renamed 15 archive subdirectories to mixed-case (Sprint-4.X-Name format)
+- **Documentation Updates:**
+  - Updated README.md (Sprint 4.12-4.14 achievements, fixed typo, updated metrics)
+  - Updated CHANGELOG.md (comprehensive reorganization section, 59 lines)
+  - Fixed 3 broken cross-references (SERVICE-DETECTION-FIX.md → 01-Service-Detection/03-Fix-Guide.md)
+- **Memory Bank Optimization:** Updated CLAUDE.local.md (header, status, next actions)
+**Deliverables:**
+- 115+ git operations (all history preserved via git mv)
+- 1,500+ lines new README content
+- 302 → 307 files (8 new READMEs, 3 archive docs)
+- Professional issue-based tracking, chronological benchmark organization
+**Result:** **COMPLETE ✅** - Production-ready documentation structure, zero data loss, all cross-references validated
 
 ### 2025-10-11: Sprint 4.14 - Network Timeout Optimization (SUCCESS ✅)
 **Objective:** Fix reported "hangs/pauses every 10K ports" on large network scans

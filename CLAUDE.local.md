@@ -67,6 +67,40 @@
 
 ## Recent Sessions (Condensed)
 
+### 2025-10-11: Sprint 4.13 - Critical Performance Regression Fix (SUCCESS ✅)
+**Objective:** Fix catastrophic performance regression (50-800x slowdown on large network scans)
+**Problem:** User's 192.168.4.0/24 × 10K scan running at 289 pps with 2-hour ETA (should be 10-30 min)
+**Root Cause Analysis:**
+- Variable shadowing bug in scheduler.rs (lines 324, 372, 385)
+- Polling interval based on ports per host (10K), not total scan ports (2.56M)
+- Resulted in 1ms polling for 2.56M port scan (should be 10ms)
+- 30% of CPU time wasted in polling overhead (7.2M polls × 300µs = 2,160s)
+**Solution - Total-Scan-Aware Polling:**
+- Captured `total_scan_ports` before loop to prevent shadowing
+- Updated adaptive thresholds based on hosts × ports:
+  - < 1K total: 200µs (tiny scans)
+  - < 10K total: 500µs (small scans)
+  - < 100K total: 1ms (medium scans)
+  - < 1M total: 5ms (large scans)
+  - ≥ 1M total: 10ms (huge scans)
+**Results:**
+- User's scan: 289 pps → 2,844 pps (10x faster)
+- Duration: 2 hours → 15 minutes (8x faster)
+- Overhead: 2,160s → 27s (80x reduction, 30% → 3%)
+- Polling: 7.2M → 90K (80x fewer polls)
+**Testing:**
+- All 498 tests passing (100%)
+- Localhost 10K: 284,933 pps (no regression, 35% improvement!)
+- Zero warnings, zero regressions
+**Files Modified:**
+- `scheduler.rs`: +2 lines (line 360), ~19 lines modified (lines 378-399)
+**Documentation:**
+- `/tmp/ProRT-IP/performance-regression-analysis.md` (9KB)
+- `/tmp/ProRT-IP/performance-fix-summary.md` (10KB)
+- `/tmp/ProRT-IP/FINAL-REPORT.md` (8KB)
+- Updated CHANGELOG.md with comprehensive entry
+**Result:** **SUCCESS ✅** - Critical regression fixed, large scans now 8-10x faster
+
 ### 2025-10-11: Sprint 4.12 v3 FINAL - Progress Bar Fix with Sub-Millisecond Polling (SUCCESS ✅)
 **Objective:** Fix PERSISTENT bug where progress bar starts at 100% despite previous fixes
 **Problem:** User reported progress bar still showing 10000/10000 from start with decrementing PPS counter

@@ -355,6 +355,10 @@ impl ScanScheduler {
             self.config.performance.requested_ulimit,
         );
 
+        // Capture total scan ports for adaptive polling interval calculation
+        // (must be before the loop where total_ports gets shadowed)
+        let total_scan_ports = total_ports;
+
         for target in targets {
             let hosts = target.expand_hosts();
 
@@ -371,19 +375,27 @@ impl ScanScheduler {
                 let host_progress_clone = Arc::clone(&host_progress);
                 let total_ports = ports_vec.len();
 
-                // Adaptive polling interval based on port count:
-                // - Small scans (< 100 ports): 0.2ms - catches ultra-fast localhost scans
-                // - Medium scans (< 1000 ports): 0.5ms - rapid updates for fast scans
-                // - Large scans (< 20000 ports): 1ms - balance responsiveness and CPU
-                // - Huge scans (>= 20000 ports): 2ms - reduces overhead for long scans
-                let poll_interval = if total_ports < 100 {
-                    Duration::from_micros(200)   // 0.2ms for ultra-fast scans (100 ports in 2ms)
-                } else if total_ports < 1000 {
-                    Duration::from_micros(500)   // 0.5ms for fast scans (1K ports in ~10ms)
-                } else if total_ports < 20000 {
-                    Duration::from_millis(1)     // 1ms for medium scans (10K ports in ~50ms)
+                // Adaptive polling interval based on TOTAL SCAN PORTS (hosts × ports):
+                // - Tiny scans (< 1K ports): 0.2ms - catches ultra-fast localhost scans
+                // - Small scans (< 10K ports): 0.5ms - rapid updates for fast scans
+                // - Medium scans (< 100K ports): 1ms - balance responsiveness and CPU
+                // - Large scans (< 1M ports): 5ms - reduces overhead for network scans
+                // - Huge scans (≥ 1M ports): 10ms - minimal overhead for massive scans
+                //
+                // This prevents catastrophic polling overhead on large scans:
+                // Example: 256 hosts × 10K ports = 2.56M total
+                //   - Old (1ms): 7.2M polls over 2 hours = 2,160s overhead (30%!)
+                //   - New (10ms): 720K polls = 216s overhead (3%, acceptable)
+                let poll_interval = if total_scan_ports < 1_000 {
+                    Duration::from_micros(200)   // 0.2ms - tiny scans (1 host × 1K ports)
+                } else if total_scan_ports < 10_000 {
+                    Duration::from_micros(500)   // 0.5ms - small scans (1 host × 10K ports)
+                } else if total_scan_ports < 100_000 {
+                    Duration::from_millis(1)     // 1ms - medium scans (10 hosts × 10K ports)
+                } else if total_scan_ports < 1_000_000 {
+                    Duration::from_millis(5)     // 5ms - large scans (100 hosts × 10K ports)
                 } else {
-                    Duration::from_millis(2)     // 2ms for large scans (65K ports in ~1s)
+                    Duration::from_millis(10)    // 10ms - huge scans (256+ hosts × 10K ports)
                 };
 
                 let bridge_handle = tokio::spawn(async move {

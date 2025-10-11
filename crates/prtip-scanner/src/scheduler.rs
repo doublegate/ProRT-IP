@@ -12,7 +12,7 @@ use crate::adaptive_parallelism::calculate_parallelism;
 use crate::storage_backend::StorageBackend;
 use crate::{
     BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter,
-    ServiceDetector, TcpConnectScanner,
+    ScanProgressBar, ServiceDetector, TcpConnectScanner,
 };
 use prtip_core::{Config, PortRange, PortState, Result, ScanResult, ScanTarget, ServiceProbeDb};
 use std::net::SocketAddr;
@@ -317,9 +317,19 @@ impl ScanScheduler {
 
         let ports_vec: Vec<u16> = ports.iter().collect();
 
+        // Calculate estimated hosts for progress bar and buffer sizing
+        let estimated_hosts: usize = targets.iter().map(|t| t.expand_hosts().len()).sum();
+
+        // Create progress bar for real-time feedback
+        let total_ports = (estimated_hosts * ports_vec.len()) as u64;
+        let progress = Arc::new(ScanProgressBar::new(
+            total_ports,
+            self.config.scan.progress,
+        ));
+        progress.set_message("Port scanning...");
+
         // Create lock-free aggregator to collect results without contention
         // Buffer size = estimated total results (hosts * ports) with 2x safety margin
-        let estimated_hosts: usize = targets.iter().map(|t| t.expand_hosts().len()).sum();
         let estimated_results = estimated_hosts
             .saturating_mul(ports_vec.len())
             .saturating_mul(2);
@@ -351,12 +361,40 @@ impl ScanScheduler {
             for host in hosts {
                 self.rate_limiter.acquire().await?;
 
+                // Create a progress tracker for this host's ports
+                let host_progress = Arc::new(prtip_core::ScanProgress::new(ports_vec.len()));
+
+                // Spawn a task to bridge host progress to main progress bar
+                // This updates the progress bar in real-time as each port completes,
+                // rather than jumping to 100% after all ports are done
+                let progress_clone = Arc::clone(&progress);
+                let host_progress_clone = Arc::clone(&host_progress);
+                let total_ports = ports_vec.len();
+                let bridge_handle = tokio::spawn(async move {
+                    let mut last_completed = 0;
+                    loop {
+                        tokio::time::sleep(Duration::from_millis(50)).await;
+                        let current_completed = host_progress_clone.completed();
+                        if current_completed > last_completed {
+                            let delta = current_completed - last_completed;
+                            progress_clone.inc(delta as u64);
+                            last_completed = current_completed;
+                        }
+                        if current_completed >= total_ports {
+                            break;
+                        }
+                    }
+                });
+
                 match self
                     .tcp_scanner
-                    .scan_ports(host, ports_vec.clone(), parallelism)
+                    .scan_ports_with_progress(host, ports_vec.clone(), parallelism, Some(&host_progress))
                     .await
                 {
                     Ok(results) => {
+                        // Wait for progress bridge to finish
+                        let _ = bridge_handle.await;
+
                         // Push results to lock-free aggregator (zero contention!)
                         for result in results {
                             // Try to push result
@@ -374,6 +412,8 @@ impl ScanScheduler {
                     }
                     Err(e) => {
                         warn!("Error scanning {}: {}", host, e);
+                        // Cancel bridge task
+                        bridge_handle.abort();
                     }
                 }
             }
@@ -388,6 +428,7 @@ impl ScanScheduler {
 
         // Perform service detection if enabled
         if self.config.scan.service_detection.enabled {
+            progress.set_message("Service detection...");
             info!("Starting service detection on open ports");
             let open_count = all_results
                 .iter()
@@ -396,7 +437,11 @@ impl ScanScheduler {
 
             if open_count > 0 {
                 // Create service detector and banner grabber
-                let probe_db = ServiceProbeDb::default();
+                let probe_db = if let Some(path) = &self.config.scan.service_detection.probe_db_path {
+                    ServiceProbeDb::load_from_file(path)?
+                } else {
+                    ServiceProbeDb::default()
+                };
                 let detector =
                     ServiceDetector::new(probe_db, self.config.scan.service_detection.intensity);
                 let grabber = BannerGrabber::new();
@@ -487,6 +532,9 @@ impl ScanScheduler {
         // Flush all pending writes
         self.storage_backend.flush().await?;
 
+        // Complete progress bar
+        progress.finish("Scan complete");
+
         info!("Port scan complete: {} results", all_results.len());
         Ok(all_results)
     }
@@ -514,6 +562,7 @@ mod tests {
                 retries: 0,
                 scan_delay_ms: 0,
                 service_detection: Default::default(),
+                progress: false,
             },
             network: NetworkConfig {
                 interface: None,

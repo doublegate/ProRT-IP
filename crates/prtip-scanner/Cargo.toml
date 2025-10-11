@@ -54,6 +54,9 @@ serde_json = { workspace = true }
 # Time
 chrono = { workspace = true }
 
+# Progress tracking
+indicatif = "0.17"
+
 # Error handling
 thiserror = { workspace = true }
 anyhow = { workspace = true }

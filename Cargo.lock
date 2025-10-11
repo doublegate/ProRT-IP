@@ -1700,6 +1700,7 @@ dependencies = [
  "etherparse",
  "futures",
  "governor",
+ "indicatif",
  "native-tls",
  "nonzero_ext",
  "parking_lot",

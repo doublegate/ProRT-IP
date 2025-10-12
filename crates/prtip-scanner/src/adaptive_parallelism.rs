@@ -264,10 +264,41 @@ mod tests {
 
     #[test]
     fn test_adaptive_parallelism_very_large_scan() {
-        // Huge scans (>20K ports): 1500 concurrent
-        assert_eq!(calculate_parallelism(20001, None, None), 1500);
-        assert_eq!(calculate_parallelism(50000, None, None), 1500);
-        assert_eq!(calculate_parallelism(65535, None, None), 1500);
+        // Huge scans (>20K ports): 1500 concurrent (or limited by ulimit)
+        // On Windows, default ulimit is ~2048, so effective max is 1024 (2048 / 2)
+        let parallelism = calculate_parallelism(20001, None, None);
+
+        // Windows has lower file descriptor limits (typically 2048, so max parallelism = 1024)
+        // Unix systems typically have higher limits (4096+, so max parallelism = 1500)
+        #[cfg(target_os = "windows")]
+        assert!(
+            parallelism >= 1000 && parallelism <= 1024,
+            "Expected parallelism 1000-1024 on Windows due to ulimit constraints, got {}",
+            parallelism
+        );
+
+        #[cfg(not(target_os = "windows"))]
+        assert_eq!(
+            parallelism, 1500,
+            "Expected parallelism 1500 on Unix systems, got {}",
+            parallelism
+        );
+
+        // Additional tests with consistent expectations across platforms
+        let p2 = calculate_parallelism(50000, None, None);
+        let p3 = calculate_parallelism(65535, None, None);
+
+        #[cfg(target_os = "windows")]
+        {
+            assert!(p2 >= 1000 && p2 <= 1024);
+            assert!(p3 >= 1000 && p3 <= 1024);
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            assert_eq!(p2, 1500);
+            assert_eq!(p3, 1500);
+        }
     }
 
     #[test]

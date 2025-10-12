@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/doublegate/ProRT-IP/discussions
+    about: Ask questions, share ideas, or discuss features
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/doublegate/ProRT-IP/security/advisories/new
+    about: Report security vulnerabilities privately (do not create public issues)
+  - name: 📚 Documentation
+    url: https://github.com/doublegate/ProRT-IP/tree/main/docs
+    about: Browse comprehensive documentation and guides

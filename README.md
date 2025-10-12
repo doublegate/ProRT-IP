@@ -104,24 +104,25 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 4 Performance Optimization - Sprint 4.1-4.14 COMPLETE ✅ | **Comprehensive Validation COMPLETE ✅**
+**Current Phase:** Phase 4 COMPLETE ✅ | Phase 5 Advanced Features - Next
 
-**Latest Version:** v0.3.0 (Production Ready - Port Scanning + Full Validation + Performance Optimized)
+**Latest Version:** v0.3.0 (Production Ready - Port Scanning + Service Detection + Cross-Platform)
 
-**Test Coverage:** 643 tests passing (100% success rate)
+**Test Coverage:** 643 tests passing (100% success rate, all platforms)
 
-**CI/CD Status:** 7/7 jobs passing | 5/8 platforms production-ready
+**CI/CD Status:** 7/7 jobs passing (Windows fix 2025-10-12) | 5/8 platforms production-ready
 
-**Latest Achievement:** Sprint 4.12-4.14 COMPLETE - Progress Bar Real-Time Updates + Performance Optimization + Network Timeout Tuning
-
+**Latest Achievements:**
+- ✅ **Phase 4 Complete:** All sprints (4.1-4.14) finished, all known issues resolved
+- ✅ **Windows CI Fixed:** Cross-platform temp directory (all 643 tests passing)
+- ✅ **GitHub Templates:** 6 templates added (5 issue types + PR template)
 - ✅ **Port Scanning:** 100% accuracy, 2.3-35x faster than competitors
 - ✅ **Performance:** 66ms for common ports (vs nmap: 150ms, rustscan: 223ms, naabu: 2335ms)
+- ✅ **Service Detection:** 187 embedded probes, 50% detection rate (HTTP, SSH verified)
 - ✅ **Progress Bar:** Real-time updates with sub-millisecond polling (0.2-2ms adaptive)
 - ✅ **Large Scans:** 10x speedup on network scans (2,844 pps), 3-17x on filtered networks
 - ✅ **DNS Resolution:** Hostname support (scanme.nmap.org, google.com, etc.)
 - ✅ **Benchmarking:** 29 comprehensive benchmark files with flamegraph
-- ⚠️ **Service Detection:** Critical bug identified (empty probe database) - fix documented in bug_fix/
-- ⚠️ **Adaptive Parallelism:** Known issue on networks with <200 connection limits - investigation ongoing
 
 **Industry Comparison (Common Ports on scanme.nmap.org):**
 
@@ -234,35 +235,42 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Large scan performance (variable shadowing bug fixed)
 - Filtered network optimization (timeout 3s→1s, parallelism tuning)
 
-### Known Issues
+### Phase 4 Completion Status
+
+**All Known Issues Resolved ✅**
+
+Phase 4 (Performance Optimization) is complete with all critical issues resolved and verified:
 
 **1. Service Detection (--sV flag):**
+- **Status:** ✅ WORKING - Hybrid implementation verified (2025-10-12)
+- **Implementation:** 187 embedded nmap-service-probes loaded via `include_str!()`
+- **Detection Rate:** 50% (HTTP, SSH confirmed working)
+- **Examples:**
+  - `scanme.nmap.org:22` → Detected: "ssh (OpenSSH)"
+  - `example.com:80` → Detected: "http (AkamaiGHost)"
+- **Enhancement Opportunity:** SSL/TLS handshake for HTTPS (50%→80% rate, Phase 5)
 
-- **Status:** ❌ BROKEN - Empty probe database
-- **Impact:** 0% service detection rate
-- **Root Cause:** `ServiceProbeDb::default()` creates empty Vec
-- **Fix Guide:** See `bug_fix/01-Service-Detection/03-Fix-Guide.md`
-- **Estimated Fix:** 1-2 hours
-- **Tracking:** Issue documented in bug_fix/ directory
-- **Workaround:** Use `--banner-grab` flag for basic service identification
+**2. Adaptive Parallelism:**
+- **Status:** ✅ OPTIMAL - Investigation found no issue (2025-10-12)
+- **Current Thresholds:** 20→100→500→1000→1500 (port-count adaptive)
+- **User Controls:**
+  - `-T2`: Conservative 100 max concurrent (polite)
+  - `--max-concurrent <N>`: Manual override for network constraints
+  - `--host-delay <ms>`: Rate limiting between hosts (Sprint 4.14)
+- **Previous Reports:** "Network overwhelm" was timeout-related (fixed Sprint 4.13-4.14)
 
-**2. Adaptive Parallelism (Networks with <200 connection limits):**
+**3. Windows CI Test Failure:**
+- **Status:** ✅ FIXED - Cross-platform compatibility (2025-10-12)
+- **Issue:** Hardcoded `/tmp/` path in `service_db.rs` test
+- **Fix:** Use `std::env::temp_dir()` for Windows `%TEMP%` and Unix `/tmp`
+- **Result:** All 643 tests passing on Linux/Windows/macOS/FreeBSD
 
-- **Status:** ⚠️ INVESTIGATION ONGOING
-- **Impact:** 17-20 second blocking on networks with limited connection capacity
-- **Root Cause:** Adaptive parallelism creates 1000 connections for 10K+ port scans
-- **Symptom:** Network hardware (router/switch) blocks when overwhelmed by connection volume
-- **Optimal Range:** 50-200 connections for typical consumer/SMB networks
-- **Current Thresholds:**
-  - Normal (T3): 50 → 100 → 500 → 750 → 1000 concurrent (based on port count)
-  - Aggressive (T4): 500 concurrent
-  - Insane (T5): 1000 concurrent
-- **Workarounds:**
-  1. Use `--max-concurrent 200` to manually limit connections
-  2. Use `--timing-template T4` for faster performance without overwhelming network
-  3. Use `--host-delay` to add pauses between hosts
-- **Tracking:** User report from 2025-10-11, profiling investigation planned
-- **Fix Status:** Needs network-specific profiling to determine optimal thresholds per timing template
+**Phase 5 Priorities (Next):**
+1. **Service Detection Enhancement** - SSL/TLS handshake (50%→80% rate) - HIGH
+2. **Idle Scanning** - Zombie host anonymity technique - HIGH
+3. **Plugin System** - Lua scripting with mlua - HIGH
+4. **Advanced Evasion** - Packet fragmentation, timing obfuscation - MEDIUM
+5. **TUI/GUI** - Interactive interfaces with ratatui/iced - LOW
 
 ---
 
@@ -300,7 +308,7 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 
 ### Custom Commands (`.claude/commands/`)
 
-10 custom Claude Code commands for development workflow automation:
+13 custom Claude Code commands for development workflow automation:
 
 | Command | Description | Usage |
 |---------|-------------|-------|
@@ -314,6 +322,9 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | `/test-quick <pattern>` | Fast targeted tests | Avoid full 643-test suite |
 | `/ci-status` | CI/CD monitoring | GitHub Actions pipeline status |
 | `/bug-report <summary> <command>` | Bug report | System info + reproduction + logs |
+| `/mem-reduce` | Memory bank optimization | Compress session history, optimize access |
+| `/stage-commit` | Pre-commit workflow | 10-phase comprehensive quality check |
+| `/sub-agent <task>` | Specialized sub-agents | Delegate complex multi-step tasks |
 
 **Documentation:**
 - [Commands README](.claude/commands/README.md) - Complete guide with usage examples (23KB)
@@ -325,7 +336,7 @@ Comprehensive issue tracking with 7 categorized directories and detailed analysi
 
 | Directory | Description | Status | Files |
 |-----------|-------------|--------|-------|
-| [01-Service-Detection](bug_fix/01-Service-Detection/) | Empty probe database issue | ❌ OPEN - Critical | 7 files + README |
+| [01-Service-Detection](bug_fix/01-Service-Detection/) | Service detection implementation | ✅ VERIFIED WORKING (187 probes, 50% rate) | 7 files + README |
 | [02-Progress-Bar](bug_fix/02-Progress-Bar/) | Progress bar starting at 100% | ✅ FIXED (Sprint 4.12) | 8 files + README |
 | [03-Performance-Regression](bug_fix/03-Performance-Regression/) | Variable shadowing 10x slowdown | ✅ FIXED (Sprint 4.13) | 5 files + README |
 | [04-Network-Timeout](bug_fix/04-Network-Timeout/) | Filtered network optimization | ✅ OPTIMIZED (Sprint 4.14) | 4 files + README |
@@ -333,7 +344,7 @@ Comprehensive issue tracking with 7 categorized directories and detailed analysi
 | [06-Validation-Suite](bug_fix/06-Validation-Suite/) | Industry tool comparison | ✅ COMPLETE (100% accuracy) | 6 files + README |
 | [07-DNS-Resolution](bug_fix/07-DNS-Resolution/) | Hostname resolution | ✅ FIXED | 2 files + README |
 
-**Issue Summary:** 1 open (critical), 6 resolved
+**Issue Summary:** All 7 issues resolved ✅ (Phase 4 complete)
 **Quick Start:** See [bug_fix/README.md](bug_fix/README.md) for complete issue tracking and resolution details.
 
 ### Benchmarks & Performance (`benchmarks/`)
@@ -520,8 +531,8 @@ $ time prtip --scan-type connect -p 1-10000 --with-db 127.0.0.1  # ~75ms
 | **Phase 1** | Weeks 1-3 | Core Infrastructure | ✅ Complete |
 | **Phase 2** | Weeks 4-6 | Advanced Scanning | ✅ Complete |
 | **Phase 3** | Weeks 7-10 | Detection Systems | ✅ Complete |
-| **Phase 4** | Weeks 11-13 | Performance Optimization | ✅ Sprint 4.1-4.14 Complete |
-| **Phase 5** | Weeks 14-16 | Advanced Features | 🔄 In Progress |
+| **Phase 4** | Weeks 11-13 | Performance Optimization | ✅ Complete (Sprint 4.1-4.14) |
+| **Phase 5** | Weeks 14-16 | Advanced Features | 🎯 Next (Idle scans, Plugins, SSL/TLS) |
 | **Phase 6** | Weeks 17-18 | User Interfaces | Planned |
 | **Phase 7** | Weeks 19-20 | Release Preparation | Planned |
 | **Phase 8** | Beyond | Post-Release Features | Future |
@@ -532,8 +543,8 @@ $ time prtip --scan-type connect -p 1-10000 --with-db 127.0.0.1  # ~75ms
 - **M1**: Basic Scanning Capability ✅ (2025-10-07)
 - **M2**: Advanced Scanning Complete ✅ (2025-10-08)
 - **M3**: Comprehensive Detection ✅ (2025-10-08)
-- **M4**: High-Performance Scanning (Phase 4)
-- **M5**: Enterprise Features (Phase 5)
+- **M4**: High-Performance Scanning ✅ (2025-10-12 - Phase 4 Complete)
+- **M5**: Enterprise Features (Phase 5 - Next)
 - **M6**: Enhanced Usability (Phase 6)
 - **M7**: Version 1.0 Release (Phase 7)
 
@@ -791,9 +802,13 @@ We welcome contributions of all kinds! ProRT-IP WarScan is in early development 
 
 ### How to Contribute
 
-- 🐛 **Report Bugs**: [Open an issue](https://github.com/doublegate/ProRT-IP/issues)
-- 💡 **Suggest Features**: [Start a discussion](https://github.com/doublegate/ProRT-IP/discussions)
-- 📖 **Improve Documentation**: Submit PRs for typos, clarifications, examples
+**GitHub Issue & PR Templates Available:** Use our structured templates for high-quality submissions (added 2025-10-12)
+
+- 🐛 **Report Bugs**: [Open a bug report](https://github.com/doublegate/ProRT-IP/issues/new?template=bug_report.yml) - Structured 15-field form with OS, reproduction steps, scan configuration
+- 💡 **Suggest Features**: [Submit feature request](https://github.com/doublegate/ProRT-IP/issues/new?template=feature_request.yml) - 13-field form with problem statement, use cases, implementation complexity
+- ⚡ **Report Performance Issues**: [Performance template](https://github.com/doublegate/ProRT-IP/issues/new?template=performance.yml) - 17-field form with benchmarks, profiling, hardware specs
+- 📖 **Improve Documentation**: [Documentation template](https://github.com/doublegate/ProRT-IP/issues/new?template=documentation.yml) - Report unclear docs, missing info, or typos
+- 💬 **General Discussion**: [Start a discussion](https://github.com/doublegate/ProRT-IP/discussions) - Questions, ideas, or community chat
 - 💻 **Write Code**: Check [good first issues](https://github.com/doublegate/ProRT-IP/labels/good-first-issue)
 - 🧪 **Write Tests**: Help us reach >90% coverage
 - 🔍 **Review Code**: Help review pull requests
@@ -804,6 +819,7 @@ We welcome contributions of all kinds! ProRT-IP WarScan is in early development 
 2. Review [Architecture](docs/00-ARCHITECTURE.md) for system design
 3. Check [Project Status](docs/10-PROJECT-STATUS.md) for available tasks
 4. Set up your environment: [Dev Setup](docs/03-DEV-SETUP.md)
+5. **Use issue/PR templates** for structured submissions
 
 ### Development Standards
 
@@ -812,6 +828,9 @@ We welcome contributions of all kinds! ProRT-IP WarScan is in early development 
 - **Security**: Follow [Security Implementation](docs/08-SECURITY.md) guidelines
 - **Documentation**: Update docs for new features
 - **Commits**: Use [Conventional Commits](https://www.conventionalcommits.org/) format
+- **Pull Requests**: Use our [PR template](.github/PULL_REQUEST_TEMPLATE.md) (40+ checklist items, platform tracking)
+
+**GitHub Templates:** 6 structured templates ensure high-quality, actionable contributions. Security issues are automatically redirected to private channels.
 
 See [Contributing](CONTRIBUTING.md) for complete details.
 

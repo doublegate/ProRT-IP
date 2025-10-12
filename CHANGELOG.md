@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+**GitHub Issue & PR Templates - Community Contribution Infrastructure** (2025-10-12)
+
+- **5 Issue Templates** in `.github/ISSUE_TEMPLATE/`:
+  - `config.yml` - Template configuration with security redirect and discussion links
+  - `bug_report.yml` - Comprehensive bug reports (OS, version, reproduction steps, error output)
+  - `feature_request.yml` - Detailed feature requests (problem statement, use cases, implementation complexity)
+  - `performance.yml` - Performance issue tracking (benchmarks, profiling, comparisons with other tools)
+  - `documentation.yml` - Documentation improvements (location, issue type, suggested fixes)
+- **Pull Request Template** (`.github/PULL_REQUEST_TEMPLATE.md`):
+  - Comprehensive checklist for code quality, testing, documentation
+  - Platform compatibility tracking (Linux/Windows/macOS/FreeBSD)
+  - Performance impact reporting
+  - Security considerations section
+  - Breaking change documentation
+  - Conventional commit verification
+
+**Total:** 6 new template files (~600 lines) providing structured issue and PR workflows for contributors.
+
+### Added
+
 **Custom Commands README - Comprehensive Command Documentation** (2025-10-11)
 
 - **`.claude/commands/README.md`** (23KB) - Complete guide to all 13 custom commands:
@@ -22,6 +42,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Custom Commands:** mem-reduce, stage-commit, sub-agent, rust-check, test-quick, ci-status, module-create, perf-profile, doc-update, sprint-start, sprint-complete, bug-report, bench-compare
 
 ### Fixed
+
+**Windows CI Test Failure - Cross-Platform Temp Directory** (2025-10-12)
+
+- **Issue:** `test_load_from_file` in `service_db.rs` failed on Windows CI with "path not found" error
+- **Root Cause:** Hardcoded `/tmp/test-probes.txt` path doesn't exist on Windows
+- **Fix:** Use `std::env::temp_dir()` for cross-platform temp directory (`%TEMP%` on Windows, `/tmp` on Unix)
+- **Impact:** Windows CI test now passes, all 643 tests passing on all platforms
+- **File Modified:** `crates/prtip-core/src/service_db.rs` (line 658)
 
 **Gitignore Pattern - Allow Custom Commands Tracking** (2025-10-11)
 

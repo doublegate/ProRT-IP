@@ -1,0 +1,218 @@
+name: Bug Report
+description: Report a bug or unexpected behavior in ProRT-IP WarScan
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug! Please fill out this template to help us reproduce and fix the issue quickly.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: Provide a clear and concise description of the bug
+      placeholder: "Example: ProRT-IP crashes when scanning ports above 60000"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "Example: The scanner should successfully scan all ports in the range 1-65535"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: "Example: The scanner crashes with a panic after port 60000"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide detailed steps to reproduce the issue
+      placeholder: |
+        1. Run command: `prtip --scan-type connect -p 1-65535 192.168.1.1`
+        2. Wait until scan reaches port 60000
+        3. Observe crash/error
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: Which OS are you using?
+      options:
+        - Linux (Debian/Ubuntu)
+        - Linux (Fedora/RHEL/CentOS)
+        - Linux (Arch/Manjaro)
+        - Linux (Other)
+        - Windows 10
+        - Windows 11
+        - Windows Server
+        - macOS Intel
+        - macOS Apple Silicon (M1/M2/M3)
+        - FreeBSD
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: Specific version (e.g., Ubuntu 22.04, Windows 11 24H2, macOS 14.2)
+      placeholder: "Example: Ubuntu 22.04 LTS"
+    validations:
+      required: true
+
+  - type: input
+    id: prtip-version
+    attributes:
+      label: ProRT-IP Version
+      description: Run `prtip --version` to get the version
+      placeholder: "Example: v0.3.0"
+    validations:
+      required: true
+
+  - type: input
+    id: rust-version
+    attributes:
+      label: Rust Version
+      description: Run `rustc --version` if built from source
+      placeholder: "Example: rustc 1.90.0"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: installation-method
+    attributes:
+      label: Installation Method
+      options:
+        - Pre-built binary from GitHub Releases
+        - Built from source (cargo build)
+        - Package manager (specify in description)
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: command-executed
+    attributes:
+      label: Command Executed
+      description: Exact command that triggered the bug
+      placeholder: "prtip --scan-type syn -p 1-1000 -T 4 192.168.1.0/24"
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error Messages / Output
+      description: Complete error messages, stack traces, or unexpected output
+      placeholder: |
+        thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: ...', src/main.rs:42:10
+        note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scan-type
+    attributes:
+      label: Scan Type
+      description: Which scan type were you using?
+      options:
+        - TCP Connect
+        - TCP SYN
+        - UDP
+        - Stealth (FIN/NULL/Xmas)
+        - ACK
+        - Multiple types
+        - Not applicable
+      multiple: true
+    validations:
+      required: false
+
+  - type: input
+    id: target
+    attributes:
+      label: Target
+      description: Target IP/hostname/CIDR (redact if sensitive)
+      placeholder: "Example: 192.168.1.0/24 or scanme.nmap.org"
+    validations:
+      required: false
+
+  - type: input
+    id: ports
+    attributes:
+      label: Ports Scanned
+      description: Port range or list
+      placeholder: "Example: 1-65535 or 80,443,8080"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: timing-template
+    attributes:
+      label: Timing Template
+      options:
+        - T0 (Paranoid)
+        - T1 (Sneaky)
+        - T2 (Polite)
+        - T3 (Normal - default)
+        - T4 (Aggressive)
+        - T5 (Insane)
+        - Not specified
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information (network conditions, firewall rules, etc.)
+      placeholder: "Example: Behind corporate firewall, scanning through VPN"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs-attachments
+    attributes:
+      label: Logs or Attachments
+      description: Add relevant log files, screenshots, or PCAP files (if applicable)
+      placeholder: "Drag and drop files here or paste links"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm you've completed these steps
+      options:
+        - label: I've searched existing issues and this is not a duplicate
+          required: true
+        - label: I'm using the latest version of ProRT-IP (or specify version above)
+          required: true
+        - label: I've included complete error messages and command output
+          required: true
+        - label: I've provided a minimal reproducible example
+          required: true
+        - label: I've redacted any sensitive information (passwords, private IPs, etc.)
+          required: false

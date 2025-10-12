@@ -359,8 +359,11 @@ jobs:
           fi
 
           # Build with appropriate features
-          if [[ "${{ matrix.target }}" == *"musl"* ]]; then
-            # musl builds require vendored OpenSSL for static linking
+          # Enable vendored-openssl for:
+          # 1. All musl targets (required for static linking)
+          # 2. All cross-compiled ARM targets (OpenSSL detection issues)
+          if [[ "${{ matrix.target }}" == *"musl"* ]] || [[ "${{ matrix.cross }}" == "true" && "${{ matrix.target }}" == "aarch64"* ]]; then
+            echo "Building with vendored OpenSSL for ${{ matrix.target }}"
             $BUILD_CMD build --release --target ${{ matrix.target }} --locked --features prtip-scanner/vendored-openssl
           else
             $BUILD_CMD build --release --target ${{ matrix.target }} --locked

@@ -110,7 +110,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Test Coverage:** 677 tests passing (100% success rate, all platforms)
 
-**CI/CD Status:** 7/7 jobs passing (Windows fix 2025-10-12) | 5/8 platforms production-ready
+**CI/CD Status:** 7/7 jobs passing (Windows fix 2025-10-12) | 8/8 release platforms production-ready (musl + ARM64 fixed 2025-10-12)
 
 **Latest Achievements:**
 

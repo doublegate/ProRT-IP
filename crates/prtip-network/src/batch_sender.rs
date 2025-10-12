@@ -299,9 +299,13 @@ mod linux_impl {
             });
 
             // Platform-specific handling for SIOCGIFINDEX type
-            // musl: u64, glibc: c_ulong (varies by arch)
-            // ioctl expects c_ulong on most platforms, but musl defines it differently
-            #[allow(clippy::useless_conversion)]
+            // The `ioctl` request parameter type varies by libc implementation:
+            // - glibc (Linux GNU): c_ulong (unsigned long, matches SIOCGIFINDEX)
+            // - musl (Linux musl): Ioctl type alias for c_int (signed 32-bit)
+            // We need to cast SIOCGIFINDEX to match the expected ioctl signature
+            #[cfg(target_env = "musl")]
+            let siocgifindex = libc::SIOCGIFINDEX as libc::c_int;
+            #[cfg(not(target_env = "musl"))]
             let siocgifindex = libc::SIOCGIFINDEX as libc::c_ulong;
             let result = unsafe { libc::ioctl(fd, siocgifindex, &ifreq) };
 
@@ -614,9 +618,13 @@ mod linux_recv_impl {
             });
 
             // Platform-specific handling for SIOCGIFINDEX type
-            // musl: u64, glibc: c_ulong (varies by arch)
-            // ioctl expects c_ulong on most platforms, but musl defines it differently
-            #[allow(clippy::useless_conversion)]
+            // The `ioctl` request parameter type varies by libc implementation:
+            // - glibc (Linux GNU): c_ulong (unsigned long, matches SIOCGIFINDEX)
+            // - musl (Linux musl): Ioctl type alias for c_int (signed 32-bit)
+            // We need to cast SIOCGIFINDEX to match the expected ioctl signature
+            #[cfg(target_env = "musl")]
+            let siocgifindex = libc::SIOCGIFINDEX as libc::c_int;
+            #[cfg(not(target_env = "musl"))]
             let siocgifindex = libc::SIOCGIFINDEX as libc::c_ulong;
             let result = unsafe { libc::ioctl(fd, siocgifindex, &ifreq) };
 

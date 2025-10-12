@@ -113,6 +113,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 **CI/CD Status:** 7/7 jobs passing (Windows fix 2025-10-12) | 5/8 platforms production-ready
 
 **Latest Achievements:**
+
 - ✅ **Nmap CLI Compatibility (v0.3.5):** 20+ nmap-compatible flags, greppable output, top ports database
 - ✅ **Phase 4 Complete:** All sprints (4.1-4.14) finished, all known issues resolved
 - ✅ **Windows CI Fixed:** Cross-platform temp directory (all 677 tests passing)
@@ -243,6 +244,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 Phase 4 (Performance Optimization) is complete with all critical issues resolved and verified:
 
 **1. Service Detection (--sV flag):**
+
 - **Status:** ✅ WORKING - Hybrid implementation verified (2025-10-12)
 - **Implementation:** 187 embedded nmap-service-probes loaded via `include_str!()`
 - **Detection Rate:** 50% (HTTP, SSH confirmed working)
@@ -252,6 +254,7 @@ Phase 4 (Performance Optimization) is complete with all critical issues resolved
 - **Enhancement Opportunity:** SSL/TLS handshake for HTTPS (50%→80% rate, Phase 5)
 
 **2. Adaptive Parallelism:**
+
 - **Status:** ✅ OPTIMAL - Investigation found no issue (2025-10-12)
 - **Current Thresholds:** 20→100→500→1000→1500 (port-count adaptive)
 - **User Controls:**
@@ -261,12 +264,14 @@ Phase 4 (Performance Optimization) is complete with all critical issues resolved
 - **Previous Reports:** "Network overwhelm" was timeout-related (fixed Sprint 4.13-4.14)
 
 **3. Windows CI Test Failure:**
+
 - **Status:** ✅ FIXED - Cross-platform compatibility (2025-10-12)
 - **Issue:** Hardcoded `/tmp/` path in `service_db.rs` test
 - **Fix:** Use `std::env::temp_dir()` for Windows `%TEMP%` and Unix `/tmp`
 - **Result:** All 643 tests passing on Linux/Windows/macOS/FreeBSD
 
 **Phase 5 Priorities (Next):**
+
 1. **Service Detection Enhancement** - SSL/TLS handshake (50%→80% rate) - HIGH
 2. **Idle Scanning** - Zombie host anonymity technique - HIGH
 3. **Plugin System** - Lua scripting with mlua - HIGH
@@ -328,6 +333,7 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | `/sub-agent <task>` | Specialized sub-agents | Delegate complex multi-step tasks |
 
 **Documentation:**
+
 - [Commands README](.claude/commands/README.md) - Complete guide with usage examples (23KB)
 - [Analysis Document](ref-docs/10-Custom-Commands_Analysis.md) - Implementation analysis (101KB)
 
@@ -359,6 +365,7 @@ Performance benchmarking organized by Phase 4 development timeline:
 | [archive](benchmarks/archive/) | Historical benchmarks | 15+ sprint dirs | ✅ Historical |
 
 **Performance Highlights:**
+
 - 65K ports: 198x faster (>180s → 190.9ms)
 - 10K ports: 66.3% faster (117ms → 39.4ms)
 - Futex reduction: 98% (20,373 → 398 calls)
@@ -555,6 +562,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 ### Supported Nmap Flags
 
 #### Scan Types
+
 | Nmap Flag | Description | ProRT-IP Equivalent |
 |-----------|-------------|---------------------|
 | `-sS` | TCP SYN scan | `--scan-type syn` or `-s syn` |
@@ -566,6 +574,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 | `-sA` | TCP ACK scan | `--scan-type ack` |
 
 #### Port Specification
+
 | Nmap Flag | Description | ProRT-IP Equivalent |
 |-----------|-------------|---------------------|
 | `-p <ports>` | Port specification | `--ports <ports>` or `-p <ports>` |
@@ -574,6 +583,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 | `--top-ports <n>` | Scan top N ports | New in v0.3.5 |
 
 #### Output Formats
+
 | Nmap Flag | Description | ProRT-IP Equivalent |
 |-----------|-------------|---------------------|
 | `-oN <file>` | Normal text output | `--output text --output-file <file>` |
@@ -582,6 +592,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 | `-oA <base>` | All formats | Partial support in v0.3.5 |
 
 #### Detection & Modes
+
 | Nmap Flag | Description | ProRT-IP Equivalent |
 |-----------|-------------|---------------------|
 | `-sV` | Service version detection | `--service-detection` or `--sV` |
@@ -590,6 +601,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 | `-Pn` | Skip host discovery | `--no-ping` or `-P` |
 
 #### Verbosity & Timing
+
 | Nmap Flag | Description | ProRT-IP Equivalent |
 |-----------|-------------|---------------------|
 | `-v` | Increase verbosity (info) | New in v0.3.5 |
@@ -600,6 +612,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 ### Compatibility Status
 
 **✅ Fully Compatible (v0.3.5):**
+
 - All core scan types (`-sS`, `-sT`, `-sU`, `-sN`, `-sF`, `-sX`, `-sA`)
 - Port specifications (`-p`, `-F`, `--top-ports`)
 - Output formats (`-oN`, `-oX`, `-oG`)
@@ -608,6 +621,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 - Timing templates (`-T0` through `-T5`)
 
 **⏳ Planned (Future Releases):**
+
 - `-sC` / `--script` - Lua plugin system (Phase 5, v0.5.0)
 - `--traceroute` - Route tracing (Phase 5)
 - `-6` - IPv6 support (Phase 5)
@@ -661,6 +675,7 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 ### Full Documentation
 
 See [docs/NMAP_COMPATIBILITY.md](docs/NMAP_COMPATIBILITY.md) for:
+
 - Complete flag compatibility matrix
 - Behavioral differences from nmap
 - Advanced usage examples

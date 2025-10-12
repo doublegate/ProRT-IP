@@ -1,5 +1,20 @@
 # Repository Guidelines
 
+## Current Snapshot
+
+- **Project**: ProRT-IP WarScan, a high-performance network scanner implemented in Rust.
+- **Workspace version**: `0.3.5` (`Cargo.toml:68`); keep crate versions aligned before cutting releases.
+- **Development phase**: Phase 4 performance optimization is complete (see `CHANGELOG.md:508`); Phase 5 advanced feature work is next. `docs/01-ROADMAP.md` still lists Phase 4 as planned and needs a follow-up refresh.
+- **CI health**: `ci.yml` workflow remains green; the README badge tracks 677 tests passing.
+- **Test surface**: Fast unit coverage sits in each crate, while cross-crate scenarios live under `tests/`.
+
+## Active Focus Areas
+
+- Kick off Phase 5 by tackling idle scans, decoys, and fragmentation per the checklists in `docs/01-ROADMAP.md:360`.
+- Draft the Lua plugin architecture early (interfaces, sandbox boundaries) to unblock `mlua` integration and example plugins.
+- Preserve Phase 4 benchmark gains—use tooling in `benchmarks/` and `docs/07-PERFORMANCE.md` to guard regressions.
+- Coordinate roadmap doc updates so Phase 4 completion and new priorities stay consistent across `ROADMAP.md` and the `docs/` set.
+
 ## Project Structure & Module Organization
 
 This repository is a Rust workspace managed from `Cargo.toml`, with core functionality split across `crates/prtip-core`, packet and I/O logic in `crates/prtip-network`, scanning orchestration in `crates/prtip-scanner`, and the CLI packaged in `crates/prtip-cli`. Shared documentation and reference material live under `docs/`, while marketing assets reside in `images/` and `html/`. Use the `tests/` directory for integration scenarios that exercise multiple crates together.
@@ -27,3 +42,11 @@ Follow Conventional Commits (`feat(scanner): add UDP probes`) so automation can 
 ## Security & Operational Notes
 
 This project ships offensive security tooling; only run scans against systems you are authorized to probe. Adhere to `docs/08-SECURITY.md` for privilege dropping, safe packet parsing, and rate limiting expectations when touching network-facing code. Verify that contributions remain cross-platform and respect resource limits to avoid introducing denial-of-service regressions.
+
+## Helpful References
+
+- `ROADMAP.md` for a high-level milestone summary and current status.
+- `docs/01-ROADMAP.md` for sprint-level tasks, acceptance criteria, and performance targets (refresh pending for Phase 4 completion).
+- `docs/08-SECURITY.md` for mandatory operational controls.
+- `docs/07-PERFORMANCE.md` and `benchmarks/` for Phase 4 profiling output and harnesses.
+- `scripts/` and `benchmarks/` for profiling helpers and reproducible performance experiments.

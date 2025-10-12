@@ -1,17 +1,17 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-12 | **Phase:** Phase 4 COMPLETE + Windows CI Fixed ✅ | **Tests:** 643/643 ✅
+**Updated:** 2025-10-12 | **Phase:** Phase 4 COMPLETE + v0.3.5 Nmap Compatibility ✅ | **Tests:** 677/677 ✅
 
 ## Current Status
 
-**Milestone:** Phase 4 Final Verification - **ALL ISSUES RESOLVED ✅**
+**Milestone:** v0.3.5 Released - **Nmap CLI Compatibility COMPLETE ✅**
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase** | Phase 4 COMPLETE | All sprints + final verification |
+| **Phase** | Phase 4 COMPLETE | All sprints + nmap compatibility |
 | **CI Status** | 7/7 passing (100%) | Format, Clippy, Test×3, MSRV, Security |
-| **Tests** | 643/643 (100%) | Zero regressions |
-| **Version** | v0.3.0 | Production-ready port scanning |
+| **Tests** | 677/677 (100%) | +34 new tests, zero regressions |
+| **Version** | **v0.3.5** | Production-ready + nmap compatibility |
 | **Performance** | 66ms (common ports) | 2.3-35x faster than competitors |
 | **Validation** | ✅ PASSED | 100% accuracy vs nmap |
 | **Known Issues** | 0 | All Phase 4 issues RESOLVED ✅ |
@@ -53,6 +53,8 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Sprint/Task | Focus | Duration | Key Results | Status |
 |------|-------------|-------|----------|-------------|--------|
+| 10-12 | **CLI Help Enhancement** | **Elegant help showcasing nmap** | **2h** | **Rich help with 10+ examples, performance stats, compatibility guide** | **✅** |
+| 10-12 | **v0.3.5 Release** | **Nmap CLI Compatibility** | **3h** | **20+ nmap flags, greppable output, 677 tests, comprehensive docs** | **✅** |
 | 10-12 | Windows CI Fix | Platform-aware tests | 2h | Fixed adaptive_parallelism test for Windows FD limits (1024 vs 1500) | ✅ |
 | 10-12 | GitHub Templates | Issue/PR templates | 2h | 6 templates created, service_db.rs temp_dir fix | ✅ |
 | 10-12 | Phase 4 Verification | All issues resolved | 3h | Service detection working (187 probes, 50% rate), 8 reports | ✅ |
@@ -64,11 +66,118 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 | 10-11 | Sprint 4.13 | Polling fix | 1h | Fixed variable shadowing, adaptive polling, 289→2,844 pps (10x) | ✅ |
 | 10-11 | Sprint 4.12 | Progress bar | 1h | Sub-ms polling (200µs-2ms), smooth incremental updates | ✅ |
 
+### 2025-10-12: CLI Help Enhancement - Elegant Nmap Showcase (COMPLETE ✅)
+
+**Objective:** Redesign CLI help system to elegantly showcase nmap compatibility
+**Duration:** ~2h (analysis + implementation + testing + documentation)
+
+**Scope:**
+- Phase 1: Analyze current help system (clap 4.x structure)
+- Phase 2: Design elegant help with nmap showcase
+- Phase 3: Implementation (args.rs enhancement)
+- Phase 4: Quality checks (/rust-check quick)
+- Phase 5: Documentation updates
+
+**Deliverables:**
+1. ✅ Enhanced `long_about` with performance stats and nmap compatibility
+2. ✅ Rich `after_help` with 10+ examples (all nmap syntax)
+3. ✅ COMPATIBILITY section explaining syntax mixing
+4. ✅ PERFORMANCE section with 3-48x speed comparisons
+5. ✅ DOCUMENTATION section with links to guides
+6. ✅ Enhanced nmap flag documentation with examples and context
+7. ✅ Organized help sections: PORT SPECIFICATION, SCAN TYPES, OUTPUT, DETECTION
+8. ✅ Updated CLI integration test (test_cli_help)
+9. ✅ Fixed clippy warning (as_deref optimization)
+10. ✅ CHANGELOG.md updated with enhancement details
+
+**Key Changes:**
+- **args.rs:** Enhanced `#[command(...)]` attributes with rich help text
+- **args.rs:** Comprehensive documentation for all 20+ nmap flags with examples
+- **integration.rs:** Updated test to verify new help content (NMAP-COMPATIBLE, PERFORMANCE)
+- **output.rs:** Applied clippy suggestion (as_deref)
+- **CHANGELOG.md:** Added "CLI Help System Enhancement" section
+
+**Before/After:**
+- **Before:** Basic help, minimal organization, hidden nmap flags, 4 examples
+- **After:** Rich help, logical sections, prominent nmap showcase, 10+ examples, performance stats
+
+**Testing:**
+- ✅ All 677/677 tests passing
+- ✅ cargo fmt --all (formatting clean)
+- ✅ cargo clippy --all-targets --all-features (zero warnings)
+- ✅ Help output verified (`prtip --help` and `prtip -h`)
+
+**Impact:**
+- Users immediately see nmap compatibility prominently
+- 10+ usage examples with nmap syntax
+- Performance advantage clearly stated (3-48x faster)
+- Clear documentation links for comprehensive guides
+- Zero breaking changes (help text only)
+
+---
+
+### 2025-10-12: v0.3.5 Release - Nmap CLI Compatibility (COMPLETE ✅)
+
+**Objective:** Complete nmap compatibility documentation and release v0.3.5
+**Duration:** ~3h total (documentation + version bump + verification)
+
+**Scope:**
+- Phase 1: Documentation completion (4 tasks)
+- Phase 2: Version bump v0.3.0 → v0.3.5 (comprehensive)
+- Phase 3: Memory bank updates and final report
+
+**Deliverables:**
+1. ✅ Integration test script (`scripts/test-nmap-compat.sh`, 150+ lines)
+2. ✅ README.md updates (nmap compatibility section, ~200 lines)
+3. ✅ `docs/NMAP_COMPATIBILITY.md` (comprehensive guide, 19KB, ~950 lines)
+4. ✅ CHANGELOG.md v0.3.5 entry (comprehensive, ~300 lines)
+5. ✅ Version bump to v0.3.5 in all Cargo.toml files (5 files)
+6. ✅ Version references updated in all documentation (README, CLAUDE.md, CLAUDE.local.md)
+7. ✅ Memory banks updated (CLAUDE.md, CLAUDE.local.md)
+
+**Key Decisions:**
+1. **Version v0.3.5:** User requested v0.3.5 (not v0.3.1) for this release
+2. **Comprehensive Docs:** Created extensive documentation for nmap compatibility
+3. **Integration Testing:** Added automated test script for continuous validation
+4. **Version Everywhere:** Updated version in ALL files (code + docs + configs)
+
+**Metrics:**
+- **Files Created:** 2 (test-nmap-compat.sh, NMAP_COMPATIBILITY.md)
+- **Files Modified:** 10+ (README, CHANGELOG, all Cargo.toml files, CLAUDE docs)
+- **Documentation Added:** ~1,200 lines (README section + NMAP_COMPATIBILITY.md + CHANGELOG)
+- **Version:** v0.3.0 → **v0.3.5**
+- **Tests:** 677/677 passing (100%)
+- **Breaking Changes:** 0 (fully backward compatible)
+
+**Status:** v0.3.5 COMPLETE ✅
+- Core nmap compatibility: 100% implemented (20+ flags)
+- Documentation: 100% complete (comprehensive guides)
+- Version bump: 100% complete (all files updated)
+- Testing: 677/677 tests passing, integration tests created
+- Ready for release commit and git tag
+
+**Files Changed:**
+- **Code (Version Bump):** 1 workspace Cargo.toml (all 4 crates inherit version)
+- **Docs (New):** docs/NMAP_COMPATIBILITY.md, scripts/test-nmap-compat.sh
+- **Docs (Updated):** README.md, CHANGELOG.md, CLAUDE.md, CLAUDE.local.md
+- **Total:** ~1,500 lines added/modified
+
+**Next Actions:**
+1. Commit all changes with comprehensive message
+2. Create git tag for v0.3.5
+3. Push to GitHub
+4. Consider GitHub release with CHANGELOG excerpt
+5. Announce nmap compatibility to users
+6. Gather feedback for v0.4.0 planning
+
+---
+
 **Recent Highlights:**
+- **v0.3.5 Nmap Compatibility**: 20+ nmap flags, greppable output, top ports, comprehensive docs
 - **Windows CI**: Platform-aware test expectations for FD limit differences
-- **Phase 4 Complete**: All issues resolved, 643/643 tests passing, production-ready
+- **Phase 4 Complete**: All issues resolved, 677/677 tests passing, production-ready
 - **Custom Commands**: 10 commands with 23 enhancements (validation, safety, workflows)
-- **Performance**: 10x speedup on large scans, 3-17x faster filtered port detection
+- **Performance**: 10x speedup on large scans, 3-48x faster than nmap
 
 **Archive**: Phases 1-3 & Sprints 4.1-4.11 complete (see git history for details)
 

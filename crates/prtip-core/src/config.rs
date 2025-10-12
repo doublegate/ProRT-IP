@@ -191,6 +191,8 @@ pub enum OutputFormat {
     Json,
     /// XML format (Nmap-compatible)
     Xml,
+    /// Greppable format (Nmap -oG compatible)
+    Greppable,
 }
 
 impl std::fmt::Display for OutputFormat {
@@ -199,6 +201,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Text => write!(f, "text"),
             OutputFormat::Json => write!(f, "json"),
             OutputFormat::Xml => write!(f, "xml"),
+            OutputFormat::Greppable => write!(f, "greppable"),
         }
     }
 }
@@ -352,6 +355,7 @@ mod tests {
         assert_eq!(OutputFormat::Text.to_string(), "text");
         assert_eq!(OutputFormat::Json.to_string(), "json");
         assert_eq!(OutputFormat::Xml.to_string(), "xml");
+        assert_eq!(OutputFormat::Greppable.to_string(), "greppable");
     }
 
     #[test]

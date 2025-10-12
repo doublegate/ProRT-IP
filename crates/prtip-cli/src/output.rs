@@ -432,6 +432,74 @@ impl OutputFormatter for XmlFormatter {
     }
 }
 
+/// Greppable output formatter (Nmap -oG compatible)
+pub struct GreppableFormatter;
+
+impl OutputFormatter for GreppableFormatter {
+    fn format_results(&self, results: &[ScanResult], config: &Config) -> Result<String> {
+        let mut output = String::new();
+
+        // Header comment
+        output.push_str(&format!(
+            "# Nmap-style greppable output (ProRT-IP v{})\n",
+            env!("CARGO_PKG_VERSION")
+        ));
+        output.push_str(&format!(
+            "# Started {} UTC\n",
+            Utc::now().format("%Y-%m-%d %H:%M:%S")
+        ));
+
+        if results.is_empty() {
+            output.push_str("# No results found\n");
+            return Ok(output);
+        }
+
+        // Group by host
+        let mut by_host: BTreeMap<IpAddr, Vec<&ScanResult>> = BTreeMap::new();
+        for result in results {
+            by_host.entry(result.target_ip).or_default().push(result);
+        }
+
+        // Output each host
+        for (host, host_results) in &by_host {
+            // Host line: Host: <ip> () Status: Up
+            output.push_str(&format!("Host: {} ()\tStatus: Up\n", host));
+
+            // Ports line: Ports: <port>/<state>/<proto>/<owner>/<service>/<rpc>/<version>
+            // Simplified format: <port>/<state>/<proto>/<service>
+            let ports_str: Vec<String> = host_results
+                .iter()
+                .map(|r| {
+                    let protocol = match config.scan.scan_type {
+                        prtip_core::ScanType::Udp => "udp",
+                        _ => "tcp",
+                    };
+
+                    let service = r.service.as_deref().unwrap_or("");
+
+                    format!("{}/{}/{}/{}", r.port, r.state, protocol, service)
+                })
+                .collect();
+
+            if !ports_str.is_empty() {
+                output.push_str(&format!("Ports: {}\n", ports_str.join(", ")));
+            }
+        }
+
+        // Footer
+        output.push_str(&format!(
+            "# Nmap done at {} UTC -- {} IP address{} ({} host{} up) scanned\n",
+            Utc::now().format("%Y-%m-%d %H:%M:%S"),
+            by_host.len(),
+            if by_host.len() == 1 { "" } else { "es" },
+            by_host.len(),
+            if by_host.len() == 1 { "" } else { "s" }
+        ));
+
+        Ok(output)
+    }
+}
+
 /// Create formatter based on format type
 ///
 /// # Arguments
@@ -446,6 +514,7 @@ pub fn create_formatter(
         prtip_core::OutputFormat::Text => Box::new(TextFormatter::new(colorize)),
         prtip_core::OutputFormat::Json => Box::new(JsonFormatter),
         prtip_core::OutputFormat::Xml => Box::new(XmlFormatter),
+        prtip_core::OutputFormat::Greppable => Box::new(GreppableFormatter),
     }
 }
 
@@ -753,5 +822,69 @@ mod tests {
 
         // Should be truncated
         assert!(output.contains("..."));
+    }
+
+    #[test]
+    fn test_greppable_formatter_basic() {
+        let results = vec![create_test_result("192.168.1.1", 80, PortState::Open)];
+
+        let formatter = GreppableFormatter;
+        let config = create_test_config();
+        let output = formatter.format_results(&results, &config).unwrap();
+
+        assert!(output.contains("# Nmap-style greppable output"));
+        assert!(output.contains("Host: 192.168.1.1"));
+        assert!(output.contains("Status: Up"));
+        assert!(output.contains("Ports:"));
+        assert!(output.contains("80/open/tcp"));
+    }
+
+    #[test]
+    fn test_greppable_formatter_with_service() {
+        let mut result = create_test_result("192.168.1.1", 80, PortState::Open);
+        result.service = Some("http".to_string());
+
+        let results = vec![result];
+        let formatter = GreppableFormatter;
+        let config = create_test_config();
+        let output = formatter.format_results(&results, &config).unwrap();
+
+        assert!(output.contains("80/open/tcp/http"));
+    }
+
+    #[test]
+    fn test_greppable_formatter_multiple_ports() {
+        let results = vec![
+            create_test_result("192.168.1.1", 80, PortState::Open),
+            create_test_result("192.168.1.1", 443, PortState::Open),
+            create_test_result("192.168.1.1", 22, PortState::Closed),
+        ];
+
+        let formatter = GreppableFormatter;
+        let config = create_test_config();
+        let output = formatter.format_results(&results, &config).unwrap();
+
+        assert!(output.contains("80/open/tcp"));
+        assert!(output.contains("443/open/tcp"));
+        assert!(output.contains("22/closed/tcp"));
+    }
+
+    #[test]
+    fn test_greppable_formatter_empty() {
+        let results = vec![];
+        let formatter = GreppableFormatter;
+        let config = create_test_config();
+        let output = formatter.format_results(&results, &config).unwrap();
+
+        assert!(output.contains("# No results found"));
+    }
+
+    #[test]
+    fn test_create_formatter_greppable() {
+        let formatter = create_formatter(OutputFormat::Greppable, false);
+        let results = vec![];
+        let config = create_test_config();
+        let output = formatter.format_results(&results, &config).unwrap();
+        assert!(output.contains("# Nmap-style"));
     }
 }

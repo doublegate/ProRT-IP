@@ -1,0 +1,30 @@
+docker network ls
+
+docker network create \
+    --driver bridge \
+    --opt com.docker.network.bridge.name=docker0 \
+    --subnet 172.20.0.0/24 \
+    --gateway 172.20.0.1 \
+    prtip_docker0_bridge
+
+docker network inspect prtip_docker0_bridge
+
+docker run -d \
+  --name Metasploitable2 \
+  --hostname metasploitable2 \
+  --privileged \
+  -v /dev/null:/dev/console \
+  --network prtip_docker0_bridge --ip 172.20.0.10 \
+  --restart unless-stopped \
+  tx6244/metasploitable2:latest \
+  /bin/bash -c "/etc/init.d/ssh start && /etc/init.d/apache2 start && exec tail -f /dev/null"
+
+docker ps
+
+docker exec -it Metasploitable2 /bin/bash
+
+docker stop Metasploitable2
+
+docker rm Metasploitable2
+
+docker network rm prtip_docker0_bridge

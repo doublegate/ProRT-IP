@@ -6,11 +6,11 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 
 **ProRT-IP WarScan**: Modern network scanner combining Masscan/ZMap speed (1M+ pps stateless) with Nmap detection depth.
 
-**Status**: Phase 4 COMPLETE (Sprint 4.1-4.14) + **v0.3.5 Production (Nmap CLI Compatibility)**. 677 tests (100%), OS fingerprinting, service detection, 20+ nmap-compatible flags, 7 scan types, greppable output, top ports database, cyber-punk CLI, sendmmsg batching, CDN detection, decoy scanning, adaptive parallelism, 10 custom commands. CI/CD 7/7 passing, 9 targets (5 working). Zero TODOs/stubs/debt.
+**Status**: Phase 4 COMPLETE (Sprint 4.1-4.14) + v0.3.0 Production. 643 tests (100%), OS fingerprinting, service detection, 7 scan types, cyber-punk CLI, sendmmsg batching, CDN detection, decoy scanning, adaptive parallelism, 10 custom commands. CI/CD 7/7 passing, 9 targets (5 working). Zero TODOs/stubs/debt.
 
 **Repository**: <https://github.com/doublegate/ProRT-IP>
 **License**: GPL-3.0
-**Updated**: 2025-10-12
+**Updated**: 2025-10-11
 
 ## Architecture
 
@@ -128,22 +128,15 @@ CREATE INDEX idx_port ON scan_results(port);
 
 **Binary**: `prtip`
 
-**Nmap Compatibility (v0.3.5+)**: 20+ nmap-compatible flags (`-sS`, `-sT`, `-sU`, `-p`, `-F`, `-oN`, `-oX`, `-oG`, `-v`, `-A`, etc.). See `docs/NMAP_COMPATIBILITY.md` for full details.
-
 **Examples**:
 ```bash
-# Nmap-compatible syntax (v0.3.5+)
 prtip -sS -p 1-1000 10.0.0.0/24                          # Basic SYN scan
-prtip -F 192.168.1.1                                      # Fast scan (top 100 ports)
-prtip -A -p 80,443 target.com                             # Aggressive (OS + service + progress)
-prtip -sS -p 80,443 -oG scan.gnmap target.com             # Greppable output
-
-# Original ProRT-IP syntax (still supported)
-prtip --scan-type syn --ports 1-1000 10.0.0.0/24
-prtip -T4 -p- -sV 192.168.1.1                            # Mixed syntax (totally fine)
+prtip -sS -p 1-1000 -O -D RND:5 --output=json 10.0.0.0/24  # OS detect + 5 decoys + JSON
+prtip -T4 -p- -sV 192.168.1.1                            # Aggressive timing, all ports, service detect
+prtip -T2 -sF -p 80,443 --scan-delay 100ms target.com    # Stealth FIN scan with delays
 ```
 
-**Output Formats**: Text (colorized), JSON (machine-readable), XML (nmap-compatible), **Greppable (v0.3.5+)**, Binary (masscan streaming), PCAPNG (packet capture), SQLite/PostgreSQL (direct export)
+**Output Formats**: Text (colorized), JSON (machine-readable), XML (nmap-compatible), Binary (masscan streaming), PCAPNG (packet capture), SQLite/PostgreSQL (direct export)
 
 ## Documentation Structure
 

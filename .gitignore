@@ -85,6 +85,9 @@ cachegrind.out.*
 Session.vim
 *_output.txt
 
+# Backups
+/backups/
+
 # Database files
 *.db
 *.db-shm

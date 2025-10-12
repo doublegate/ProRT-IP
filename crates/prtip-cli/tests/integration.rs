@@ -12,7 +12,8 @@ fn test_cli_help() {
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("ProRT-IP WarScan"))
-        .stdout(predicate::str::contains("Masscan-speed scanning"));
+        .stdout(predicate::str::contains("NMAP-COMPATIBLE"))
+        .stdout(predicate::str::contains("PERFORMANCE"));
 }
 
 #[test]

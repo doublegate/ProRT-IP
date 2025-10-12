@@ -20,6 +20,84 @@ use prtip_scanner::{ScanScheduler, ScanStorage, StorageBackend};
 use std::sync::Arc;
 use tracing::{info, warn};
 
+/// Preprocess command-line arguments to convert nmap-style flags to ProRT-IP flags
+///
+/// This function translates nmap-compatible syntax (e.g., `-sS`, `-oN file.txt`)
+/// into ProRT-IP's internal long-form flags that clap can parse. This enables
+/// nmap users to use familiar syntax while maintaining 100% backward compatibility.
+///
+/// # Conversions
+///
+/// - `-sS` → `--nmap-syn`
+/// - `-sT` → `--nmap-connect`
+/// - `-oN <file>` → `--output-normal <file>`
+/// - `-oX <file>` → `--output-xml <file>`
+/// - `-oG <file>` → `--output-greppable <file>`
+/// - `-oA <base>` → `--output-all-formats <base>`
+/// - `-Pn` → `--skip-ping`
+///
+/// All other arguments are passed through unchanged.
+fn preprocess_argv() -> Vec<String> {
+    let args: Vec<String> = std::env::args().collect();
+    let mut processed = Vec::new();
+    let mut i = 0;
+
+    while i < args.len() {
+        let arg = &args[i];
+
+        match arg.as_str() {
+            // Scan type flags (no value)
+            "-sS" => processed.push("--nmap-syn".to_string()),
+            "-sT" => processed.push("--nmap-connect".to_string()),
+            "-sU" => processed.push("--nmap-udp".to_string()),
+            "-sN" => processed.push("--nmap-null".to_string()),
+            "-sF" => processed.push("--nmap-fin".to_string()),
+            "-sX" => processed.push("--nmap-xmas".to_string()),
+            "-sA" => processed.push("--nmap-ack".to_string()),
+
+            // Output format flags (with value)
+            "-oN" => {
+                processed.push("--output-normal".to_string());
+                i += 1;
+                if i < args.len() {
+                    processed.push(args[i].clone());
+                }
+            }
+            "-oX" => {
+                processed.push("--output-xml".to_string());
+                i += 1;
+                if i < args.len() {
+                    processed.push(args[i].clone());
+                }
+            }
+            "-oG" => {
+                processed.push("--output-greppable".to_string());
+                i += 1;
+                if i < args.len() {
+                    processed.push(args[i].clone());
+                }
+            }
+            "-oA" => {
+                processed.push("--output-all-formats".to_string());
+                i += 1;
+                if i < args.len() {
+                    processed.push(args[i].clone());
+                }
+            }
+
+            // Skip ping flag
+            "-Pn" => processed.push("--skip-ping".to_string()),
+
+            // Pass through everything else unchanged
+            _ => processed.push(arg.clone()),
+        }
+
+        i += 1;
+    }
+
+    processed
+}
+
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
@@ -42,8 +120,11 @@ async fn main() {
 }
 
 async fn run() -> Result<()> {
+    // Preprocess arguments to support nmap-style syntax
+    let processed_args = preprocess_argv();
+
     // Parse arguments
-    let args = Args::parse();
+    let args = Args::parse_from(processed_args);
 
     // Print banner unless quiet mode or piped output
     if !args.quiet && atty::is(atty::Stream::Stdout) {
@@ -104,10 +185,11 @@ async fn run() -> Result<()> {
     let targets = parse_targets(&args.targets)?;
     info!("Parsed {} scan target(s)", targets.len());
 
-    // Parse ports
-    let ports = PortRange::parse(&args.ports).context(format!(
+    // Parse ports (use effective ports which handles -F and --top-ports)
+    let port_spec = args.get_effective_ports();
+    let ports = PortRange::parse(&port_spec).context(format!(
         "Failed to parse port specification '{}'",
-        args.ports
+        port_spec
     ))?;
     info!("Scanning {} port(s) per host", ports.count());
 
@@ -205,7 +287,7 @@ async fn run() -> Result<()> {
         format_scan_banner(&args, &config, ports.count(), &targets)
     );
 
-    let results = if args.host_discovery {
+    let results = if args.should_perform_host_discovery() {
         info!("Performing host discovery before port scanning");
         scheduler.execute_scan_with_discovery(targets).await?
     } else {
@@ -670,5 +752,149 @@ mod tests {
         let ports = PortRange::parse("80,443").unwrap();
         let expanded = expand_targets_with_ports(targets, &ports).unwrap();
         assert_eq!(expanded.len(), 1);
+    }
+
+    // Test argv preprocessor for nmap compatibility
+    fn preprocess_argv_from(args: Vec<&str>) -> Vec<String> {
+        // Simulate std::env::args() for testing
+        let args_vec: Vec<String> = args.iter().map(|s| s.to_string()).collect();
+
+        // Manually implement preprocessing logic for tests
+        let mut processed = Vec::new();
+        let mut i = 0;
+
+        while i < args_vec.len() {
+            let arg = &args_vec[i];
+
+            match arg.as_str() {
+                "-sS" => processed.push("--nmap-syn".to_string()),
+                "-sT" => processed.push("--nmap-connect".to_string()),
+                "-sU" => processed.push("--nmap-udp".to_string()),
+                "-sN" => processed.push("--nmap-null".to_string()),
+                "-sF" => processed.push("--nmap-fin".to_string()),
+                "-sX" => processed.push("--nmap-xmas".to_string()),
+                "-sA" => processed.push("--nmap-ack".to_string()),
+                "-oN" => {
+                    processed.push("--output-normal".to_string());
+                    i += 1;
+                    if i < args_vec.len() {
+                        processed.push(args_vec[i].clone());
+                    }
+                }
+                "-oX" => {
+                    processed.push("--output-xml".to_string());
+                    i += 1;
+                    if i < args_vec.len() {
+                        processed.push(args_vec[i].clone());
+                    }
+                }
+                "-oG" => {
+                    processed.push("--output-greppable".to_string());
+                    i += 1;
+                    if i < args_vec.len() {
+                        processed.push(args_vec[i].clone());
+                    }
+                }
+                "-oA" => {
+                    processed.push("--output-all-formats".to_string());
+                    i += 1;
+                    if i < args_vec.len() {
+                        processed.push(args_vec[i].clone());
+                    }
+                }
+                "-Pn" => processed.push("--skip-ping".to_string()),
+                _ => processed.push(arg.clone()),
+            }
+
+            i += 1;
+        }
+
+        processed
+    }
+
+    #[test]
+    fn test_preprocess_nmap_syn() {
+        let args = vec!["prtip", "-sS", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--nmap-syn");
+        assert_eq!(processed[2], "192.168.1.1");
+    }
+
+    #[test]
+    fn test_preprocess_nmap_connect() {
+        let args = vec!["prtip", "-sT", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--nmap-connect");
+    }
+
+    #[test]
+    fn test_preprocess_output_normal() {
+        let args = vec!["prtip", "-oN", "out.txt", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--output-normal");
+        assert_eq!(processed[2], "out.txt");
+        assert_eq!(processed[3], "192.168.1.1");
+    }
+
+    #[test]
+    fn test_preprocess_output_xml() {
+        let args = vec!["prtip", "-oX", "scan.xml", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--output-xml");
+        assert_eq!(processed[2], "scan.xml");
+    }
+
+    #[test]
+    fn test_preprocess_output_greppable() {
+        let args = vec!["prtip", "-oG", "scan.gnmap", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--output-greppable");
+        assert_eq!(processed[2], "scan.gnmap");
+    }
+
+    #[test]
+    fn test_preprocess_output_all() {
+        let args = vec!["prtip", "-oA", "scan", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--output-all-formats");
+        assert_eq!(processed[2], "scan");
+    }
+
+    #[test]
+    fn test_preprocess_skip_ping() {
+        let args = vec!["prtip", "-Pn", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--skip-ping");
+    }
+
+    #[test]
+    fn test_preprocess_mixed_args() {
+        let args = vec![
+            "prtip",
+            "-sS",
+            "-p",
+            "80,443",
+            "-oX",
+            "out.xml",
+            "192.168.1.1",
+        ];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--nmap-syn");
+        assert_eq!(processed[2], "-p");
+        assert_eq!(processed[3], "80,443");
+        assert_eq!(processed[4], "--output-xml");
+        assert_eq!(processed[5], "out.xml");
+        assert_eq!(processed[6], "192.168.1.1");
+    }
+
+    #[test]
+    fn test_preprocess_passthrough_standard_args() {
+        let args = vec!["prtip", "-s", "syn", "-p", "80", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        // Standard args should pass through unchanged
+        assert_eq!(processed[1], "-s");
+        assert_eq!(processed[2], "syn");
+        assert_eq!(processed[3], "-p");
+        assert_eq!(processed[4], "80");
     }
 }

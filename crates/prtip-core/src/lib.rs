@@ -30,6 +30,7 @@ pub mod os_db;
 pub mod progress;
 pub mod resource_limits;
 pub mod service_db;
+pub mod top_ports;
 pub mod types;
 
 // Re-export commonly used types

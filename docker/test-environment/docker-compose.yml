@@ -32,8 +32,6 @@
 #   - Compare ProRT-IP results with Nmap baseline
 #
 
-version: '3.8'
-
 services:
   # Metasploitable2 - Comprehensive vulnerable VM
   metasploitable2:
@@ -200,8 +198,8 @@ services:
       prtip_test:
         ipv4_address: 172.20.0.40
     ports:
-      - "5353:53/tcp"
-      - "5353:53/udp"
+      - "5354:53/tcp"
+      - "5354:53/udp"
     environment:
       - BIND9_USER=root
       - TZ=UTC
@@ -222,12 +220,8 @@ services:
 
 networks:
   prtip_test:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.20.0.0/24
-          gateway: 172.20.0.1
+    external: true
+    name: prtip_docker0_bridge
 
 volumes:
   mysql_data:

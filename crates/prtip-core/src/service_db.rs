@@ -654,15 +654,17 @@ softmatch http m|^HTTP|
 Probe TCP Test q|test|
 match http m|^HTTP|
 "#;
-        let temp_path = "/tmp/test-probes.txt";
-        std::fs::write(temp_path, content).unwrap();
+        // Use cross-platform temp directory (Windows: %TEMP%, Unix: /tmp)
+        let temp_dir = std::env::temp_dir();
+        let temp_path = temp_dir.join("prtip-test-probes.txt");
+        std::fs::write(&temp_path, content).unwrap();
 
-        let result = ServiceProbeDb::load_from_file(temp_path);
+        let result = ServiceProbeDb::load_from_file(temp_path.to_str().unwrap());
         assert!(result.is_ok());
         let db = result.unwrap();
         assert_eq!(db.len(), 1);
 
-        std::fs::remove_file(temp_path).ok();
+        std::fs::remove_file(&temp_path).ok();
     }
 
     #[test]

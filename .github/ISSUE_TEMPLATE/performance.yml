@@ -1,0 +1,309 @@
+name: Performance Issue
+description: Report slow scans, high resource usage, or performance regressions
+title: "[Performance]: "
+labels: ["performance", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a performance issue! Please provide detailed metrics to help us investigate and optimize.
+
+  - type: textarea
+    id: performance-summary
+    attributes:
+      label: Performance Issue Summary
+      description: Brief description of the performance problem
+      placeholder: "Example: SYN scan of 10,000 ports takes 5 minutes instead of expected 30 seconds"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: What's slow or resource-intensive?
+      placeholder: |
+        Example:
+        - Scan rate: 50 packets/second (expected: 10,000+ pps)
+        - Memory usage: grows to 4GB during scan
+        - CPU usage: pegged at 100% on all cores
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-performance
+    attributes:
+      label: Expected Performance
+      description: What performance do you expect or what did previous versions achieve?
+      placeholder: |
+        Example:
+        - Based on docs: 1M+ pps for stateless scans
+        - v0.2.0 achieved 50,000 pps on same system
+        - nmap/masscan complete same scan in 30 seconds
+    validations:
+      required: true
+
+  - type: textarea
+    id: benchmarks
+    attributes:
+      label: Benchmark Results / Metrics
+      description: Provide concrete numbers (packet rate, duration, resource usage)
+      placeholder: |
+        Example:
+        $ time prtip --scan-type syn -p 1-10000 192.168.1.1
+        Scan duration: 4m 32s
+        Ports scanned: 10,000
+        Scan rate: 37 pps
+        Memory peak: 1.2GB
+        CPU: 40% (4/10 cores utilized)
+
+        Expected based on v0.2.0: 45 seconds (220 pps)
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      options:
+        - Linux (Debian/Ubuntu)
+        - Linux (Fedora/RHEL/CentOS)
+        - Linux (Arch/Manjaro)
+        - Linux (Other)
+        - Windows 10
+        - Windows 11
+        - Windows Server
+        - macOS Intel
+        - macOS Apple Silicon (M1/M2/M3)
+        - FreeBSD
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: Specific version
+      placeholder: "Example: Ubuntu 22.04 LTS, Kernel 6.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: prtip-version
+    attributes:
+      label: ProRT-IP Version
+      description: Run `prtip --version`
+      placeholder: "Example: v0.3.0"
+    validations:
+      required: true
+
+  - type: input
+    id: cpu
+    attributes:
+      label: CPU
+      description: Processor model and core count
+      placeholder: "Example: Intel i9-10850K (10 cores / 20 threads @ 3.6GHz)"
+    validations:
+      required: true
+
+  - type: input
+    id: memory
+    attributes:
+      label: RAM
+      description: Total system memory
+      placeholder: "Example: 64GB DDR4-3200"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: network-type
+    attributes:
+      label: Network Type
+      description: Where are you scanning?
+      options:
+        - Local (localhost/127.0.0.1)
+        - LAN (local network)
+        - WAN (across routers/internet)
+        - VPN tunnel
+        - Cloud (AWS/Azure/GCP)
+        - Mixed
+    validations:
+      required: true
+
+  - type: input
+    id: network-bandwidth
+    attributes:
+      label: Network Bandwidth
+      description: Available network speed
+      placeholder: "Example: 1 Gbps LAN, 100 Mbps WAN"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scan-type
+    attributes:
+      label: Scan Type
+      options:
+        - TCP Connect
+        - TCP SYN
+        - UDP
+        - Stealth (FIN/NULL/Xmas)
+        - ACK
+        - Multiple types
+      multiple: true
+    validations:
+      required: true
+
+  - type: input
+    id: target-count
+    attributes:
+      label: Target Count
+      description: Number of IPs being scanned
+      placeholder: "Example: 1 host or 256 hosts (/24 network)"
+    validations:
+      required: true
+
+  - type: input
+    id: port-count
+    attributes:
+      label: Port Count
+      description: Number of ports per host
+      placeholder: "Example: 10,000 ports or all 65,535"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: timing-template
+    attributes:
+      label: Timing Template
+      options:
+        - T0 (Paranoid)
+        - T1 (Sneaky)
+        - T2 (Polite)
+        - T3 (Normal - default)
+        - T4 (Aggressive)
+        - T5 (Insane)
+        - Custom (--max-rate, --max-concurrent)
+    validations:
+      required: true
+
+  - type: input
+    id: parallelism
+    attributes:
+      label: Parallelism Settings
+      description: --max-concurrent or adaptive parallelism value
+      placeholder: "Example: --max-concurrent 1000 or adaptive (default)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: full-command
+    attributes:
+      label: Full Command
+      description: Exact command executed
+      placeholder: "prtip --scan-type syn -p 1-10000 -T 4 --max-concurrent 1000 192.168.1.1"
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: performance-metrics-details
+    attributes:
+      label: Detailed Performance Metrics
+      description: CPU %, memory usage over time, disk I/O, network utilization
+      placeholder: |
+        Example (from top/htop/Task Manager):
+        - CPU: 4 cores @ 100%, 6 cores idle
+        - Memory: starts at 100MB, grows to 1.2GB, no decrease
+        - Network TX: 5 Mbps (expected: 50+ Mbps)
+        - Disk I/O: 0 (no database writes)
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: profiling-data
+    attributes:
+      label: Profiling Data (Optional)
+      description: Output from perf, flamegraph, or other profiling tools
+      placeholder: |
+        Example:
+        $ perf record -F 99 -p $(pidof prtip) -- sleep 30
+        $ perf report --stdio
+        [paste perf output or link to flamegraph]
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: comparison
+    attributes:
+      label: Comparison with Other Tools
+      description: How does ProRT-IP compare to nmap/masscan/rustscan/naabu?
+      placeholder: |
+        Example:
+        - ProRT-IP v0.3.0: 4m 32s (37 pps)
+        - nmap 7.94: 2m 15s (74 pps)
+        - masscan: 8 seconds (1,250 pps)
+        - rustscan: 45 seconds (222 pps)
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: regression-info
+    attributes:
+      label: Regression Information
+      description: Did this work better in a previous version?
+      placeholder: |
+        Example:
+        - v0.2.0: 45 seconds for same scan
+        - v0.3.0: 4m 32s (6x slower)
+        - Suspected regression: Sprint 4.14 timeout changes
+    validations:
+      required: false
+
+  - type: textarea
+    id: workarounds
+    attributes:
+      label: Workarounds Attempted
+      description: Have you tried different flags, timing templates, or configurations?
+      placeholder: |
+        Example:
+        - Tried -T5 (insane): no improvement
+        - Reduced --max-concurrent to 200: slower (5 minutes)
+        - Used --no-db flag: no significant change
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Network conditions, firewall rules, concurrent applications, etc.
+      placeholder: |
+        Example:
+        - No firewall between scanner and target
+        - Target is physical server on same LAN switch
+        - No other network-intensive applications running
+        - Reproduced on 3 different machines
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I've included concrete metrics (packet rate, duration, memory usage)
+          required: true
+        - label: I'm using the latest version of ProRT-IP
+          required: true
+        - label: I've tried different timing templates (-T0 through -T5)
+          required: false
+        - label: I've profiled the bottleneck (CPU, memory, network, disk) if possible
+          required: false
+        - label: I've compared with other tools (nmap, masscan, rustscan) if applicable
+          required: false

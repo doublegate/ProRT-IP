@@ -1,0 +1,196 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for ProRT-IP WarScan
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature! Please provide detailed information to help us understand and evaluate your request.
+
+  - type: textarea
+    id: feature-summary
+    attributes:
+      label: Feature Summary
+      description: Brief, one-paragraph description of the feature
+      placeholder: "Example: Add support for IPv6-only scanning mode to improve performance on dual-stack networks"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? Why is it needed?
+      placeholder: |
+        Example: Currently, when scanning dual-stack hosts, ProRT-IP attempts both IPv4 and IPv6 connections,
+        which doubles scan time. Users working in IPv6-only environments waste time on unnecessary IPv4 probes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: How should this feature work? Be as detailed as possible
+      placeholder: |
+        Example: Add a --ipv6-only flag that:
+        1. Skips IPv4 address resolution
+        2. Only performs AAAA DNS lookups
+        3. Disables IPv4 packet construction
+        4. Updates progress reporting to reflect single-stack scanning
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Who benefits from this feature and how would they use it?
+      placeholder: |
+        Example:
+        - Network administrators scanning IPv6-only infrastructure (data centers, cloud environments)
+        - Security researchers testing IPv6 security posture without IPv4 noise
+        - Compliance auditors verifying IPv6-only network segments
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches or workarounds have you considered?
+      placeholder: |
+        Example:
+        - Using external filtering tools (nmap -6) then piping to ProRT-IP
+        - Manually filtering scan results to remove IPv4 entries
+        - Configuring firewall to block IPv4 during scan (impractical)
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Feature Category
+      description: Which area does this feature relate to?
+      options:
+        - Scan Types / Protocols
+        - Performance / Speed
+        - Detection (OS / Service)
+        - Evasion / Stealth
+        - Output Formats
+        - CLI / User Experience
+        - Platform Support
+        - Plugin System
+        - Documentation
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical (blocking my workflow)
+        - High (would significantly improve my work)
+        - Medium (nice to have)
+        - Low (minor improvement)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: implementation-complexity
+    attributes:
+      label: Estimated Implementation Complexity
+      description: Based on your understanding of the codebase (if any)
+      options:
+        - Trivial (config change, simple flag)
+        - Easy (small, isolated change)
+        - Medium (new module or significant refactor)
+        - Hard (cross-cutting changes, architectural impact)
+        - Very Hard (requires extensive research or external dependencies)
+        - Unknown (I don't know)
+    validations:
+      required: false
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related Issues
+      description: Link to related feature requests, bugs, or discussions
+      placeholder: |
+        Example:
+        - Relates to #42 (IPv6 scan performance)
+        - Depends on #67 (dual-stack resolution refactor)
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Notes (Optional)
+      description: Technical details, API suggestions, or code references
+      placeholder: |
+        Example:
+        - Could reuse existing IPv4 skip logic from `--ipv4-only` flag
+        - May need to update `prtip-core/src/types.rs::ScanTarget` enum
+        - See similar implementation in nmap's `-6` flag (scan_engine.cc:234)
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: example-usage
+    attributes:
+      label: Example Usage
+      description: Show how you'd use this feature with example commands
+      placeholder: |
+        # Basic IPv6-only scan
+        prtip --ipv6-only --scan-type connect -p 80,443 2001:db8::1
+
+        # With service detection
+        prtip --ipv6-only -sS -sV -p 1-1000 scanme.nmap.org
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: breaking-changes
+    attributes:
+      label: Breaking Changes
+      description: Would this feature introduce breaking changes? How should users migrate?
+      placeholder: |
+        Example: No breaking changes expected. This is a new opt-in flag that doesn't affect existing workflows.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Screenshots, mockups, links to similar features in other tools
+      placeholder: |
+        Example:
+        - nmap's `-6` flag: https://nmap.org/book/man-host-discovery.html
+        - Screenshot of current behavior: [attach image]
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm you've completed these steps
+      options:
+        - label: I've searched existing feature requests and this is not a duplicate
+          required: true
+        - label: I've checked the roadmap (docs/01-ROADMAP.md) and this feature isn't already planned
+          required: true
+        - label: This feature aligns with the project's goals (security scanning tool for authorized testing)
+          required: true
+        - label: I'm willing to contribute to implementation or testing if needed
+          required: false
+        - label: I'm willing to help with documentation if this feature is implemented
+          required: false

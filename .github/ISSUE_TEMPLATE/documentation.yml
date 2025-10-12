@@ -1,0 +1,194 @@
+name: Documentation Issue
+description: Report missing, incorrect, or unclear documentation
+title: "[Docs]: "
+labels: ["documentation", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve ProRT-IP documentation! Clear documentation is essential for user success.
+
+  - type: textarea
+    id: documentation-summary
+    attributes:
+      label: Documentation Issue Summary
+      description: Brief description of the documentation problem
+      placeholder: "Example: Installation instructions for FreeBSD are missing from docs/03-DEV-SETUP.md"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: documentation-location
+    attributes:
+      label: Documentation Location
+      description: Where is the issue located?
+      options:
+        - README.md (root)
+        - CONTRIBUTING.md
+        - SECURITY.md
+        - docs/00-ARCHITECTURE.md
+        - docs/01-ROADMAP.md
+        - docs/02-TECHNICAL-SPECS.md
+        - docs/03-DEV-SETUP.md
+        - docs/04-IMPLEMENTATION-GUIDE.md
+        - docs/05-API-REFERENCE.md
+        - docs/06-TESTING.md
+        - docs/07-PERFORMANCE.md
+        - docs/08-SECURITY.md
+        - docs/09-FAQ.md
+        - docs/10-PROJECT-STATUS.md
+        - docs/15-PLATFORM-SUPPORT.md
+        - Code comments / rustdoc
+        - Examples / usage snippets
+        - Help text (--help output)
+        - Website / Wiki
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing information
+        - Incorrect / outdated information
+        - Unclear / confusing explanation
+        - Typo / grammar / formatting
+        - Broken links
+        - Missing code examples
+        - Incomplete API documentation
+        - Inconsistent information across docs
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content (Problematic)
+      description: What does the documentation currently say? Quote or link to specific sections
+      placeholder: |
+        Example (from docs/03-DEV-SETUP.md, line 42):
+        "Run `sudo apt install libpcap-dev` to install dependencies"
+
+        Problem: This only covers Debian/Ubuntu. FreeBSD and macOS require different commands.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested Improvement
+      description: What should the documentation say instead?
+      placeholder: |
+        Example:
+        "Install packet capture library:
+        - Debian/Ubuntu: `sudo apt install libpcap-dev pkg-config`
+        - Fedora/RHEL: `sudo dnf install libpcap-devel`
+        - Arch: `sudo pacman -S libpcap pkgconf`
+        - macOS: `brew install libpcap pkgconf`
+        - FreeBSD: `sudo pkg install libpcap pkgconf`"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-users
+    attributes:
+      label: Affected Users
+      description: Who is impacted by this documentation issue?
+      options:
+        - New users (getting started)
+        - Contributors (development)
+        - Advanced users (complex features)
+        - All users
+        - Platform-specific (Linux/Windows/macOS)
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-confusion
+    attributes:
+      label: User Confusion / Impact
+      description: How does this documentation issue affect users?
+      placeholder: |
+        Example:
+        - Users on FreeBSD cannot complete installation (blocking issue)
+        - New contributors waste time figuring out correct dependencies
+        - Causes 5+ duplicate issues per month asking the same question
+    validations:
+      required: false
+
+  - type: textarea
+    id: related-documentation
+    attributes:
+      label: Related Documentation
+      description: Are there other docs that need similar updates?
+      placeholder: |
+        Example:
+        - README.md "Building from Source" section also needs FreeBSD instructions
+        - docs/15-PLATFORM-SUPPORT.md should cross-reference updated setup guide
+    validations:
+      required: false
+
+  - type: textarea
+    id: code-examples
+    attributes:
+      label: Proposed Code Examples (If Applicable)
+      description: Provide corrected or new code examples
+      placeholder: |
+        Example:
+        ```bash
+        # FreeBSD installation
+        sudo pkg update
+        sudo pkg install libpcap pkgconf rust
+        cargo build --release
+        ```
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots-mockups
+    attributes:
+      label: Screenshots or Mockups
+      description: Visual aids showing the issue or proposed improvement
+      placeholder: "Drag and drop images or paste links"
+    validations:
+      required: false
+
+  - type: input
+    id: broken-link-url
+    attributes:
+      label: Broken Link URL (If Applicable)
+      description: If reporting a broken link, provide the dead URL
+      placeholder: "Example: https://example.com/dead-link (returns 404)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+      placeholder: |
+        Example:
+        - Verified on FreeBSD 13.2 (works with these instructions)
+        - Similar issue in upstream project: https://github.com/example/issue/123
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I've checked if this is already documented elsewhere in the project
+          required: true
+        - label: I've suggested a specific, actionable improvement
+          required: true
+        - label: I've searched existing documentation issues to avoid duplicates
+          required: true
+        - label: I'm willing to submit a pull request to fix this documentation issue
+          required: false

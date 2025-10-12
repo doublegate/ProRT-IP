@@ -15,12 +15,14 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 ## Architecture
 
 ### Hybrid Scanning Approach
+
 1. **Fast Discovery**: Stateless scanning at Masscan speeds for rapid enumeration
 2. **Deep Enumeration**: Stateful connections with Nmap-style service detection
 
 Mirrors RustScan: scan all 65,535 ports ~3s, pipe to detailed analysis.
 
 ### Performance Targets
+
 - **Stateless**: 10M+ pps async event-driven I/O
 - **Internet-scale**: Full IPv4 sweep with adaptive rate control
 - **Memory**: Stream to disk, avoid RAM accumulation
@@ -89,11 +91,13 @@ mlua = "0.9"       # Lua plugins (Phase 5)
 ## Security Requirements
 
 ### Input Validation
+
 - `IpAddr::parse()` for IPs, `ipnetwork` for CIDR
 - Allowlist at API boundaries
 - **Never** construct shell commands from user input (use `std::process::Command`)
 
 ### Privilege Pattern
+
 ```rust
 let socket = create_raw_socket()?;      // 1. Create privileged
 drop_privileges("scanner", "scanner")?; // 2. Drop IMMEDIATELY
@@ -101,12 +105,14 @@ run_scan_engine(socket)?;               // 3. Run unprivileged
 ```
 
 ### Packet Parsing
+
 - Use pnet/etherparse automatic bounds checking
 - Return Option/Result (never panic on malformed packets)
 - Validate data offset fields before indexing
 - Resource limits: max concurrent, per-target rates, timeouts
 
 ### DoS Prevention
+
 - Bound operations via `tokio::sync::Semaphore`
 - Stream results to disk immediately
 - Monitor FD usage and set limits
@@ -131,6 +137,7 @@ CREATE INDEX idx_port ON scan_results(port);
 **Nmap Compatibility (v0.3.5+)**: 20+ nmap-compatible flags (`-sS`, `-sT`, `-sU`, `-p`, `-F`, `-oN`, `-oX`, `-oG`, `-v`, `-A`, etc.). See `docs/NMAP_COMPATIBILITY.md` for full details.
 
 **Examples**:
+
 ```bash
 # Nmap-compatible syntax (v0.3.5+)
 prtip -sS -p 1-1000 10.0.0.0/24                          # Basic SYN scan

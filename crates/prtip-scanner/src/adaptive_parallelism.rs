@@ -24,8 +24,13 @@
 //! let parallelism = calculate_parallelism(500, None, None);
 //! assert_eq!(parallelism, 20);
 //!
-//! // Huge scan: 65K ports → 1500 concurrent (updated from 1000)
+//! // Huge scan: 65K ports → platform-dependent due to FD limits
+//! // Linux/macOS: 1500 (higher FD limits)
+//! // Windows: ~1024 (lower FD limit of ~2048, using 50%)
 //! let parallelism = calculate_parallelism(65535, None, None);
+//! #[cfg(target_os = "windows")]
+//! assert!(parallelism >= 1000 && parallelism <= 1024);
+//! #[cfg(not(target_os = "windows"))]
 //! assert_eq!(parallelism, 1500);
 //!
 //! // User override takes precedence
@@ -79,7 +84,13 @@ pub const MIN_PARALLELISM: usize = 20;
 /// assert_eq!(calculate_parallelism(2000, None, None), 100);
 /// assert_eq!(calculate_parallelism(10000, None, None), 500);
 /// assert_eq!(calculate_parallelism(15000, None, None), 1000);
-/// assert_eq!(calculate_parallelism(65535, None, None), 1500);  // Updated from 1000
+///
+/// // Huge scans: platform-dependent due to FD limits
+/// let parallelism = calculate_parallelism(65535, None, None);
+/// #[cfg(target_os = "windows")]
+/// assert!(parallelism >= 1000 && parallelism <= 1024);
+/// #[cfg(not(target_os = "windows"))]
+/// assert_eq!(parallelism, 1500);
 ///
 /// // User override
 /// assert_eq!(calculate_parallelism(65535, Some(50), None), 50);

@@ -3,17 +3,17 @@
 ## Current Snapshot
 
 - **Project**: ProRT-IP WarScan, a high-performance network scanner implemented in Rust.
-- **Workspace version**: `0.3.5` (`Cargo.toml:68`); keep crate versions aligned before cutting releases.
-- **Development phase**: Phase 4 performance optimization is complete (see `CHANGELOG.md:508`); Phase 5 advanced feature work is next. `docs/01-ROADMAP.md` still lists Phase 4 as planned and needs a follow-up refresh.
-- **CI health**: `ci.yml` workflow remains green; the README badge tracks 677 tests passing.
+- **Workspace version**: `0.3.5` (`Cargo.toml:68`); older docs such as `ROADMAP.md` still cite v0.3.0 and should be aligned.
+- **Development phase**: Phase 4 performance optimization wrapped; see `README.md` status section and `CHANGELOG.md:508`. Public roadmap (`ROADMAP.md`, `docs/01-ROADMAP.md`) still show Phase 4 as pending—schedule a doc refresh.
+- **CI health**: `ci.yml` workflow green. Actual suite count is 643 tests (ref. `README.md:167`), but the README badge still advertises 677 and needs to be regenerated.
 - **Test surface**: Fast unit coverage sits in each crate, while cross-crate scenarios live under `tests/`.
 
 ## Active Focus Areas
 
-- Kick off Phase 5 by tackling idle scans, decoys, and fragmentation per the checklists in `docs/01-ROADMAP.md:360`.
+- Kick off Phase 5 by tackling idle scans, decoys, and fragmentation per the checklists in `docs/01-ROADMAP.md:360` once the document reflects Phase 4 completion.
 - Draft the Lua plugin architecture early (interfaces, sandbox boundaries) to unblock `mlua` integration and example plugins.
 - Preserve Phase 4 benchmark gains—use tooling in `benchmarks/` and `docs/07-PERFORMANCE.md` to guard regressions.
-- Coordinate roadmap doc updates so Phase 4 completion and new priorities stay consistent across `ROADMAP.md` and the `docs/` set.
+- Bring status pages into sync: update `ROADMAP.md`, `docs/01-ROADMAP.md`, and the README test badge so external signals match the current state.
 
 ## Project Structure & Module Organization
 

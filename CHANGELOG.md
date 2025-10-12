@@ -7,17 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Fixed
 
-**CLI Help System Enhancement (v0.3.5):**
-- Redesigned `--help` output to elegantly showcase nmap compatibility
-- Added comprehensive EXAMPLES section with 10+ usage patterns (all using nmap syntax)
-- Added COMPATIBILITY section explaining nmap/ProRT-IP syntax mixing
-- Added PERFORMANCE section showing 3-48x speed advantage over nmap
-- Added DOCUMENTATION section with links to comprehensive guides
-- Enhanced help text for all nmap-compatible flags with examples and context
-- Organized help into logical sections: PORT SPECIFICATION, SCAN TYPES, OUTPUT, DETECTION
-- Updated CLI integration tests to verify new help content
+**Release Workflow Build Failures (v0.3.5 post-release):**
+- Fixed musl libc ioctl type mismatch in `batch_sender.rs` (2 locations)
+  - musl expects `c_int` (i32), glibc uses `c_ulong` (u64) for ioctl request parameter
+  - Added conditional compilation: `#[cfg(target_env = "musl")]` for platform-specific casting
+  - Affects `SIOCGIFINDEX` calls in sendmmsg and recvmmsg implementations
+  - Fixes build failures for x86_64-unknown-linux-musl and aarch64-unknown-linux-musl
+- Extended vendored OpenSSL feature for ARM64 cross-compilation in `release.yml`
+  - Added condition: `cross == 'true' && target == aarch64*`
+  - Enables static OpenSSL linking for ARM64 targets during cross-compilation
+  - Fixes build failure for aarch64-unknown-linux-gnu
+  - Binary size impact: +2-3MB for ARM64 builds only
+
+**Impact:** All 8 architecture targets now build successfully (was 5/8, now 8/8)
+- ✅ x86_64-unknown-linux-gnu
+- ✅ x86_64-unknown-linux-musl (FIXED)
+- ✅ aarch64-unknown-linux-gnu (FIXED)
+- ✅ aarch64-unknown-linux-musl (FIXED)
+- ✅ x86_64-pc-windows-msvc
+- ✅ x86_64-apple-darwin
+- ✅ aarch64-apple-darwin
+- ✅ x86_64-unknown-freebsd
 
 ### Added
 

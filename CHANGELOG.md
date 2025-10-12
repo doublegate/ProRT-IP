@@ -43,7 +43,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-**Windows CI Test Failures - Platform-Aware Tests** (2025-10-12)
+**Windows CI Test Failures - Adaptive Parallelism Doctests** (2025-10-12)
+
+**Issue 2: Platform-Aware Doctest Expectations**
+- **Problem:** Doctests in `adaptive_parallelism.rs` failed on Windows CI
+  - Expected: 1500 max parallelism for huge scans (65K+ ports)
+  - Actual: 1024 max parallelism on Windows
+  - Error: "assertion failed: left: 1024, right: 1500"
+- **Root Cause:** Hardcoded test expectation of 1500 max parallelism, but Windows has lower FD limits (~2048 vs Unix 4096+), resulting in actual max of 1024
+  - Algorithm: `safe_max = ulimit / 2 = 1024` on Windows (2048 / 2)
+  - Unit tests already had platform-aware assertions (lines 266-302)
+  - Doctests were missing platform awareness (lines 20-39, 77-98)
+- **Fix:** Added platform-aware conditional compilation to doctests:
+  - Windows: `assert!(parallelism >= 1000 && parallelism <= 1024)`
+  - Unix: `assert_eq!(parallelism, 1500)`
+  - Comments explain WHY values differ across platforms
+- **Impact:** Fixes 2 failing doctests, completes Windows cross-platform support
+- **Files:** `crates/prtip-scanner/src/adaptive_parallelism.rs` (lines 20-39, 77-98)
+- **Status:** ✅ All 643 tests now passing on all platforms
+- **Related:** Completes Windows CI fixes started in commit 6449820 (service_db.rs)
 
 **Issue 1: Cross-Platform Temp Directory**
 - **Problem:** `test_load_from_file` in `service_db.rs` failed on Windows CI with "path not found" error

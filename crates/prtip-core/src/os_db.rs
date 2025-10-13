@@ -269,13 +269,13 @@ impl OsFingerprintDb {
     /// Match probe results against database
     ///
     /// Returns list of (fingerprint, score) tuples sorted by score (highest first)
-    pub fn match_fingerprint(&self, results: &ProbeResults) -> Vec<(OsFingerprint, f64)> {
+    pub fn match_fingerprint(&self, results: &ProbeResults) -> Vec<(&OsFingerprint, f64)> {
         let mut matches = Vec::new();
 
         for fp in &self.fingerprints {
             let score = self.calculate_match_score(fp, results);
             if score > 0.0 {
-                matches.push((fp.clone(), score));
+                matches.push((fp, score));
             }
         }
 

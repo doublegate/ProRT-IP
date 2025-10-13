@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+**Performance Regression Resolution (v0.3.6):**
+- Removed 19 debug timing statements from `scheduler.rs`
+  - Debug instrumentation inadvertently left in production code after Sprint 4.13/4.14 implementation
+  - Caused ~0.3ms overhead per scan (4.6% regression) due to TTY flushing and string formatting
+  - Affected statements: `eprintln!("[TIMING] ...")` throughout scan loop
+  - Impact: 1K port scan time improved from 6.5ms → 6.2ms (4.6% faster)
+- Optimized progress bar polling intervals for small scans
+  - Changed <1K ports polling from 200µs to 1ms (5x reduction in poll frequency)
+  - Changed 1K-10K ports from 500µs to 2ms
+  - Changed 10K-100K ports from 1ms to 5ms
+  - Reduced polling overhead while maintaining responsive real-time progress updates
+  - Improved performance stability: stddev reduced from 0.9ms to 0.3ms (3x more stable)
+- Added CLI argument preprocessing fast path
+  - Skip nmap compatibility preprocessing when no nmap-style flags are detected
+  - Fast path checks for `-sS`, `-sT`, `-oN`, `-oX`, etc. before preprocessing
+  - Native ProRT-IP syntax now uses zero-copy argument passing
+  - Nmap compatibility flags still work correctly (slow path preserves all functionality)
+
+**Total Impact:**
+- 1K port scans: 6.5ms → 6.2ms (4.6% improvement)
+- Variance: 0.9ms → 0.3ms (3x more stable, better UX)
+- All 492 tests passing
+- Zero clippy warnings
+
+**Root Cause Investigation:**
+- Initial benchmark report showed measurement artifacts due to small sample size
+- Proper statistical analysis (20+ runs) revealed true 4.6% regression from debug code
+- Created comprehensive fix strategy document (docs/16-REGRESSION-FIX-STRATEGY.md)
+- Implemented prevention measures: removed all eprintln! debug statements
+
 **Release Workflow Build Failures (v0.3.5 post-release):**
 - Fixed musl libc ioctl type mismatch in `batch_sender.rs` (2 locations)
   - musl expects `c_int` (i32), glibc uses `c_ulong` (u64) for ioctl request parameter

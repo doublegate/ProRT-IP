@@ -283,7 +283,7 @@ mod tests {
         // Unix systems typically have higher limits (4096+, so max parallelism = 1500)
         #[cfg(target_os = "windows")]
         assert!(
-            parallelism >= 1000 && parallelism <= 1024,
+            (1000..=1024).contains(&parallelism),
             "Expected parallelism 1000-1024 on Windows due to ulimit constraints, got {}",
             parallelism
         );
@@ -301,8 +301,8 @@ mod tests {
 
         #[cfg(target_os = "windows")]
         {
-            assert!(p2 >= 1000 && p2 <= 1024);
-            assert!(p3 >= 1000 && p3 <= 1024);
+            assert!((1000..=1024).contains(&p2));
+            assert!((1000..=1024).contains(&p3));
         }
 
         #[cfg(not(target_os = "windows"))]

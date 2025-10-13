@@ -9,8 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Clippy Warnings:** Fixed 4 clippy warnings for Rust 1.90.0 compatibility
+  - `crates/prtip-network/src/capture/windows.rs:135` - Use `div_ceil()` instead of manual ceiling division
+  - `crates/prtip-scanner/src/adaptive_parallelism.rs:286,304,305` - Use `RangeInclusive::contains()` instead of manual range checks
 - **Windows CI:** Fixed integration test failures by adding .exe extension handling in binary path resolution (18 tests now passing on Windows)
 - **Cross-Platform Tests:** Made `test_invalid_ip` test more robust to handle different DNS error messages across Windows, Linux, and macOS platforms
+
+### Added
+
+- **IDE Support:** Added `.vs/` (Visual Studio) to `.gitignore` for Windows development
 
 ---
 

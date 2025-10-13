@@ -1,0 +1,25 @@
+{
+  "comment": "Sample targets for integration testing",
+  "targets": {
+    "localhost": {
+      "ip": "127.0.0.1",
+      "description": "Local loopback interface",
+      "expected_open_ports": [22, 80, 443],
+      "expected_closed_ports": [81, 444, 8888],
+      "expected_filtered_ports": []
+    },
+    "localhost_ipv6": {
+      "ip": "::1",
+      "description": "IPv6 loopback interface",
+      "expected_open_ports": [],
+      "expected_closed_ports": [80, 443],
+      "expected_filtered_ports": []
+    }
+  },
+  "port_ranges": {
+    "common": [22, 80, 443, 3306, 5432, 8080, 8443],
+    "top_100": "1-100",
+    "top_1000": "1-1000",
+    "all": "1-65535"
+  }
+}

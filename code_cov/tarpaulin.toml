@@ -1,0 +1,68 @@
+# Tarpaulin configuration for code coverage
+# https://github.com/xd009642/tarpaulin
+
+[global]
+# Output formats (HTML for viewing, Lcov for CI integration)
+out = ["Html", "Lcov"]
+
+# Output directory (relative to project root)
+output-dir = "code_cov"
+
+# Directories to include
+# Note: Tarpaulin automatically includes all workspace members
+# This is just for documentation
+# include = ["crates/*/src/**/*.rs"]
+
+# Exclude patterns
+exclude = [
+    "crates/*/tests/**",
+    "crates/*/benches/**",
+    "tests/**",
+]
+
+# Exclude specific files
+exclude-files = [
+    "crates/*/src/bin/**",
+]
+
+# Timeout for tests (seconds)
+timeout = 300
+
+# Follow symbolic links
+follow-symlinks = true
+
+# Count hits in tests (disabled for accuracy)
+count = false
+
+# Run tests with all features enabled
+all-features = true
+
+# Run in workspace mode
+workspace = true
+
+# Fail under coverage threshold (70%)
+fail-under = 70
+
+# Generate HTML report
+html = true
+
+# Generate Lcov report for CI
+lcov = true
+
+# Verbose output
+verbose = false
+
+# Use all available CPU cores
+jobs = 0
+
+# Forward signals to child processes
+forward = true
+
+# Run type (Tests only, not doc tests or examples)
+run-types = ["Tests"]
+
+# Target directory for build artifacts
+target-dir = "target"
+
+# Color output
+color = "Auto"

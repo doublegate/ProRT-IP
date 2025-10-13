@@ -55,3 +55,9 @@ libc = { workspace = true }
 tempfile = "3.8"
 assert_cmd = "2.0"
 predicates = "3.0"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "benchmarks"
+harness = false
+path = "../../tests/performance/benchmarks.rs"

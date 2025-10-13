@@ -1,0 +1,47 @@
+{
+  "comment": "Nmap-compatible flags for testing CLI compatibility",
+  "scan_types": {
+    "tcp_syn": "-sS",
+    "tcp_connect": "-sT",
+    "udp": "-sU",
+    "tcp_fin": "-sF",
+    "tcp_null": "-sN",
+    "tcp_xmas": "-sX",
+    "tcp_ack": "-sA"
+  },
+  "port_specification": {
+    "single": "-p 80",
+    "range": "-p 1-1000",
+    "list": "-p 22,80,443",
+    "all": "-p-",
+    "top_100": "-F",
+    "top_1000": "--top-ports 1000"
+  },
+  "output_formats": {
+    "normal": "-oN",
+    "xml": "-oX",
+    "greppable": "-oG",
+    "all": "-oA"
+  },
+  "timing_templates": {
+    "paranoid": "-T0",
+    "sneaky": "-T1",
+    "polite": "-T2",
+    "normal": "-T3",
+    "aggressive": "-T4",
+    "insane": "-T5"
+  },
+  "detection": {
+    "service_version": "-sV",
+    "os_detection": "-O",
+    "aggressive": "-A",
+    "version_intensity": "--version-intensity 5"
+  },
+  "misc": {
+    "verbose": "-v",
+    "verbose_level2": "-vv",
+    "debug": "-d",
+    "reason": "--reason",
+    "packet_trace": "--packet-trace"
+  }
+}

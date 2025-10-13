@@ -85,6 +85,9 @@ cachegrind.out.*
 Session.vim
 *_output.txt
 
+# Daily activity logs
+/daily_logs/
+
 # Backups
 /backups/
 

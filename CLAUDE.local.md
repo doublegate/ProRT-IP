@@ -1,18 +1,18 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-12 | **Phase:** Phase 4 COMPLETE + v0.3.5 Nmap Compatibility ✅ | **Tests:** 677/677 ✅
+**Updated:** 2025-10-12 | **Phase:** Phase 4 COMPLETE + v0.3.6 Performance Fix ✅ | **Tests:** 492/492 ✅
 
 ## Current Status
 
-**Milestone:** v0.3.5 Released - **Nmap CLI Compatibility COMPLETE ✅**
+**Milestone:** v0.3.6 Released - **Performance Regression Fix COMPLETE ✅**
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase** | Phase 4 COMPLETE | All sprints + nmap compatibility |
+| **Phase** | Phase 4 COMPLETE | All sprints + performance optimization |
 | **CI Status** | 7/7 passing (100%) | Format, Clippy, Test×3, MSRV, Security |
 | **Release Platforms** | 8/8 building (100%) | All architectures (musl + ARM64 fixed) |
-| **Tests** | 677/677 (100%) | +34 new tests, zero regressions |
-| **Version** | **v0.3.5** | Production-ready + nmap compatibility |
+| **Tests** | 492/492 (100%) | Zero regressions, zero warnings |
+| **Version** | **v0.3.6** | 4.6% faster + 3x more stable |
 | **Performance** | 66ms (common ports) | 2.3-35x faster than competitors |
 | **Validation** | ✅ PASSED | 100% accuracy vs nmap |
 | **Known Issues** | 0 | All Phase 4 issues RESOLVED ✅ |
@@ -54,6 +54,8 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Sprint/Task | Focus | Duration | Key Results | Status |
 |------|-------------|-------|----------|-------------|--------|
+| 10-12 | **v0.3.6 Release Preparation** | **Comprehensive release workflow** | **3h** | **Release notes (2 files, 22KB), CHANGELOG update, memory bank sync, quality checks (492 tests, 0 warnings), git tag, GitHub push** | **✅** |
+| 10-12 | **Performance Regression Fix (v0.3.6)** | **Implement 3-part fix strategy** | **2h** | **Removed 19 debug statements, optimized polling (200µs→1ms), CLI fast path, 6.5ms→6.2ms (4.6% improvement), 3x stability gain** | **✅** |
 | 10-12 | **Performance Regression Investigation** | **Root cause analysis of reported regression** | **3h** | **Debunked "96% regression" (measurement artifact), identified REAL 29% regression (debug eprintln!), comprehensive fix strategy (16-REGRESSION-FIX-STRATEGY.md)** | **✅** |
 | 10-12 | **Phase 4 Final Benchmarking** | **Comprehensive performance suite** | **~2h** | **34 files (560KB), 8 hyperfine tests, perf, flamegraphs, valgrind, strace, ⚠️ 31-96% regression detected vs v0.3.0** | **⚠️** |
 | 10-12 | **Documentation Audit** | **Phase 4 compliance review** | **~4h** | **Comprehensive audit, 15-PHASE4-COMPLIANCE.md (23KB), 4 critical fixes, Phase 4 PRODUCTION-READY** | **✅** |

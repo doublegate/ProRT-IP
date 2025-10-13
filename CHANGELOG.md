@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Future changes will be documented here
+
+---
+
+## [0.3.6] - 2025-10-12
+
 ### Fixed
 
-**Performance Regression Resolution (v0.3.6):**
+**Performance Regression Resolution:**
 - Removed 19 debug timing statements from `scheduler.rs`
   - Debug instrumentation inadvertently left in production code after Sprint 4.13/4.14 implementation
   - Caused ~0.3ms overhead per scan (4.6% regression) due to TTY flushing and string formatting

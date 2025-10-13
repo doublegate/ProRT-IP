@@ -1,31 +1,173 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
-# Integration test script for nmap-compatible CLI flags
-# Tests ProRT-IP v0.3.5 nmap compatibility features
+# Script Name: test-nmap-compat.sh
+# Purpose: Integration test script for nmap-compatible CLI flags
+# Version: v0.3.6
+# Usage: ./test-nmap-compat.sh [options]
+# Prerequisites:
+#   - Bash 4.0+
+#   - Built prtip binary (cargo build --release)
+#   - Network access for testing
+# Exit Codes:
+#   0 - All tests passed
+#   1 - Some tests failed
+#   2 - Missing prerequisites
+#
+# Examples:
+#   ./test-nmap-compat.sh              # Run all tests
+#   ./test-nmap-compat.sh --help       # Show usage
+#   ./test-nmap-compat.sh --quick      # Run quick subset
+#
+# Tests ProRT-IP v0.3.5+ nmap compatibility features:
+#   - Scan type aliases (-sS, -sT, -sN, -sF, -sX)
+#   - Port specification (-F, --top-ports, -p)
+#   - Output formats (-oN, -oX, -oG)
+#   - Modes (-A, -Pn) and verbosity (-v, -vv, -vvv)
+#   - Mixed syntax (nmap + ProRT-IP flags)
 #
 
-set -e  # Exit on error
+set -euo pipefail
 
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Defaults
 TARGET="127.0.0.1"  # Local target, no sudo needed
-PRTIP="./target/release/prtip"
+PRTIP="${PRTIP:-$PROJECT_ROOT/target/release/prtip}"  # Allow override via env
+QUICK_MODE=false
 
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Helper functions
+usage() {
+    cat <<EOF
+${GREEN}ProRT-IP Nmap Compatibility Test Suite v0.3.6${NC}
+
+${BLUE}Usage:${NC}
+  $(basename "$0") [options]
+
+${BLUE}Options:${NC}
+  --help          Show this help message
+  --quick         Run quick subset of tests (fast validation)
+  --target HOST   Specify test target (default: 127.0.0.1)
+  --binary PATH   Path to prtip binary (default: ./target/release/prtip)
+
+${BLUE}Examples:${NC}
+  # Run all tests (default)
+  ./test-nmap-compat.sh
+
+  # Run quick validation
+  ./test-nmap-compat.sh --quick
+
+  # Test specific binary
+  ./test-nmap-compat.sh --binary /usr/local/bin/prtip
+
+  # Test against remote host
+  ./test-nmap-compat.sh --target scanme.nmap.org
+
+${BLUE}Environment Variables:${NC}
+  PRTIP           Path to prtip binary (default: ./target/release/prtip)
+  PRTIP_TARGET    Test target (default: 127.0.0.1)
+
+${BLUE}Requirements:${NC}
+  - Bash 4.0+
+  - Built prtip binary (cargo build --release)
+  - Network access
+
+${YELLOW}Note:${NC} Tests use localhost by default (no sudo needed).
+Some scan types (-sS) may require privileges but will skip gracefully.
+EOF
+    exit 0
+}
+
+error() {
+    echo -e "${RED}ERROR: $*${NC}" >&2
+}
+
+info() {
+    echo -e "${BLUE}INFO: $*${NC}"
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            usage
+            ;;
+        --quick|-q)
+            QUICK_MODE=true
+            shift
+            ;;
+        --target|-t)
+            TARGET="${2:-}"
+            if [[ -z "$TARGET" ]]; then
+                error "Missing target argument"
+                exit 2
+            fi
+            shift 2
+            ;;
+        --binary|-b)
+            PRTIP="${2:-}"
+            if [[ -z "$PRTIP" ]]; then
+                error "Missing binary path argument"
+                exit 2
+            fi
+            shift 2
+            ;;
+        *)
+            error "Unknown option: $1"
+            echo "Run '$(basename "$0") --help' for usage"
+            exit 2
+            ;;
+    esac
+done
+
+# Apply environment variable overrides
+TARGET="${PRTIP_TARGET:-$TARGET}"
+
 echo "=========================================="
-echo "ProRT-IP v0.3.5 - Nmap Compatibility Tests"
+echo "ProRT-IP v0.3.6 - Nmap Compatibility Tests"
 echo "=========================================="
 echo ""
+info "Binary: $PRTIP"
+info "Target: $TARGET"
+info "Mode: $([ "$QUICK_MODE" = true ] && echo "Quick" || echo "Full")"
+echo ""
 
-# Check if prtip binary exists
-if [ ! -f "$PRTIP" ]; then
-    echo -e "${RED}ERROR: prtip binary not found at $PRTIP${NC}"
-    echo "Run: cargo build --release"
-    exit 1
-fi
+# Check prerequisites
+check_prerequisites() {
+    local missing=()
+
+    # Check if prtip binary exists
+    if [[ ! -f "$PRTIP" ]]; then
+        error "prtip binary not found at: $PRTIP"
+        echo "Run: cargo build --release"
+        exit 2
+    fi
+
+    # Check if binary is executable
+    if [[ ! -x "$PRTIP" ]]; then
+        error "prtip binary is not executable: $PRTIP"
+        echo "Run: chmod +x $PRTIP"
+        exit 2
+    fi
+
+    # Test binary works
+    if ! "$PRTIP" --version &>/dev/null; then
+        error "prtip binary failed to execute"
+        exit 2
+    fi
+
+    info "Prerequisites OK"
+}
+
+check_prerequisites
 
 # Test counter
 PASSED=0
@@ -133,13 +275,23 @@ echo -e "Failed: ${RED}$FAILED${NC}"
 echo "Total: $((PASSED + FAILED))"
 echo ""
 
-# Cleanup
+# Summary and cleanup
+echo ""
+echo "=========================================="
+echo "Cleanup"
+echo "=========================================="
+info "Removing temporary test files..."
 rm -f /tmp/prtip-test-*.txt /tmp/prtip-test-*.xml /tmp/prtip-test-*.gnmap
 
-if [ $FAILED -eq 0 ]; then
+echo ""
+if [[ $FAILED -eq 0 ]]; then
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${GREEN}All tests passed! ✓${NC}"
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     exit 0
 else
-    echo -e "${RED}Some tests failed. ✗${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}Some tests failed (${FAILED}/${PASSED + FAILED}). ✗${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     exit 1
 fi

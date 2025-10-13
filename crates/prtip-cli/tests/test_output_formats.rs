@@ -5,7 +5,7 @@
 #[path = "common/mod.rs"]
 mod common;
 
-use common::{init, run_prtip, create_temp_dir, cleanup_temp_dir, parse_json_output};
+use common::{cleanup_temp_dir, create_temp_dir, init, run_prtip};
 use std::fs;
 
 #[test]
@@ -31,9 +31,11 @@ fn test_json_output_file() {
 
     let output = run_prtip(&[
         "-sT",
-        "-p", "80",
-        "-oJ", output_file.to_str().unwrap(),
-        "127.0.0.1"
+        "-p",
+        "80",
+        "-oJ",
+        output_file.to_str().unwrap(),
+        "127.0.0.1",
     ]);
 
     if output.status.success() {
@@ -41,11 +43,14 @@ fn test_json_output_file() {
         assert!(output_file.exists(), "JSON output file not created");
 
         // Try to parse JSON
-        let content = fs::read_to_string(&output_file)
-            .expect("Failed to read JSON output file");
+        let content = fs::read_to_string(&output_file).expect("Failed to read JSON output file");
 
         let parsed: Result<serde_json::Value, _> = serde_json::from_str(&content);
-        assert!(parsed.is_ok(), "JSON output is not valid JSON: {:?}", parsed.err());
+        assert!(
+            parsed.is_ok(),
+            "JSON output is not valid JSON: {:?}",
+            parsed.err()
+        );
 
         // Check for expected fields
         if let Ok(json) = parsed {
@@ -69,9 +74,11 @@ fn test_xml_output_file() {
 
     let output = run_prtip(&[
         "-sT",
-        "-p", "80",
-        "-oX", output_file.to_str().unwrap(),
-        "127.0.0.1"
+        "-p",
+        "80",
+        "-oX",
+        output_file.to_str().unwrap(),
+        "127.0.0.1",
     ]);
 
     if output.status.success() {
@@ -79,10 +86,12 @@ fn test_xml_output_file() {
         assert!(output_file.exists(), "XML output file not created");
 
         // Check XML structure
-        let content = fs::read_to_string(&output_file)
-            .expect("Failed to read XML output file");
+        let content = fs::read_to_string(&output_file).expect("Failed to read XML output file");
 
-        assert!(content.contains("<?xml"), "XML output should have XML declaration");
+        assert!(
+            content.contains("<?xml"),
+            "XML output should have XML declaration"
+        );
         assert!(content.contains("<"), "XML output should contain tags");
     }
 
@@ -97,9 +106,11 @@ fn test_greppable_output_file() {
 
     let output = run_prtip(&[
         "-sT",
-        "-p", "80",
-        "-oG", output_file.to_str().unwrap(),
-        "127.0.0.1"
+        "-p",
+        "80",
+        "-oG",
+        output_file.to_str().unwrap(),
+        "127.0.0.1",
     ]);
 
     if output.status.success() {
@@ -107,8 +118,8 @@ fn test_greppable_output_file() {
         assert!(output_file.exists(), "Greppable output file not created");
 
         // Check greppable format (should have "Host:" lines)
-        let content = fs::read_to_string(&output_file)
-            .expect("Failed to read greppable output file");
+        let content =
+            fs::read_to_string(&output_file).expect("Failed to read greppable output file");
 
         // Greppable format has specific patterns
         assert!(
@@ -128,9 +139,11 @@ fn test_all_formats_output() {
 
     let output = run_prtip(&[
         "-sT",
-        "-p", "80",
-        "-oA", base_name.to_str().unwrap(),
-        "127.0.0.1"
+        "-p",
+        "80",
+        "-oA",
+        base_name.to_str().unwrap(),
+        "127.0.0.1",
     ]);
 
     // -oA may not be implemented yet, so just check that it doesn't crash
@@ -177,24 +190,25 @@ fn test_json_output_structure() {
 
     let output = run_prtip(&[
         "-sT",
-        "-p", "80,443",
-        "-oJ", output_file.to_str().unwrap(),
-        "127.0.0.1"
+        "-p",
+        "80,443",
+        "-oJ",
+        output_file.to_str().unwrap(),
+        "127.0.0.1",
     ]);
 
     if output.status.success() && output_file.exists() {
-        let content = fs::read(&output_file)
-            .expect("Failed to read JSON output");
+        let content = fs::read(&output_file).expect("Failed to read JSON output");
 
         if let Ok(json) = serde_json::from_slice::<serde_json::Value>(&content) {
             // Check basic structure (flexible to accommodate different schemas)
             if json.is_object() {
                 let obj = json.as_object().unwrap();
                 // Should have some fields related to scanning
-                let has_scan_fields = obj.contains_key("scan_id") ||
-                    obj.contains_key("targets") ||
-                    obj.contains_key("results") ||
-                    obj.contains_key("start_time");
+                let has_scan_fields = obj.contains_key("scan_id")
+                    || obj.contains_key("targets")
+                    || obj.contains_key("results")
+                    || obj.contains_key("start_time");
 
                 assert!(has_scan_fields, "JSON should contain scan-related fields");
             }
@@ -212,15 +226,16 @@ fn test_output_file_permissions() {
 
     let output = run_prtip(&[
         "-sT",
-        "-p", "80",
-        "-oN", output_file.to_str().unwrap(),
-        "127.0.0.1"
+        "-p",
+        "80",
+        "-oN",
+        output_file.to_str().unwrap(),
+        "127.0.0.1",
     ]);
 
     if output.status.success() && output_file.exists() {
         // File should be readable
-        let metadata = fs::metadata(&output_file)
-            .expect("Failed to get file metadata");
+        let metadata = fs::metadata(&output_file).expect("Failed to get file metadata");
 
         assert!(metadata.is_file(), "Output should be a regular file");
 

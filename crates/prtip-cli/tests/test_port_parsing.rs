@@ -110,9 +110,11 @@ fn test_all_ports() {
     let output = run_prtip(&[
         "-sT",
         "-p-",
-        "--timeout", "100",
-        "--rate", "1000",
-        "127.0.0.1"
+        "--timeout",
+        "100",
+        "--rate",
+        "1000",
+        "127.0.0.1",
     ]);
 
     // Should at least start scanning
@@ -252,12 +254,7 @@ fn test_empty_port_list() {
 fn test_port_range_large() {
     init();
     // Test large range
-    let output = run_prtip(&[
-        "-sT",
-        "-p", "1-1000",
-        "--timeout", "100",
-        "127.0.0.1"
-    ]);
+    let output = run_prtip(&["-sT", "-p", "1-1000", "--timeout", "100", "127.0.0.1"]);
 
     // Should at least start scanning
     if !output.status.success() {

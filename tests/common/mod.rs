@@ -2,6 +2,8 @@
 //!
 //! This module provides helper functions and utilities for integration tests.
 
+#![allow(dead_code)] // Test utilities may not all be used yet
+
 use std::fs;
 use std::net::{SocketAddr, TcpListener};
 use std::path::{Path, PathBuf};
@@ -14,9 +16,7 @@ static INIT: Once = Once::new();
 pub fn init() {
     INIT.call_once(|| {
         // Set up logging for tests
-        let _ = tracing_subscriber::fmt()
-            .with_env_filter("warn")
-            .try_init();
+        let _ = tracing_subscriber::fmt().with_env_filter("warn").try_init();
     });
 }
 
@@ -66,8 +66,14 @@ pub fn run_prtip_success(args: &[&str]) -> Output {
 /// Assert scan completed successfully
 pub fn assert_scan_success(output: &Output) {
     if !output.status.success() {
-        eprintln!("=== STDOUT ===\n{}", String::from_utf8_lossy(&output.stdout));
-        eprintln!("=== STDERR ===\n{}", String::from_utf8_lossy(&output.stderr));
+        eprintln!(
+            "=== STDOUT ===\n{}",
+            String::from_utf8_lossy(&output.stdout)
+        );
+        eprintln!(
+            "=== STDERR ===\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
         panic!("Scan failed with exit code: {:?}", output.status.code());
     }
 }
@@ -90,7 +96,10 @@ pub fn localhost() -> &'static str {
 /// Find an available port on localhost (for test servers)
 pub fn find_available_port() -> u16 {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to any port");
-    listener.local_addr().expect("Failed to get local address").port()
+    listener
+        .local_addr()
+        .expect("Failed to get local address")
+        .port()
 }
 
 /// Create temporary test directory
@@ -172,6 +181,7 @@ pub fn start_echo_server() -> (SocketAddr, std::thread::JoinHandle<()>) {
 
 #[cfg(test)]
 mod tests {
+    #![allow(unused_imports)]
     use super::*;
 
     #[test]

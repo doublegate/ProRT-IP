@@ -356,16 +356,16 @@ $ cargo build --release
 
 All release platforms build successfully after v0.3.5 post-release fixes:
 
-| Platform | Status | Notes |
-|----------|--------|-------|
-| x86_64-unknown-linux-gnu | ✅ Production | Debian, Ubuntu, Fedora, Arch |
-| x86_64-unknown-linux-musl | ✅ Production | Alpine Linux (FIXED in v0.3.6) |
-| aarch64-unknown-linux-gnu | ✅ Production | ARM64 servers (FIXED in v0.3.6) |
-| aarch64-unknown-linux-musl | ✅ Production | ARM64 Alpine (FIXED in v0.3.6) |
-| x86_64-pc-windows-msvc | ✅ Production | Windows 10+ |
-| x86_64-apple-darwin | ✅ Production | macOS Intel |
-| aarch64-apple-darwin | ✅ Production | macOS Apple Silicon |
-| x86_64-unknown-freebsd | ✅ Production | FreeBSD 12+ |
+| Platform | Status | Use Cases by Platform | Archive | Download |
+|----------|--------|----------------------|---------|----------|
+| x86_64-unknown-linux-gnu | ✅ Production | Ubuntu, Debian, Fedora, RHEL, CentOS | tar.gz | [prtip-0.3.6-x86_64-unknown-linux-gnu.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-unknown-linux-gnu.tar.gz) |
+| x86_64-unknown-linux-musl | ✅ Production (FIXED) | 🆕 Alpine Linux, Docker/containers, static linking | tar.gz | [prtip-0.3.6-x86_64-unknown-linux-musl.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-unknown-linux-musl.tar.gz) |
+| aarch64-unknown-linux-gnu | ✅ Production (FIXED) | 🆕 Raspberry Pi 4/5, ARM64 servers, AWS Graviton | tar.gz | [prtip-0.3.6-aarch64-unknown-linux-gnu.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-aarch64-unknown-linux-gnu.tar.gz) |
+| aarch64-unknown-linux-musl | ✅ Production (FIXED) | 🆕 ARM64 Alpine, static ARM builds, embedded systems | tar.gz | [prtip-0.3.6-aarch64-unknown-linux-musl.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-aarch64-unknown-linux-musl.tar.gz) |
+| x86_64-pc-windows-msvc | ✅ Production | Windows 10/11 (Requires Npcap) | zip | [prtip-0.3.6-x86_64-pc-windows-msvc.zip](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-pc-windows-msvc.zip) |
+| x86_64-apple-darwin | ✅ Production | Intel-based Macs (macOS 11+) | tar.gz | [prtip-0.3.6-x86_64-apple-darwin.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-apple-darwin.tar.gz) |
+| aarch64-apple-darwin | ✅ Production | M1/M2/M3/M4 Macs (macOS 11+) | tar.gz | [prtip-0.3.6-aarch64-apple-darwin.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-aarch64-apple-darwin.tar.gz) |
+| x86_64-unknown-freebsd | ✅ Production | FreeBSD 12+, pfSense, OPNsense | tar.gz | [prtip-0.3.6-x86_64-unknown-freebsd.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-unknown-freebsd.tar.gz) |
 
 **Platform Fixes (Post-v0.3.5):**
 

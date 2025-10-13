@@ -80,18 +80,18 @@ Comprehensive 5-tool profiling suite:
 
 ### All 8 Architectures Building Successfully ✅
 
-| Platform | Status | Download |
-|----------|--------|----------|
-| Linux x86_64 (glibc) | ✅ | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-x86_64-unknown-linux-gnu) |
-| Linux x86_64 (musl) | ✅ FIXED | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-x86_64-unknown-linux-musl) |
-| Linux ARM64 (glibc) | ✅ FIXED | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-aarch64-unknown-linux-gnu) |
-| Linux ARM64 (musl) | ✅ FIXED | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-aarch64-unknown-linux-musl) |
-| Windows x86_64 | ✅ | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-x86_64-pc-windows-msvc.exe) |
-| macOS Intel | ✅ | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-x86_64-apple-darwin) |
-| macOS Apple Silicon | ✅ | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-aarch64-apple-darwin) |
-| FreeBSD x86_64 | ✅ | [Download](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-x86_64-unknown-freebsd) |
+| Platform | Target Triple | Use Cases by Platform | Archive | Download |
+|----------|--------------|----------------------|---------|----------|
+| **Linux x86_64 (glibc)** | x86_64-unknown-linux-gnu | Ubuntu, Debian, Fedora, RHEL, CentOS | tar.gz | [prtip-0.3.6-x86_64-unknown-linux-gnu.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-unknown-linux-gnu.tar.gz) |
+| **Linux x86_64 (musl)** ✅ FIXED | x86_64-unknown-linux-musl | 🆕 Alpine Linux, Docker/containers, static linking | tar.gz | [prtip-0.3.6-x86_64-unknown-linux-musl.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-unknown-linux-musl.tar.gz) |
+| **Linux ARM64 (glibc)** ✅ FIXED | aarch64-unknown-linux-gnu | 🆕 Raspberry Pi 4/5, ARM64 servers, AWS Graviton | tar.gz | [prtip-0.3.6-aarch64-unknown-linux-gnu.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-aarch64-unknown-linux-gnu.tar.gz) |
+| **Linux ARM64 (musl)** ✅ FIXED | aarch64-unknown-linux-musl | 🆕 ARM64 Alpine, static ARM builds, embedded systems | tar.gz | [prtip-0.3.6-aarch64-unknown-linux-musl.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-aarch64-unknown-linux-musl.tar.gz) |
+| **Windows x86_64** | x86_64-pc-windows-msvc | Windows 10/11 (Requires Npcap) | zip | [prtip-0.3.6-x86_64-pc-windows-msvc.zip](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-pc-windows-msvc.zip) |
+| **macOS Intel** | x86_64-apple-darwin | Intel-based Macs (macOS 11+) | tar.gz | [prtip-0.3.6-x86_64-apple-darwin.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-apple-darwin.tar.gz) |
+| **macOS Apple Silicon** | aarch64-apple-darwin | M1/M2/M3/M4 Macs (macOS 11+) | tar.gz | [prtip-0.3.6-aarch64-apple-darwin.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-aarch64-apple-darwin.tar.gz) |
+| **FreeBSD x86_64** | x86_64-unknown-freebsd | FreeBSD 12+, pfSense, OPNsense | tar.gz | [prtip-0.3.6-x86_64-unknown-freebsd.tar.gz](https://github.com/doublegate/ProRT-IP/releases/download/v0.3.6/prtip-0.3.6-x86_64-unknown-freebsd.tar.gz) |
 
-**Note:** Download links will be active after release workflow completes.
+**✅ FIXED Platforms:** musl libc ioctl type mismatch and ARM64 OpenSSL cross-compilation issues resolved in this release.
 
 ---
 

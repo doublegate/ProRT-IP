@@ -613,8 +613,8 @@ impl OsProbeEngine {
             }
         }
 
-        // Calculate and set checksum (using cloned buffer for calculation)
-        let checksum = pnet_packet::icmp::checksum(&IcmpPacket::new(&icmp_buffer.clone()).unwrap());
+        // Calculate and set checksum
+        let checksum = pnet_packet::icmp::checksum(&IcmpPacket::new(&icmp_buffer).unwrap());
         {
             let mut icmp_packet = echo_request::MutableEchoRequestPacket::new(&mut icmp_buffer)
                 .ok_or_else(|| Error::Network("Failed to create ICMP packet".to_string()))?;
@@ -646,8 +646,8 @@ impl OsProbeEngine {
             ip_packet.set_payload(&icmp_buffer);
         }
 
-        // Calculate and set IP checksum (using cloned buffer for calculation)
-        let checksum = pnet_packet::ipv4::checksum(&Ipv4Packet::new(&ip_buffer.clone()).unwrap());
+        // Calculate and set IP checksum
+        let checksum = pnet_packet::ipv4::checksum(&Ipv4Packet::new(&ip_buffer).unwrap());
         {
             let mut ip_packet = pnet_packet::ipv4::MutableIpv4Packet::new(&mut ip_buffer)
                 .ok_or_else(|| Error::Network("Failed to create IP packet".to_string()))?;
@@ -845,7 +845,7 @@ impl OsProbeEngine {
         seq_data.insert("CI".to_string(), ci_pattern.clone());
 
         // II: Incremental IP ID (similar to CI but for all responses)
-        seq_data.insert("II".to_string(), ci_pattern);
+        seq_data.insert("II".to_string(), ci_pattern.clone());
 
         // SS: TCP timestamp option presence
         let has_timestamps = results.iter().any(|r| {

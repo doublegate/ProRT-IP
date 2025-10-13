@@ -254,7 +254,7 @@ impl ServiceDetector {
     fn substitute_captures(template: &str, captures: &regex::Captures) -> String {
         let mut result = template.to_string();
 
-        for i in 1..10 {
+        for i in 1..captures.len().min(10) {
             let placeholder = format!("${}", i);
             if let Some(cap) = captures.get(i) {
                 result = result.replace(&placeholder, cap.as_str());

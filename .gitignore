@@ -9,6 +9,7 @@ audit.toml.lock
 # IDE
 .idea/
 .vscode/
+.vs/
 .cursor/
 .fleet/
 .helix/

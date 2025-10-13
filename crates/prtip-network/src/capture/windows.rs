@@ -132,7 +132,7 @@ impl PacketCapture for WindowsCapture {
             .ok_or_else(|| Error::Network("Capture not open (call open() first)".to_string()))?;
 
         // Calculate timeout iterations
-        let iterations = (timeout_ms + 99) / 100; // Round up
+        let iterations = timeout_ms.div_ceil(100);
 
         for _ in 0..iterations {
             match rx.next() {

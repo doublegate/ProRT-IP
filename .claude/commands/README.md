@@ -1,13 +1,13 @@
 # ProRT-IP Custom Commands
 
 **Location:** `.claude/commands/`
-**Count:** 13 commands
+**Count:** 14 commands
 **Purpose:** Development workflow automation for Claude Code
-**Updated:** 2025-10-11
+**Updated:** 2025-10-13
 
 ## Overview
 
-This directory contains 13 custom slash commands designed to streamline the ProRT-IP development workflow when using [Claude Code](https://claude.com/claude-code). These commands automate repetitive tasks, enforce quality standards, and provide comprehensive development utilities.
+This directory contains 14 custom slash commands designed to streamline the ProRT-IP development workflow when using [Claude Code](https://claude.com/claude-code). These commands automate repetitive tasks, enforce quality standards, and provide comprehensive development utilities.
 
 ### Command Categories
 
@@ -29,10 +29,11 @@ This directory contains 13 custom slash commands designed to streamline the ProR
    - `/doc-update` - Quick documentation sync
    - `/bug-report` - Comprehensive bug report generation
 
-5. **Workflow Automation** (3 commands)
+5. **Workflow Automation** (4 commands)
    - `/sub-agent` - Launch specialized sub-agent tasks
    - `/stage-commit` - Comprehensive pre-commit workflow
    - `/mem-reduce` - Memory bank optimization
+   - `/daily-log` - End-of-day comprehensive consolidation
 
 ---
 
@@ -608,6 +609,97 @@ git push
 
 ---
 
+### 14. `/daily-log` - End-of-Day Consolidation
+
+**Purpose:** Create comprehensive daily log that consolidates all development activity, preserves temporary files, and generates historical record
+
+**Background:** Automates the 2.5-hour manual daily log creation process into a systematic 80-minute workflow. Ensures zero information loss on system reboots by preserving all /tmp/ files and documenting complete development history.
+
+**Usage:**
+```bash
+/daily-log              # Create daily log for today
+```
+
+**Process (6 Phases):**
+1. **Initialize** (5 min) - Create directory structure for today
+2. **Scan Files** (10 min) - Discover temporary files from /tmp/, docs/, root
+3. **Extract Data** (10 min) - Git history, metrics, CI status
+4. **Organize Files** (15 min) - Categorize and move/copy files
+5. **Generate README** (30 min) - Comprehensive 10-20 page master summary
+6. **Verify & Report** (10 min) - Validation and completion metrics
+
+**Creates:**
+```
+daily_logs/YYYY-MM-DD/
+├── README.md (10-20 pages) - Comprehensive daily summary
+├── 01-commits/          - Git history, diffs, timeline
+├── 02-releases/         - Release notes and artifacts
+├── 03-ci-fixes/         - CI troubleshooting docs
+├── 04-documentation/    - Documentation updates
+├── 05-optimization/     - Performance work
+├── 06-sessions/         - Session summaries
+├── 07-metrics/          - Tests, coverage, CI status
+└── 08-artifacts/        - Temporary files preserved
+```
+
+**File Scanning (4 Priority Levels):**
+1. **Priority 1:** /tmp/ProRT-IP/ - MOVE all files (explicit temp)
+2. **Priority 2:** /tmp/ - MOVE project files (ProRT, prtip, scan)
+3. **Priority 3:** docs/ - COPY temporary files (draft, tmp, WIP)
+4. **Priority 4:** Root - COPY temporary .md files (RELEASE, DRAFT, etc.)
+
+**Smart Categorization:**
+- Release files → 02-releases/
+- CI/workflow files → 03-ci-fixes/
+- Optimization/performance → 05-optimization/
+- Conversation/session → 06-sessions/
+- Metrics/coverage → 07-metrics/
+- Analysis/reports → 08-artifacts/
+
+**Master README Contents:**
+- Executive summary (2-3 paragraphs)
+- Detailed timeline (hour-by-hour sessions)
+- Major accomplishments (3-7 with details)
+- Complete commit summary (table)
+- Files modified (categorized)
+- Temporary files preserved (inventory)
+- Metrics & statistics (current state)
+- Decisions made (with rationale)
+- Issues encountered & resolved
+- Next steps (actionable recommendations)
+
+**Quality Standards:**
+- **Length:** 10-20 pages minimum (5,000-10,000 words)
+- **Detail:** Every commit documented (2-4 paragraphs each)
+- **Completeness:** 100% (all files, commits, metrics)
+- **Grade:** A+ target (99/100)
+
+**When to Use:**
+- End of development day (before shutdown)
+- After major milestones (releases, phase completions)
+- Before system reboots (preserve /tmp/ files)
+- Weekly consolidation (Friday end of day)
+
+**Benefits:**
+- **Zero Information Loss** - All temp files preserved before reboot
+- **Historical Record** - Complete development history
+- **Time Savings** - 80 min vs 2.5 hours manual
+- **Reference Material** - CI fixes, optimizations, decisions
+- **Documentation** - Comprehensive daily summaries
+
+**Example Workflow:**
+```bash
+# End of day routine
+/daily-log                                # Create comprehensive log
+# Review: daily_logs/YYYY-MM-DD/README.md
+# All /tmp/ProRT-IP/ files now preserved
+# Safe to reboot - no information loss
+```
+
+**Reference Example:** See `daily_logs/2025-10-13/` (1.5MB, 32 files, 57KB master README)
+
+---
+
 ## Common Workflows
 
 ### Daily Development
@@ -627,6 +719,9 @@ git commit
 # ... fix bug ...
 /test-quick <pattern>                # Verify fix
 /doc-update fix "Description"        # Document fix
+
+# End of day
+/daily-log                           # Consolidate activity, preserve files
 ```
 
 ### Sprint-Based Development
@@ -790,6 +885,6 @@ When adding new custom commands:
 
 ---
 
-**Last Updated:** 2025-10-11
-**Command Count:** 13
-**Total Lines:** ~4,200 lines across all commands
+**Last Updated:** 2025-10-13
+**Command Count:** 14
+**Total Lines:** ~5,400 lines across all commands

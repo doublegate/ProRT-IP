@@ -36,10 +36,10 @@ fn test_nmap_syn_scan_flag() {
     // Should either succeed or fail with permission error (not parsing error)
     if !output.status.success() {
         assert!(
-            stderr.contains("privilege") ||
-            stderr.contains("permission") ||
-            stderr.contains("root") ||
-            stderr.contains("CAP_NET_RAW"),
+            stderr.contains("privilege")
+                || stderr.contains("permission")
+                || stderr.contains("root")
+                || stderr.contains("CAP_NET_RAW"),
             "Expected privilege error, got: {}",
             stderr
         );
@@ -55,9 +55,9 @@ fn test_nmap_connect_scan_flag() {
     // Should succeed (connect scan doesn't require privileges)
     // Note: might fail if port is actually in use, but that's okay
     assert!(
-        output.status.success() ||
-        String::from_utf8_lossy(&output.stderr).contains("timeout") ||
-        String::from_utf8_lossy(&output.stderr).contains("refused"),
+        output.status.success()
+            || String::from_utf8_lossy(&output.stderr).contains("timeout")
+            || String::from_utf8_lossy(&output.stderr).contains("refused"),
         "Connect scan should work or fail with connection error, not parsing error"
     );
 }
@@ -146,9 +146,11 @@ fn test_output_normal_flag() {
 
     let output = run_prtip(&[
         "-sT",
-        "-p", "80",
-        "-oN", output_file.to_str().unwrap(),
-        "127.0.0.1"
+        "-p",
+        "80",
+        "-oN",
+        output_file.to_str().unwrap(),
+        "127.0.0.1",
     ]);
 
     // Check if output file was created (if scan succeeded)
@@ -164,16 +166,20 @@ fn test_mixed_syntax() {
     init();
     // Mix nmap and ProRT-IP flags
     let output = run_prtip(&[
-        "-sT",           // nmap flag
-        "--timeout", "1000",  // ProRT-IP flag
-        "-p", "80",      // nmap flag
-        "127.0.0.1"
+        "-sT", // nmap flag
+        "--timeout",
+        "1000", // ProRT-IP flag
+        "-p",
+        "80", // nmap flag
+        "127.0.0.1",
     ]);
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(
-            !stderr.contains("parse") && !stderr.contains("invalid") && !stderr.contains("conflict"),
+            !stderr.contains("parse")
+                && !stderr.contains("invalid")
+                && !stderr.contains("conflict"),
             "Mixed syntax failed: {}",
             stderr
         );

@@ -2,7 +2,7 @@
 //!
 //! Uses Criterion for statistical benchmarking.
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::time::Duration;
 
 // Import common utilities
@@ -103,9 +103,12 @@ fn bench_output_formats(c: &mut Criterion) {
             let json_file = temp_dir.join("bench.json");
             b.iter(|| {
                 let output = common::run_prtip(&[
-                    "-sT", "-p", "80",
-                    "-oJ", json_file.to_str().unwrap(),
-                    "127.0.0.1"
+                    "-sT",
+                    "-p",
+                    "80",
+                    "-oJ",
+                    json_file.to_str().unwrap(),
+                    "127.0.0.1",
                 ]);
                 black_box(output);
             });

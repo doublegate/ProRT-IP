@@ -6,11 +6,11 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 
 **ProRT-IP WarScan**: Modern network scanner combining Masscan/ZMap speed (1M+ pps stateless) with Nmap detection depth.
 
-**Status**: Phase 4 COMPLETE (Sprint 4.1-4.14) + **v0.3.6 Production (Performance Regression Fix)**. 492 tests (100%), OS fingerprinting, service detection, 20+ nmap-compatible flags, 7 scan types, greppable output, top ports database, cyber-punk CLI, sendmmsg batching, CDN detection, decoy scanning, adaptive parallelism, 10 custom commands. CI/CD 7/7 passing, 8/8 release targets (100%). Zero TODOs/stubs/debt. 4.6% performance improvement + 3x stability gain.
+**Status**: Phase 4 COMPLETE (Sprint 4.1-4.14) + **v0.3.7 Testing Infrastructure Complete**. 789 tests (100%), 61.92% code coverage (exceeds 60% target), comprehensive testing infrastructure with cargo-tarpaulin, Criterion.rs benchmarks with v0.3.7 baseline, 67 integration tests, OS fingerprinting, service detection, 20+ nmap-compatible flags, 7 scan types, greppable output, top ports database. CI/CD 7/7 passing, 8/8 release targets (100%). Zero TODOs/stubs/debt.
 
 **Repository**: <https://github.com/doublegate/ProRT-IP>
 **License**: GPL-3.0
-**Updated**: 2025-10-12
+**Updated**: 2025-10-13
 
 ## Architecture
 

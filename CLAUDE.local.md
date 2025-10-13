@@ -1,18 +1,19 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-12 | **Phase:** Phase 4 COMPLETE + v0.3.6 Performance Fix ✅ | **Tests:** 492/492 ✅
+**Updated:** 2025-10-13 | **Phase:** Phase 4 COMPLETE + v0.3.7 Testing Infrastructure ✅ | **Tests:** 789/789 ✅ | **Coverage:** 61.92% ✅
 
 ## Current Status
 
-**Milestone:** v0.3.6 Released - **Performance Regression Fix COMPLETE ✅**
+**Milestone:** v0.3.7 Released - **Testing Infrastructure COMPLETE ✅**
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase** | Phase 4 COMPLETE | All sprints + performance optimization |
+| **Phase** | Phase 4 COMPLETE | All sprints + testing infrastructure |
 | **CI Status** | 7/7 passing (100%) | Format, Clippy, Test×3, MSRV, Security |
 | **Release Platforms** | 8/8 building (100%) | All architectures (musl + ARM64 fixed) |
-| **Tests** | 492/492 (100%) | Zero regressions, zero warnings |
-| **Version** | **v0.3.6** | 4.6% faster + 3x more stable |
+| **Tests** | 789/789 (100%) | +297 tests (+60% increase) |
+| **Coverage** | **61.92%** | 1,821/2,941 lines (exceeds 60% target) |
+| **Version** | **v0.3.7** | Testing infrastructure complete |
 | **Performance** | 66ms (common ports) | 2.3-35x faster than competitors |
 | **Validation** | ✅ PASSED | 100% accuracy vs nmap |
 | **Known Issues** | 0 | All Phase 4 issues RESOLVED ✅ |
@@ -49,6 +50,32 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 # Custom Commands
 /rust-check | /test-quick PATTERN | /sprint-complete | /perf-profile
 ```
+
+## File Organization Standards
+
+**CRITICAL RULE:** Temporary files MUST use `/tmp/ProRT-IP/` directory structure.
+
+### Temporary Files (Always in /tmp/ProRT-IP/)
+- Release notes drafts (GITHUB-RELEASE-*.md, RELEASE-NOTES-*.md)
+- Performance profiling data (perf.data, perf.data.old)
+- Ad-hoc analysis reports
+- Scratch files and intermediate outputs
+
+### Permanent Files (Proper Project Locations)
+- **Benchmarks:** `benchmarks/02-Phase4_Final-Bench/perf/` (named: 01-perf-1K.data)
+- **Documentation:** `docs/` (numbered: 17-TESTING-INFRASTRUCTURE.md)
+- **Scripts:** `scripts/` (production quality with headers)
+- **Tests:** `tests/` or `crates/*/tests/` (integration tests)
+- **Bug Analysis:** `bug_fix/01-Issue-Name/` (organized by issue)
+
+### Cleanup Completed (2025-10-13)
+Removed 4 temporary files from root (19.4MB freed):
+- ✅ GITHUB-RELEASE-v0.3.6.md (8.7KB) - Used for v0.3.6 tag/release
+- ✅ RELEASE-NOTES-v0.3.6.md (15KB) - Used for v0.3.6 documentation
+- ✅ perf.data (17MB) - Ad-hoc profiling, superseded by benchmarks/
+- ✅ perf.data.old (2.4MB) - Old profiling data, no longer needed
+
+**Note:** Proper perf data is saved in `benchmarks/02-Phase4_Final-Bench/perf/` with descriptive names.
 
 ## Recent Sessions (Last 48 Hours)
 

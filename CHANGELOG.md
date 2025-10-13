@@ -13,6 +13,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.7] - 2025-10-13
+
+### Added
+
+**Testing Infrastructure Complete:**
+- **Code Coverage:** Comprehensive cargo-tarpaulin setup with HTML reports
+  - Overall coverage: 61.92% (1,821/2,941 lines) - exceeds 60% industry baseline
+  - Coverage by crate: prtip-core (~65%), prtip-network (~55%), prtip-scanner (~62%), prtip-cli (~66%)
+  - Configuration: `code_cov/tarpaulin.toml` with exclusions (tests/, code_ref/, benchmarks/)
+  - HTML reports: Interactive coverage visualization with line-by-line analysis
+  - CI integration ready: Lcov output for Codecov/Coveralls
+
+- **Integration Tests:** 67 comprehensive CLI integration tests
+  - CLI argument parsing: 18 tests (nmap compatibility, mixed syntax, privilege-aware)
+  - Output format validation: 12 tests (JSON, XML, greppable, text)
+  - Port parsing edge cases: 20 tests (CIDR, ranges, invalid values)
+  - Scan type execution: 17 tests (Connect, SYN, UDP, stealth scans)
+  - Shared test utilities: 203-line common module with helpers
+  - Test fixtures: JSON sample data for realistic scenarios
+
+- **Benchmark Infrastructure:** Criterion.rs baseline system
+  - 8 benchmark suites: binary_startup (2), port_parsing (3), localhost_scan (3), output_formats (2)
+  - Baseline storage: `benchmarks/baselines/v0.3.7/` with git-tracked Criterion data
+  - Performance metrics: Startup 2.2ms, parsing <2ns, localhost scan 5.3ms
+  - Regression detection: Compare against baseline with statistical significance (p<0.05)
+  - Comprehensive usage guide: `benchmarks/baselines/README.md` (22KB)
+
+- **Documentation:** Comprehensive testing infrastructure guide
+  - New file: `docs/17-TESTING-INFRASTRUCTURE.md` (45KB, ~2,100 lines)
+  - Testing philosophy: Pragmatic coverage targets, behavior-focused testing
+  - Test organization: Unit, integration, benchmark hierarchy
+  - 8 test categories documented with examples and rationale
+  - Running tests: Quick smoke test, full suite, coverage, benchmarks
+  - Writing new tests: Templates for unit, integration, and benchmarks
+  - Future work: Async mocking, property testing, mutation testing, CI integration
+
+- **Unit Tests:** +297 new tests across all crates
+  - Banner grabber: +26 tests (HTTP, SSH, FTP, SMTP, DNS, SNMP protocol parsing)
+  - Service detection: +19 tests (probe loading, matching, configuration, intensity levels)
+  - Configuration management: 15+ tests (defaults, overrides, validation, platform-specific)
+  - Error handling: 20+ tests (network errors, permissions, input validation, resource exhaustion)
+
+### Changed
+
+- **Test Count:** 492 → 789 tests (+297 tests, +60% increase)
+- **Coverage:** 52.06% → 61.92% (+9.86 percentage points)
+- **Infrastructure:** Established baseline for Phase 5 testing enhancements
+
+### Metrics
+
+- **Total Tests:** 789 (492 unit + 67 integration + 230 crate-level)
+- **Pass Rate:** 100% (789/789 passing)
+- **Coverage:** 61.92% overall (1,821/2,941 lines covered)
+- **Benchmarks:** 8 suites with v0.3.7 baseline established
+- **Documentation:** +45KB testing guide, +22KB benchmark guide
+
+### Technical Details
+
+**Code Coverage Infrastructure:**
+- Tool: cargo-tarpaulin 0.31+ with HTML and Lcov output
+- Configuration: Excludes tests/, benches/, code_ref/ (rationale documented)
+- Workflow: `cd code_cov && cargo tarpaulin --out Html`
+- Reports: Interactive HTML with line-by-line coverage visualization
+
+**Integration Tests:**
+- Location: `crates/prtip-cli/tests/` (5 test files)
+- Common utilities: Privilege detection, binary path resolution, output parsing
+- Fixtures: JSON test data in `fixtures/` directory
+- Privilege-aware: Auto-skip tests requiring elevated privileges
+
+**Benchmark Baselines:**
+- Platform: Intel i9-10850K, 62GB RAM, Linux 6.17.1, Rust 1.90.0
+- Storage: Git-tracked in `benchmarks/baselines/v0.3.7/`
+- Usage: `cargo bench --bench benchmarks -- --baseline v0.3.7`
+- Future: CI performance regression checks planned (Phase 5)
+
+### Future Work (Phase 5)
+
+**Planned Testing Enhancements:**
+- Async network I/O mocking: +10-15% coverage potential (network crate 55% → 70%+)
+- Real network scan scenarios: Production confidence validation
+- Property-based testing: Edge case discovery with proptest
+- Mutation testing: Test quality validation with cargo-mutants
+- Fuzz testing: Security vulnerability discovery
+- CI performance checks: Automated regression detection on PRs
+- Coverage reporting: Codecov/Coveralls integration with PR diffs
+
+---
+
 ## [0.3.6] - 2025-10-12
 
 ### Fixed

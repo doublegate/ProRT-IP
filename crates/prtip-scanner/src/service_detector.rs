@@ -300,4 +300,213 @@ mod tests {
         let detector = ServiceDetector::new(db, 15);
         assert_eq!(detector.intensity, 9); // Clamped to max
     }
+
+    #[test]
+    fn test_intensity_zero() {
+        let db = ServiceProbeDb::new();
+        let detector = ServiceDetector::new(db, 0);
+        assert_eq!(detector.intensity, 0);
+    }
+
+    #[test]
+    fn test_intensity_boundary() {
+        let db = ServiceProbeDb::new();
+
+        // Test boundary values
+        let detector_9 = ServiceDetector::new(db.clone(), 9);
+        assert_eq!(detector_9.intensity, 9);
+
+        let detector_10 = ServiceDetector::new(db.clone(), 10);
+        assert_eq!(detector_10.intensity, 9); // Clamped
+
+        let detector_255 = ServiceDetector::new(db, 255);
+        assert_eq!(detector_255.intensity, 9); // Clamped
+    }
+
+    #[test]
+    fn test_set_timeout() {
+        let db = ServiceProbeDb::new();
+        let mut detector = ServiceDetector::new(db, 7);
+
+        // Test timeout modification
+        detector.set_timeout(Duration::from_secs(10));
+        assert_eq!(detector.timeout, Duration::from_secs(10));
+
+        detector.set_timeout(Duration::from_millis(500));
+        assert_eq!(detector.timeout, Duration::from_millis(500));
+    }
+
+    #[test]
+    fn test_default_timeout() {
+        let db = ServiceProbeDb::new();
+        let detector = ServiceDetector::new(db, 7);
+        assert_eq!(detector.timeout, Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_substitute_captures_no_placeholders() {
+        let pattern = Regex::new(r"Server: (\S+)").unwrap();
+        let text = "Server: nginx";
+
+        if let Some(captures) = pattern.captures(text) {
+            let result = ServiceDetector::substitute_captures("Static text", &captures);
+            assert_eq!(result, "Static text");
+        }
+    }
+
+    #[test]
+    fn test_substitute_captures_multiple() {
+        let pattern = Regex::new(r"(\w+)/(\d+\.\d+) on (\w+)").unwrap();
+        let text = "Apache/2.4 on Linux";
+
+        if let Some(captures) = pattern.captures(text) {
+            let result = ServiceDetector::substitute_captures("$1 ver $2 ($3)", &captures);
+            assert_eq!(result, "Apache ver 2.4 (Linux)");
+        }
+    }
+
+    #[test]
+    fn test_substitute_captures_missing_group() {
+        let pattern = Regex::new(r"(\w+)").unwrap();
+        let text = "nginx";
+
+        if let Some(captures) = pattern.captures(text) {
+            // $2 doesn't exist, should remain as-is
+            let result = ServiceDetector::substitute_captures("$1 and $2", &captures);
+            assert_eq!(result, "nginx and $2");
+        }
+    }
+
+    #[test]
+    fn test_substitute_captures_all_groups() {
+        let pattern = Regex::new(r"(\w+)/(\w+)/(\w+)/(\w+)/(\w+)").unwrap();
+        let text = "a/b/c/d/e";
+
+        if let Some(captures) = pattern.captures(text) {
+            let result = ServiceDetector::substitute_captures("$1 $2 $3 $4 $5", &captures);
+            assert_eq!(result, "a b c d e");
+        }
+    }
+
+    #[test]
+    fn test_service_info_creation() {
+        let info = ServiceInfo {
+            service: "http".to_string(),
+            product: Some("nginx".to_string()),
+            version: Some("1.18.0".to_string()),
+            extra_info: Some("Ubuntu".to_string()),
+            hostname: Some("example.com".to_string()),
+            os_type: Some("Linux".to_string()),
+            device_type: Some("general purpose".to_string()),
+            cpe: vec!["cpe:/a:nginx:nginx:1.18.0".to_string()],
+            method: "pattern match".to_string(),
+        };
+
+        assert_eq!(info.service, "http");
+        assert_eq!(info.product, Some("nginx".to_string()));
+        assert_eq!(info.version, Some("1.18.0".to_string()));
+        assert_eq!(info.method, "pattern match");
+    }
+
+    #[test]
+    fn test_service_info_minimal() {
+        let info = ServiceInfo {
+            service: "unknown".to_string(),
+            product: None,
+            version: None,
+            extra_info: None,
+            hostname: None,
+            os_type: None,
+            device_type: None,
+            cpe: Vec::new(),
+            method: "no match".to_string(),
+        };
+
+        assert_eq!(info.service, "unknown");
+        assert_eq!(info.product, None);
+        assert_eq!(info.version, None);
+        assert_eq!(info.method, "no match");
+        assert!(info.cpe.is_empty());
+    }
+
+    #[test]
+    fn test_service_info_clone() {
+        let info = ServiceInfo {
+            service: "ssh".to_string(),
+            product: Some("OpenSSH".to_string()),
+            version: Some("8.2".to_string()),
+            extra_info: None,
+            hostname: None,
+            os_type: None,
+            device_type: None,
+            cpe: Vec::new(),
+            method: "banner".to_string(),
+        };
+
+        let cloned = info.clone();
+        assert_eq!(cloned.service, info.service);
+        assert_eq!(cloned.product, info.product);
+        assert_eq!(cloned.version, info.version);
+    }
+
+    #[test]
+    fn test_service_info_debug() {
+        let info = ServiceInfo {
+            service: "http".to_string(),
+            product: Some("Apache".to_string()),
+            version: Some("2.4".to_string()),
+            extra_info: None,
+            hostname: None,
+            os_type: None,
+            device_type: None,
+            cpe: Vec::new(),
+            method: "test".to_string(),
+        };
+
+        let debug_str = format!("{:?}", info);
+        assert!(debug_str.contains("http"));
+        assert!(debug_str.contains("Apache"));
+        assert!(debug_str.contains("2.4"));
+    }
+
+    #[test]
+    fn test_detector_with_empty_db() {
+        let db = ServiceProbeDb::new();
+        let detector = ServiceDetector::new(db, 7);
+        assert_eq!(detector.intensity, 7);
+        assert_eq!(detector.timeout, Duration::from_secs(5));
+    }
+
+    #[test]
+    fn test_multiple_cpe_entries() {
+        let info = ServiceInfo {
+            service: "http".to_string(),
+            product: Some("nginx".to_string()),
+            version: Some("1.18.0".to_string()),
+            extra_info: None,
+            hostname: None,
+            os_type: None,
+            device_type: None,
+            cpe: vec![
+                "cpe:/a:nginx:nginx:1.18.0".to_string(),
+                "cpe:/a:nginx:nginx".to_string(),
+            ],
+            method: "pattern".to_string(),
+        };
+
+        assert_eq!(info.cpe.len(), 2);
+        assert!(info.cpe[0].contains("1.18.0"));
+        assert!(!info.cpe[1].contains("1.18.0"));
+    }
+
+    #[test]
+    fn test_substitute_with_special_characters() {
+        let pattern = Regex::new(r"Server: ([^\s]+)").unwrap();
+        let text = "Server: nginx/1.18.0(Ubuntu)";
+
+        if let Some(captures) = pattern.captures(text) {
+            let result = ServiceDetector::substitute_captures("Found: $1", &captures);
+            assert_eq!(result, "Found: nginx/1.18.0(Ubuntu)");
+        }
+    }
 }

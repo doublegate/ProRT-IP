@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Fixed
 
-- Future changes will be documented here
+- **Windows CI:** Fixed integration test failures by adding .exe extension handling in binary path resolution (18 tests now passing on Windows)
 
 ---
 

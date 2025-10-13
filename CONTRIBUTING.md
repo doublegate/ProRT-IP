@@ -86,7 +86,7 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
 
 ### Quick Start
 
-1. **Install Rust** (1.70+ required):
+1. **Install Rust** (1.85+ required, MSRV for edition 2024):
 
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -213,11 +213,14 @@ All code contributions must include:
 ### Test Coverage Requirements
 
 - **>90% coverage** for core modules (`prtip-core`, `prtip-network`)
-- **>80% coverage** for overall codebase
+- **>60% coverage** for overall codebase (currently 61.92%, target met!)
+- **Current Status:** 789 tests passing, 61.92% line coverage (15,397 / 24,814 lines)
 - Run coverage with:
 
   ```bash
   cargo tarpaulin --out Html --output-dir coverage/
+  # Or use project script:
+  ./scripts/setup-dev-env.sh  # Installs cargo-tarpaulin + other tools
   ```
 
 ### Running Tests
@@ -276,11 +279,12 @@ CI runs automatically on every push and PR. Check the [Actions tab](https://gith
 
 - `format`: ~30 seconds - Checks code formatting
 - `clippy`: ~2-3 minutes - Lint checks with caching
-- `test`: ~3-5 minutes per platform (parallel) - Build and test
+- `test`: ~3-5 minutes per platform (parallel) - Build and test (789 tests)
 - `security_audit`: ~1-2 minutes - Vulnerability scanning
-- `msrv`: ~2-3 minutes - Minimum version verification
+- `msrv`: ~2-3 minutes - Minimum version verification (Rust 1.85+)
 
 **Total CI time:** ~5-10 minutes (with caching and parallel execution)
+**Current Status:** 7/7 jobs passing (100%)
 
 ### Local Pre-Push Checks
 

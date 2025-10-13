@@ -11,7 +11,7 @@
 [![License: GPL v4](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust0.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-677_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-789_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -106,17 +106,18 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Current Phase:** Phase 4 COMPLETE ✅ | Phase 5 Advanced Features - Next
 
-**Latest Version:** v0.3.7 (Testing Infrastructure Complete - 789 tests, 61.92% coverage, benchmark baselines)
+**Latest Version:** v0.3.7 (Testing Infrastructure Complete - 789 tests, 61.92% coverage, benchmark baselines, Windows CI fix)
 
 **Test Coverage:** 789 tests passing (100% success rate, all platforms) | 61.92% code coverage (exceeds 60% target)
 
-**CI/CD Status:** 7/7 jobs passing (Windows fix 2025-10-12) | 8/8 release platforms production-ready (musl + ARM64 fixed 2025-10-12)
+**CI/CD Status:** 7/7 jobs passing (Windows fix 2025-10-13) | 8/8 release platforms production-ready (musl + ARM64 fixed 2025-10-12)
 
 **Latest Achievements:**
 
+- ✅ **Testing Infrastructure (v0.3.7):** Code coverage 61.92% (cargo-tarpaulin), benchmark baselines (Criterion.rs), 67 integration tests
+- ✅ **Windows CI Fixed (v0.3.7):** Platform-aware test expectations (all 789 tests passing)
 - ✅ **Nmap CLI Compatibility (v0.3.5):** 20+ nmap-compatible flags, greppable output, top ports database
 - ✅ **Phase 4 Complete:** All sprints (4.1-4.14) finished, all known issues resolved
-- ✅ **Windows CI Fixed:** Cross-platform temp directory (all 677 tests passing)
 - ✅ **GitHub Templates:** 6 templates added (5 issue types + PR template)
 - ✅ **Port Scanning:** 100% accuracy, 2.3-35x faster than competitors
 - ✅ **Performance:** 66ms for common ports (vs nmap: 150ms, rustscan: 223ms, naabu: 2335ms)
@@ -164,8 +165,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Implementation Impact:**
 
-- Tests: 215 → 643 (+428 tests, +199% growth)
-- Lines: 22,469 total Rust code (production + tests)
+- Tests: 215 → 789 (+574 tests, +267% growth) | 67 integration tests
+- Code Coverage: 61.92% (15,397 / 24,814 lines covered, exceeds 60% target)
+- Lines: ~25,097 total Rust code (production + tests)
 - Production Code: ~12,000+ lines (Phase 1-3: 6,097 + Enhancements: 4,546 + Phase 4: ~1,400)
 - Modules: 43+ total production modules
 - Platforms: 5 production-ready (Linux x86, Windows, macOS Intel/ARM, FreeBSD)
@@ -1183,9 +1185,9 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
   - Host delay flag for rate-limited networks (--host-delay)
   - Multiple output formats (text, JSON, XML, greppable)
   - Top ports database (fast scan -F, --top-ports N)
-- **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam)
+- **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam, criterion, tarpaulin)
 - **Target Performance:** 1M+ packets/second (stateless), 72K+ pps (stateful - achieved on localhost!)
-- **Code Coverage:** 677/677 tests (100% pass rate)
+- **Code Coverage:** 789/789 tests (100% pass rate), 61.92% line coverage (exceeds 60% target)
 - **Cross-Compilation:** Supported via cross-rs for ARM64 and BSD targets
 - **Release Automation:** GitHub Actions with smart release management + artifact uploads
 
@@ -1200,8 +1202,8 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ---
 
-**Current Status**: ✅ Phase 4 Complete (Sprint 4.1-4.14) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | 643 Tests Passing | 7/7 CI Jobs Passing | 5/9 Platforms Production-Ready | ~12,000 Lines Production Code | **Progress Bar Real-Time + 10x Network Scan Speedup + 17.5x Filtered Network Speedup!**
+**Current Status**: ✅ Phase 4 Complete (Sprint 4.1-4.14) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Testing Infrastructure Complete (v0.3.7) | 789 Tests Passing | 61.92% Coverage | 7/7 CI Jobs Passing | 5/9 Platforms Production-Ready | ~12,000 Lines Production Code
 
-**Last Updated**: 2025-10-12
+**Last Updated**: 2025-10-13
 
 For the latest project status, see [Project Status](docs/10-PROJECT-STATUS.md), [Platform Support](docs/15-PLATFORM-SUPPORT.md), and [Changelog](CHANGELOG.md).

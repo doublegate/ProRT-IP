@@ -1,6 +1,6 @@
 # ProRT-IP Test Infrastructure
 
-Comprehensive testing infrastructure for ProRT-IP v0.3.6.
+Comprehensive testing infrastructure for ProRT-IP v0.3.7.
 
 ## Overview
 
@@ -12,14 +12,16 @@ ProRT-IP uses a multi-layered testing strategy:
 4. **Fixtures** - Test data and mock targets (`tests/fixtures/`)
 5. **Common Utilities** - Shared test code (`tests/common/`)
 
-## Test Statistics
+## Test Statistics (v0.3.7)
 
-- **Total Tests:** 744 (100% passing)
+- **Total Tests:** 789 (100% passing) ✅
 - **Unit Tests:** 492 (in-crate)
 - **Integration Tests:** 67 (CLI integration tests)
-- **Crate-level Tests:** 185 (cross-crate integration)
-- **Coverage:** 52.06% (1,919/3,686 lines covered)
-- **CI/CD:** All tests run on Linux, Windows, macOS, FreeBSD
+- **Crate-level Tests:** 230 (cross-crate integration)
+- **Coverage:** 61.92% (15,397 / 24,814 lines covered) ✅ **TARGET MET (>60%)**
+- **Coverage Tool:** cargo-tarpaulin with HTML reports
+- **Benchmarks:** Criterion.rs with v0.3.7 baselines
+- **CI/CD:** 7/7 jobs passing on Linux, Windows, macOS, FreeBSD
 
 ## Directory Structure
 

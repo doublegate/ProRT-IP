@@ -29,15 +29,22 @@ pub fn get_binary_path() -> PathBuf {
     workspace_root.pop(); // Remove prtip-cli
     workspace_root.pop(); // Remove crates
 
+    // Binary name differs on Windows (.exe extension)
+    let binary_name = if cfg!(target_os = "windows") {
+        "prtip.exe"
+    } else {
+        "prtip"
+    };
+
     let mut debug_path = workspace_root.clone();
     debug_path.push("target");
     debug_path.push("debug");
-    debug_path.push("prtip");
+    debug_path.push(binary_name);
 
     let mut release_path = workspace_root.clone();
     release_path.push("target");
     release_path.push("release");
-    release_path.push("prtip");
+    release_path.push(binary_name);
 
     // Try release first (faster), then debug
     if release_path.exists() {

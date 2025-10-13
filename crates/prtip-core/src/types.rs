@@ -204,8 +204,13 @@ impl fmt::Display for PortRange {
             PortRange::Single(port) => write!(f, "{}", port),
             PortRange::Range(start, end) => write!(f, "{}-{}", start, end),
             PortRange::List(ranges) => {
-                let parts: Vec<String> = ranges.iter().map(|r| r.to_string()).collect();
-                write!(f, "{}", parts.join(","))
+                for (i, range) in ranges.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ",")?;
+                    }
+                    write!(f, "{}", range)?;
+                }
+                Ok(())
             }
         }
     }

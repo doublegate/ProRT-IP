@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Windows CI:** Fixed integration test failures by adding .exe extension handling in binary path resolution (18 tests now passing on Windows)
+- **Cross-Platform Tests:** Made `test_invalid_ip` test more robust to handle different DNS error messages across Windows, Linux, and macOS platforms
 
 ---
 

@@ -9,7 +9,7 @@
 | Metric | Value | Details |
 |--------|-------|---------|
 | **Phase** | Phase 4 COMPLETE | All sprints + testing infrastructure |
-| **CI Status** | 7/7 passing (100%) | Format, Clippy, Test×3, MSRV, Security |
+| **CI Status** | 6/7 passing (86%) | Format, Clippy, Test×2, MSRV, Security (Windows fix pending) |
 | **Release Platforms** | 8/8 building (100%) | All architectures (musl + ARM64 fixed) |
 | **Tests** | 789/789 (100%) | +297 tests (+60% increase) |
 | **Coverage** | **61.92%** | 1,821/2,941 lines (exceeds 60% target) |
@@ -81,6 +81,8 @@ Removed 4 temporary files from root (19.4MB freed):
 
 | Date | Sprint/Task | Focus | Duration | Key Results | Status |
 |------|-------------|-------|----------|-------------|--------|
+| 10-13 | **Windows CI Fix** | **Binary path .exe extension** | **~1h** | **Fixed Windows integration test failures (15 tests), added platform-specific binary name handling (cfg! conditional), comprehensive root cause analysis, zero runtime overhead** | **✅** |
+| 10-13 | **v0.3.7 Release - Testing Infrastructure Complete** | **Git tag + GitHub release creation** | **~3h** | **Comprehensive release notes (75KB full, 15KB GitHub), git tag v0.3.7 created and pushed, 789 tests (61.92% coverage), benchmark baselines (195 files), release instructions** | **✅** |
 | 10-12 | **Scripts Audit & Testing Infrastructure** | **Comprehensive automation overhaul** | **~4h** | **7 new scripts (51KB), enhanced test-nmap-compat.sh, tests/ infrastructure, archived 3 deprecated scripts, 32KB documentation (scripts/README + tests/README), 14 files changed, 3019 insertions** | **✅** |
 | 10-12 | **v0.3.6 Release Preparation** | **Comprehensive release workflow** | **3h** | **Release notes (2 files, 22KB), CHANGELOG update, memory bank sync, quality checks (492 tests, 0 warnings), git tag, GitHub push** | **✅** |
 | 10-12 | **Performance Regression Fix (v0.3.6)** | **Implement 3-part fix strategy** | **2h** | **Removed 19 debug statements, optimized polling (200µs→1ms), CLI fast path, 6.5ms→6.2ms (4.6% improvement), 3x stability gain** | **✅** |

@@ -1,0 +1,4 @@
+Error:
+The benchmarks/02-Phase4_Final-Bench/perf/01-perf-1K.data data has no samples!
+# To display the perf.data header info, please use --header/--header-only options.
+#

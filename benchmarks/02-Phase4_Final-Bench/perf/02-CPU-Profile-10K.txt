@@ -1,0 +1,97 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 9  of event 'cycles:Pu'
+# Event count (approx.): 48646372
+#
+# Children      Self  Command          Shared Object     Symbol                
+# ........  ........  ...............  ................  ......................
+#
+    16.94%    16.94%  prtip            libc.so.6         [.] 0x00000000000b58f7
+            |
+            ---0x7fc0868b58fd
+
+    16.94%     0.00%  prtip            libc.so.6         [.] 0x00007fc0868b58fd
+            |
+            ---0x7fc0868b58fd
+
+    10.38%    10.38%  prtip            libc.so.6         [.] 0x00000000000b8df9
+            |
+            ---0x7fc0868b8dfb
+
+    10.38%    10.38%  prtip            prtip             [.] 0x00000000003c4e2f
+            |
+            ---0x555e1787de33
+
+    10.38%    10.38%  prtip            [unknown]         [.] 0000000000000000
+            |
+            ---0x555e1787dfc4
+
+    10.38%    10.38%  tokio-runtime-w  libc.so.6         [.] __sched_yield
+            |
+            ---__sched_yield
+
+    10.38%    10.38%  tokio-runtime-w  libc.so.6         [.] 0x00000000000ba17d
+            |
+            ---0x19d10100007f0002
+               posix_memalign
+               0x7fc0868ba184
+
+    10.38%    10.38%  tokio-runtime-w  prtip             [.] 0x00000000003c59e7
+            |
+            ---0x555e1787e9ee
+
+    10.38%    10.38%  tokio-runtime-w  prtip             [.] 0x0000000000417880
+            |
+            ---0x555e178d0882
+
+    10.38%    10.38%  tokio-runtime-w  prtip             [.] 0x0000000000668761
+            |
+            ---0x555e17b21768
+
+    10.38%     0.00%  prtip            libc.so.6         [.] 0x00007fc0868b8dfb
+            |
+            ---0x7fc0868b8dfb
+
+    10.38%     0.00%  prtip            prtip             [.] 0x0000555e1787de33
+            |
+            ---0x555e1787de33
+
+    10.38%     0.00%  prtip            prtip             [.] 0x0000555e1787dfc4
+            |
+            ---0x555e1787dfc4
+
+    10.38%     0.00%  tokio-runtime-w  [unknown]         [.] 0x19d10100007f0002
+            |
+            ---0x19d10100007f0002
+               posix_memalign
+               0x7fc0868ba184
+
+    10.38%     0.00%  tokio-runtime-w  libc.so.6         [.] posix_memalign
+            |
+            ---posix_memalign
+               0x7fc0868ba184
+
+    10.38%     0.00%  tokio-runtime-w  libc.so.6         [.] 0x00007fc0868ba184
+            |
+            ---0x7fc0868ba184
+
+    10.38%     0.00%  tokio-runtime-w  prtip             [.] 0x0000555e1787e9ee
+            |
+            ---0x555e1787e9ee
+
+    10.38%     0.00%  tokio-runtime-w  prtip             [.] 0x0000555e178d0882
+            |
+            ---0x555e178d0882
+
+    10.38%     0.00%  tokio-runtime-w  prtip             [.] 0x0000555e17b21768
+            |
+            ---0x555e17b21768
+
+
+
+#
+# (Tip: To record every process run by a user: perf record -u <user>)
+#

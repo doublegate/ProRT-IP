@@ -1,0 +1,42 @@
+{
+  "comment": "Expected output patterns for validation",
+  "text_output_patterns": [
+    "Starting ProRT-IP",
+    "Scan complete",
+    "PORT\\s+STATE\\s+SERVICE"
+  ],
+  "json_output_schema": {
+    "required_fields": [
+      "scan_id",
+      "start_time",
+      "end_time",
+      "targets",
+      "results"
+    ],
+    "result_fields": [
+      "ip",
+      "port",
+      "state",
+      "protocol"
+    ]
+  },
+  "xml_output_patterns": [
+    "<?xml version=\"1.0\"",
+    "<nmaprun",
+    "<host>",
+    "<ports>",
+    "<port protocol="
+  ],
+  "greppable_output_patterns": [
+    "Host: ",
+    "Ports: ",
+    "Status: "
+  ],
+  "port_states": [
+    "open",
+    "closed",
+    "filtered",
+    "open|filtered",
+    "closed|filtered"
+  ]
+}

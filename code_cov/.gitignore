@@ -1,0 +1,16 @@
+# Ignore generated coverage reports
+*.html
+*.xml
+*.json
+*.info
+*.lcov
+cobertura.xml
+lcov.info
+
+# Keep configuration and documentation
+!tarpaulin.toml
+!README.md
+!.gitignore
+
+# Ignore tarpaulin cache
+.tarpaulin-*

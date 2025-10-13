@@ -14,32 +14,39 @@ ProRT-IP uses a multi-layered testing strategy:
 
 ## Test Statistics
 
-- **Total Tests:** 492 (100% passing)
-- **Unit Tests:** ~450 (in-crate)
-- **Integration Tests:** ~42 (cross-crate)
-- **Coverage:** >80% overall, >90% core modules
+- **Total Tests:** 744 (100% passing)
+- **Unit Tests:** 492 (in-crate)
+- **Integration Tests:** 67 (CLI integration tests)
+- **Crate-level Tests:** 185 (cross-crate integration)
+- **Coverage:** 52.06% (1,919/3,686 lines covered)
 - **CI/CD:** All tests run on Linux, Windows, macOS, FreeBSD
 
 ## Directory Structure
 
 ```
 tests/
-├── README.md                      # This file
-├── integration/                   # Integration tests
-│   ├── test_scan_types.rs        # All 7 scan types
-│   ├── test_output_formats.rs    # Text, JSON, XML, greppable
-│   └── test_cli_compatibility.rs # Nmap flag compatibility
-├── performance/                   # Performance tests
-│   ├── benchmarks.rs              # Criterion benchmarks
-│   └── regression_tests.rs        # Performance regression detection
-├── fixtures/                      # Test data
-│   ├── sample_nmap_outputs/
-│   └── test_service_probes.txt
-└── common/                        # Shared utilities
-    ├── mod.rs
-    ├── mock_server.rs             # Test server spawning
-    └── assertions.rs              # Custom test assertions
+├── README.md                          # This file
+├── common/                            # Shared test utilities
+│   └── mod.rs                         # Common functions, assertions, helpers
+├── fixtures/                          # Test data files
+│   ├── sample_targets.json            # Test targets and expected results
+│   ├── nmap_compatible_flags.json     # Nmap flag compatibility data
+│   ├── expected_outputs.json          # Output format validation patterns
+│   └── README.md                      # Fixture documentation
+├── performance/                       # Performance benchmarks
+│   ├── benchmarks.rs                  # Criterion benchmarks
+│   └── README.md                      # Benchmark documentation
+└── crates/prtip-cli/tests/           # CLI integration tests
+    ├── test_cli_args.rs               # CLI argument parsing (18 tests)
+    ├── test_output_formats.rs         # Output format generation (12 tests)
+    ├── test_port_parsing.rs           # Port specification parsing (20 tests)
+    ├── test_scan_types.rs             # Scan type execution (17 tests)
+    ├── integration.rs                 # Existing integration tests (29 tests)
+    ├── common/                        # CLI test utilities
+    └── fixtures/                      # CLI test fixtures
 ```
+
+**Note:** Integration tests are located in `crates/prtip-cli/tests/` to have access to the compiled binary.
 
 ## Running Tests
 
@@ -55,20 +62,42 @@ cargo test --lib
 
 ### Integration Tests
 ```bash
-cargo test --test test_scan_types
-cargo test --test test_output_formats
-cargo test --test test_cli_compatibility
+# Run all CLI integration tests
+cargo test --package prtip-cli --tests
+
+# Run specific test suite
+cargo test --package prtip-cli --test test_scan_types
+cargo test --package prtip-cli --test test_output_formats
+cargo test --package prtip-cli --test test_cli_args
+cargo test --package prtip-cli --test test_port_parsing
 ```
 
 ### Performance Benchmarks
 ```bash
+# Run all benchmarks
 cargo bench
+
+# Run specific benchmark
+cargo bench --bench benchmarks
 ```
 
-### With Coverage
+### Code Coverage
 ```bash
-cargo tarpaulin --out Html
+# Generate HTML coverage report
+cargo tarpaulin --out Html --output-dir code_cov
+
+# Generate HTML + Lcov (for CI)
+cargo tarpaulin --config code_cov/tarpaulin.toml
+
+# View report
+xdg-open code_cov/tarpaulin-report.html  # Linux
+open code_cov/tarpaulin-report.html      # macOS
 ```
+
+**Current Coverage:** 52.06% (1,919/3,686 lines)
+**Target:** 70%+ overall, 90%+ for core modules
+
+See [`code_cov/README.md`](../code_cov/README.md) for detailed coverage information.
 
 ### Specific Test Pattern
 ```bash
@@ -96,41 +125,63 @@ cargo test nmap_compat
 
 ### 2. Integration Tests
 
-**Location:** `tests/integration/`
+**Location:** `crates/prtip-cli/tests/`
 
-**Purpose:** Test cross-crate functionality and user-facing features.
+**Purpose:** Test CLI functionality, argument parsing, and end-to-end scan execution.
 
-#### test_scan_types.rs
+**Total:** 67 integration tests across 4 test suites
 
-Tests all 7 scan types:
-- TCP Connect (baseline)
-- SYN (requires root/CAP_NET_RAW)
-- UDP (common protocols)
-- FIN, NULL, Xmas (stealth)
-- ACK (firewall mapping)
+#### test_scan_types.rs (17 tests)
+
+Tests all scan types:
+- TCP Connect scan (no privileges required)
+- TCP SYN scan (with/without privileges)
+- UDP scan (protocol payloads)
+- Stealth scans (FIN, NULL, Xmas)
+- ACK scan (firewall mapping)
+- Scan timing and rate limiting
+- Fast scan (-F flag)
 
 **Run:** `cargo test --test test_scan_types`
 
-#### test_output_formats.rs
+#### test_output_formats.rs (12 tests)
 
 Tests all output formats:
-- Text (human-readable, colorized)
-- JSON (valid JSON, correct schema)
-- XML (valid XML, nmap-compatible)
-- Greppable (correct format, parseable)
+- Text output (human-readable, colorized)
+- JSON output (valid JSON, correct schema)
+- XML output (valid XML, nmap-compatible)
+- Greppable output (-oG format)
+- All formats output (-oA flag)
+- File permissions and creation
 
 **Run:** `cargo test --test test_output_formats`
 
-#### test_cli_compatibility.rs
+#### test_cli_args.rs (18 tests)
 
-Tests nmap CLI compatibility (20+ flags):
-- Scan type aliases (-sS, -sT, -sN, -sF, -sX)
-- Port specification (-F, --top-ports, -p)
-- Output modes (-oN, -oX, -oG)
-- Verbosity (-v, -vv, -vvv)
-- Mixed syntax (nmap + ProRT-IP)
+Tests CLI argument parsing and nmap compatibility:
+- Help and version flags
+- Scan type aliases (-sS, -sT, -sU, -sF, -sN, -sX, -sA)
+- Port specification (-p, -F)
+- Timing templates (-T0 through -T5)
+- Output flags (-oN, -oX, -oG)
+- Verbose flag (-v)
+- Mixed syntax (nmap + ProRT-IP flags)
+- Invalid argument handling
 
-**Run:** `cargo test --test test_cli_compatibility`
+**Run:** `cargo test --test test_cli_args`
+
+#### test_port_parsing.rs (20 tests)
+
+Tests port specification parsing:
+- Single port (-p 80)
+- Port range (-p 1-1000)
+- Port list (-p 22,80,443)
+- Mixed specification (-p 22,80-85,443)
+- All ports (-p-)
+- Top ports (-F, --top-ports)
+- Boundary values and error handling
+
+**Run:** `cargo test --test test_port_parsing`
 
 ---
 

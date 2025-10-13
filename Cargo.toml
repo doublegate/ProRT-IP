@@ -85,3 +85,5 @@ debug = true
 
 [profile.test]
 opt-level = 1
+
+# Note: Benchmarks are configured in crates/prtip-cli/Cargo.toml

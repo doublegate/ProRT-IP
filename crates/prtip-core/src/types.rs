@@ -185,7 +185,7 @@ impl PortRange {
 
     /// Get iterator over all ports in this range
     pub fn iter(&self) -> PortRangeIterator {
-        PortRangeIterator::new(self.clone())
+        PortRangeIterator::new(self)
     }
 
     /// Count total ports in range
@@ -219,10 +219,10 @@ pub struct PortRangeIterator {
 }
 
 impl PortRangeIterator {
-    fn new(range: PortRange) -> Self {
+    fn new(range: &PortRange) -> Self {
         let ranges = match range {
-            PortRange::List(list) => list,
-            single => vec![single],
+            PortRange::List(list) => list.clone(),
+            single => vec![single.clone()],
         };
 
         let current_port = if let Some(first) = ranges.first() {

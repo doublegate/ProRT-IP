@@ -390,7 +390,7 @@ sudo cpupower frequency-set -g performance
 
 ## Advanced Optimizations
 
-### Zero-Copy Packet Building (v0.3.9+)
+### Zero-Copy Packet Building (v0.3.8+)
 
 ProRT-IP automatically uses zero-copy packet building for maximum performance:
 
@@ -399,7 +399,7 @@ ProRT-IP automatically uses zero-copy packet building for maximum performance:
 - 100% allocation elimination (no GC pauses)
 - Better scaling at high packet rates (1M+ pps)
 
-**No configuration needed** - zero-copy is enabled by default in v0.3.9+.
+**No configuration needed** - zero-copy is enabled by default in v0.3.8+.
 
 **Benchmarks:**
 ```bash

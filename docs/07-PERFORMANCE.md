@@ -322,9 +322,9 @@ impl PacketBufferPool {
 
 **Impact:** Reduces allocation overhead by 80%+
 
-**Phase 4 Sprint 4.17 Implementation (v0.3.9+):**
+**Phase 4 Sprint 4.17 Implementation (v0.3.8+):**
 
-As of v0.3.9, ProRT-IP has implemented zero-copy packet building with thread-local buffer pools:
+As of v0.3.8, ProRT-IP has implemented zero-copy packet building with thread-local buffer pools:
 
 1. **PacketBuffer Infrastructure**
    - File: `crates/prtip-network/src/packet_buffer.rs` (251 lines)

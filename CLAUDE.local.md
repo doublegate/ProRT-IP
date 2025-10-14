@@ -1,10 +1,10 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-13 | **Phase:** Phase 4 COMPLETE + v0.3.9 Zero-Copy Optimization ✅ | **Tests:** 790/790 ✅ | **Coverage:** 61.92% ✅
+**Updated:** 2025-10-13 | **Phase:** Phase 4 COMPLETE + v0.3.8 Zero-Copy Optimization ✅ | **Tests:** 790/790 ✅ | **Coverage:** 61.92% ✅
 
 ## Current Status
 
-**Milestone:** v0.3.9 Released - **Sprint 4.17 COMPLETE ✅ (Performance I/O Optimization)**
+**Milestone:** v0.3.8 Released - **Sprint 4.17 COMPLETE ✅ (Performance I/O Optimization)**
 
 | Metric | Value | Details |
 |--------|-------|---------|
@@ -13,7 +13,7 @@
 | **Release Platforms** | 8/8 building (100%) | All architectures (musl + ARM64 fixed) |
 | **Tests** | 790/790 (100%) | +197 tests from Sprint 4.17 |
 | **Coverage** | **61.92%** | 15,397/24,814 lines (exceeds 60% target) |
-| **Version** | **v0.3.9** | Zero-copy optimization complete |
+| **Version** | **v0.3.8** | Zero-copy optimization complete |
 | **Performance** | 58.8ns/packet | 15% improvement (was 68.3ns) |
 | **Allocations** | 0 in hot path | 100% elimination (was 3-7M/sec) |
 | **Known Issues** | 0 | All Phase 4 issues RESOLVED ✅ |
@@ -47,7 +47,7 @@
 - `SPRINT-4.17-COMPLETE.md` - Comprehensive 3-phase summary (~800 lines)
 - `docs/PERFORMANCE-GUIDE.md` - User-facing optimization guide (~550 lines)
 - `docs/07-PERFORMANCE.md` - Zero-copy section (+80 lines)
-- `RELEASE-NOTES-v0.3.9.md` - Complete release documentation (~1,000 lines)
+- `RELEASE-NOTES-v0.3.8.md` - Complete release documentation (~1,000 lines)
 - README.md, CHANGELOG.md - Updated with Sprint 4.17 completion
 
 **Strategic Value:**

@@ -106,7 +106,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Current Phase:** Phase 4 COMPLETE ✅ | Phase 5 Advanced Features - Next
 
-**Latest Version:** v0.3.9-alpha (Sprint 4.17 COMPLETE - Zero-copy optimization, 15% performance improvement)
+**Latest Version:** v0.3.8-alpha (Sprint 4.17 COMPLETE - Zero-copy optimization, 15% performance improvement)
 
 **Test Coverage:** 790 tests passing (100% success rate, all platforms) | 61.92% code coverage (exceeds 60% target)
 
@@ -114,10 +114,10 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Latest Achievements:**
 
-- ✅ **Sprint 4.17 COMPLETE - Performance I/O Optimization (v0.3.9-alpha):** Zero-copy packet building (15% faster, 100% allocation elimination), PacketBuffer infrastructure (thread-local pools), SYN scanner integration (proof-of-concept), comprehensive benchmarks (Criterion.rs, 9 benchmarks), performance documentation (PERFORMANCE-GUIDE.md, 8,150+ lines total), 790 tests passing, zero regressions
-- 🎯 **Performance I/O Optimization - Phase 3 (v0.3.9-alpha, Sprint 4.17):** Scanner integration (SYN scanner zero-copy), Criterion benchmarks (15% faster, statistically significant), flamegraph infrastructure, performance testing scripts, 1,650+ lines documentation, 790 tests passing
-- 🚀 **Performance I/O Optimization - Phase 2 (v0.3.9-alpha, Sprint 4.17):** Zero-copy packet building (PacketBuffer infrastructure), 5x faster packet crafting (~800ns per packet), 0 allocations in hot path (was 3-7), 25-50% CPU reduction @ 1M+ pps, 249 new tests (788 total)
-- ✅ **Performance I/O Optimization - Phase 1 (v0.3.9-alpha, Sprint 4.17):** Batch I/O benchmarks (sendmmsg/recvmmsg), zero-copy allocation audit, --mmsg-batch-size CLI flag, strategic roadmap for 1M+ pps target
+- ✅ **Sprint 4.17 COMPLETE - Performance I/O Optimization (v0.3.8-alpha):** Zero-copy packet building (15% faster, 100% allocation elimination), PacketBuffer infrastructure (thread-local pools), SYN scanner integration (proof-of-concept), comprehensive benchmarks (Criterion.rs, 9 benchmarks), performance documentation (PERFORMANCE-GUIDE.md, 8,150+ lines total), 790 tests passing, zero regressions
+- 🎯 **Performance I/O Optimization - Phase 3 (v0.3.8-alpha, Sprint 4.17):** Scanner integration (SYN scanner zero-copy), Criterion benchmarks (15% faster, statistically significant), flamegraph infrastructure, performance testing scripts, 1,650+ lines documentation, 790 tests passing
+- 🚀 **Performance I/O Optimization - Phase 2 (v0.3.8-alpha, Sprint 4.17):** Zero-copy packet building (PacketBuffer infrastructure), 5x faster packet crafting (~800ns per packet), 0 allocations in hot path (was 3-7), 25-50% CPU reduction @ 1M+ pps, 249 new tests (788 total)
+- ✅ **Performance I/O Optimization - Phase 1 (v0.3.8-alpha, Sprint 4.17):** Batch I/O benchmarks (sendmmsg/recvmmsg), zero-copy allocation audit, --mmsg-batch-size CLI flag, strategic roadmap for 1M+ pps target
 - ✅ **CLI Compatibility & Help System (v0.3.8, Sprint 4.16):** Git-style categorized help (9 categories), 50+ nmap-compatible flags (2.5x increase), 20+ example scenarios, <30s feature discoverability
 - ✅ **Testing Infrastructure (v0.3.7):** Code coverage 61.92% (cargo-tarpaulin), benchmark baselines (Criterion.rs), 67 integration tests
 - ✅ **Windows CI Fixed (v0.3.7):** Platform-aware test expectations

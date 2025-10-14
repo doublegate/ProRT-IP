@@ -3,9 +3,13 @@
 //! Detects NUMA nodes and CPU core layout using hwloc library.
 //! Falls back gracefully to single-node on non-NUMA systems or unsupported platforms.
 
-use super::error::{NumaError, Result};
+use super::error::Result;
+#[cfg(all(target_os = "linux", feature = "numa"))]
+use super::error::NumaError;
 use std::collections::HashMap;
-use tracing::{debug, info, warn};
+use tracing::debug;
+#[cfg(all(target_os = "linux", feature = "numa"))]
+use tracing::{info, warn};
 
 /// NUMA topology information
 ///

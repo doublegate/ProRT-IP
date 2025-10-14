@@ -125,6 +125,7 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-14 | **v0.3.8 Release Notes Upgrade** | Comprehensive tag/release notes | ~2h | Enhanced v0.3.8 tag (1,050 lines vs 38 before), GitHub release (651 lines), memory bank standards updated, matches v0.3.7 quality | ✅ |
 | 10-13 | **Sprint 4.16 Complete** | CLI Compatibility & Help System | <8h | Git-style help (9 categories, 2,086 lines), 50+ nmap flags (2.5x increase), 23 examples, 38+ new tests (539+ total), <30s discoverability, zero regressions | ✅ |
 | 10-13 | **Sprint 4.15 Complete** | Service Detection Enhancement (TLS) | ~8h | TLS handshake module (550 lines), 70-80% detection rate (up from 50%), 12 new tests, --no-tls flag, zero regressions | ✅ |
 | 10-13 | **/inspire-me Command + Phase 4 Analysis** | Competitive analysis & enhancement planning | ~3.5h | 18,500-word roadmap, 8 sprints (4.15-4.22), analyzed 4 competitors, created /inspire-me command | ✅ |
@@ -215,10 +216,50 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 **Archive**: Sessions older than 7 days moved to git history (Phases 1-3, Sprints 4.1-4.11, early Phase 4 sessions)
 
+## Release Standards (Updated 2025-10-14)
+
+**CRITICAL:** ALL releases MUST have extensive, technically detailed tag messages and GitHub release notes.
+
+### Required Tag Message Sections (100-150 lines minimum):
+1. **Executive Summary** - 1-2 paragraphs, strategic impact
+2. **What's New** - Detailed breakdown of ALL features/sprints
+3. **Performance Improvements** - Metrics tables with comparisons
+4. **Technical Details** - Architecture, implementation specifics
+5. **Files Changed** - Comprehensive list with line counts
+6. **Testing & Quality** - Test counts, coverage, CI/CD status
+7. **Documentation** - New/updated docs with line counts
+8. **Strategic Value** - Impact on project goals
+9. **Future Work** - Next steps, remaining work
+
+### Required GitHub Release Notes (150-200 lines):
+- All tag message content (markdown formatted)
+- Links to documentation
+- Installation instructions
+- Platform compatibility matrix
+- Known issues
+- Asset download section
+
+### Quality Standard:
+- **Reference:** v0.3.7 and v0.3.8 release notes (extensive, technically detailed)
+- **Length:** 100-200 lines for tag, 150-200 for GitHub
+- **Depth:** Architecture details, implementation specifics, metrics
+- **Accuracy:** Cross-reference against sprint docs, CHANGELOG, README
+
+### Process:
+1. Read /tmp/ProRT-IP/RELEASE-NOTES-v*.md (comprehensive base)
+2. Read SPRINT-*-COMPLETE.md files (detailed context)
+3. Review commits since last release (git log v0.X.Y..v0.X.Z)
+4. Create comprehensive tag message (100-150 lines)
+5. Create GitHub release notes (150-200 lines, markdown)
+6. Verify completeness against quality standard
+7. Delete old tag, create new comprehensive tag
+8. Push tag to GitHub
+
 ## Key Decisions
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2025-10-14 | Release notes MUST be extensive | v0.3.8 initially insufficient, established quality standard based on v0.3.7 (100-200 lines, technically detailed with metrics, architecture, file lists) |
 | 2025-10-13 | Document Windows loopback test failures | 4 SYN discovery tests fail on Windows due to loopback limitations - expected behavior |
 | 2025-10-07 | Rate Limiter burst=10 | Balance responsiveness + courtesy |
 | 2025-10-07 | Test timeouts 5s | CI variability, prevent false failures |

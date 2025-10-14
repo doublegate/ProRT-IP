@@ -1936,6 +1936,7 @@ name = "prtip-network"
 version = "0.3.7"
 dependencies = [
  "anyhow",
+ "criterion",
  "etherparse",
  "libc",
  "nix",

@@ -32,10 +32,16 @@ impl HelpSystem {
 
         // Initialize all 9 categories
         categories.insert("scan-types".to_string(), Self::scan_types_category());
-        categories.insert("host-discovery".to_string(), Self::host_discovery_category());
+        categories.insert(
+            "host-discovery".to_string(),
+            Self::host_discovery_category(),
+        );
         categories.insert("port-specs".to_string(), Self::port_specs_category());
         categories.insert("timing".to_string(), Self::timing_category());
-        categories.insert("service-detection".to_string(), Self::service_detection_category());
+        categories.insert(
+            "service-detection".to_string(),
+            Self::service_detection_category(),
+        );
         categories.insert("os-detection".to_string(), Self::os_detection_category());
         categories.insert("output".to_string(), Self::output_category());
         categories.insert("stealth".to_string(), Self::stealth_category());
@@ -60,7 +66,8 @@ impl HelpSystem {
         sorted_categories.sort_by_key(|c| &c.name);
 
         for category in sorted_categories {
-            println!("  {}  {}",
+            println!(
+                "  {}  {}",
                 category.name.bright_yellow().bold(),
                 category.description.dimmed()
             );
@@ -81,7 +88,12 @@ impl HelpSystem {
         let topic_lower = topic.to_lowercase();
 
         if let Some(category) = self.categories.get(&topic_lower) {
-            println!("{}", format!("ProRT-IP Help: {}", category.name).bright_white().bold());
+            println!(
+                "{}",
+                format!("ProRT-IP Help: {}", category.name)
+                    .bright_white()
+                    .bold()
+            );
             println!("{}", "=".repeat(60).bright_cyan());
             println!();
             println!("{}", category.detailed_help);
@@ -100,14 +112,22 @@ impl HelpSystem {
     pub fn show_examples(&self) {
         let examples = Self::get_examples();
 
-        println!("{}", "ProRT-IP WarScan - Usage Examples".bright_white().bold());
+        println!(
+            "{}",
+            "ProRT-IP WarScan - Usage Examples".bright_white().bold()
+        );
         println!("{}", "=".repeat(60).bright_cyan());
         println!();
         println!("Common scanning scenarios and their commands:");
         println!();
 
         for (i, example) in examples.iter().enumerate() {
-            println!("{}", format!("{}. {}", i + 1, example.title).bright_white().bold());
+            println!(
+                "{}",
+                format!("{}. {}", i + 1, example.title)
+                    .bright_white()
+                    .bold()
+            );
             println!("   {}", example.command.bright_cyan());
             println!("   {}", example.description.dimmed());
             println!();
@@ -125,7 +145,8 @@ impl HelpSystem {
     fn scan_types_category() -> HelpCategory {
         HelpCategory {
             name: "scan-types".to_string(),
-            description: "TCP/UDP scan techniques (SYN, Connect, FIN, NULL, Xmas, ACK, UDP)".to_string(),
+            description: "TCP/UDP scan techniques (SYN, Connect, FIN, NULL, Xmas, ACK, UDP)"
+                .to_string(),
             detailed_help: format!(
                 "{}\n\n\
                 ProRT-IP supports 7 different scan types, each with specific use cases:\n\n\
@@ -750,7 +771,8 @@ impl HelpSystem {
     fn misc_category() -> HelpCategory {
         HelpCategory {
             name: "misc".to_string(),
-            description: "Miscellaneous options (verbosity, interfaces, privileges, version)".to_string(),
+            description: "Miscellaneous options (verbosity, interfaces, privileges, version)"
+                .to_string(),
             detailed_help: format!(
                 "{}\n\n\
                 Miscellaneous options and utilities:\n\n\
@@ -879,7 +901,8 @@ impl HelpSystem {
             Example {
                 title: "Stealth FIN scan with slow timing".to_string(),
                 command: "prtip -sF -T0 target.com".to_string(),
-                description: "Stealthy scan using FIN packets and paranoid timing (very slow)".to_string(),
+                description: "Stealthy scan using FIN packets and paranoid timing (very slow)"
+                    .to_string(),
             },
             Example {
                 title: "Fast scan of top 100 ports".to_string(),
@@ -904,7 +927,8 @@ impl HelpSystem {
             Example {
                 title: "Save results in XML format".to_string(),
                 command: "prtip -sS -p 80,443 -oX scan.xml 10.0.0.0/24".to_string(),
-                description: "Export results in Nmap-compatible XML for tool integration".to_string(),
+                description: "Export results in Nmap-compatible XML for tool integration"
+                    .to_string(),
             },
             Example {
                 title: "Save results in all formats".to_string(),
@@ -914,17 +938,20 @@ impl HelpSystem {
             Example {
                 title: "Scan top 1000 ports with service detection".to_string(),
                 command: "prtip --top-ports 1000 -sV target.com".to_string(),
-                description: "Thorough scan of 1000 most common ports with version detection".to_string(),
+                description: "Thorough scan of 1000 most common ports with version detection"
+                    .to_string(),
             },
             Example {
                 title: "Show only open ports from large scan".to_string(),
                 command: "prtip --open -p- 192.168.1.0/24".to_string(),
-                description: "Scan all ports but only display open results (reduce noise)".to_string(),
+                description: "Scan all ports but only display open results (reduce noise)"
+                    .to_string(),
             },
             Example {
                 title: "ACK scan for firewall rule mapping".to_string(),
                 command: "prtip -sA -p 80,443 target.com".to_string(),
-                description: "Determine if ports are filtered by firewall (not open/closed)".to_string(),
+                description: "Determine if ports are filtered by firewall (not open/closed)"
+                    .to_string(),
             },
             Example {
                 title: "Scan with source port spoofing".to_string(),
@@ -944,7 +971,8 @@ impl HelpSystem {
             Example {
                 title: "Detailed service detection with high intensity".to_string(),
                 command: "prtip -sV --version-intensity 9 -p 1-1000 target.com".to_string(),
-                description: "Maximum accuracy service detection (slowest but most thorough)".to_string(),
+                description: "Maximum accuracy service detection (slowest but most thorough)"
+                    .to_string(),
             },
             Example {
                 title: "Greppable output for shell scripting".to_string(),
@@ -969,12 +997,14 @@ impl HelpSystem {
             Example {
                 title: "Combine stealth techniques".to_string(),
                 command: "prtip -sF -T1 -g 53 --scan-delay 500ms target.com".to_string(),
-                description: "Maximum stealth: FIN scan + slow timing + source port + delay".to_string(),
+                description: "Maximum stealth: FIN scan + slow timing + source port + delay"
+                    .to_string(),
             },
             Example {
                 title: "List network interfaces".to_string(),
                 command: "prtip --iflist target.com".to_string(),
-                description: "Show all available network interfaces with IP/MAC addresses".to_string(),
+                description: "Show all available network interfaces with IP/MAC addresses"
+                    .to_string(),
             },
         ]
     }
@@ -1055,10 +1085,22 @@ mod tests {
         let examples = HelpSystem::get_examples();
         // Verify examples have required fields
         for example in &examples {
-            assert!(!example.title.is_empty(), "Example title should not be empty");
-            assert!(!example.command.is_empty(), "Example command should not be empty");
-            assert!(!example.description.is_empty(), "Example description should not be empty");
-            assert!(example.command.starts_with("prtip"), "Example command should start with 'prtip'");
+            assert!(
+                !example.title.is_empty(),
+                "Example title should not be empty"
+            );
+            assert!(
+                !example.command.is_empty(),
+                "Example command should not be empty"
+            );
+            assert!(
+                !example.description.is_empty(),
+                "Example description should not be empty"
+            );
+            assert!(
+                example.command.starts_with("prtip"),
+                "Example command should start with 'prtip'"
+            );
         }
     }
 
@@ -1067,9 +1109,11 @@ mod tests {
         let help = HelpSystem::new();
         for category in help.categories.values() {
             // Each category should have substantial help text (at least 500 characters)
-            assert!(category.detailed_help.len() >= 500,
+            assert!(
+                category.detailed_help.len() >= 500,
                 "Category '{}' should have at least 500 characters of help text",
-                category.name);
+                category.name
+            );
         }
     }
 

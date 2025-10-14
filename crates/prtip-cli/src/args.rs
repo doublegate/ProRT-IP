@@ -124,6 +124,17 @@ pub struct Args {
     )]
     pub batch_size: Option<usize>,
 
+    /// Packet batch size for sendmmsg/recvmmsg (Linux only, 16-1024)
+    ///
+    /// Controls the number of packets sent/received in a single syscall on Linux.
+    /// Higher values reduce syscall overhead at high packet rates (>100K pps).
+    /// Typical values: 16 (low rate), 64 (balanced, default), 128 (high rate).
+    /// Auto-detected based on --max-rate if not specified.
+    ///
+    /// Example: prtip --mmsg-batch-size 128 --max-rate 1000000 <target>
+    #[arg(long, value_name = "SIZE", value_parser = clap::value_parser!(u16).range(16..=1024), help_heading = "TIMING AND PERFORMANCE")]
+    pub mmsg_batch_size: Option<u16>,
+
     /// Adjust file descriptor limit (Unix only)
     #[arg(long, value_name = "LIMIT", help_heading = "TIMING AND PERFORMANCE")]
     pub ulimit: Option<u64>,
@@ -1450,7 +1461,12 @@ mod tests {
     #[test]
     fn test_misc_privileged_unprivileged_mutual_exclusion() {
         // Should fail due to ArgGroup
-        let result = Args::try_parse_from(vec!["prtip", "--privileged", "--unprivileged", "192.168.1.1"]);
+        let result = Args::try_parse_from(vec![
+            "prtip",
+            "--privileged",
+            "--unprivileged",
+            "192.168.1.1",
+        ]);
         assert!(result.is_err());
     }
 

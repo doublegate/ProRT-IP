@@ -178,6 +178,37 @@ pub struct Args {
     #[arg(short = 'P', long, help_heading = "DETECTION")]
     pub host_discovery: bool,
 
+    // ============================================================================
+    // HOST DISCOVERY FLAGS (nmap-compatible)
+    // ============================================================================
+    /// Only do host discovery, don't port scan
+    #[arg(long, help_heading = "HOST DISCOVERY")]
+    pub ping_only: bool,
+
+    /// ARP ping discovery (local network only)
+    #[arg(short = 'R', long = "arp-ping", help_heading = "HOST DISCOVERY")]
+    pub arp_ping: bool,
+
+    /// TCP SYN ping on specified ports (default: 80)
+    #[arg(long = "ps", value_name = "portlist", help_heading = "HOST DISCOVERY")]
+    pub tcp_syn_ping: Option<String>,
+
+    /// TCP ACK ping on specified ports (default: 80)
+    #[arg(long = "pa", value_name = "portlist", help_heading = "HOST DISCOVERY")]
+    pub tcp_ack_ping: Option<String>,
+
+    /// UDP ping on specified ports (default: 40125)
+    #[arg(long = "pu", value_name = "portlist", help_heading = "HOST DISCOVERY")]
+    pub udp_ping: Option<String>,
+
+    /// ICMP echo request ping
+    #[arg(long = "pe", help_heading = "HOST DISCOVERY")]
+    pub icmp_echo_ping: bool,
+
+    /// ICMP timestamp ping
+    #[arg(long = "pp", help_heading = "HOST DISCOVERY")]
+    pub icmp_timestamp_ping: bool,
+
     /// Network interface to use
     #[arg(long, value_name = "IFACE", help_heading = "NETWORK")]
     pub interface: Option<String>,
@@ -209,6 +240,61 @@ pub struct Args {
         help = "Add delay after completing each host (useful for avoiding IDS/IPS detection)"
     )]
     pub host_delay: u64,
+
+    // ============================================================================
+    // TIMING FLAGS (nmap-compatible)
+    // ============================================================================
+    /// Maximum probe retransmissions (nmap --max-retries <N>)
+    ///
+    /// Cap on number of retransmissions for unresponsive probes.
+    /// Lower values speed up scans but may miss hosts on lossy networks.
+    ///
+    /// Example: prtip --max-retries 5 <target>
+    #[arg(
+        long = "max-retries",
+        value_name = "N",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
+    pub max_retries: Option<u32>,
+
+    /// Give up on host after this time (nmap --host-timeout <time>)
+    ///
+    /// Timeout for individual hosts. Prevents wasting time on unresponsive targets.
+    /// Accepts time units: 100ms, 5s, 10m, 1h
+    ///
+    /// Example: prtip --host-timeout 30m <target>
+    #[arg(
+        long = "host-timeout",
+        value_name = "time",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
+    pub host_timeout: Option<String>,
+
+    /// Maximum delay between probes (nmap --max-scan-delay <time>)
+    ///
+    /// Cap on probe delay to prevent excessive slowdown.
+    /// Accepts time units: 100ms, 1s, etc.
+    ///
+    /// Example: prtip --max-scan-delay 500ms <target>
+    #[arg(
+        long = "max-scan-delay",
+        value_name = "time",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
+    pub max_scan_delay: Option<String>,
+
+    /// Minimum packets per second (nmap --min-rate <N>)
+    ///
+    /// Ensure minimum scan rate regardless of network conditions.
+    /// Useful for maintaining scan speed on slow networks.
+    ///
+    /// Example: prtip --min-rate 100 <target>
+    #[arg(
+        long = "min-rate",
+        value_name = "N",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
+    pub min_rate: Option<u32>,
 
     /// Output format: text, json, xml
     #[arg(
@@ -280,6 +366,45 @@ pub struct Args {
     /// Write final statistics to JSON file
     #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
     pub stats_file: Option<PathBuf>,
+
+    // ============================================================================
+    // OUTPUT FILTERING AND DISPLAY FLAGS (nmap-compatible)
+    // ============================================================================
+    /// Show only open (or possibly open) ports (nmap --open)
+    ///
+    /// Filter output to display only interesting results. Dramatically reduces
+    /// output size for large scans by hiding closed and filtered ports.
+    ///
+    /// Example: prtip --open -p- <target>
+    #[arg(long, help_heading = "OUTPUT")]
+    pub open: bool,
+
+    /// Show all packets sent and received (nmap --packet-trace)
+    ///
+    /// Very verbose packet-level tracing. Useful for debugging and understanding
+    /// scan behavior. Shows every packet transmitted and received.
+    ///
+    /// Example: prtip --packet-trace <target>
+    #[arg(long, help_heading = "OUTPUT")]
+    pub packet_trace: bool,
+
+    /// Display reason for port state (nmap --reason)
+    ///
+    /// Show why each port is in its current state (syn-ack, rst, timeout, etc.).
+    /// Useful for understanding firewall behavior and troubleshooting.
+    ///
+    /// Example: prtip --reason <target>
+    #[arg(long, help_heading = "OUTPUT")]
+    pub reason: bool,
+
+    /// Print scan statistics every N seconds (nmap --stats-every <time>)
+    ///
+    /// Display periodic statistics during long-running scans.
+    /// Accepts time units: 1s, 30s, 5m, etc.
+    ///
+    /// Example: prtip --stats-every 5s <target>
+    #[arg(long, value_name = "time", help_heading = "OUTPUT")]
+    pub stats_every: Option<String>,
 
     // ============================================================================
     // NMAP-COMPATIBLE FLAGS (v0.3.1+)
@@ -457,6 +582,33 @@ pub struct Args {
     )]
     pub top_ports: Option<usize>,
 
+    /// Don't randomize port scan order (nmap -r)
+    ///
+    /// Scan ports in sequential order (1, 2, 3...) instead of random order.
+    /// Slightly faster but more detectable by IDS/IPS systems.
+    ///
+    /// Example: prtip -r <target>
+    #[arg(
+        short = 'r',
+        long = "no-randomize",
+        help_heading = "NMAP-COMPATIBLE PORT SPECIFICATION"
+    )]
+    pub no_randomize: bool,
+
+    /// Scan ports more common than specified ratio (nmap --port-ratio <ratio>)
+    ///
+    /// Scan ports more common than the given ratio (0.0-1.0).
+    /// Advanced option for fine-grained port selection based on frequency.
+    ///
+    /// Example: prtip --port-ratio 0.5 <target>
+    #[arg(
+        long = "port-ratio",
+        value_name = "ratio",
+        conflicts_with = "ports",
+        help_heading = "NMAP-COMPATIBLE PORT SPECIFICATION"
+    )]
+    pub port_ratio: Option<f32>,
+
     /// Aggressive scan mode (nmap -A) - Enables OS detect, service detect, progress
     ///
     /// Combines multiple detection techniques for comprehensive results. Equivalent to:
@@ -482,6 +634,63 @@ pub struct Args {
         help_heading = "NMAP-COMPATIBLE DISCOVERY"
     )]
     pub skip_ping: bool,
+
+    // ============================================================================
+    // MISCELLANEOUS FLAGS (nmap-compatible)
+    // ============================================================================
+    /// List network interfaces and routes (nmap --iflist)
+    ///
+    /// Display all available network interfaces with IP addresses, MAC addresses,
+    /// and interface status. Useful for selecting the correct interface.
+    ///
+    /// Example: prtip --iflist
+    #[arg(long, help_heading = "MISCELLANEOUS")]
+    pub iflist: bool,
+
+    /// Send using raw ethernet frames (nmap --send-eth)
+    ///
+    /// Force use of raw ethernet frames instead of IP packets.
+    /// Advanced option for low-level packet crafting.
+    ///
+    /// Example: prtip --send-eth <target>
+    #[arg(long, help_heading = "MISCELLANEOUS", group = "send_method")]
+    pub send_eth: bool,
+
+    /// Send using IP packets (nmap --send-ip)
+    ///
+    /// Force use of IP packets instead of raw ethernet frames.
+    /// Default behavior for most scans.
+    ///
+    /// Example: prtip --send-ip <target>
+    #[arg(long, help_heading = "MISCELLANEOUS", group = "send_method")]
+    pub send_ip: bool,
+
+    /// Assume user is privileged (nmap --privileged)
+    ///
+    /// Skip privilege checks and assume raw socket access.
+    /// Use when running as root/Administrator.
+    ///
+    /// Example: prtip --privileged <target>
+    #[arg(long, help_heading = "MISCELLANEOUS", group = "privilege")]
+    pub privileged: bool,
+
+    /// Assume user is unprivileged (nmap --unprivileged)
+    ///
+    /// Force TCP connect scan mode without privilege checks.
+    /// Mutually exclusive with --privileged.
+    ///
+    /// Example: prtip --unprivileged <target>
+    #[arg(long, help_heading = "MISCELLANEOUS", group = "privilege")]
+    pub unprivileged: bool,
+
+    /// Never perform DNS resolution (nmap -n)
+    ///
+    /// Disable DNS lookups for faster scanning. Only IP addresses in output.
+    /// Reduces scan time but loses hostname information.
+    ///
+    /// Example: prtip -n <target>
+    #[arg(short = 'n', long = "no-dns", help_heading = "MISCELLANEOUS")]
+    pub no_dns: bool,
 }
 
 impl Args {
@@ -560,6 +769,28 @@ impl Args {
 
         if self.stats_interval > 3600 {
             anyhow::bail!("Stats interval cannot exceed 1 hour (3600 seconds)");
+        }
+
+        // Validate new flags
+        if let Some(ratio) = self.port_ratio {
+            if !(0.0..=1.0).contains(&ratio) {
+                anyhow::bail!("Port ratio must be between 0.0 and 1.0");
+            }
+        }
+
+        if let Some(retries) = self.max_retries {
+            if retries > 20 {
+                anyhow::bail!("Max retries cannot exceed 20");
+            }
+        }
+
+        if let Some(rate) = self.min_rate {
+            if rate == 0 {
+                anyhow::bail!("Min rate must be greater than 0");
+            }
+            if rate > 100_000_000 {
+                anyhow::bail!("Min rate cannot exceed 100M pps");
+            }
         }
 
         Ok(())
@@ -1056,5 +1287,182 @@ mod tests {
     fn test_validate_stats_interval_excessive() {
         let args = Args::parse_from(["prtip", "--stats-interval", "5000", "192.168.1.1"]);
         assert!(args.validate().is_err());
+    }
+
+    // ========================================================================
+    // Tests for Sprint 4.16 new flags
+    // ========================================================================
+
+    #[test]
+    fn test_host_discovery_ping_only() {
+        let args = Args::parse_from(["prtip", "--ping-only", "192.168.1.0/24"]);
+        assert!(args.ping_only);
+    }
+
+    #[test]
+    fn test_host_discovery_arp_ping() {
+        let args = Args::parse_from(["prtip", "-PR", "192.168.1.0/24"]);
+        assert!(args.arp_ping);
+    }
+
+    #[test]
+    fn test_host_discovery_tcp_syn_ping() {
+        let args = Args::parse_from(["prtip", "--ps", "80,443", "192.168.1.1"]);
+        assert_eq!(args.tcp_syn_ping, Some("80,443".to_string()));
+    }
+
+    #[test]
+    fn test_host_discovery_tcp_ack_ping() {
+        let args = Args::parse_from(["prtip", "--pa", "80", "192.168.1.1"]);
+        assert_eq!(args.tcp_ack_ping, Some("80".to_string()));
+    }
+
+    #[test]
+    fn test_host_discovery_udp_ping() {
+        let args = Args::parse_from(["prtip", "--pu", "53", "192.168.1.1"]);
+        assert_eq!(args.udp_ping, Some("53".to_string()));
+    }
+
+    #[test]
+    fn test_host_discovery_icmp_echo() {
+        let args = Args::parse_from(["prtip", "--pe", "192.168.1.1"]);
+        assert!(args.icmp_echo_ping);
+    }
+
+    #[test]
+    fn test_host_discovery_icmp_timestamp() {
+        let args = Args::parse_from(["prtip", "--pp", "192.168.1.1"]);
+        assert!(args.icmp_timestamp_ping);
+    }
+
+    #[test]
+    fn test_port_spec_no_randomize() {
+        let args = Args::parse_from(["prtip", "-r", "192.168.1.1"]);
+        assert!(args.no_randomize);
+    }
+
+    #[test]
+    fn test_port_spec_port_ratio() {
+        let args = Args::parse_from(["prtip", "--port-ratio", "0.5", "192.168.1.1"]);
+        assert_eq!(args.port_ratio, Some(0.5));
+    }
+
+    #[test]
+    fn test_validate_port_ratio_valid() {
+        let args = Args::parse_from(["prtip", "--port-ratio", "0.5", "192.168.1.1"]);
+        assert!(args.validate().is_ok());
+    }
+
+    #[test]
+    fn test_validate_port_ratio_invalid() {
+        let args = Args::parse_from(["prtip", "--port-ratio", "1.5", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_timing_max_retries() {
+        let args = Args::parse_from(["prtip", "--max-retries", "5", "192.168.1.1"]);
+        assert_eq!(args.max_retries, Some(5));
+    }
+
+    #[test]
+    fn test_timing_host_timeout() {
+        let args = Args::parse_from(["prtip", "--host-timeout", "30m", "192.168.1.1"]);
+        assert_eq!(args.host_timeout, Some("30m".to_string()));
+    }
+
+    #[test]
+    fn test_timing_max_scan_delay() {
+        let args = Args::parse_from(["prtip", "--max-scan-delay", "500ms", "192.168.1.1"]);
+        assert_eq!(args.max_scan_delay, Some("500ms".to_string()));
+    }
+
+    #[test]
+    fn test_timing_min_rate() {
+        let args = Args::parse_from(["prtip", "--min-rate", "1000", "192.168.1.1"]);
+        assert_eq!(args.min_rate, Some(1000));
+    }
+
+    #[test]
+    fn test_validate_min_rate_zero() {
+        let args = Args::parse_from(["prtip", "--min-rate", "0", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_output_open_flag() {
+        let args = Args::parse_from(["prtip", "--open", "192.168.1.1"]);
+        assert!(args.open);
+    }
+
+    #[test]
+    fn test_output_packet_trace() {
+        let args = Args::parse_from(["prtip", "--packet-trace", "192.168.1.1"]);
+        assert!(args.packet_trace);
+    }
+
+    #[test]
+    fn test_output_reason() {
+        let args = Args::parse_from(["prtip", "--reason", "192.168.1.1"]);
+        assert!(args.reason);
+    }
+
+    #[test]
+    fn test_output_stats_every() {
+        let args = Args::parse_from(["prtip", "--stats-every", "5s", "192.168.1.1"]);
+        assert_eq!(args.stats_every, Some("5s".to_string()));
+    }
+
+    #[test]
+    fn test_misc_iflist() {
+        let args = Args::parse_from(["prtip", "--iflist", "192.168.1.1"]);
+        assert!(args.iflist);
+    }
+
+    #[test]
+    fn test_misc_send_eth() {
+        let args = Args::parse_from(["prtip", "--send-eth", "192.168.1.1"]);
+        assert!(args.send_eth);
+        assert!(!args.send_ip);
+    }
+
+    #[test]
+    fn test_misc_send_ip() {
+        let args = Args::parse_from(["prtip", "--send-ip", "192.168.1.1"]);
+        assert!(args.send_ip);
+        assert!(!args.send_eth);
+    }
+
+    #[test]
+    fn test_misc_privileged() {
+        let args = Args::parse_from(["prtip", "--privileged", "192.168.1.1"]);
+        assert!(args.privileged);
+        assert!(!args.unprivileged);
+    }
+
+    #[test]
+    fn test_misc_unprivileged() {
+        let args = Args::parse_from(["prtip", "--unprivileged", "192.168.1.1"]);
+        assert!(args.unprivileged);
+        assert!(!args.privileged);
+    }
+
+    #[test]
+    fn test_misc_privileged_unprivileged_mutual_exclusion() {
+        // Should fail due to ArgGroup
+        let result = Args::try_parse_from(vec!["prtip", "--privileged", "--unprivileged", "192.168.1.1"]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_misc_no_dns() {
+        let args = Args::parse_from(["prtip", "-n", "192.168.1.1"]);
+        assert!(args.no_dns);
+    }
+
+    #[test]
+    fn test_misc_no_dns_long() {
+        let args = Args::parse_from(["prtip", "--no-dns", "192.168.1.1"]);
+        assert!(args.no_dns);
     }
 }

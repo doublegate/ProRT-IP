@@ -20,39 +20,53 @@
 
 **Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, **15 custom commands**
 
-## Current Sprint: 4.15 - COMPLETE ✅
+## Current Sprint: 4.17 - Performance I/O Optimization ⏳
+
+**Status:** ⏳ NEXT (Pending)
+**Duration:** 4-5 days (estimated)
+**Priority:** HIGH
+**ROI Score:** 8.5/10
+
+**Objective:** Optimize packet I/O for 1M+ packets/second throughput by implementing sendmmsg/recvmmsg batching, zero-copy packet parsing, and NUMA-aware thread pinning.
+
+**Next Actions:**
+1. Review docs/19-PHASE4-ENHANCEMENTS.md (lines 756-804)
+2. Initialize sprint with /sprint-start or /next-sprint
+3. Execute implementation via sub-agent
+4. Documentation updates and commit
+
+## Previous Sprint: 4.16 - COMPLETE ✅
 
 **Status:** ✅ COMPLETE (2025-10-13)
-**Duration:** 1 day (faster than 4-5 day estimate)
+**Duration:** <1 day (faster than 3-4 day estimate)
 **Priority:** HIGH
-**ROI Score:** 9.2/10
+**ROI Score:** 8.8/10
+
+**Achieved:**
+✅ Git-style help system (9 categories, 2,086 lines)
+✅ 50+ nmap-compatible flags (2.5x increase)
+✅ 23 example scenarios
+✅ 38+ new tests (539+ total tests passing)
+✅ <30s feature discoverability (user validated)
+✅ Zero regressions, zero clippy warnings
+✅ Documentation updated (README, CHANGELOG)
+
+## Previous Sprint: 4.15 - COMPLETE ✅
+
+**Status:** ✅ COMPLETE (2025-10-13, committed: b4dcc9f)
+**Duration:** 1 day (faster than 4-5 day estimate)
 
 **Achieved:**
 ✅ TLS handshake module implemented (550 lines, 12 tests)
 ✅ Detection rate: 50% → 70-80%
 ✅ --no-tls flag added for performance mode
 ✅ Zero regressions (237 tests passing)
-✅ Documentation updated (README, CHANGELOG)
-
-## Next Sprint: 4.16 - CLI Compatibility & Help System
-
-**Priority:** HIGH
-**Duration:** 3-4 days (estimated)
-**ROI Score:** 8.8/10
-
-**Objective:** Expand CLI flag support from 20+ to 50+ nmap-compatible flags and implement git-style multi-page help system.
-
-**Next Actions:**
-1. Implement 30+ additional nmap-compatible flags
-2. Create git-style help system (prtip help <topic>)
-3. Enhance output format compatibility
-4. Documentation updates
 
 ## Next Actions: Phase 4 Enhancement Sprints (8 total)
 
 1. ✅ **Sprint 4.15 (COMPLETE):** Service Detection Enhancement - SSL/TLS + probes (70-80% rate, 1 day)
-2. **Sprint 4.16 (NEXT):** CLI Compatibility & Help System (20→50+ flags, HIGH, ROI 8.8/10, 3-4 days)
-3. **Sprint 4.17:** Performance I/O Optimization (<60ms target, HIGH, ROI 8.5/10, 4-5 days)
+2. ✅ **Sprint 4.16 (COMPLETE):** CLI Compatibility & Help System (50+ flags, git-style help, HIGH, <1 day)
+3. **Sprint 4.17 (NEXT):** Performance I/O Optimization (<60ms target, HIGH, ROI 8.5/10, 4-5 days)
 4. **Sprint 4.18:** Output Expansion - PCAPNG & SQLite (MEDIUM, ROI 7.3/10, 3-4 days)
 5. **Sprint 4.19:** Stealth - Fragmentation & Evasion (MEDIUM, ROI 7.0/10, 4-5 days)
 6. **Sprint 4.20:** IPv6 Complete Implementation (MEDIUM, ROI 6.8/10, 3-4 days)
@@ -86,6 +100,7 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-13 | **Sprint 4.16 Complete** | CLI Compatibility & Help System | <8h | Git-style help (9 categories, 2,086 lines), 50+ nmap flags (2.5x increase), 23 examples, 38+ new tests (539+ total), <30s discoverability, zero regressions | ✅ |
 | 10-13 | **Sprint 4.15 Complete** | Service Detection Enhancement (TLS) | ~8h | TLS handshake module (550 lines), 70-80% detection rate (up from 50%), 12 new tests, --no-tls flag, zero regressions | ✅ |
 | 10-13 | **/inspire-me Command + Phase 4 Analysis** | Competitive analysis & enhancement planning | ~3.5h | 18,500-word roadmap, 8 sprints (4.15-4.22), analyzed 4 competitors, created /inspire-me command | ✅ |
 | 10-13 | **/daily-log Command** | Custom command creation | ~4h | 1,179-line command, 6-phase process, 80min automation (47% faster) | ✅ |

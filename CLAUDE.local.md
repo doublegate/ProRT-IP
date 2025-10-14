@@ -130,6 +130,8 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-14 | **Version 0.3.8 Metadata Update** | Complete version consistency | ~1.5h | Updated Cargo.toml (0.3.7→0.3.8), args.rs help text (v0.3.5→v0.3.8, 677→790 tests, 20+→50+ flags), banner.rs (Phase 3→4, 391→790 tests, added "for IP Networks", removed extra blank line), rebuilt release binary (9.7 MB), comprehensive commit workflow, pushed to GitHub (commit 9e0243b) | ✅ |
+| 10-14 | **GitHub Release Artifact Fix** | Release build attachment | ~30m | Fixed duplicate v0.3.8 releases (draft with builds vs actual with notes), deleted draft, triggered workflow rebuild, all 8 architecture builds now attached to correct release | ✅ |
 | 10-14 | **Sprint 4.18 Deferred** | Output Expansion planning | ~1h | Created comprehensive implementation plan (docs/20-SPRINT-4.18-DEFERRED.md, ~18K words), PCAPNG + SQLite scope analysis (3-4 days), 20 tasks with code skeletons, testing strategy, risk mitigation, execution checklist | ⏸️ DEFERRED |
 | 10-14 | **v0.3.8 Release Notes Upgrade** | Comprehensive tag/release notes | ~2h | Enhanced v0.3.8 tag (1,050 lines vs 38 before), GitHub release (651 lines), memory bank standards updated, matches v0.3.7 quality | ✅ |
 | 10-13 | **Sprint 4.16 Complete** | CLI Compatibility & Help System | <8h | Git-style help (9 categories, 2,086 lines), 50+ nmap flags (2.5x increase), 23 examples, 38+ new tests (539+ total), <30s discoverability, zero regressions | ✅ |
@@ -146,6 +148,21 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 | 10-12 | **v0.3.5 Release** | Nmap CLI compatibility | 3h | 20+ nmap flags, greppable output, comprehensive docs | ✅ |
 
 ### Recent Session Details (Condensed)
+
+**2025-10-14: Version 0.3.8 Metadata Update & Commit Workflow**
+- Fixed GitHub release artifact issue: deleted duplicate draft release, triggered workflow rebuild
+- All 8 architecture builds now correctly attached to v0.3.8 release (https://github.com/doublegate/ProRT-IP/releases/tag/v0.3.8)
+- Built local release binary to identify version inconsistencies
+- Updated Cargo.toml: workspace version 0.3.7 → 0.3.8
+- Updated crates/prtip-cli/src/args.rs: help banner v0.3.5→v0.3.8, 677→790 tests, 20+→50+ flags
+- Updated crates/prtip-cli/src/banner.rs: Phase 3→4 COMPLETE, 391→790 tests, added "for IP Networks", removed extra blank line
+- Rebuilt release binary (9.7 MB, 48.13s build time)
+- Verified: `prtip --version` shows "prtip 0.3.8", banner displays correctly
+- Executed comprehensive pre-commit workflow: format check, clippy, staged changes analysis
+- Created comprehensive commit message (25 lines, detailed impact analysis)
+- Committed and pushed to GitHub: commit 9e0243badab9d0b34f5db3c2b84e3b2928df3665
+- Files: 6 changed (+2,751, -19): Cargo.toml, Cargo.lock, args.rs, banner.rs, CLAUDE.local.md, docs/20-SPRINT-4.18-DEFERRED.md
+- All version metadata now consistent across codebase
 
 **2025-10-13: /inspire-me Command Creation + Phase 4 Competitive Analysis**
 - Executed comprehensive competitive analysis against industry leaders (Nmap, Masscan, RustScan, Naabu)

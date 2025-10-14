@@ -1,7 +1,7 @@
 # ProRT-IP Custom Commands
 
 **Location:** `.claude/commands/`
-**Count:** 14 commands
+**Count:** 15 commands
 **Purpose:** Development workflow automation for Claude Code
 **Updated:** 2025-10-13
 
@@ -34,6 +34,9 @@ This directory contains 14 custom slash commands designed to streamline the ProR
    - `/stage-commit` - Comprehensive pre-commit workflow
    - `/mem-reduce` - Memory bank optimization
    - `/daily-log` - End-of-day comprehensive consolidation
+
+6. **Strategic Planning** (1 command)
+   - `/inspire-me` - Competitive analysis and enhancement planning
 
 ---
 
@@ -697,6 +700,88 @@ daily_logs/YYYY-MM-DD/
 ```
 
 **Reference Example:** See `daily_logs/2025-10-13/` (1.5MB, 32 files, 57KB master README)
+
+---
+
+### 15. `/inspire-me` - Competitive Analysis & Enhancement Planning
+
+**Purpose:** Execute comprehensive competitive analysis against industry leaders (Nmap, Masscan, RustScan) and generate 8-sprint enhancement roadmap
+
+**Background:** Run at end of each development phase to discover competitive improvements and identify gaps before proceeding to next phase. Automates ~3-4 hours of manual research and planning into a systematic 6-phase workflow.
+
+**Usage:**
+```bash
+/inspire-me              # Execute full competitive analysis
+```
+
+**Process (6 Phases):**
+1. **Context Gathering** (15 min) - Understand ProRT-IP current state from docs
+2. **Reference Analysis** (30 min) - Analyze code_ref/, GitHub repos, online sources
+3. **Gap Analysis** (45 min) - Create feature matrix, identify gaps and opportunities
+4. **Sprint Planning** (60 min) - Design 8 enhancement sprints with ROI scores
+5. **Document Generation** (45 min) - Create comprehensive enhancement document
+6. **Verification & Report** (30 min) - Validate completeness and generate summary
+
+**Generates:**
+```
+docs/XX-PHASEXX-ENHANCEMENTS.md  - Comprehensive roadmap (18,000+ words)
+/tmp/ProRT-IP/inspire-me-report.md - Execution summary
+```
+
+**Enhancement Document Contents:**
+- **Executive Summary** (2-3 paragraphs with key findings)
+- **Competitive Analysis** (Strengths, Gaps, Opportunities)
+- **Feature Matrix** (10+ categories, 4+ competitors)
+- **8 Detailed Sprints** (Tasks, estimates, success criteria, ROI scores)
+- **Performance Benchmarks** (Current + projected)
+- **Research Sources** (15+ sources cited)
+- **Decision Log** (Sprint prioritization rationale)
+
+**Sprint Structure (Per Sprint):**
+- Priority (HIGH/MEDIUM/LOW)
+- Duration (3-5 days)
+- ROI Score (X.X/10)
+- Objective (clear, measurable)
+- Rationale (competitive findings)
+- 5-10 Tasks (with time estimates)
+- Deliverables (code, tests, docs, benchmarks)
+- Success Criteria (quantitative + qualitative)
+- References (code, research, documentation)
+
+**Research Scope:**
+- **Code Analysis:** code_ref/ directory (RustScan, Nmap, Masscan implementations)
+- **GitHub Repos:** 4+ repositories (stars, features, activity)
+- **Online Research:** Performance comparisons, blog posts, Reddit discussions
+- **Documentation:** Official docs, RFCs, technical specs
+
+**Quality Standards:**
+- **Document Length:** >10,000 words (comprehensive coverage)
+- **Sprint Detail:** 8 fully-detailed sprints with tasks and metrics
+- **Research Depth:** 4+ competitors, 15+ sources cited
+- **Feature Matrix:** 10+ categories compared
+- **Grade Target:** A+ (professional quality)
+
+**When to Use:**
+- End of each development phase (Phase 1→2, Phase 4→5, etc.)
+- Before major feature additions (understand competitive landscape)
+- Quarterly competitive reviews (stay ahead of trends)
+- After competitor releases (analyze new features)
+
+**Benefits:**
+- **Strategic Planning:** Data-driven 8-sprint roadmap
+- **Competitive Intelligence:** Know strengths and gaps vs industry leaders
+- **Innovation Opportunities:** Identify unique advantages
+- **Time Savings:** 3-4 hours automated research + analysis
+- **Comprehensive Documentation:** Full research sources cited
+
+**Example Output (Phase 4):**
+- **Document:** `docs/19-PHASE4-ENHANCEMENTS.md` (18,500 words, 80 pages)
+- **Competitors Analyzed:** Nmap, Masscan, RustScan, Naabu
+- **Sprints Planned:** 4.15-4.22 (Service Detection, CLI, Performance, etc.)
+- **Research Sources:** 50+ code files, 4 GitHub repos, 15+ articles
+- **Duration:** 4-6 weeks (8 sprints × 3-5 days)
+
+**Reference Example:** See `docs/19-PHASE4-ENHANCEMENTS.md` (v0.3.7→v0.4.0 roadmap)
 
 ---
 

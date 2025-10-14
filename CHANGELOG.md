@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Custom Command:** `/inspire-me` - Competitive analysis and enhancement planning
+  - 6-phase systematic workflow (Context → Research → Gap Analysis → Sprint Planning → Documentation → Verification)
+  - Automated competitive analysis against industry leaders (Nmap, Masscan, RustScan, Naabu)
+  - Generates comprehensive enhancement roadmap (>10,000 words) before each phase
+  - Quality standards: A+ grade target, 8+ detailed sprints with ROI prioritization
+  - Reusable for all future development phases
+- **Enhancement Roadmap:** `docs/19-PHASE4-ENHANCEMENTS.md` (18,500 words)
+  - Comprehensive competitive analysis vs 4 major scanners
+  - 8 prioritized sprints (4.15-4.22) targeting v0.4.0
+  - Feature matrix comparing 12+ categories
+  - Performance benchmarks and projections
+  - ROI-based prioritization: (User Impact × Competitive Gap) / Effort
+  - Sprint 4.15: Service Detection (50%→80%, ROI 9.2/10, HIGH priority)
+  - Sprint 4.16: CLI Compatibility (20→50+ flags, ROI 8.8/10, HIGH priority)
+  - 60+ research sources cited (GitHub, Reddit, Stack Overflow, blog posts)
+- **IDE Support:** Added `.vs/` (Visual Studio) to `.gitignore` for Windows development
+
 ### Fixed
 
 - **Clippy Warnings:** Fixed 4 clippy warnings for Rust 1.90.0 compatibility
@@ -14,10 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `crates/prtip-scanner/src/adaptive_parallelism.rs:286,304,305` - Use `RangeInclusive::contains()` instead of manual range checks
 - **Windows CI:** Fixed integration test failures by adding .exe extension handling in binary path resolution (18 tests now passing on Windows)
 - **Cross-Platform Tests:** Made `test_invalid_ip` test more robust to handle different DNS error messages across Windows, Linux, and macOS platforms
-
-### Added
-
-- **IDE Support:** Added `.vs/` (Visual Studio) to `.gitignore` for Windows development
 
 ---
 

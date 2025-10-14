@@ -59,7 +59,7 @@ impl Banner {
             self.version.bright_green(),
             "│".bright_black(),
             "Phase:".bright_white().bold(),
-            "3 COMPLETE".bright_green().bold()
+            "4 COMPLETE".bright_green().bold()
         );
         println!(
             "  {} {} {} {} {} {}",
@@ -70,7 +70,7 @@ impl Banner {
                 .underline(),
             "│".bright_black(),
             "Tests:".bright_white().bold(),
-            "391 passing".bright_green()
+            "790 passing".bright_green()
         );
         println!(
             "  {} {} {}",
@@ -86,11 +86,10 @@ impl Banner {
         println!();
         println!(
             "{}",
-            "  ⚡ Protocol/Port Real-Time War Scanner"
+            "  ⚡ Protocol/Port Real-Time War Scanner for IP Networks"
                 .bright_white()
                 .bold()
         );
-        println!();
     }
 
     /// Print compact banner for minimal output

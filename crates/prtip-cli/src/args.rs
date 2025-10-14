@@ -16,11 +16,11 @@ use std::path::PathBuf;
     name = "prtip",
     version,
     about = "Protocol/Port Real-Time War Scanner",
-    long_about = "ProRT-IP WarScan v0.3.5 - High-performance network scanner\n\n\
+    long_about = "ProRT-IP WarScan v0.3.8 - High-performance network scanner\n\n\
                   Combines Masscan speed (1M+ pps) with Nmap detection depth.\n\n\
                   🚀 PERFORMANCE: 3-48x faster than nmap while maintaining accuracy\n\
-                  🔄 NMAP-COMPATIBLE: Supports 20+ nmap-style flags for familiar operation\n\
-                  ✅ PRODUCTION-READY: 677 tests passing, cross-platform support\n\n\
+                  🔄 NMAP-COMPATIBLE: Supports 50+ nmap-style flags for familiar operation\n\
+                  ✅ PRODUCTION-READY: 790 tests passing, cross-platform support\n\n\
                   Both nmap and ProRT-IP syntaxes are fully supported - mix and match freely!",
     after_help = "EXAMPLES:\n\
     # Quick scan (nmap syntax - top 100 ports)\n\

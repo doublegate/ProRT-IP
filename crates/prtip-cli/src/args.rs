@@ -161,6 +161,10 @@ pub struct Args {
     #[arg(long, help_heading = "DETECTION")]
     pub banner_grab: bool,
 
+    /// Disable TLS/SSL service detection (faster, but misses HTTPS/SMTPS/IMAPS/etc.)
+    #[arg(long, help_heading = "DETECTION")]
+    pub no_tls: bool,
+
     /// Custom service probe database file
     #[arg(
         long,
@@ -678,6 +682,7 @@ impl Args {
                     intensity: self.version_intensity,
                     banner_grab: self.banner_grab,
                     probe_db_path: self.probe_db.clone(),
+                    enable_tls: !self.no_tls,
                 },
                 progress: show_progress,
             },

@@ -30,6 +30,7 @@
 //! # }
 //! ```
 
+use crate::tls_handshake::TlsHandshake;
 use prtip_core::{Error, Protocol, ServiceMatch, ServiceProbe, ServiceProbeDb};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -47,6 +48,10 @@ pub struct ServiceDetector {
     intensity: u8,
     /// Timeout for probe responses
     timeout: Duration,
+    /// TLS handshake handler
+    tls_handler: TlsHandshake,
+    /// Whether to attempt TLS detection
+    enable_tls: bool,
 }
 
 /// Service detection result
@@ -73,13 +78,25 @@ pub struct ServiceInfo {
 }
 
 impl ServiceDetector {
-    /// Create new service detector
+    /// Create new service detector with TLS enabled
     pub fn new(db: ServiceProbeDb, intensity: u8) -> Self {
+        Self::with_tls(db, intensity, true)
+    }
+
+    /// Create new service detector with optional TLS
+    pub fn with_tls(db: ServiceProbeDb, intensity: u8, enable_tls: bool) -> Self {
         Self {
             db: Arc::new(db),
             intensity: intensity.min(9),
             timeout: Duration::from_secs(5),
+            tls_handler: TlsHandshake::with_timeout(Duration::from_secs(5)),
+            enable_tls,
         }
+    }
+
+    /// Enable or disable TLS detection
+    pub fn set_tls_enabled(&mut self, enabled: bool) {
+        self.enable_tls = enabled;
     }
 
     /// Detect service on target
@@ -147,6 +164,17 @@ impl ServiceDetector {
             port, probes_tried
         );
 
+        // Try TLS detection if enabled and on common TLS port
+        if self.enable_tls && TlsHandshake::is_tls_port(port) {
+            debug!("Port {}: Attempting TLS handshake", port);
+            if let Ok(tls_info) = self.try_tls_detection(target).await {
+                debug!("Port {}: TLS handshake successful", port);
+                return Ok(tls_info);
+            } else {
+                debug!("Port {}: TLS handshake failed", port);
+            }
+        }
+
         // No match found - return generic info
         Ok(ServiceInfo {
             service: "unknown".to_string(),
@@ -158,6 +186,72 @@ impl ServiceDetector {
             device_type: None,
             cpe: Vec::new(),
             method: "no match".to_string(),
+        })
+    }
+
+    /// Try TLS detection and extract service info from certificate
+    async fn try_tls_detection(&self, target: SocketAddr) -> Result<ServiceInfo, Error> {
+        let host = target.ip().to_string();
+        let port = target.port();
+
+        // Attempt TLS handshake
+        let server_info = self.tls_handler.connect(&host, port).await?;
+
+        // Try to get HTTP response over TLS for better detection
+        let mut service = "https".to_string();
+        let mut product = None;
+        let mut version = None;
+
+        // If port 443 or 8443, try HTTP GET to identify web server
+        if port == 443 || port == 8443 {
+            if let Ok(response) = self.tls_handler.https_get(&host, port, "/").await {
+                // Parse Server header
+                if let Some(server_line) = response
+                    .lines()
+                    .find(|l| l.to_lowercase().starts_with("server:"))
+                {
+                    if let Some(server_value) = server_line.split(':').nth(1) {
+                        let server_value = server_value.trim();
+                        // Extract product and version from "Server: nginx/1.18.0"
+                        if let Some((prod, ver)) = server_value.split_once('/') {
+                            product = Some(prod.to_string());
+                            version = Some(ver.to_string());
+                        } else {
+                            product = Some(server_value.to_string());
+                        }
+                    }
+                }
+            }
+        } else if port == 465 {
+            service = "smtps".to_string();
+        } else if port == 993 {
+            service = "imaps".to_string();
+        } else if port == 995 {
+            service = "pop3s".to_string();
+        } else if port == 636 {
+            service = "ldaps".to_string();
+        } else if port == 990 {
+            service = "ftps".to_string();
+        }
+
+        Ok(ServiceInfo {
+            service,
+            product,
+            version,
+            extra_info: Some(format!(
+                "TLS {} ({})",
+                server_info.tls_version,
+                if server_info.is_self_signed {
+                    "self-signed"
+                } else {
+                    &server_info.issuer
+                }
+            )),
+            hostname: Some(server_info.common_name.clone()),
+            os_type: None,
+            device_type: None,
+            cpe: Vec::new(),
+            method: "tls_handshake".to_string(),
         })
     }
 

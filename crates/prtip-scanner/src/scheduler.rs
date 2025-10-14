@@ -14,7 +14,9 @@ use crate::{
     BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter,
     ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
 };
-use prtip_core::{Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb};
+use prtip_core::{
+    Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb,
+};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -274,17 +276,20 @@ impl ScanScheduler {
                     // Scan each port individually (UDP scanner doesn't have scan_ports yet)
                     let mut results = Vec::new();
                     for port in &ports {
-                        match udp_scanner.scan_port_with_pcapng(
-                            match host {
-                                std::net::IpAddr::V4(ip) => ip,
-                                std::net::IpAddr::V6(_) => {
-                                    warn!("UDP scan doesn't support IPv6 yet");
-                                    continue;
-                                }
-                            },
-                            *port,
-                            pcapng_writer.clone(),
-                        ).await {
+                        match udp_scanner
+                            .scan_port_with_pcapng(
+                                match host {
+                                    std::net::IpAddr::V4(ip) => ip,
+                                    std::net::IpAddr::V6(_) => {
+                                        warn!("UDP scan doesn't support IPv6 yet");
+                                        continue;
+                                    }
+                                },
+                                *port,
+                                pcapng_writer.clone(),
+                            )
+                            .await
+                        {
                             Ok(result) => results.push(result),
                             Err(e) => warn!("Error scanning UDP {}:{}: {}", host, port, e),
                         }

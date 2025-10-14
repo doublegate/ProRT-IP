@@ -38,7 +38,9 @@
 
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
-use prtip_network::{create_capture, get_udp_payload, PacketCapture, UdpPacketBuilder};
+use prtip_network::{
+    create_capture, get_udp_payload, with_buffer, PacketCapture, UdpPacketBuilder,
+};
 use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -127,7 +129,7 @@ impl UdpScanner {
         }
     }
 
-    /// Send a UDP probe packet
+    /// Send a UDP probe packet (zero-copy)
     async fn send_udp_probe(
         &self,
         target: Ipv4Addr,
@@ -135,26 +137,37 @@ impl UdpScanner {
         src_port: u16,
         payload: &[u8],
     ) -> Result<()> {
-        let packet = UdpPacketBuilder::new()
-            .source_ip(self.local_ip)
-            .dest_ip(target)
-            .source_port(src_port)
-            .dest_port(port)
-            .payload(payload.to_vec())
-            .build_ip_packet()?;
-
         if let Some(ref mut capture) = *self.capture.lock() {
-            capture
-                .send_packet(&packet)
-                .map_err(|e| prtip_core::Error::Network(format!("Failed to send UDP: {}", e)))?;
+            // Use thread-local zero-copy buffer
+            // Build and send within closure to satisfy lifetime requirements
+            with_buffer(|buffer_pool| {
+                // Build packet in buffer
+                let packet_slice = UdpPacketBuilder::new()
+                    .source_ip(self.local_ip)
+                    .dest_ip(target)
+                    .source_port(src_port)
+                    .dest_port(port)
+                    .payload(payload.to_vec())
+                    .build_ip_packet_with_buffer(buffer_pool)?;
 
-            trace!(
-                "Sent UDP to {}:{} (src_port={}, payload_len={})",
-                target,
-                port,
-                src_port,
-                payload.len()
-            );
+                // Send immediately (buffer ref valid within closure)
+                capture
+                    .send_packet(packet_slice)
+                    .map_err(|e| prtip_core::Error::Network(format!("Failed to send UDP: {}", e)))?;
+
+                trace!(
+                    "Sent UDP to {}:{} (src_port={}, payload_len={}) [zero-copy]",
+                    target,
+                    port,
+                    src_port,
+                    payload.len()
+                );
+
+                // Reset buffer for next packet
+                buffer_pool.reset();
+
+                Ok::<(), prtip_core::Error>(())
+            })?;
         } else {
             return Err(prtip_core::Error::Config(
                 "Packet capture not initialized".to_string(),

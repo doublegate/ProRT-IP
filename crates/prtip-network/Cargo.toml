@@ -7,6 +7,10 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[features]
+default = []
+numa = ["hwloc"]
+
 [dependencies]
 prtip-core = { path = "../prtip-core" }
 tokio = { workspace = true }
@@ -19,9 +23,11 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 tracing = { workspace = true }
 rand = { workspace = true }
+parking_lot = { workspace = true }
+hwloc = { version = "0.5", optional = true }
 
 [target.'cfg(unix)'.dependencies]
-nix = { workspace = true }
+nix = { workspace = true, features = ["sched"] }
 libc = { workspace = true }
 
 [target.'cfg(windows)'.dependencies]

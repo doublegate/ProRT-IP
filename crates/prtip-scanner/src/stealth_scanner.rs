@@ -55,7 +55,7 @@
 
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
-use prtip_network::{create_capture, PacketCapture, TcpFlags, TcpPacketBuilder};
+use prtip_network::{create_capture, with_buffer, PacketCapture, TcpFlags, TcpPacketBuilder};
 use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -195,7 +195,7 @@ impl StealthScanner {
         }
     }
 
-    /// Send a stealth probe packet
+    /// Send a stealth probe packet (zero-copy)
     async fn send_probe(
         &self,
         target: Ipv4Addr,
@@ -207,32 +207,42 @@ impl StealthScanner {
         let mut rng = rand::thread_rng();
         let sequence: u32 = rng.gen();
 
-        let packet = TcpPacketBuilder::new()
-            .source_ip(self.local_ip)
-            .dest_ip(target)
-            .source_port(src_port)
-            .dest_port(port)
-            .sequence(sequence)
-            .flags(scan_type.flags())
-            .window(1024)
-            .build_ip_packet()?;
-
         if let Some(ref mut capture) = *self.capture.lock() {
-            capture.send_packet(&packet).map_err(|e| {
-                prtip_core::Error::Network(format!(
-                    "Failed to send {} probe: {}",
-                    scan_type.name(),
-                    e
-                ))
-            })?;
+            // Use thread-local zero-copy buffer
+            with_buffer(|buffer_pool| {
+                // Build packet in buffer
+                let packet_slice = TcpPacketBuilder::new()
+                    .source_ip(self.local_ip)
+                    .dest_ip(target)
+                    .source_port(src_port)
+                    .dest_port(port)
+                    .sequence(sequence)
+                    .flags(scan_type.flags())
+                    .window(1024)
+                    .build_ip_packet_with_buffer(buffer_pool)?;
 
-            trace!(
-                "Sent {} probe to {}:{} (src_port={})",
-                scan_type.name(),
-                target,
-                port,
-                src_port
-            );
+                // Send immediately
+                capture.send_packet(packet_slice).map_err(|e| {
+                    prtip_core::Error::Network(format!(
+                        "Failed to send {} probe: {}",
+                        scan_type.name(),
+                        e
+                    ))
+                })?;
+
+                trace!(
+                    "Sent {} probe to {}:{} (src_port={}) [zero-copy]",
+                    scan_type.name(),
+                    target,
+                    port,
+                    src_port
+                );
+
+                // Reset buffer
+                buffer_pool.reset();
+
+                Ok::<(), prtip_core::Error>(())
+            })?;
         } else {
             return Err(prtip_core::Error::Config(
                 "Packet capture not initialized".to_string(),

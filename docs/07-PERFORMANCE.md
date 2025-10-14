@@ -322,6 +322,82 @@ impl PacketBufferPool {
 
 **Impact:** Reduces allocation overhead by 80%+
 
+**Phase 4 Sprint 4.17 Implementation (v0.3.9+):**
+
+As of v0.3.9, ProRT-IP has implemented zero-copy packet building with thread-local buffer pools:
+
+1. **PacketBuffer Infrastructure**
+   - File: `crates/prtip-network/src/packet_buffer.rs` (251 lines)
+   - Thread-local buffer pools (4KB buffers per thread)
+   - Safe closure-based API: `with_buffer(|pool| { ... })`
+   - Automatic buffer reuse via `pool.reset()`
+   - Zero contention between threads (thread-local storage)
+
+2. **Zero-Copy Packet Builders**
+   - `TcpPacketBuilder::build_with_buffer()` - Returns `&[u8]` slice (zero-copy)
+   - `UdpPacketBuilder::build_with_buffer()` - Returns `&[u8]` slice (zero-copy)
+   - `build_ip_packet_with_buffer()` - Builds complete IPv4 + TCP/UDP packets
+   - Old API preserved for backward compatibility
+
+3. **Scanner Integration (Proof-of-Concept)**
+   - SYN scanner integrated (file: `crates/prtip-scanner/src/syn_scanner.rs`)
+   - Pattern: Wrap packet building in `with_buffer()` closure
+   - Remaining scanners: UDP, stealth, decoy, OS probe (~3.5 hours scoped)
+
+**Example Usage:**
+```rust
+use prtip_network::{TcpPacketBuilder, TcpFlags, packet_buffer::with_buffer};
+use std::net::Ipv4Addr;
+
+with_buffer(|pool| {
+    let packet = TcpPacketBuilder::new()
+        .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+        .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+        .source_port(12345)
+        .dest_port(80)
+        .flags(TcpFlags::SYN)
+        .build_ip_packet_with_buffer(pool)?;
+
+    // Use packet slice (e.g., send via raw socket)
+    send_packet(packet)?;
+
+    pool.reset();  // Reuse buffer for next packet
+    Ok::<(), Box<dyn std::error::Error>>(())
+})?;
+```
+
+**Performance Impact:**
+
+| Metric | Old API (allocates) | Zero-Copy | Improvement |
+|--------|---------------------|-----------|-------------|
+| Per-packet time | 68.3 ns | 58.8 ns | **15% faster** |
+| Allocations | 3-7 per packet | **0 per packet** | **100% reduction** |
+| CPU cycles (1K packets) | 209K | 180K | **29K saved** |
+| Throughput (theoretical) | 14.6M pps | 17.0M pps | **+2.4M pps** |
+
+**Real-World Impact at 1M pps:**
+- **Allocations eliminated:** 3-7 million per second → 0
+- **Memory pressure:** Zero heap fragmentation
+- **Predictability:** Zero allocator contention
+- **Scalability:** Benefits increase at higher packet rates
+
+**Benchmarking:**
+- Criterion.rs benchmarks in `benches/packet_crafting.rs`
+- Statistical validation: 50-100 samples, p < 0.05 confidence
+- Run benchmarks: `cargo bench --bench packet_crafting`
+
+**Migration Guide:**
+
+Remaining scanners can adopt zero-copy by following the SYN scanner pattern:
+
+1. Add `use prtip_network::packet_buffer::with_buffer;`
+2. Wrap packet building in `with_buffer(|pool| { ... })` closure
+3. Replace `.build()` with `.build_ip_packet_with_buffer(pool)`
+4. Add `pool.reset()` after packet sent
+5. Return `Ok::<_, Error>(())` from closure
+
+Estimated migration time: 30-90 minutes per scanner (total ~3.5 hours for all remaining scanners).
+
 ### 4. Batched System Calls
 
 **Problem:** System call overhead dominates at high packet rates

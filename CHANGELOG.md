@@ -162,6 +162,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Version Numbering:** Corrected v0.3.9 → v0.3.8 across documentation
+  - Sprint 4.17 correctly labeled as v0.3.8 (not v0.3.9) since v0.3.8 was never released
+  - Updated: CLAUDE.local.md (4 instances), README.md (5 instances), docs/07-PERFORMANCE.md (2 instances), docs/PERFORMANCE-GUIDE.md (2 instances)
+  - Future versions: Sprints 4.18-4.22 will use v0.3.8-alpha/beta suffixes, v0.3.9 will release after Sprint 4.22
+  - Total: 22 references corrected for consistency
 - **Clippy Warnings:** Fixed 4 clippy warnings for Rust 1.90.0 compatibility
   - `crates/prtip-network/src/capture/windows.rs:135` - Use `div_ceil()` instead of manual ceiling division
   - `crates/prtip-scanner/src/adaptive_parallelism.rs:286,304,305` - Use `RangeInclusive::contains()` instead of manual range checks

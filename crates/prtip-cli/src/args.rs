@@ -956,6 +956,7 @@ impl Args {
                 parallelism,
                 batch_size: self.batch_size,
                 requested_ulimit: self.ulimit,
+                numa_enabled: self.numa && !self.no_numa, // Enabled only if --numa and not --no-numa
             },
         }
     }

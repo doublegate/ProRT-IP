@@ -373,6 +373,7 @@ mod tests {
                 max_rate: None,
                 batch_size: None,
                 requested_ulimit: None,
+                numa_enabled: false,
             },
             scan: prtip_core::ScanConfig {
                 timeout_ms: 100,

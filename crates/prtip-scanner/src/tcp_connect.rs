@@ -25,6 +25,11 @@ use tokio::sync::Semaphore;
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
 
+#[cfg(feature = "numa")]
+use prtip_network::numa::NumaManager;
+#[cfg(feature = "numa")]
+use std::sync::atomic::{AtomicUsize, Ordering};
+
 /// TCP Connect Scanner
 ///
 /// Performs TCP connect scans by establishing full TCP connections
@@ -205,7 +210,7 @@ impl TcpConnectScanner {
         ports: Vec<u16>,
         max_concurrent: usize,
     ) -> Result<Vec<ScanResult>> {
-        self.scan_ports_with_progress(target, ports, max_concurrent, None)
+        self.scan_ports_with_progress(target, ports, max_concurrent, None, None)
             .await
     }
 
@@ -220,12 +225,15 @@ impl TcpConnectScanner {
     /// * `ports` - Vector of port numbers to scan
     /// * `max_concurrent` - Maximum concurrent scan operations
     /// * `progress` - Optional progress tracker for statistics
+    /// * `numa_manager` - Optional NUMA manager for thread pinning (Linux only)
     pub async fn scan_ports_with_progress(
         &self,
         target: IpAddr,
         ports: Vec<u16>,
         max_concurrent: usize,
         progress: Option<&ScanProgress>,
+        #[cfg(feature = "numa")] numa_manager: Option<&Arc<NumaManager>>,
+        #[cfg(not(feature = "numa"))] _numa_manager: Option<&()>,
     ) -> Result<Vec<ScanResult>> {
         let semaphore = Arc::new(Semaphore::new(max_concurrent));
         let scanner = self.clone();
@@ -234,6 +242,13 @@ impl TcpConnectScanner {
         let aggregator = Arc::new(LockFreeAggregator::new(ports.len() * 2));
 
         let mut handles = Vec::with_capacity(ports.len());
+
+        // NUMA: Worker counter for round-robin core allocation across NUMA nodes
+        #[cfg(feature = "numa")]
+        let worker_counter = Arc::new(AtomicUsize::new(0));
+
+        #[cfg(feature = "numa")]
+        let numa_manager_clone = numa_manager.cloned();
 
         for port in ports {
             let permit = semaphore
@@ -244,7 +259,36 @@ impl TcpConnectScanner {
             let scanner = scanner.clone();
             let agg_clone = Arc::clone(&aggregator);
 
+            #[cfg(feature = "numa")]
+            let worker_id = worker_counter.fetch_add(1, Ordering::Relaxed);
+            #[cfg(feature = "numa")]
+            let numa_mgr = numa_manager_clone.clone();
+
             let handle = tokio::spawn(async move {
+                // NUMA: Pin worker thread to core based on round-robin across NUMA nodes
+                #[cfg(feature = "numa")]
+                if let Some(ref manager) = numa_mgr {
+                    let node_id = worker_id % manager.node_count();
+                    match manager.allocate_core(Some(node_id)) {
+                        Ok(worker_core) => {
+                            if let Err(e) = manager.pin_current_thread(worker_core) {
+                                debug!(
+                                    "Failed to pin worker {} to core {}: {}",
+                                    worker_id, worker_core, e
+                                );
+                            } else {
+                                trace!(
+                                    "Worker {} pinned to core {} (node {})",
+                                    worker_id,
+                                    worker_core,
+                                    node_id
+                                );
+                            }
+                        }
+                        Err(e) => debug!("Failed to allocate core for worker {}: {}", worker_id, e),
+                    }
+                }
+
                 let result = scanner.scan_port(target, port).await;
                 drop(permit);
 
@@ -621,6 +665,7 @@ mod tests {
                 ports.clone(),
                 20,
                 Some(&progress),
+                None, // No NUMA manager in test
             )
             .await
             .unwrap();

@@ -151,9 +151,9 @@ impl UdpScanner {
                     .build_ip_packet_with_buffer(buffer_pool)?;
 
                 // Send immediately (buffer ref valid within closure)
-                capture
-                    .send_packet(packet_slice)
-                    .map_err(|e| prtip_core::Error::Network(format!("Failed to send UDP: {}", e)))?;
+                capture.send_packet(packet_slice).map_err(|e| {
+                    prtip_core::Error::Network(format!("Failed to send UDP: {}", e))
+                })?;
 
                 trace!(
                     "Sent UDP to {}:{} (src_port={}, payload_len={}) [zero-copy]",

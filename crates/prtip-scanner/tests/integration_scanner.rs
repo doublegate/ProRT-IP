@@ -289,6 +289,7 @@ async fn test_scheduler_config_validation() {
             parallelism: 10,
             batch_size: None,
             requested_ulimit: None,
+            numa_enabled: false,
         },
     };
 

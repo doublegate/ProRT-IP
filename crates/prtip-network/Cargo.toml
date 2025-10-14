@@ -34,3 +34,7 @@ criterion = { version = "0.5", features = ["html_reports"] }
 [[bench]]
 name = "batch_io"
 harness = false
+
+[[bench]]
+name = "packet_crafting"
+harness = false

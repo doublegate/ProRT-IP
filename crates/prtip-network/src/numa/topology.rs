@@ -86,7 +86,10 @@ impl NumaTopology {
         let node_objs = topo.objects_at_depth(numa_depth);
         let node_count = node_objs.len();
 
-        debug!("hwloc detected {} NUMA nodes at depth {}", node_count, numa_depth);
+        debug!(
+            "hwloc detected {} NUMA nodes at depth {}",
+            node_count, numa_depth
+        );
 
         if node_count <= 1 {
             info!("Single NUMA node detected, optimization not needed");
@@ -100,12 +103,7 @@ impl NumaTopology {
             let node_id = node_obj.os_index() as usize;
             let cores = Self::get_cores_for_node(&topo, node_obj)?;
 
-            debug!(
-                "NUMA node {}: {} cores ({:?})",
-                node_id,
-                cores.len(),
-                cores
-            );
+            debug!("NUMA node {}: {} cores ({:?})", node_id, cores.len(), cores);
 
             cores_per_node.insert(node_id, cores);
         }
@@ -141,9 +139,7 @@ impl NumaTopology {
         let pu_depth = match topo.depth_or_below_for_type(&ObjectType::PU) {
             Ok(depth) => depth,
             Err(_) => {
-                return Err(NumaError::Detection(
-                    "Failed to query PU depth".to_string(),
-                ));
+                return Err(NumaError::Detection("Failed to query PU depth".to_string()));
             }
         };
 

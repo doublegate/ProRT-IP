@@ -20,6 +20,9 @@ use std::sync::Arc;
 use std::time::Duration;
 use tracing::{debug, error, info, warn};
 
+#[cfg(feature = "numa")]
+use prtip_network::numa::{NumaManager, NumaTopology};
+
 /// Scan scheduler that orchestrates the scanning process
 ///
 /// The scheduler coordinates between different scan components, manages
@@ -50,6 +53,8 @@ pub struct ScanScheduler {
     discovery: Arc<DiscoveryEngine>,
     rate_limiter: Arc<RateLimiter>,
     storage_backend: Arc<StorageBackend>,
+    #[cfg(feature = "numa")]
+    numa_manager: Option<Arc<NumaManager>>,
 }
 
 impl ScanScheduler {
@@ -79,12 +84,67 @@ impl ScanScheduler {
         // Create rate limiter
         let rate_limiter = Arc::new(RateLimiter::new(config.performance.max_rate));
 
+        // Initialize NUMA manager if enabled
+        #[cfg(feature = "numa")]
+        let numa_manager = if config.performance.numa_enabled {
+            match NumaTopology::detect() {
+                Ok(topo) if topo.is_multi_node() => {
+                    match NumaManager::new(topo) {
+                        Ok(manager) => {
+                            info!("NUMA optimization enabled ({} nodes)", manager.node_count());
+
+                            // Pin main scheduler thread (TX thread) to core on NUMA node 0
+                            // This reduces latency for packet transmission by placing the thread
+                            // near the NIC (typically on node 0)
+                            match manager.allocate_core(Some(0)) {
+                                Ok(tx_core) => {
+                                    if let Err(e) = manager.pin_current_thread(tx_core) {
+                                        warn!("Failed to pin scheduler thread: {}", e);
+                                    } else {
+                                        info!(
+                                            "Scheduler thread pinned to core {} (node 0)",
+                                            tx_core
+                                        );
+                                    }
+                                }
+                                Err(e) => warn!("Failed to allocate core for scheduler: {}", e),
+                            }
+
+                            Some(Arc::new(manager))
+                        }
+                        Err(e) => {
+                            warn!(
+                                "NUMA initialization failed: {}, falling back to non-NUMA mode",
+                                e
+                            );
+                            None
+                        }
+                    }
+                }
+                Ok(_) => {
+                    info!("Single-node system detected, NUMA optimization disabled");
+                    None
+                }
+                Err(e) => {
+                    warn!(
+                        "NUMA detection failed: {}, falling back to non-NUMA mode",
+                        e
+                    );
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
         Ok(Self {
             config,
             tcp_scanner,
             discovery,
             rate_limiter,
             storage_backend,
+            #[cfg(feature = "numa")]
+            numa_manager,
         })
     }
 
@@ -183,6 +243,7 @@ impl ScanScheduler {
             self.rate_limiter.acquire().await?;
 
             // Perform TCP connect scan with adaptive parallelism
+            // Note: scan_ports() calls scan_ports_with_progress() with None for both progress and NUMA
             match self
                 .tcp_scanner
                 .scan_ports(host, ports.clone(), parallelism)
@@ -412,6 +473,11 @@ impl ScanScheduler {
                     }
                 });
 
+                #[cfg(feature = "numa")]
+                let numa_ref = self.numa_manager.as_ref();
+                #[cfg(not(feature = "numa"))]
+                let numa_ref: Option<&()> = None;
+
                 match self
                     .tcp_scanner
                     .scan_ports_with_progress(
@@ -419,6 +485,7 @@ impl ScanScheduler {
                         ports_vec.clone(),
                         parallelism,
                         Some(&host_progress),
+                        numa_ref,
                     )
                     .await
                 {
@@ -626,6 +693,7 @@ mod tests {
                 parallelism: 10,
                 batch_size: None,
                 requested_ulimit: None,
+                numa_enabled: false,
             },
         }
     }
@@ -800,5 +868,47 @@ mod tests {
         let stored_results = storage_backend.get_results().await.unwrap();
         assert_eq!(stored_results.len(), results.len());
         assert!(!stored_results.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_scheduler_with_numa_enabled() {
+        // Test that scheduler works with NUMA enabled (graceful fallback if unavailable)
+        let mut config = create_test_config().await;
+        config.performance.numa_enabled = true; // Request NUMA
+
+        let storage_backend = Arc::new(StorageBackend::memory(1000));
+        let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
+
+        let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
+        let ports = PortRange::parse("9999").unwrap();
+
+        // Should work even if NUMA unavailable or single-socket (graceful fallback)
+        let results = scheduler.execute_scan_ports(targets, &ports).await.unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].port, 9999);
+    }
+
+    #[tokio::test]
+    async fn test_scheduler_numa_graceful_fallback() {
+        // Test that NUMA gracefully falls back on non-NUMA systems
+        let mut config = create_test_config().await;
+        config.performance.numa_enabled = true; // Request NUMA
+
+        let storage_backend = Arc::new(StorageBackend::memory(100));
+
+        // Scheduler creation should not fail even if NUMA unavailable
+        let scheduler = ScanScheduler::new(config, storage_backend).await;
+        assert!(
+            scheduler.is_ok(),
+            "Scheduler should create successfully even if NUMA unavailable"
+        );
+
+        let scheduler = scheduler.unwrap();
+        let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
+        let results = scheduler.execute_scan(targets).await.unwrap();
+
+        // Should have results (NUMA is optional optimization, not blocking)
+        assert!(!results.is_empty());
     }
 }

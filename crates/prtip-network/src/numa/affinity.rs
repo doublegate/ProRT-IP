@@ -245,9 +245,9 @@ pub fn pin_thread_to_core(core_id: usize) -> Result<()> {
     let mut cpu_set = CpuSet::new();
 
     // Set the target core
-    cpu_set.set(core_id).map_err(|e| {
-        NumaError::InvalidCore(format!("Invalid core ID {}: {}", core_id, e))
-    })?;
+    cpu_set
+        .set(core_id)
+        .map_err(|e| NumaError::InvalidCore(format!("Invalid core ID {}: {}", core_id, e)))?;
 
     // Pin current thread (PID 0 = calling thread)
     sched_setaffinity(Pid::from_raw(0), &cpu_set).map_err(|e| {
@@ -432,7 +432,10 @@ mod tests {
                 println!("Thread pinning requires privileges (expected in CI)");
             }
             Err(e) => {
-                println!("Thread pinning failed: {} (may be expected in CI/containers)", e);
+                println!(
+                    "Thread pinning failed: {} (may be expected in CI/containers)",
+                    e
+                );
             }
         }
     }

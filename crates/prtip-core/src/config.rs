@@ -227,6 +227,9 @@ pub struct PerformanceConfig {
     /// Requested ulimit value for file descriptors (None = use current)
     #[serde(default)]
     pub requested_ulimit: Option<u64>,
+    /// Enable NUMA optimization for multi-socket systems (Linux only)
+    #[serde(default)]
+    pub numa_enabled: bool,
 }
 
 impl Default for PerformanceConfig {
@@ -241,6 +244,7 @@ impl Default for PerformanceConfig {
             parallelism,
             batch_size: None,
             requested_ulimit: None,
+            numa_enabled: false, // Disabled by default for compatibility
         }
     }
 }

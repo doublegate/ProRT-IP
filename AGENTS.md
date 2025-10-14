@@ -3,17 +3,26 @@
 ## Current Snapshot
 
 - **Project**: ProRT-IP WarScan, a high-performance network scanner implemented in Rust.
-- **Workspace version**: `0.3.5` (`Cargo.toml:68`); older docs such as `ROADMAP.md` still cite v0.3.0 and should be aligned.
-- **Development phase**: Phase 4 performance optimization wrapped; see `README.md` status section and `CHANGELOG.md:508`. Public roadmap (`ROADMAP.md`, `docs/01-ROADMAP.md`) still show Phase 4 as pending—schedule a doc refresh.
-- **CI health**: `ci.yml` workflow green. Actual suite count is 643 tests (ref. `README.md:167`), but the README badge still advertises 677 and needs to be regenerated.
+- **Workspace version**: `0.3.8` (`Cargo.toml:68`); roadmap and release docs are synced to the 2025-10-13 tag.
+- **Development phase**: Phase 4 performance optimization is complete (Sprints 4.1–4.19). Phase 4 stretch work (4.18 output expansion, 4.19 stealth/NUMA validation) is active ahead of the Phase 5 feature push.
+- **CI health**: `ci.yml` workflow green with 803 tests passing (see `README.md` badge and Project Status). NUMA feature flags introduced in Sprint 4.19 have unit coverage across core crates.
 - **Test surface**: Fast unit coverage sits in each crate, while cross-crate scenarios live under `tests/`.
+- **Knowledge base**: Notion source of truth—“ProRT-IP Knowledge Map”—mirrors this document; keep both in lockstep during updates.
 
 ## Active Focus Areas
 
-- Kick off Phase 5 by tackling idle scans, decoys, and fragmentation per the checklists in `docs/01-ROADMAP.md:360` once the document reflects Phase 4 completion.
-- Draft the Lua plugin architecture early (interfaces, sandbox boundaries) to unblock `mlua` integration and example plugins.
-- Preserve Phase 4 benchmark gains—use tooling in `benchmarks/` and `docs/07-PERFORMANCE.md` to guard regressions.
-- Bring status pages into sync: update `ROADMAP.md`, `docs/01-ROADMAP.md`, and the README test badge so external signals match the current state.
+- Sprint 4.18: finish PCAPNG writer, SQLite streaming exporter, validation harnesses, and documentation in `docs/20-SPRINT-4.18-DEFERRED.md`.
+- Sprint 4.19 Phase 2: integrate the NUMA manager into the scheduler, extend zero-copy to decoy and OS probe scanners, capture benchmarks, and document usage in `docs/07-PERFORMANCE.md` and `docs/15-PLATFORM-SUPPORT.md`.
+- Preserve Phase 4 benchmark gains—rerun suites in `benchmarks/01-Phase4_PreFinal-Bench/` and keep `docs/07-PERFORMANCE.md` tables current after every NUMA/output change.
+- Prepare Phase 5 foundations: idle scan design notes, decoy configuration UX, Lua plugin architecture sketches, and audit logging roadmap (see `docs/19-PHASE4-ENHANCEMENTS.md`).
+- Update external comms (README badges, CLAUDE memory, marketing decks) whenever metrics change to avoid drift with the Notion map.
+
+## Immediate Action Items
+
+- Wrap Sprint 4.18 deliverables: implement/export PCAPNG writer, finalize SQLite streaming output, and update docs/tests accordingly.
+- Validate Sprint 4.19 Phase 1 NUMA changes on multi-socket hardware (or documented simulation) and record metrics in `docs/07-PERFORMANCE.md`.
+- Sync auxiliary guides (`CLAUDE.md`, marketing decks) with the 803-test count, Phase 4 completion messaging, and new NUMA flags.
+- Plan Phase 5 kickoff doc updates (idle scan spec, plugin API outline) once Sprint 4.18/4.19 artifacts merge.
 
 ## Project Structure & Module Organization
 
@@ -46,7 +55,20 @@ This project ships offensive security tooling; only run scans against systems yo
 ## Helpful References
 
 - `ROADMAP.md` for a high-level milestone summary and current status.
-- `docs/01-ROADMAP.md` for sprint-level tasks, acceptance criteria, and performance targets (refresh pending for Phase 4 completion).
+- `docs/01-ROADMAP.md` for sprint-level tasks, acceptance criteria, and performance targets (Phase 4 logged, Phase 5 planning in progress).
 - `docs/08-SECURITY.md` for mandatory operational controls.
 - `docs/07-PERFORMANCE.md` and `benchmarks/` for Phase 4 profiling output and harnesses.
 - `scripts/` and `benchmarks/` for profiling helpers and reproducible performance experiments.
+
+## Metrics Snapshot
+
+| Metric | Current Value | Source |
+| --- | --- | --- |
+| Automated tests | 803 total (70 integration) | README.md: Project Statistics |
+| Coverage | 61.92% (15,397 / 24,814 lines) | README.md: Project Statistics |
+| Latest release | v0.3.8 (tagged 2025-10-13) | CHANGELOG.md / GitHub Releases |
+| CI cadence | `ci.yml` 3–6 min PR builds; `release.yml` publishes 8 artifacts | `.github/workflows/ci.yml` |
+| Documentation corpus | ~600 KB across 307 files (`docs/`, `benchmarks/`, `bug_fix/`) | README.md: Documentation |
+| Active sprints | 4.18 output expansion, 4.19 Phase 2 NUMA validation | README.md: Phase 4 Summary |
+
+Update the table above—and the mirrored Notion block “13. Metrics Snapshot”—any time a value shifts.

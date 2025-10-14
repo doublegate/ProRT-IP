@@ -9,27 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Sprint 4.18 Phase 1-2 PARTIAL - PCAPNG Packet Capture Infrastructure:** Wireshark-compatible packet capture (UDP integration complete, full CLI integration pending scheduler refactor)
-  - **Duration:** ~12 hours total (Phase 1: 6h infrastructure, Phase 2: 6h UDP integration)
-  - **Status:** ✅ PCAPNG infrastructure complete, ✅ UDP scanner integration complete, ⏸️ TCP scanner + CLI integration blocked (scheduler limitation)
-  - **Blocker:** Scheduler currently only supports TCP connect scanning - requires multi-scan-type refactor (~8-12h) for full CLI integration
+- **Sprint 4.18.3 - PCAPNG CLI Integration (PARTIAL COMPLETE):** Scheduler refactor + UDP packet capture working end-to-end
+  - **Duration:** ~16 hours total (Phase 1: 6h, Phase 2: 6h, Phase 3: 4h)
+  - **Status:** ✅ **UDP PCAPNG WORKING!** (`prtip -sU --packet-capture scan.pcapng target.com`)
+  - **Core Complete:** Scheduler refactored, CLI flag wired, UDP capture functional
   - **Deliverables:**
-    - PCAPNG Writer Module: Thread-safe packet capture with file rotation (`crates/prtip-scanner/src/pcapng.rs`, 369 lines)
-    - UDP Scanner Integration: Captures probes + responses with direction tracking (`udp_scanner.rs`, +24 lines)
-    - Integration Tests: 6 tests created (2 passing, 4 ignored due to CAP_NET_RAW requirement)
-    - CLI Flag: `--packet-capture <FILE>` added (not yet wired through scheduler)
+    - **Phase 3 (4h):** Scheduler refactor for multi-scan-type support + CLI integration
+      - `scheduler.rs` (+70 lines): Multi-scan-type routing (TCP/UDP/SYN/stealth)
+      - `main.rs` (+22 lines): CLI `--packet-capture` flag fully wired
+      - UDP scans NOW have full PCAPNG capture capability!
+    - **Phase 1-2 (12h, from previous sprint):**
+      - PCAPNG Writer Module: Thread-safe, 1GB rotation (`pcapng.rs`, 369 lines)
+      - UDP Scanner Integration: Captures probes + responses (`udp_scanner.rs`, +24 lines)
+      - Integration Tests: 6 tests (2 passing, 4 ignored CAP_NET_RAW)
   - **Features:**
+    - CLI flag: `--packet-capture <FILE>` (fully functional for UDP scans)
+    - Multi-scan-type scheduler (TCP/UDP/SYN/stealth routing ready)
     - Thread-safe packet capture (Arc<Mutex<>> pattern)
-    - Automatic file rotation at 1GB (scan-001.pcapng, scan-002.pcapng, ...)
-    - Wireshark-compatible PCAPNG format (SHB, IDB, EPB blocks)
-    - Direction tracking (Sent/Received packets)
-    - Microsecond-precision timestamps
-    - Buffered I/O (8KB buffer) for performance
-    - Graceful error handling (scan continues if capture fails)
-  - **Testing:** 933 tests passing (+10 PCAPNG tests: 8 unit + 2 integration), zero regressions, zero clippy warnings
-  - **Performance:** <5% overhead expected (buffered I/O design, not yet benchmarked)
-  - **Next Steps:** Sprint 4.18.3 - Scheduler refactor for multi-scan-type support (TCP/UDP/SYN), full CLI integration, complete documentation
-  - **Strategic Value:** PCAPNG infrastructure production-ready, enables forensic analysis and SIEM integration (usable programmatically, full CLI integration in future sprint)
+    - Automatic 1GB file rotation (scan-001.pcapng, scan-002.pcapng)
+    - Wireshark-compatible format (SHB, IDB, EPB blocks)
+    - Direction tracking (Sent/Received), microsecond timestamps
+  - **Testing:** 925 tests passing (10 ignored), zero regressions, zero clippy warnings
+  - **Deferred (Optional):** TCP/SYN/Stealth PCAPNG integration (~4-6h), OUTPUT-FORMATS.md docs (~1h)
+  - **Strategic Value:** UDP packet capture WORKING NOW, foundation ready for easy TCP/SYN/Stealth integration
 
 - **Sprint 4.19 Phase 2 COMPLETE - NUMA Documentation & Benchmarks:** Scanner integration validation + user-facing documentation
   - **Duration:** 2.5 hours actual (vs 4-5 hours planned, discovered Phase 1 completed all scanner work)

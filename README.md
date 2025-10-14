@@ -646,6 +646,7 @@ prtip -A -p 80,443 target.com                # OS + service detection (nmap -A)
 | `-oX <file>` | XML output | `--output xml --output-file <file>` |
 | `-oG <file>` | Greppable output | New in v0.3.5 |
 | `-oA <base>` | All formats | Partial support in v0.3.5 |
+| `--packet-trace` | Show packet trace | `--packet-capture <file>` (Wireshark PCAPNG, v0.3.9+) |
 
 #### Detection & Modes
 

@@ -41,7 +41,7 @@
 //! let targets = vec![ScanTarget::parse("192.168.1.1")?];
 //!
 //! // Execute scan
-//! let results = scheduler.execute_scan(targets).await?;
+//! let results = scheduler.execute_scan(targets, None).await?;
 //!
 //! println!("Scan complete: {} results", results.len());
 //! # Ok(())

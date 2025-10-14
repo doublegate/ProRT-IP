@@ -351,7 +351,9 @@ async fn run() -> Result<()> {
 
     let results = if args.should_perform_host_discovery() {
         info!("Performing host discovery before port scanning");
-        scheduler.execute_scan_with_discovery(targets, pcapng_writer).await?
+        scheduler
+            .execute_scan_with_discovery(targets, pcapng_writer)
+            .await?
     } else {
         // For Phase 1, we need to expand targets with ports
         let expanded_targets = expand_targets_with_ports(targets, &ports)?;

@@ -130,16 +130,21 @@ jobs:
       - name: Build
         run: cargo build --workspace --locked --verbose
 
-      - name: Run tests
+      - name: Run tests (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Windows: Skip prtip-network tests due to Npcap DLL runtime dependencies
-            # The tests require actual network privileges and adapters not available in CI
-            cargo test --workspace --locked --exclude prtip-network
-          else
-            cargo test --workspace --locked
-          fi
-        shell: bash
+          # Add npcap-dlls to PATH for this step
+          $env:PATH = "$PWD\npcap-dlls;$env:PATH"
+          # Verify DLLs are accessible
+          Write-Host "Checking for DLLs in PATH:"
+          Get-ChildItem npcap-dlls
+          # Skip prtip-network tests due to Npcap DLL runtime dependencies
+          cargo test --workspace --locked --exclude prtip-network
+
+      - name: Run tests (Unix)
+        if: matrix.os != 'windows-latest'
+        run: cargo test --workspace --locked
 
       - name: Build release
         run: cargo build --release --workspace --locked

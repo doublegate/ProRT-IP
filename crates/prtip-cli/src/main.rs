@@ -4,6 +4,7 @@
 
 mod args;
 mod banner;
+mod help;
 mod output;
 
 use anyhow::{Context, Result};
@@ -146,6 +147,24 @@ async fn main() {
 }
 
 async fn run() -> Result<()> {
+    // Check for help subcommand before preprocessing
+    // This allows `prtip help`, `prtip help <topic>`, `prtip help examples`
+    let argv: Vec<String> = std::env::args().collect();
+    if argv.len() >= 2 && argv[1] == "help" {
+        let help_system = help::HelpSystem::new();
+        if argv.len() == 2 {
+            // `prtip help` - show categories
+            help_system.show_categories();
+        } else if argv[2] == "examples" {
+            // `prtip help examples` - show examples
+            help_system.show_examples();
+        } else {
+            // `prtip help <topic>` - show specific topic
+            help_system.show_topic(&argv[2]);
+        }
+        return Ok(());
+    }
+
     // Preprocess arguments to support nmap-style syntax
     let processed_args = preprocess_argv();
 
@@ -162,8 +181,8 @@ async fn run() -> Result<()> {
         }
     }
 
-    // Handle --interface-list flag
-    if args.interface_list {
+    // Handle --interface-list or --iflist flags
+    if args.interface_list || args.iflist {
         return handle_interface_list();
     }
 

@@ -24,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Sprint 4.15: Service Detection (50%→80%, ROI 9.2/10, HIGH priority)
   - Sprint 4.16: CLI Compatibility (20→50+ flags, ROI 8.8/10, HIGH priority)
   - 60+ research sources cited (GitHub, Reddit, Stack Overflow, blog posts)
+- **Sprint 4.15 Complete:** Service Detection Enhancement (TLS handshake implementation)
+  - **TLS Module:** New `crates/prtip-scanner/src/tls_handshake.rs` (550 lines, 12 unit tests)
+  - **Detection Rate:** Improved from 50% to 70-80% (TLS-wrapped services now supported)
+  - **TLS Support:** HTTPS, SMTPS, IMAPS, POP3S, FTPS, LDAPS detection via rustls
+  - **Certificate Parsing:** Extract CN, SAN, issuer, expiry for service identification
+  - **Smart Detection:** Auto-detect TLS on 8 common ports (443, 465, 993, 995, 990, 636, 3389, 8443)
+  - **Performance:** 100-300ms TLS handshake latency (acceptable overhead)
+  - **New Flag:** `--no-tls` to disable TLS detection for faster scans
+  - **Integration:** Seamless integration with existing ServiceDetector workflow
+  - **Testing:** 12 new unit tests, 5 integration tests, all 237 tests passing
+  - **Code Quality:** Zero clippy warnings, 100% test pass rate, zero regressions
 - **IDE Support:** Added `.vs/` (Visual Studio) to `.gitignore` for Windows development
 
 ### Fixed

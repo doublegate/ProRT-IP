@@ -70,6 +70,7 @@ pub mod storage_backend;
 pub mod syn_scanner;
 pub mod tcp_connect;
 pub mod timing;
+pub mod tls_handshake;
 pub mod udp_scanner;
 
 pub use adaptive_rate_limiter::{AdaptiveRateLimiter as AdaptiveRateLimiterV2, RateLimiterStats};
@@ -93,4 +94,5 @@ pub use storage_backend::StorageBackend;
 pub use syn_scanner::SynScanner;
 pub use tcp_connect::TcpConnectScanner;
 pub use timing::{AdaptiveRateLimiter, TimingConfig};
+pub use tls_handshake::{ServerInfo as TlsServerInfo, TlsHandshake};
 pub use udp_scanner::UdpScanner;

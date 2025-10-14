@@ -139,6 +139,13 @@ pub struct ServiceDetectionConfig {
     /// Custom probe database file path
     #[serde(default)]
     pub probe_db_path: Option<String>,
+    /// Enable TLS/SSL service detection (default: true)
+    #[serde(default = "default_enable_tls")]
+    pub enable_tls: bool,
+}
+
+fn default_enable_tls() -> bool {
+    true
 }
 
 impl Default for ServiceDetectionConfig {
@@ -148,6 +155,7 @@ impl Default for ServiceDetectionConfig {
             intensity: 7,
             banner_grab: false,
             probe_db_path: None,
+            enable_tls: true,
         }
     }
 }

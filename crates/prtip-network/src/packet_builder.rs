@@ -298,7 +298,71 @@ impl TcpPacketBuilder {
         (raw_size + 3) & !3
     }
 
-    /// Serialize options to bytes with padding
+    /// Serialize options directly to buffer (zero-copy)
+    ///
+    /// Writes TCP options directly to the provided buffer without intermediate
+    /// allocations. Returns the number of bytes written.
+    ///
+    /// # Performance
+    ///
+    /// This is a zero-allocation operation. All option data is written directly
+    /// to the destination buffer in-place.
+    fn serialize_options_to_buffer(&self, buffer: &mut [u8]) -> usize {
+        let mut offset = 0;
+
+        for option in &self.options {
+            match option {
+                TcpOption::Eol => {
+                    buffer[offset] = 0;
+                    offset += 1;
+                }
+                TcpOption::Nop => {
+                    buffer[offset] = 1;
+                    offset += 1;
+                }
+                TcpOption::Mss(mss) => {
+                    buffer[offset] = 2; // Kind
+                    buffer[offset + 1] = 4; // Length
+                    buffer[offset + 2] = (*mss >> 8) as u8; // MSS high byte
+                    buffer[offset + 3] = *mss as u8; // MSS low byte
+                    offset += 4;
+                }
+                TcpOption::WindowScale(scale) => {
+                    buffer[offset] = 3; // Kind
+                    buffer[offset + 1] = 3; // Length
+                    buffer[offset + 2] = *scale; // Scale value
+                    offset += 3;
+                }
+                TcpOption::SackPermitted => {
+                    buffer[offset] = 4; // Kind
+                    buffer[offset + 1] = 2; // Length
+                    offset += 2;
+                }
+                TcpOption::Timestamp { tsval, tsecr } => {
+                    buffer[offset] = 8; // Kind
+                    buffer[offset + 1] = 10; // Length
+                    buffer[offset + 2..offset + 6].copy_from_slice(&tsval.to_be_bytes());
+                    buffer[offset + 6..offset + 10].copy_from_slice(&tsecr.to_be_bytes());
+                    offset += 10;
+                }
+            }
+        }
+
+        // Pad to 4-byte boundary with NOPs
+        while offset % 4 != 0 {
+            buffer[offset] = 1; // NOP
+            offset += 1;
+        }
+
+        offset
+    }
+
+    /// Serialize options to bytes with padding (legacy, kept for backwards compatibility)
+    #[deprecated(
+        since = "0.3.8",
+        note = "Use serialize_options_to_buffer for zero-copy performance"
+    )]
+    #[allow(dead_code)] // Kept for API compatibility
     fn serialize_options(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         for option in &self.options {
@@ -313,7 +377,177 @@ impl TcpPacketBuilder {
         bytes
     }
 
+    /// Build packet using zero-copy buffer pool (high-performance)
+    ///
+    /// This is the high-performance packet building method that uses thread-local
+    /// buffer pools to eliminate heap allocations. Ideal for high packet rate
+    /// scenarios (>100K pps).
+    ///
+    /// # Performance
+    ///
+    /// - **Zero allocations**: Uses pre-allocated buffer pool
+    /// - **Zero contention**: Thread-local storage
+    /// - **Sub-microsecond**: Typical packet crafting <1µs
+    ///
+    /// # Returns
+    ///
+    /// Returns a byte slice borrowed from the thread-local buffer pool.
+    /// The slice is valid until the next call to `with_buffer()` or `reset()`.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use prtip_network::{TcpPacketBuilder, TcpFlags, packet_buffer::with_buffer};
+    /// use std::net::Ipv4Addr;
+    ///
+    /// with_buffer(|pool| {
+    ///     let packet = TcpPacketBuilder::new()
+    ///         .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+    ///         .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+    ///         .source_port(12345)
+    ///         .dest_port(80)
+    ///         .flags(TcpFlags::SYN)
+    ///         .build_with_buffer(pool)
+    ///         .expect("Failed to build packet");
+    ///
+    ///     // Use packet slice here (valid within this closure)
+    ///     assert!(packet.len() >= 40);
+    /// });
+    /// ```
+    #[allow(clippy::needless_lifetimes)] // Lifetime needed for clarity
+    pub fn build_with_buffer<'a>(
+        self,
+        buffer_pool: &'a mut crate::packet_buffer::PacketBuffer,
+    ) -> Result<&'a [u8]> {
+        // Validate required fields
+        let src_ip = self
+            .src_ip
+            .ok_or_else(|| PacketBuilderError::MissingField("source_ip".to_string()))?;
+        let dst_ip = self
+            .dst_ip
+            .ok_or_else(|| PacketBuilderError::MissingField("dest_ip".to_string()))?;
+        let src_port = self
+            .src_port
+            .ok_or_else(|| PacketBuilderError::MissingField("source_port".to_string()))?;
+        let dst_port = self
+            .dst_port
+            .ok_or_else(|| PacketBuilderError::MissingField("dest_port".to_string()))?;
+
+        // Calculate sizes
+        let options_size = self.options_size();
+        let tcp_header_size = 20 + options_size;
+        let tcp_total_size = tcp_header_size + self.payload.len();
+        let ip_total_size = 20 + tcp_total_size;
+
+        // Decide whether to include Ethernet header
+        let (total_size, has_ethernet) = if self.src_mac.is_some() && self.dst_mac.is_some() {
+            (14 + ip_total_size, true)
+        } else {
+            (ip_total_size, false)
+        };
+
+        // Get buffer from pool (zero-copy)
+        let remaining = buffer_pool.remaining(); // Capture before borrow
+        let buffer = buffer_pool
+            .get_mut(total_size)
+            .ok_or(PacketBuilderError::BufferTooSmall {
+                needed: total_size,
+                available: remaining,
+            })?;
+
+        let buffer_len = buffer.len(); // Capture before mutable borrow
+        let mut offset = 0;
+
+        // Build Ethernet header if MAC addresses provided
+        if has_ethernet {
+            let src_mac = self.src_mac.unwrap();
+            let dst_mac = self.dst_mac.unwrap();
+
+            let mut eth_packet = MutableEthernetPacket::new(&mut buffer[offset..offset + 14])
+                .ok_or(PacketBuilderError::BufferTooSmall {
+                    needed: 14,
+                    available: buffer_len,
+                })?;
+
+            eth_packet.set_destination(dst_mac);
+            eth_packet.set_source(src_mac);
+            eth_packet.set_ethertype(EtherTypes::Ipv4);
+
+            offset += 14;
+        }
+
+        // Build IPv4 header
+        {
+            let mut ip_packet = MutableIpv4Packet::new(&mut buffer[offset..offset + 20]).ok_or(
+                PacketBuilderError::BufferTooSmall {
+                    needed: 20,
+                    available: buffer_len - offset,
+                },
+            )?;
+
+            ip_packet.set_version(4);
+            ip_packet.set_header_length(5); // 5 * 4 = 20 bytes
+            ip_packet.set_dscp(0);
+            ip_packet.set_ecn(0);
+            ip_packet.set_total_length(ip_total_size as u16);
+            ip_packet.set_identification(self.ip_id);
+            ip_packet.set_flags(2); // Don't Fragment
+            ip_packet.set_fragment_offset(0);
+            ip_packet.set_ttl(self.ttl);
+            ip_packet.set_next_level_protocol(IpNextHeaderProtocols::Tcp);
+            ip_packet.set_source(src_ip);
+            ip_packet.set_destination(dst_ip);
+
+            // Calculate and set checksum
+            let checksum = ipv4_checksum(&ip_packet.to_immutable());
+            ip_packet.set_checksum(checksum);
+
+            offset += 20;
+        }
+
+        // Build TCP header
+        {
+            let tcp_size = tcp_header_size + self.payload.len();
+            let mut tcp_packet = MutableTcpPacket::new(&mut buffer[offset..offset + tcp_size])
+                .ok_or(PacketBuilderError::BufferTooSmall {
+                    needed: tcp_size,
+                    available: buffer_len - offset,
+                })?;
+
+            tcp_packet.set_source(src_port);
+            tcp_packet.set_destination(dst_port);
+            tcp_packet.set_sequence(self.seq);
+            tcp_packet.set_acknowledgement(self.ack);
+            tcp_packet.set_data_offset((tcp_header_size / 4) as u8);
+            tcp_packet.set_reserved(0);
+            tcp_packet.set_flags(self.flags.0);
+            tcp_packet.set_window(self.window);
+            tcp_packet.set_urgent_ptr(self.urgent_ptr);
+
+            // Set options if any (zero-copy)
+            if !self.options.is_empty() {
+                let opts_slice = tcp_packet.get_options_raw_mut();
+                let _ = self.serialize_options_to_buffer(opts_slice);
+            }
+
+            // Set payload if any
+            if !self.payload.is_empty() {
+                tcp_packet.set_payload(&self.payload);
+            }
+
+            // Calculate and set checksum
+            let checksum = tcp_ipv4_checksum(&tcp_packet.to_immutable(), &src_ip, &dst_ip);
+            tcp_packet.set_checksum(checksum);
+        }
+
+        Ok(&buffer[..total_size])
+    }
+
     /// Build the complete packet (Ethernet + IPv4 + TCP)
+    ///
+    /// This is the traditional packet building method that allocates a new Vec<u8>
+    /// for each packet. For high packet rates (>100K pps), consider using
+    /// `build_with_buffer()` instead for zero-allocation performance.
     pub fn build(self) -> Result<Vec<u8>> {
         // Validate required fields
         let src_ip = self
@@ -414,11 +648,10 @@ impl TcpPacketBuilder {
             tcp_packet.set_window(self.window);
             tcp_packet.set_urgent_ptr(self.urgent_ptr);
 
-            // Set options if any
+            // Set options if any (zero-copy)
             if !self.options.is_empty() {
-                let options_bytes = self.serialize_options();
                 let opts_slice = tcp_packet.get_options_raw_mut();
-                opts_slice[..options_bytes.len()].copy_from_slice(&options_bytes);
+                let _ = self.serialize_options_to_buffer(opts_slice);
             }
 
             // Set payload if any
@@ -546,7 +779,157 @@ impl UdpPacketBuilder {
         self
     }
 
+    /// Build packet using zero-copy buffer pool (high-performance)
+    ///
+    /// This is the high-performance packet building method that uses thread-local
+    /// buffer pools to eliminate heap allocations. Ideal for high packet rate
+    /// scenarios (>100K pps).
+    ///
+    /// # Performance
+    ///
+    /// - **Zero allocations**: Uses pre-allocated buffer pool
+    /// - **Zero contention**: Thread-local storage
+    /// - **Sub-microsecond**: Typical packet crafting <1µs
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use prtip_network::{UdpPacketBuilder, packet_buffer::with_buffer};
+    /// use std::net::Ipv4Addr;
+    ///
+    /// with_buffer(|pool| {
+    ///     let packet = UdpPacketBuilder::new()
+    ///         .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+    ///         .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+    ///         .source_port(12345)
+    ///         .dest_port(53)
+    ///         .build_with_buffer(pool)
+    ///         .expect("Failed to build packet");
+    ///
+    ///     // Use packet slice here (valid within this closure)
+    ///     assert_eq!(packet.len(), 28);
+    /// });
+    /// ```
+    #[allow(clippy::needless_lifetimes)] // Lifetime needed for clarity
+    pub fn build_with_buffer<'a>(
+        self,
+        buffer_pool: &'a mut crate::packet_buffer::PacketBuffer,
+    ) -> Result<&'a [u8]> {
+        // Validate required fields
+        let src_ip = self
+            .src_ip
+            .ok_or_else(|| PacketBuilderError::MissingField("source_ip".to_string()))?;
+        let dst_ip = self
+            .dst_ip
+            .ok_or_else(|| PacketBuilderError::MissingField("dest_ip".to_string()))?;
+        let src_port = self
+            .src_port
+            .ok_or_else(|| PacketBuilderError::MissingField("source_port".to_string()))?;
+        let dst_port = self
+            .dst_port
+            .ok_or_else(|| PacketBuilderError::MissingField("dest_port".to_string()))?;
+
+        // Calculate sizes
+        let udp_total_size = 8 + self.payload.len();
+        let ip_total_size = 20 + udp_total_size;
+
+        // Decide whether to include Ethernet header
+        let (total_size, has_ethernet) = if self.src_mac.is_some() && self.dst_mac.is_some() {
+            (14 + ip_total_size, true)
+        } else {
+            (ip_total_size, false)
+        };
+
+        // Get buffer from pool (zero-copy)
+        let remaining = buffer_pool.remaining(); // Capture before borrow
+        let buffer = buffer_pool
+            .get_mut(total_size)
+            .ok_or(PacketBuilderError::BufferTooSmall {
+                needed: total_size,
+                available: remaining,
+            })?;
+
+        let buffer_len = buffer.len(); // Capture before mutable borrow
+        let mut offset = 0;
+
+        // Build Ethernet header if MAC addresses provided
+        if has_ethernet {
+            let src_mac = self.src_mac.unwrap();
+            let dst_mac = self.dst_mac.unwrap();
+
+            let mut eth_packet = MutableEthernetPacket::new(&mut buffer[offset..offset + 14])
+                .ok_or(PacketBuilderError::BufferTooSmall {
+                    needed: 14,
+                    available: buffer_len,
+                })?;
+
+            eth_packet.set_destination(dst_mac);
+            eth_packet.set_source(src_mac);
+            eth_packet.set_ethertype(EtherTypes::Ipv4);
+
+            offset += 14;
+        }
+
+        // Build IPv4 header
+        {
+            let mut ip_packet = MutableIpv4Packet::new(&mut buffer[offset..offset + 20]).ok_or(
+                PacketBuilderError::BufferTooSmall {
+                    needed: 20,
+                    available: buffer_len - offset,
+                },
+            )?;
+
+            ip_packet.set_version(4);
+            ip_packet.set_header_length(5);
+            ip_packet.set_dscp(0);
+            ip_packet.set_ecn(0);
+            ip_packet.set_total_length(ip_total_size as u16);
+            ip_packet.set_identification(self.ip_id);
+            ip_packet.set_flags(2); // Don't Fragment
+            ip_packet.set_fragment_offset(0);
+            ip_packet.set_ttl(self.ttl);
+            ip_packet.set_next_level_protocol(IpNextHeaderProtocols::Udp);
+            ip_packet.set_source(src_ip);
+            ip_packet.set_destination(dst_ip);
+
+            // Calculate and set checksum
+            let checksum = ipv4_checksum(&ip_packet.to_immutable());
+            ip_packet.set_checksum(checksum);
+
+            offset += 20;
+        }
+
+        // Build UDP header
+        {
+            let udp_size = 8 + self.payload.len();
+            let mut udp_packet = MutableUdpPacket::new(&mut buffer[offset..offset + udp_size])
+                .ok_or(PacketBuilderError::BufferTooSmall {
+                    needed: udp_size,
+                    available: buffer_len - offset,
+                })?;
+
+            udp_packet.set_source(src_port);
+            udp_packet.set_destination(dst_port);
+            udp_packet.set_length(udp_size as u16);
+
+            // Set payload if any
+            if !self.payload.is_empty() {
+                udp_packet.set_payload(&self.payload);
+            }
+
+            // Calculate and set checksum
+            let checksum = udp_ipv4_checksum(&udp_packet.to_immutable(), &src_ip, &dst_ip);
+            udp_packet.set_checksum(checksum);
+        }
+
+        Ok(&buffer[..total_size])
+    }
+
     /// Build the complete packet (Ethernet + IPv4 + UDP)
+    ///
+    /// This is the traditional packet building method that allocates a new Vec<u8>
+    /// for each packet. For high packet rates (>100K pps), consider using
+    /// `build_with_buffer()` instead for zero-allocation performance.
     pub fn build(self) -> Result<Vec<u8>> {
         // Validate required fields
         let src_ip = self

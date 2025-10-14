@@ -68,6 +68,9 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 regex = { workspace = true }
 
+# PCAPNG packet capture
+pcap-file = "2.0"
+
 [dev-dependencies]
 tokio = { workspace = true }
 tempfile = "3.8"

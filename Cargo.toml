@@ -39,6 +39,9 @@ colored = "2.1"
 # Database
 rusqlite = { version = "0.31", features = ["bundled"] }
 
+# Packet capture
+pcap-file = "2.0"
+
 # Logging
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

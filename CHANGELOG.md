@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 4.18 Phase 1-2 PARTIAL - PCAPNG Packet Capture Infrastructure:** Wireshark-compatible packet capture (UDP integration complete, full CLI integration pending scheduler refactor)
+  - **Duration:** ~12 hours total (Phase 1: 6h infrastructure, Phase 2: 6h UDP integration)
+  - **Status:** ✅ PCAPNG infrastructure complete, ✅ UDP scanner integration complete, ⏸️ TCP scanner + CLI integration blocked (scheduler limitation)
+  - **Blocker:** Scheduler currently only supports TCP connect scanning - requires multi-scan-type refactor (~8-12h) for full CLI integration
+  - **Deliverables:**
+    - PCAPNG Writer Module: Thread-safe packet capture with file rotation (`crates/prtip-scanner/src/pcapng.rs`, 369 lines)
+    - UDP Scanner Integration: Captures probes + responses with direction tracking (`udp_scanner.rs`, +24 lines)
+    - Integration Tests: 6 tests created (2 passing, 4 ignored due to CAP_NET_RAW requirement)
+    - CLI Flag: `--packet-capture <FILE>` added (not yet wired through scheduler)
+  - **Features:**
+    - Thread-safe packet capture (Arc<Mutex<>> pattern)
+    - Automatic file rotation at 1GB (scan-001.pcapng, scan-002.pcapng, ...)
+    - Wireshark-compatible PCAPNG format (SHB, IDB, EPB blocks)
+    - Direction tracking (Sent/Received packets)
+    - Microsecond-precision timestamps
+    - Buffered I/O (8KB buffer) for performance
+    - Graceful error handling (scan continues if capture fails)
+  - **Testing:** 933 tests passing (+10 PCAPNG tests: 8 unit + 2 integration), zero regressions, zero clippy warnings
+  - **Performance:** <5% overhead expected (buffered I/O design, not yet benchmarked)
+  - **Next Steps:** Sprint 4.18.3 - Scheduler refactor for multi-scan-type support (TCP/UDP/SYN), full CLI integration, complete documentation
+  - **Strategic Value:** PCAPNG infrastructure production-ready, enables forensic analysis and SIEM integration (usable programmatically, full CLI integration in future sprint)
+
 - **Sprint 4.19 Phase 2 COMPLETE - NUMA Documentation & Benchmarks:** Scanner integration validation + user-facing documentation
   - **Duration:** 2.5 hours actual (vs 4-5 hours planned, discovered Phase 1 completed all scanner work)
   - **Status:** Documentation complete ✅, Benchmarks complete ✅, Integration tests added ✅

@@ -130,15 +130,23 @@ jobs:
       - name: Build
         run: cargo build --workspace --locked --verbose
 
+      - name: Copy Npcap DLLs to binary directory (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # Copy DLLs to target/debug where integration tests spawn prtip.exe
+          # This ensures spawned processes find DLLs via Windows DLL search order
+          # (application directory is searched before PATH)
+          Copy-Item -Path "npcap-dlls\*.dll" -Destination "target\debug\" -Force
+          Write-Host "Copied Npcap DLLs to target\debug\"
+          Get-ChildItem "target\debug\*.dll"
+
       - name: Run tests (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # Add npcap-dlls to PATH for this step
-          $env:PATH = "$PWD\npcap-dlls;$env:PATH"
-          # Verify DLLs are accessible
-          Write-Host "Checking for DLLs in PATH:"
-          Get-ChildItem npcap-dlls
+          # DLLs are now co-located with prtip.exe in target/debug
+          # No PATH manipulation needed - integration tests will work
           # Skip prtip-network tests due to Npcap DLL runtime dependencies
           cargo test --workspace --locked --exclude prtip-network
 

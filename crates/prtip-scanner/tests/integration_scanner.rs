@@ -106,7 +106,7 @@ async fn test_scheduler_full_workflow() {
     let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
     let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
-    let results = scheduler.execute_scan(targets).await.unwrap();
+    let results = scheduler.execute_scan(targets, None).await.unwrap();
 
     // Should have some results
     assert!(!results.is_empty());
@@ -144,7 +144,7 @@ async fn test_scheduler_with_discovery() {
     ];
 
     let results = scheduler
-        .execute_scan_with_discovery(targets)
+        .execute_scan_with_discovery(targets, None)
         .await
         .unwrap();
 

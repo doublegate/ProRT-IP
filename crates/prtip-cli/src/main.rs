@@ -304,6 +304,23 @@ async fn run() -> Result<()> {
         Arc::new(StorageBackend::memory(capacity))
     };
 
+    // Create PCAPNG writer if --packet-capture flag is set
+    let pcapng_writer = if let Some(ref pcap_path) = args.packet_capture {
+        match prtip_scanner::pcapng::PcapngWriter::new(pcap_path) {
+            Ok(writer) => {
+                info!("PCAPNG packet capture enabled: {:?}", pcap_path);
+                Some(Arc::new(std::sync::Mutex::new(writer)))
+            }
+            Err(e) => {
+                eprintln!("Error creating PCAPNG writer: {}", e);
+                eprintln!("Hint: Ensure the directory exists and you have write permissions.");
+                return Err(e);
+            }
+        }
+    } else {
+        None
+    };
+
     // Create scheduler
     let scheduler = ScanScheduler::new(config.clone(), storage_backend)
         .await
@@ -334,7 +351,7 @@ async fn run() -> Result<()> {
 
     let results = if args.should_perform_host_discovery() {
         info!("Performing host discovery before port scanning");
-        scheduler.execute_scan_with_discovery(targets).await?
+        scheduler.execute_scan_with_discovery(targets, pcapng_writer).await?
     } else {
         // For Phase 1, we need to expand targets with ports
         let expanded_targets = expand_targets_with_ports(targets, &ports)?;

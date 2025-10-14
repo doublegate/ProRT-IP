@@ -12,9 +12,9 @@ use crate::adaptive_parallelism::calculate_parallelism;
 use crate::storage_backend::StorageBackend;
 use crate::{
     BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter,
-    ScanProgressBar, ServiceDetector, TcpConnectScanner,
+    ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
 };
-use prtip_core::{Config, PortRange, PortState, Result, ScanResult, ScanTarget, ServiceProbeDb};
+use prtip_core::{Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -41,7 +41,7 @@ use prtip_network::numa::{NumaManager, NumaTopology};
 /// let scheduler = ScanScheduler::new(config, storage_backend).await?;
 ///
 /// let targets = vec![ScanTarget::parse("192.168.1.1")?];
-/// let results = scheduler.execute_scan(targets).await?;
+/// let results = scheduler.execute_scan(targets, None).await?;
 ///
 /// println!("Scan found {} results", results.len());
 /// # Ok(())
@@ -176,11 +176,15 @@ impl ScanScheduler {
     ///     ScanTarget::parse("10.0.0.1")?,
     /// ];
     ///
-    /// let results = scheduler.execute_scan(targets).await?;
+    /// let results = scheduler.execute_scan(targets, None).await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn execute_scan(&self, targets: Vec<ScanTarget>) -> Result<Vec<ScanResult>> {
+    pub async fn execute_scan(
+        &self,
+        targets: Vec<ScanTarget>,
+        pcapng_writer: Option<Arc<std::sync::Mutex<crate::pcapng::PcapngWriter>>>,
+    ) -> Result<Vec<ScanResult>> {
         info!("Starting scan of {} targets", targets.len());
 
         let mut all_results = Vec::new();
@@ -189,7 +193,7 @@ impl ScanScheduler {
         for target in targets {
             debug!("Scanning target: {:?}", target);
 
-            match self.scan_target(&target).await {
+            match self.scan_target(&target, pcapng_writer.clone()).await {
                 Ok(results) => {
                     // Store results via storage backend (non-blocking for async!)
                     self.storage_backend.add_results_batch(results.clone())?;
@@ -210,7 +214,11 @@ impl ScanScheduler {
     }
 
     /// Scan a single target
-    async fn scan_target(&self, target: &ScanTarget) -> Result<Vec<ScanResult>> {
+    async fn scan_target(
+        &self,
+        target: &ScanTarget,
+        pcapng_writer: Option<Arc<std::sync::Mutex<crate::pcapng::PcapngWriter>>>,
+    ) -> Result<Vec<ScanResult>> {
         // Expand target into individual IPs
         let hosts = target.expand_hosts();
         debug!("Target expanded to {} hosts", hosts.len());
@@ -242,13 +250,64 @@ impl ScanScheduler {
             // Rate limiting
             self.rate_limiter.acquire().await?;
 
-            // Perform TCP connect scan with adaptive parallelism
-            // Note: scan_ports() calls scan_ports_with_progress() with None for both progress and NUMA
-            match self
-                .tcp_scanner
-                .scan_ports(host, ports.clone(), parallelism)
-                .await
-            {
+            // Perform scan based on configured scan type
+            let scan_result = match self.config.scan.scan_type {
+                ScanType::Connect => {
+                    // TCP Connect scan (already exists, no PCAPNG support yet - TASK-2)
+                    self.tcp_scanner
+                        .scan_ports(host, ports.clone(), parallelism)
+                        .await
+                }
+                ScanType::Syn => {
+                    // SYN scan (requires initialization + PCAPNG support - TASK-3)
+                    // For now, fallback to TCP Connect
+                    warn!("SYN scan not fully integrated with PCAPNG yet, using TCP Connect");
+                    self.tcp_scanner
+                        .scan_ports(host, ports.clone(), parallelism)
+                        .await
+                }
+                ScanType::Udp => {
+                    // UDP scan (has PCAPNG support already!)
+                    let mut udp_scanner = UdpScanner::new(self.config.clone())?;
+                    udp_scanner.initialize().await?;
+
+                    // Scan each port individually (UDP scanner doesn't have scan_ports yet)
+                    let mut results = Vec::new();
+                    for port in &ports {
+                        match udp_scanner.scan_port_with_pcapng(
+                            match host {
+                                std::net::IpAddr::V4(ip) => ip,
+                                std::net::IpAddr::V6(_) => {
+                                    warn!("UDP scan doesn't support IPv6 yet");
+                                    continue;
+                                }
+                            },
+                            *port,
+                            pcapng_writer.clone(),
+                        ).await {
+                            Ok(result) => results.push(result),
+                            Err(e) => warn!("Error scanning UDP {}:{}: {}", host, port, e),
+                        }
+                    }
+                    Ok(results)
+                }
+                ScanType::Fin | ScanType::Null | ScanType::Xmas | ScanType::Ack => {
+                    // Stealth scans (require initialization + PCAPNG support - TASK-4)
+                    // For now, fallback to TCP Connect
+                    warn!("Stealth scans not fully integrated with PCAPNG yet, using TCP Connect");
+                    self.tcp_scanner
+                        .scan_ports(host, ports.clone(), parallelism)
+                        .await
+                }
+                ScanType::Idle => {
+                    // Idle scan (Phase 5 feature)
+                    return Err(prtip_core::Error::Config(
+                        "Idle scan not yet implemented".to_string(),
+                    ));
+                }
+            };
+
+            match scan_result {
                 Ok(results) => {
                     // Push results to lock-free aggregator (zero contention!)
                     for result in results {
@@ -286,6 +345,7 @@ impl ScanScheduler {
     /// # Arguments
     ///
     /// * `targets` - Vector of scan targets
+    /// * `pcapng_writer` - Optional PCAPNG writer for packet capture
     ///
     /// # Returns
     ///
@@ -293,6 +353,7 @@ impl ScanScheduler {
     pub async fn execute_scan_with_discovery(
         &self,
         targets: Vec<ScanTarget>,
+        pcapng_writer: Option<Arc<std::sync::Mutex<crate::pcapng::PcapngWriter>>>,
     ) -> Result<Vec<ScanResult>> {
         info!("Starting scan with host discovery");
 
@@ -337,7 +398,7 @@ impl ScanScheduler {
             .collect();
 
         // Execute normal scan on live hosts
-        self.execute_scan(live_targets).await
+        self.execute_scan(live_targets, pcapng_writer).await
     }
 
     /// Get ports to scan based on configuration
@@ -722,7 +783,7 @@ mod tests {
         let storage_backend = Arc::new(StorageBackend::memory(100));
         let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
-        let results = scheduler.execute_scan(vec![]).await.unwrap();
+        let results = scheduler.execute_scan(vec![], None).await.unwrap();
         assert_eq!(results.len(), 0);
     }
 
@@ -733,7 +794,7 @@ mod tests {
         let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
-        let results = scheduler.execute_scan(targets).await.unwrap();
+        let results = scheduler.execute_scan(targets, None).await.unwrap();
 
         // Should have some results (even if all filtered/closed)
         assert!(!results.is_empty());
@@ -746,7 +807,7 @@ mod tests {
         let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
-        let results = scheduler.execute_scan(targets).await.unwrap();
+        let results = scheduler.execute_scan(targets, None).await.unwrap();
 
         // Should have some results (even if all filtered/closed)
         assert!(!results.is_empty());
@@ -774,7 +835,7 @@ mod tests {
         let scheduler = ScanScheduler::new(config, storage_backend).await.unwrap();
 
         let target = ScanTarget::parse("127.0.0.1").unwrap();
-        let results = scheduler.scan_target(&target).await.unwrap();
+        let results = scheduler.scan_target(&target, None).await.unwrap();
 
         assert!(!results.is_empty());
     }
@@ -813,7 +874,7 @@ mod tests {
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
         let results = scheduler
-            .execute_scan_with_discovery(targets)
+            .execute_scan_with_discovery(targets, None)
             .await
             .unwrap();
 
@@ -829,7 +890,7 @@ mod tests {
 
         // TEST-NET-1 (should be unreachable)
         let targets = vec![ScanTarget::parse("192.0.2.1").unwrap()];
-        let results = scheduler.execute_scan(targets).await.unwrap();
+        let results = scheduler.execute_scan(targets, None).await.unwrap();
 
         // May have results (filtered ports), just verify no panic
         let _ = results;
@@ -846,7 +907,7 @@ mod tests {
             ScanTarget::parse("127.0.0.2").unwrap(),
         ];
 
-        let results = scheduler.execute_scan(targets).await.unwrap();
+        let results = scheduler.execute_scan(targets, None).await.unwrap();
 
         // Should have results for both targets
         assert!(!results.is_empty());
@@ -862,7 +923,7 @@ mod tests {
             .unwrap();
 
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
-        let results = scheduler.execute_scan(targets).await.unwrap();
+        let results = scheduler.execute_scan(targets, None).await.unwrap();
 
         // Check that results were stored
         let stored_results = storage_backend.get_results().await.unwrap();
@@ -906,7 +967,7 @@ mod tests {
 
         let scheduler = scheduler.unwrap();
         let targets = vec![ScanTarget::parse("127.0.0.1").unwrap()];
-        let results = scheduler.execute_scan(targets).await.unwrap();
+        let results = scheduler.execute_scan(targets, None).await.unwrap();
 
         // Should have results (NUMA is optional optimization, not blocking)
         assert!(!results.is_empty());

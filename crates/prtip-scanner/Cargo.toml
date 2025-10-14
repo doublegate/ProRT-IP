@@ -10,6 +10,8 @@ repository.workspace = true
 [features]
 # Vendor OpenSSL for static linking (required for musl builds)
 vendored-openssl = ["native-tls/vendored"]
+# NUMA optimization for multi-socket systems
+numa = ["prtip-network/numa"]
 
 [dependencies]
 prtip-core = { path = "../prtip-core" }

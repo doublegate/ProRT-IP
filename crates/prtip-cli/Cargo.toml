@@ -11,6 +11,10 @@ repository.workspace = true
 name = "prtip"
 path = "src/main.rs"
 
+[features]
+default = []
+numa = ["prtip-scanner/numa", "prtip-network/numa"]
+
 [dependencies]
 prtip-core = { path = "../prtip-core" }
 prtip-network = { path = "../prtip-network" }

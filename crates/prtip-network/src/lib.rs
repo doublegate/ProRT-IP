@@ -30,6 +30,7 @@
 pub mod batch_sender;
 pub mod capture;
 pub mod interface;
+pub mod numa;
 pub mod packet_buffer;
 pub mod packet_builder;
 pub mod privilege;

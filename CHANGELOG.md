@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 4.17 Phase 1 In Progress:** Performance I/O Optimization (batch I/O benchmarks + allocation audit)
+  - **Batch I/O Benchmarks:** Comprehensive benchmark suite in `crates/prtip-network/benches/batch_io.rs` (313 lines)
+    - 6 benchmark groups: packet batch creation, sendmmsg/recvmmsg syscalls, adaptive batching, pipeline performance, platform fallback
+    - Batch size profiling: 16, 32, 64, 128, 256, 512, 1024 packets per syscall
+    - Documented analysis: `/tmp/ProRT-IP/sprint-4.17/benchmarks/batch-size-profiling.txt` (173 lines)
+    - Key finding: Batch size 64 optimal for 1M+ pps (98.44% syscall reduction)
+  - **CLI Flag:** `--mmsg-batch-size <N>` for batch size control (16-1024 range, default: 64)
+  - **Allocation Audit:** Comprehensive zero-copy refactoring strategy
+    - Identified 7 critical allocation hot spots in `packet_builder.rs`
+    - Estimated 25-50% CPU overhead at 1M pps from allocations
+    - Designed PacketBuffer + &mut [u8] refactoring approach
+    - Documented in `/tmp/ProRT-IP/sprint-4.17/analysis/allocation-audit.md` (326 lines)
+  - **Strategic Documentation:** Implementation notes, commit message, roadmap (850+ lines total)
+  - **Critical Discovery:** Existing sendmmsg/recvmmsg implementation found in `batch_sender.rs` (Sprint 4.8)
+    - Saved 10-12 hours of redundant implementation work
+    - LinuxBatchSender and LinuxBatchReceiver fully functional with 16 unit tests
+    - Platform fallback for macOS/Windows already implemented
+  - **Phase-Based Approach:** Split Sprint 4.17 into 4 manageable phases
+    - Phase 1 (✅ COMPLETE): Benchmarks + Audit (3 hours, this commit)
+    - Phase 2 (⏳ NEXT): Zero-copy implementation (6-9 hours)
+    - Phase 3 (⏳ FUTURE): Integration + Validation (10-15 hours)
+    - Phase 4 (⏳ FUTURE): Documentation + Release (2-3 hours)
+  - **Performance Targets:** 1M+ pps throughput, <2µs p99 latency, <50% CPU @ 1M pps
+  - **Testing:** All 539+ tests passing, zero clippy warnings, 100% rustfmt compliance
 - **Custom Command:** `/inspire-me` - Competitive analysis and enhancement planning
   - 6-phase systematic workflow (Context → Research → Gap Analysis → Sprint Planning → Documentation → Verification)
   - Automated competitive analysis against industry leaders (Nmap, Masscan, RustScan, Naabu)

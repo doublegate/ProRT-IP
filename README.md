@@ -11,7 +11,7 @@
 [![License: GPL v4](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust0.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-803_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-933_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -108,7 +108,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Latest Version:** v0.3.8 (Sprint 4.17 COMPLETE - Zero-copy optimization, 15% performance improvement)
 
-**Test Coverage:** 803 tests passing (100% success rate, all platforms) | 61.92% code coverage (exceeds 60% target)
+**Test Coverage:** 933 tests passing (100% success rate, all platforms) | 61.92% code coverage (exceeds 60% target)
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
@@ -445,6 +445,7 @@ prtip help examples
 ```
 
 **Help Categories:**
+
 - `scan-types` - All scan types (SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle)
 - `host-discovery` - Discover active hosts before port scanning
 - `port-specs` - Control which ports to scan and in what order
@@ -695,6 +696,7 @@ ProRT-IP maintains significant speed advantages while supporting nmap syntax:
 | Full port scan (all 65535) | ~18min | ~3-5min | **3-6x faster** |
 
 **Performance Features:**
+
 - **Throughput:** 10M+ packets/second (stateless SYN scan, theoretical)
 - **Zero-Copy:** 100% allocation elimination in hot path (15% improvement, Sprint 4.17)
 - **NUMA Optimization:** 20-30% improvement on multi-socket systems (dual/quad Xeon/EPYC, Sprint 4.19)

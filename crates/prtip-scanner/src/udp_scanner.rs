@@ -47,6 +47,10 @@ use std::time::{Duration, Instant};
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
 
+// PCAPNG packet capture support
+use crate::pcapng::{Direction, PcapngWriter};
+use std::sync::Mutex as StdMutex;
+
 /// UDP scanner
 pub struct UdpScanner {
     config: Config,
@@ -81,6 +85,16 @@ impl UdpScanner {
 
     /// Scan a single UDP port
     pub async fn scan_port(&self, target: Ipv4Addr, port: u16) -> Result<ScanResult> {
+        self.scan_port_with_pcapng(target, port, None).await
+    }
+
+    /// Scan a single UDP port with optional PCAPNG capture
+    pub async fn scan_port_with_pcapng(
+        &self,
+        target: Ipv4Addr,
+        port: u16,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
+    ) -> Result<ScanResult> {
         let start_time = Instant::now();
 
         // Generate random source port
@@ -90,8 +104,8 @@ impl UdpScanner {
         // Get protocol-specific payload if available
         let payload = get_udp_payload(port).unwrap_or_default();
 
-        // Send UDP probe
-        self.send_udp_probe(target, port, src_port, &payload)
+        // Send UDP probe (with optional PCAPNG capture)
+        self.send_udp_probe(target, port, src_port, &payload, pcapng_writer.clone())
             .await?;
 
         // Wait for response
@@ -100,7 +114,7 @@ impl UdpScanner {
 
         match timeout(
             wait_duration,
-            self.wait_for_response(target, port, src_port),
+            self.wait_for_response(target, port, src_port, pcapng_writer),
         )
         .await
         {
@@ -129,13 +143,14 @@ impl UdpScanner {
         }
     }
 
-    /// Send a UDP probe packet (zero-copy)
+    /// Send a UDP probe packet (zero-copy with optional PCAPNG capture)
     async fn send_udp_probe(
         &self,
         target: Ipv4Addr,
         port: u16,
         src_port: u16,
         payload: &[u8],
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<()> {
         if let Some(ref mut capture) = *self.capture.lock() {
             // Use thread-local zero-copy buffer
@@ -149,6 +164,18 @@ impl UdpScanner {
                     .dest_port(port)
                     .payload(payload.to_vec())
                     .build_ip_packet_with_buffer(buffer_pool)?;
+
+                // Capture packet to PCAPNG if writer is provided
+                if let Some(ref writer) = pcapng_writer {
+                    // Clone packet data before sending (PCAPNG needs owned copy)
+                    let packet_data = packet_slice.to_vec();
+                    if let Ok(guard) = writer.lock() {
+                        if let Err(e) = guard.write_packet(&packet_data, Direction::Sent) {
+                            // Log error but don't fail scan (PCAPNG is optional)
+                            warn!("PCAPNG write error (UDP probe): {}", e);
+                        }
+                    }
+                }
 
                 // Send immediately (buffer ref valid within closure)
                 capture.send_packet(packet_slice).map_err(|e| {
@@ -177,16 +204,27 @@ impl UdpScanner {
         Ok(())
     }
 
-    /// Wait for UDP or ICMP response
+    /// Wait for UDP or ICMP response (with optional PCAPNG capture)
     async fn wait_for_response(
         &self,
         target: Ipv4Addr,
         port: u16,
         src_port: u16,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<PortState> {
         loop {
             if let Some(ref mut capture) = *self.capture.lock() {
                 if let Some(packet) = capture.receive_packet(100)? {
+                    // Capture received packet to PCAPNG if writer is provided
+                    if let Some(ref writer) = pcapng_writer {
+                        if let Ok(guard) = writer.lock() {
+                            if let Err(e) = guard.write_packet(&packet, Direction::Received) {
+                                // Log error but don't fail scan (PCAPNG is optional)
+                                warn!("PCAPNG write error (UDP response): {}", e);
+                            }
+                        }
+                    }
+
                     if let Some(state) = self.parse_response(&packet, target, port, src_port)? {
                         return Ok(state);
                     }

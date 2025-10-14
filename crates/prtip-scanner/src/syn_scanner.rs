@@ -40,7 +40,10 @@
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
-use prtip_network::{create_capture, PacketCapture, TcpFlags, TcpOption, TcpPacketBuilder};
+use prtip_network::{
+    create_capture, packet_buffer::with_buffer, PacketCapture, TcpFlags, TcpOption,
+    TcpPacketBuilder,
+};
 use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -220,6 +223,10 @@ impl SynScanner {
     }
 
     /// Send a SYN packet
+    ///
+    /// Sprint 4.17 Phase 3: Integrated zero-copy packet building.
+    /// Uses `with_buffer()` closure and `build_ip_packet_with_buffer()` to
+    /// eliminate heap allocations in packet crafting hot path.
     async fn send_syn(&self, target: Ipv4Addr, port: u16, src_port: u16, retry: u8) -> Result<u32> {
         use rand::Rng;
         let mut rng = rand::thread_rng();
@@ -227,44 +234,53 @@ impl SynScanner {
         // Generate sequence number (for stateless, could use SipHash)
         let sequence: u32 = rng.gen();
 
-        // Build SYN packet
-        let packet = TcpPacketBuilder::new()
-            .source_ip(self.local_ip)
-            .dest_ip(target)
-            .source_port(src_port)
-            .dest_port(port)
-            .sequence(sequence)
-            .flags(TcpFlags::SYN)
-            .window(65535)
-            .add_option(TcpOption::Mss(1460))
-            .add_option(TcpOption::WindowScale(7))
-            .add_option(TcpOption::SackPermitted)
-            .build_ip_packet()?;
+        // Build and send SYN packet using zero-copy API
+        with_buffer(|pool| {
+            // Build SYN packet (zero allocations)
+            let packet = TcpPacketBuilder::new()
+                .source_ip(self.local_ip)
+                .dest_ip(target)
+                .source_port(src_port)
+                .dest_port(port)
+                .sequence(sequence)
+                .flags(TcpFlags::SYN)
+                .window(65535)
+                .add_option(TcpOption::Mss(1460))
+                .add_option(TcpOption::WindowScale(7))
+                .add_option(TcpOption::SackPermitted)
+                .build_ip_packet_with_buffer(pool)?;
 
-        // Send packet
-        if let Some(ref mut capture) = *self.capture.lock() {
-            capture
-                .send_packet(&packet)
-                .map_err(|e| prtip_core::Error::Network(format!("Failed to send SYN: {}", e)))?;
+            // Send packet (while borrowed from pool)
+            if let Some(ref mut capture) = *self.capture.lock() {
+                capture.send_packet(packet).map_err(|e| {
+                    prtip_core::Error::Network(format!("Failed to send SYN: {}", e))
+                })?;
 
-            trace!(
-                "Sent SYN to {}:{} (src_port={}, seq={}, retry={})",
-                target,
-                port,
-                src_port,
-                sequence,
-                retry
-            );
-        } else {
-            return Err(prtip_core::Error::Config(
-                "Packet capture not initialized".to_string(),
-            ));
-        }
+                trace!(
+                    "Sent SYN to {}:{} (src_port={}, seq={}, retry={})",
+                    target,
+                    port,
+                    src_port,
+                    sequence,
+                    retry
+                );
+            } else {
+                return Err(prtip_core::Error::Config(
+                    "Packet capture not initialized".to_string(),
+                ));
+            }
+
+            // Reset buffer for reuse
+            pool.reset();
+            Ok::<_, prtip_core::Error>(())
+        })?;
 
         Ok(sequence)
     }
 
     /// Send a RST packet to close the connection
+    ///
+    /// Sprint 4.17 Phase 3: Integrated zero-copy packet building.
     async fn send_rst(
         &self,
         target: Ipv4Addr,
@@ -272,23 +288,30 @@ impl SynScanner {
         src_port: u16,
         sequence: u32,
     ) -> Result<()> {
-        let packet = TcpPacketBuilder::new()
-            .source_ip(self.local_ip)
-            .dest_ip(target)
-            .source_port(src_port)
-            .dest_port(port)
-            .sequence(sequence)
-            .flags(TcpFlags::RST)
-            .window(0)
-            .build_ip_packet()?;
+        // Build and send RST packet using zero-copy API
+        with_buffer(|pool| {
+            let packet = TcpPacketBuilder::new()
+                .source_ip(self.local_ip)
+                .dest_ip(target)
+                .source_port(src_port)
+                .dest_port(port)
+                .sequence(sequence)
+                .flags(TcpFlags::RST)
+                .window(0)
+                .build_ip_packet_with_buffer(pool)?;
 
-        if let Some(ref mut capture) = *self.capture.lock() {
-            capture
-                .send_packet(&packet)
-                .map_err(|e| prtip_core::Error::Network(format!("Failed to send RST: {}", e)))?;
+            if let Some(ref mut capture) = *self.capture.lock() {
+                capture.send_packet(packet).map_err(|e| {
+                    prtip_core::Error::Network(format!("Failed to send RST: {}", e))
+                })?;
 
-            trace!("Sent RST to {}:{} (src_port={})", target, port, src_port);
-        }
+                trace!("Sent RST to {}:{} (src_port={})", target, port, src_port);
+            }
+
+            // Reset buffer for reuse
+            pool.reset();
+            Ok::<_, prtip_core::Error>(())
+        })?;
 
         Ok(())
     }

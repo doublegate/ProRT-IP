@@ -677,6 +677,57 @@ impl TcpPacketBuilder {
         };
         builder.build()
     }
+
+    /// Build just the IP+TCP packet (no Ethernet header) using zero-copy buffer
+    ///
+    /// This is the zero-copy equivalent of `build_ip_packet()`. Instead of
+    /// allocating a new Vec<u8>, it writes directly to the provided buffer pool.
+    ///
+    /// # Arguments
+    ///
+    /// * `buffer_pool` - Mutable reference to thread-local buffer pool
+    ///
+    /// # Returns
+    ///
+    /// A byte slice reference (`&[u8]`) valid for the lifetime of the closure.
+    /// The slice becomes invalid after `buffer_pool.reset()` is called.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use prtip_network::{TcpPacketBuilder, TcpFlags, packet_buffer::with_buffer};
+    /// use std::net::Ipv4Addr;
+    ///
+    /// with_buffer(|pool| {
+    ///     let packet = TcpPacketBuilder::new()
+    ///         .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+    ///         .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+    ///         .source_port(12345)
+    ///         .dest_port(80)
+    ///         .flags(TcpFlags::SYN)
+    ///         .build_ip_packet_with_buffer(pool)
+    ///         .expect("Failed to build packet");
+    ///
+    ///     // Use packet slice here (e.g., send via raw socket)
+    ///     println!("Packet size: {} bytes", packet.len());
+    ///
+    ///     pool.reset();
+    ///     Ok::<(), Box<dyn std::error::Error>>(())
+    /// }).unwrap();
+    /// ```
+    #[allow(clippy::needless_lifetimes)]
+    pub fn build_ip_packet_with_buffer<'a>(
+        self,
+        buffer_pool: &'a mut crate::packet_buffer::PacketBuffer,
+    ) -> Result<&'a [u8]> {
+        // Ensure no MAC addresses are set (IP packet only)
+        let builder = Self {
+            src_mac: None,
+            dst_mac: None,
+            ..self
+        };
+        builder.build_with_buffer(buffer_pool)
+    }
 }
 
 /// Builder for UDP packets
@@ -1044,6 +1095,55 @@ impl UdpPacketBuilder {
             ..self
         };
         builder.build()
+    }
+
+    /// Build just the IP+UDP packet (no Ethernet header) using zero-copy buffer
+    ///
+    /// This is the zero-copy equivalent of `build_ip_packet()`. Instead of
+    /// allocating a new Vec<u8>, it writes directly to the provided buffer pool.
+    ///
+    /// # Arguments
+    ///
+    /// * `buffer_pool` - Mutable reference to thread-local buffer pool
+    ///
+    /// # Returns
+    ///
+    /// A byte slice reference (`&[u8]`) valid for the lifetime of the closure.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use prtip_network::{UdpPacketBuilder, packet_buffer::with_buffer};
+    /// use std::net::Ipv4Addr;
+    ///
+    /// with_buffer(|pool| {
+    ///     let packet = UdpPacketBuilder::new()
+    ///         .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+    ///         .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+    ///         .source_port(12345)
+    ///         .dest_port(53)
+    ///         .build_ip_packet_with_buffer(pool)
+    ///         .expect("Failed to build packet");
+    ///
+    ///     // Use packet slice here (e.g., send via raw socket)
+    ///     println!("Packet size: {} bytes", packet.len());
+    ///
+    ///     pool.reset();
+    ///     Ok::<(), Box<dyn std::error::Error>>(())
+    /// }).unwrap();
+    /// ```
+    #[allow(clippy::needless_lifetimes)]
+    pub fn build_ip_packet_with_buffer<'a>(
+        self,
+        buffer_pool: &'a mut crate::packet_buffer::PacketBuffer,
+    ) -> Result<&'a [u8]> {
+        // Ensure no MAC addresses are set (IP packet only)
+        let builder = Self {
+            src_mac: None,
+            dst_mac: None,
+            ..self
+        };
+        builder.build_with_buffer(buffer_pool)
     }
 }
 

@@ -139,23 +139,26 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # Copy DLLs to both target\debug (for prtip.exe) and target\debug\deps (for test executables)
-          # The integration tests spawn prtip.exe as subprocess, but test binary itself runs from deps
-          Write-Host "Copying Npcap DLLs to target directories..."
+          # Copy DLLs to multiple locations to ensure Windows DLL loader can find them
+          Write-Host "Copying Npcap DLLs to all necessary directories..."
 
-          # Copy to target\debug for the actual prtip.exe binary
-          Copy-Item "npcap-dlls\*.dll" "target\debug\" -Force -Verbose
+          # 1. Copy to target\debug for the actual prtip.exe binary
+          Copy-Item "npcap-dlls\*.dll" "target\debug\" -Force
           Write-Host "✓ DLLs copied to target\debug\"
 
-          # Also copy to target\debug\deps where the test executables run from
+          # 2. Copy to target\debug\deps where the test executables run from
           New-Item -ItemType Directory -Force -Path "target\debug\deps" | Out-Null
-          Copy-Item "npcap-dlls\*.dll" "target\debug\deps\" -Force -Verbose
+          Copy-Item "npcap-dlls\*.dll" "target\debug\deps\" -Force
           Write-Host "✓ DLLs copied to target\debug\deps\"
 
-          Write-Host "`nDLLs in target\debug:"
+          # 3. Copy to System32 as last resort (always in DLL search path)
+          # This ensures DLLs are found regardless of process spawning context
+          Copy-Item "npcap-dlls\*.dll" "C:\Windows\System32\" -Force -ErrorAction SilentlyContinue
+          Write-Host "✓ DLLs copied to C:\Windows\System32\"
+
+          Write-Host "`nVerifying DLL presence:"
           Get-ChildItem "target\debug\*.dll" | Format-Table Name, Length -AutoSize
-          Write-Host "`nDLLs in target\debug\deps:"
-          Get-ChildItem "target\debug\deps\*.dll" | Format-Table Name, Length -AutoSize
+          Get-ChildItem "C:\Windows\System32\Packet.dll", "C:\Windows\System32\wpcap.dll" -ErrorAction SilentlyContinue | Format-Table Name, Length -AutoSize
 
       - name: Run tests
         run: |

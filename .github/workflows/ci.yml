@@ -84,33 +84,94 @@ jobs:
 
       - name: Install Npcap SDK and Runtime DLLs (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
           # Download and extract Npcap SDK (contains Packet.lib for development)
+          Write-Host "Downloading Npcap SDK..."
           curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
-
-          # Download Npcap installer
-          curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
-
-          # Run installer in WinPcap compatibility mode (installs to System32 instead of System32\Npcap)
-          # /S = silent install, /winpcap_mode = install to System32 for better PATH compatibility
-          Write-Host "Installing Npcap..."
-          Start-Process -FilePath "npcap-installer.exe" -ArgumentList "/S /winpcap_mode" -Wait -NoNewWindow
-          Write-Host "Npcap installation completed"
+          Write-Host "✓ Npcap SDK extracted"
 
           # Create runtime directory
           New-Item -ItemType Directory -Force -Path "npcap-dlls"
 
-          # Copy DLLs from System32 (WinPcap compatibility mode puts them here)
-          Write-Host "Copying DLLs from System32..."
-          Copy-Item "C:\Windows\System32\wpcap.dll" -Destination "npcap-dlls\" -Force -ErrorAction Stop
-          Copy-Item "C:\Windows\System32\Packet.dll" -Destination "npcap-dlls\" -Force -ErrorAction Stop
+          # Method 1: Try Npcap installer with strict timeout (known to hang in CI)
+          Write-Host "`nAttempting Npcap 1.79 installation with 2-minute timeout..."
+          $installerSuccess = $false
 
-          # Verify DLL existence and size (real DLLs are >100KB, stubs are tiny)
+          try {
+            # Download installer
+            curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
+
+            # Start installer with timeout protection
+            $process = Start-Process -FilePath "$PWD\npcap-installer.exe" `
+                                     -ArgumentList "/S", "/winpcap_mode" `
+                                     -PassThru -NoNewWindow
+
+            # Wait maximum 2 minutes (120 seconds)
+            $completed = $process.WaitForExit(120000)
+
+            if (-not $completed) {
+              Write-Warning "Installer hung after 2 minutes - killing process"
+              $process.Kill()
+              Write-Warning "Npcap installer method failed (timeout)"
+            }
+            elseif ($process.ExitCode -eq 0) {
+              Write-Host "Npcap installer completed with exit code 0"
+
+              # Verify installation
+              if ((Test-Path "C:\Windows\System32\wpcap.dll") -and (Test-Path "C:\Windows\System32\Packet.dll")) {
+                Write-Host "✓ Npcap installed successfully via installer"
+                Copy-Item "C:\Windows\System32\wpcap.dll" "npcap-dlls\" -Force
+                Copy-Item "C:\Windows\System32\Packet.dll" "npcap-dlls\" -Force
+                $installerSuccess = $true
+              }
+              else {
+                Write-Warning "Installer succeeded but DLLs not found in System32"
+              }
+            }
+            else {
+              Write-Warning "Installer exited with code $($process.ExitCode)"
+            }
+          }
+          catch {
+            Write-Warning "Npcap installer method failed: $_"
+          }
+
+          # Method 2: Fallback to WinPcap via Chocolatey (reliable in CI, older but functional)
+          if (-not $installerSuccess) {
+            Write-Host "`nFalling back to WinPcap via Chocolatey..."
+
+            try {
+              # WinPcap package is more reliable in headless CI environments
+              choco install winpcap -y --no-progress --timeout 120
+
+              # Wait for installation to complete
+              Start-Sleep -Seconds 10
+
+              # Copy DLLs from System32
+              if ((Test-Path "C:\Windows\System32\wpcap.dll") -and (Test-Path "C:\Windows\System32\Packet.dll")) {
+                Write-Host "✓ WinPcap installed via Chocolatey"
+                Copy-Item "C:\Windows\System32\wpcap.dll" "npcap-dlls\" -Force
+                Copy-Item "C:\Windows\System32\Packet.dll" "npcap-dlls\" -Force
+                $installerSuccess = $true
+              }
+              else {
+                Write-Error "WinPcap Chocolatey install succeeded but DLLs not found"
+                exit 1
+              }
+            }
+            catch {
+              Write-Error "WinPcap Chocolatey installation failed: $_"
+              exit 1
+            }
+          }
+
+          # Verify we obtained valid DLLs (real DLLs are >100KB, stubs are tiny)
           $wpcap = Get-Item "npcap-dlls\wpcap.dll" -ErrorAction Stop
           $packet = Get-Item "npcap-dlls\Packet.dll" -ErrorAction Stop
 
-          Write-Host "DLL verification:"
+          Write-Host "`nDLL verification:"
           Write-Host "  wpcap.dll: $($wpcap.Length) bytes"
           Write-Host "  Packet.dll: $($packet.Length) bytes"
 
@@ -132,7 +193,7 @@ jobs:
           echo "PATH=$PWD\npcap-dlls;$env:PATH" >> $env:GITHUB_ENV
 
           # List what we got
-          Write-Host "Runtime DLLs:"
+          Write-Host "`nRuntime DLLs:"
           Get-ChildItem "npcap-dlls" | Format-Table Name, Length -AutoSize
 
       - name: Cache dependencies

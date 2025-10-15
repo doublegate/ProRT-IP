@@ -139,12 +139,23 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # Copy DLLs next to the test executables so Windows DLL loader can find them
-          # Windows DLL search order: 1) EXE directory, 2) System32, 3) Current dir, 4) PATH (last!)
+          # Copy DLLs to both target\debug (for prtip.exe) and target\debug\deps (for test executables)
+          # The integration tests spawn prtip.exe as subprocess, but test binary itself runs from deps
           Write-Host "Copying Npcap DLLs to target directories..."
+
+          # Copy to target\debug for the actual prtip.exe binary
           Copy-Item "npcap-dlls\*.dll" "target\debug\" -Force -Verbose
-          Write-Host "`n✓ DLLs copied to target\debug\"
+          Write-Host "✓ DLLs copied to target\debug\"
+
+          # Also copy to target\debug\deps where the test executables run from
+          New-Item -ItemType Directory -Force -Path "target\debug\deps" | Out-Null
+          Copy-Item "npcap-dlls\*.dll" "target\debug\deps\" -Force -Verbose
+          Write-Host "✓ DLLs copied to target\debug\deps\"
+
+          Write-Host "`nDLLs in target\debug:"
           Get-ChildItem "target\debug\*.dll" | Format-Table Name, Length -AutoSize
+          Write-Host "`nDLLs in target\debug\deps:"
+          Get-ChildItem "target\debug\deps\*.dll" | Format-Table Name, Length -AutoSize
 
       - name: Run tests
         run: |

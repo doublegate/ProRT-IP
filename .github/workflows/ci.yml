@@ -89,28 +89,41 @@ jobs:
           curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
 
-          # Download Npcap installer and extract DLLs without running (avoids hang)
+          # Download Npcap installer
           curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
 
-          # Extract installer using 7zip (pre-installed on GitHub Actions)
-          7z x npcap-installer.exe -o"npcap-runtime" -y
+          # Run installer in WinPcap compatibility mode (installs to System32 instead of System32\Npcap)
+          # /S = silent install, /winpcap_mode = install to System32 for better PATH compatibility
+          Write-Host "Installing Npcap..."
+          Start-Process -FilePath "npcap-installer.exe" -ArgumentList "/S /winpcap_mode" -Wait -NoNewWindow
+          Write-Host "Npcap installation completed"
 
-          # Create runtime directory and copy DLLs
+          # Create runtime directory
           New-Item -ItemType Directory -Force -Path "npcap-dlls"
 
-          # Find and copy ONLY x64 DLLs (to avoid 32-bit/64-bit architecture mismatch)
-          Get-ChildItem -Path "npcap-runtime" -Recurse -Filter "*.dll" | Where-Object {
-            ($_.Name -eq "Packet.dll" -or $_.Name -eq "wpcap.dll") -and $_.DirectoryName -like "*x64*"
-          } | ForEach-Object {
-            Copy-Item $_.FullName -Destination "npcap-dlls\" -Force
-            Write-Host "Copied $($_.Name) from $($_.DirectoryName)"
-          }
+          # Copy DLLs from System32 (WinPcap compatibility mode puts them here)
+          Write-Host "Copying DLLs from System32..."
+          Copy-Item "C:\Windows\System32\wpcap.dll" -Destination "npcap-dlls\" -Force -ErrorAction Stop
+          Copy-Item "C:\Windows\System32\Packet.dll" -Destination "npcap-dlls\" -Force -ErrorAction Stop
 
-          # Verify we got the x64 DLLs
-          if (-not (Test-Path "npcap-dlls\Packet.dll") -or -not (Test-Path "npcap-dlls\wpcap.dll")) {
-            Write-Error "Failed to extract x64 DLLs from installer"
+          # Verify DLL existence and size (real DLLs are >100KB, stubs are tiny)
+          $wpcap = Get-Item "npcap-dlls\wpcap.dll" -ErrorAction Stop
+          $packet = Get-Item "npcap-dlls\Packet.dll" -ErrorAction Stop
+
+          Write-Host "DLL verification:"
+          Write-Host "  wpcap.dll: $($wpcap.Length) bytes"
+          Write-Host "  Packet.dll: $($packet.Length) bytes"
+
+          if ($wpcap.Length -lt 100KB) {
+            Write-Error "wpcap.dll too small ($($wpcap.Length) bytes) - possibly stub file"
             exit 1
           }
+          if ($packet.Length -lt 100KB) {
+            Write-Error "Packet.dll too small ($($packet.Length) bytes) - possibly stub file"
+            exit 1
+          }
+
+          Write-Host "✓ Valid runtime DLLs obtained"
 
           # Add SDK lib directory to LIB environment variable for linking
           echo "LIB=$PWD\npcap-sdk\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
@@ -118,9 +131,9 @@ jobs:
           # Add DLL directory to PATH for runtime
           echo "PATH=$PWD\npcap-dlls;$env:PATH" >> $env:GITHUB_ENV
 
-          # List what we extracted to verify
-          Write-Host "Extracted DLLs:"
-          Get-ChildItem "npcap-dlls" -ErrorAction SilentlyContinue
+          # List what we got
+          Write-Host "Runtime DLLs:"
+          Get-ChildItem "npcap-dlls" | Format-Table Name, Length -AutoSize
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2

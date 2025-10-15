@@ -177,7 +177,6 @@ jobs:
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             # Windows: Skip prtip-network tests due to Npcap DLL runtime dependencies
             # The tests require actual network privileges and adapters not available in CI
-            # PATH already includes npcap-dlls directory from Install Npcap step
             cargo test --workspace --locked --exclude prtip-network
           else
             cargo test --workspace --locked

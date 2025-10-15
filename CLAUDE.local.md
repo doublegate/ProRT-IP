@@ -9,7 +9,7 @@
 | Metric | Value | Details |
 |--------|-------|---------|
 | **Phase** | Phase 4 COMPLETE | All sprints + zero-copy + NUMA + PCAPNG infrastructure |
-| **CI Status** | 7/7 passing (100%) | Format, Clippy, Test×3, MSRV, Security |
+| **CI Status** | ✅ **7/7 passing (100%)** | All platforms GREEN (Linux, Windows, macOS) - commit 02037ad |
 | **Release Platforms** | 8/8 building (100%) | All architectures (musl + ARM64 fixed) |
 | **Tests** | 933/933 (100%) | +10 PCAPNG tests (8 unit + 2 integration) |
 | **Coverage** | **61.92%** | 15,397/24,814 lines (exceeds 60% target) |
@@ -211,6 +211,9 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-15 | **CI Status Verification** | Investigate reported CI failures | ~1h | Analyzed GitHub Actions logs, confirmed commit 02037ad RESOLVED all issues, CI now 7/7 passing (100%), Windows DLL issues fixed by reverting to bash shell, macOS timing test fixed with 5s timeout, transient failure in run #83 (runner timing), run #84 succeeded, created comprehensive analysis report (CI-STATUS-ANALYSIS-2025-10-15.md) | ✅ |
+| 10-14 | **Windows/macOS CI Fix - Shell + Timing** | Root cause analysis + fixes | ~2h | Reverted Windows tests to bash shell (from pwsh), fixed DLL path resolution, increased macOS timeout 2s→5s, commit 02037ad, CI 7/7 passing, all 29 Windows integration tests pass, macOS timing test no longer flaky | ✅ |
+| 10-14 | **Windows CI Fix - Npcap Switch** | Replace WinPcap with Npcap | ~1h | Switched from WinPcap 4.1.3 (2013, VC++ 2010) to Npcap 1.79 (2024, VC++ 2015-2022), eliminated VC++ 2010 Redistributable installation, simplified CI workflow (-147 lines), ~30s faster per run, commit be99938 (superseded by 02037ad) | ✅ |
 | 10-14 | **Version 0.3.8 Metadata Update** | Complete version consistency | ~1.5h | Updated Cargo.toml (0.3.7→0.3.8), args.rs help text (v0.3.5→v0.3.8, 677→790 tests, 20+→50+ flags), banner.rs (Phase 3→4, 391→790 tests, added "for IP Networks", removed extra blank line), rebuilt release binary (9.7 MB), comprehensive commit workflow, pushed to GitHub (commit 9e0243b) | ✅ |
 | 10-14 | **GitHub Release Artifact Fix** | Release build attachment | ~30m | Fixed duplicate v0.3.8 releases (draft with builds vs actual with notes), deleted draft, triggered workflow rebuild, all 8 architecture builds now attached to correct release | ✅ |
 | 10-14 | **Sprint 4.18 Deferred** | Output Expansion planning | ~1h | Created comprehensive implementation plan (docs/20-SPRINT-4.18-DEFERRED.md, ~18K words), PCAPNG + SQLite scope analysis (3-4 days), 20 tasks with code skeletons, testing strategy, risk mitigation, execution checklist | ⏸️ DEFERRED |
@@ -229,6 +232,35 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 | 10-12 | **v0.3.5 Release** | Nmap CLI compatibility | 3h | 20+ nmap flags, greppable output, comprehensive docs | ✅ |
 
 ### Recent Session Details (Condensed)
+
+**2025-10-14: Windows CI Fix - Npcap Switch (commit be99938)**
+- **Problem:** WinPcap 4.1.3 DLLs built with VC++ 2010 runtime, GitHub Actions lacks VC++ 2010
+- **Symptom:** Windows tests failing 17/29 (12 integration tests blocked by STATUS_DLL_NOT_FOUND)
+- **Root Cause:** Transitive dependency on msvcr100.dll/msvcp100.dll (VC++ 2010 runtime)
+- **Historical Evidence:** User reported commit 601eb75 worked with Npcap 1.79 extraction
+  - Packet.dll: 174,464 bytes (1/18/2024)
+  - wpcap.dll: 420,224 bytes (1/18/2024)
+- **Solution:** Switched to Npcap 1.79 (modern, built with VC++ 2015-2022)
+  - GitHub Actions already has VC++ 2015-2022 pre-installed
+  - No need for deprecated VC++ 2010 Redistributable installation
+- **Implementation:**
+  - Replaced WinPcap download with Npcap 1.79 installer extraction
+  - Used 7-Zip to extract x64 DLLs from NSIS installer (no execution, no GUI hang)
+  - Removed VC++ 2010 Redistributable installation step entirely
+  - Simplified CI workflow: -169 lines, +22 lines (net -147 lines)
+- **Benefits:**
+  - CI ~30 seconds faster (no VC++ 2010 installation)
+  - Modern library with 2024 security patches (vs 2013 deprecated)
+  - Cleaner workflow: 1 extraction method instead of 2 fallbacks
+  - Future-proof: Npcap actively maintained
+- **Expected Result:** Windows tests 17/29 → 29/29 (all integration tests pass)
+- **Status:** ⏳ Awaiting GitHub Actions verification
+- **Knowledge Graph:** Created entities for Npcap-1.79, WinPcap-4.1.3, Windows-CI-DLL-Dependencies, ProRT-IP-Windows-CI-Fix
+- **Next Steps:** Monitor CI, then proceed with Sprint 4.18.3 (PCAPNG complete) or 4.18.1 (SQLite export)
+- **Files:**
+  - .github/workflows/ci.yml: Updated Npcap extraction, removed VC++ 2010 step
+  - /tmp/ProRT-IP/NPCAP-SWITCH-COMMIT.txt: Commit message (46 lines)
+  - /tmp/ProRT-IP/NEXT-DEVELOPMENT-STEPS.md: Development roadmap (388 lines)
 
 **2025-10-14: Version 0.3.8 Metadata Update & Commit Workflow**
 - Fixed GitHub release artifact issue: deleted duplicate draft release, triggered workflow rebuild

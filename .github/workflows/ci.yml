@@ -138,10 +138,10 @@ jobs:
       - name: Run tests
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Windows: Run only unit tests (--lib), skip integration tests
-            # Integration tests require Npcap runtime and spawn prtip.exe subprocesses
-            # which need actual packet capture capabilities not available in CI
-            cargo test --workspace --locked --lib --exclude prtip-network
+            # Windows: Run only unit tests for crates that don't require Npcap
+            # Exclude: prtip-network (network layer), prtip-scanner (uses Npcap), prtip-cli integration tests
+            # Include: prtip-core (core types), prtip-cli unit tests (args parsing, formatting)
+            cargo test --workspace --locked --lib --exclude prtip-network --exclude prtip-scanner
           else
             cargo test --workspace --locked
           fi

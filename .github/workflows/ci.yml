@@ -191,12 +191,15 @@ jobs:
 
       - name: Add Npcap DLLs to PATH (Windows)
         if: matrix.os == 'windows-latest'
-        shell: bash
+        shell: pwsh
         run: |
           # Add both debug and deps directories to GITHUB_PATH for persistent PATH
-          echo "${{ github.workspace }}/target/debug" >> $GITHUB_PATH
-          echo "${{ github.workspace }}/target/debug/deps" >> $GITHUB_PATH
-          echo "✓ Added DLL directories to GITHUB_PATH"
+          # Use PowerShell to ensure proper Windows path format
+          "${{ github.workspace }}\target\debug" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "${{ github.workspace }}\target\debug\deps" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Host "✓ Added DLL directories to GITHUB_PATH"
+          Write-Host "  - ${{ github.workspace }}\target\debug"
+          Write-Host "  - ${{ github.workspace }}\target\debug\deps"
 
       - name: Run tests
         run: |

@@ -135,6 +135,17 @@ jobs:
       - name: Build
         run: cargo build --workspace --locked --verbose
 
+      - name: Copy Npcap DLLs to test binary directory (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # Copy DLLs next to the test executables so Windows DLL loader can find them
+          # Windows DLL search order: 1) EXE directory, 2) System32, 3) Current dir, 4) PATH (last!)
+          Write-Host "Copying Npcap DLLs to target directories..."
+          Copy-Item "npcap-dlls\*.dll" "target\debug\" -Force -Verbose
+          Write-Host "`n✓ DLLs copied to target\debug\"
+          Get-ChildItem "target\debug\*.dll" | Format-Table Name, Length -AutoSize
+
       - name: Run tests
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then

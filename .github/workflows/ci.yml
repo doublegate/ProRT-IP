@@ -243,6 +243,37 @@ jobs:
           Write-Host "`nFinal DLLs:"
           Get-ChildItem "npcap-dlls" | Format-Table Name, Length -AutoSize
 
+      - name: Install Visual C++ 2010 Redistributable (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # WinPcap 4.1.3 DLLs depend on Visual C++ 2010 runtime (msvcr100.dll, msvcp100.dll)
+          # GitHub Actions runners have VC++ 2015-2022 but not VC++ 2010
+          # This causes STATUS_DLL_NOT_FOUND (0xC0000135) when loading wpcap.dll
+          Write-Host "Installing Visual C++ 2010 Redistributable for WinPcap DLL dependencies..."
+
+          try {
+            # Install both x86 and x64 versions (vcredist2010 package includes both)
+            choco install vcredist2010 -y --no-progress
+
+            # Verify installation
+            $msvcr100_x64 = "C:\Windows\System32\msvcr100.dll"
+            $msvcr100_x86 = "C:\Windows\SysWOW64\msvcr100.dll"
+
+            if ((Test-Path $msvcr100_x64) -and (Test-Path $msvcr100_x86)) {
+              Write-Host "✓ Visual C++ 2010 runtime installed successfully"
+              Write-Host "  x64: $msvcr100_x64 ($(Get-Item $msvcr100_x64 | Select-Object -ExpandProperty Length) bytes)"
+              Write-Host "  x86: $msvcr100_x86 ($(Get-Item $msvcr100_x86 | Select-Object -ExpandProperty Length) bytes)"
+            }
+            else {
+              Write-Warning "VC++ 2010 installation completed but DLLs not found in expected locations"
+            }
+          }
+          catch {
+            Write-Error "Failed to install Visual C++ 2010 Redistributable: $_"
+            exit 1
+          }
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
         with:

@@ -82,7 +82,7 @@ jobs:
           # pkg-config is provided by pkgconf which is pre-installed on GitHub Actions runners
           brew list pkgconf &>/dev/null || brew install pkgconf
 
-      - name: Install Npcap SDK and Runtime DLLs (Windows)
+      - name: Install Npcap SDK and Extract Runtime DLLs (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
@@ -95,79 +95,126 @@ jobs:
           # Create runtime directory
           New-Item -ItemType Directory -Force -Path "npcap-dlls"
 
-          # Method 1: Try Npcap installer with strict timeout (known to hang in CI)
-          Write-Host "`nAttempting Npcap 1.79 installation with 2-minute timeout..."
-          $installerSuccess = $false
+          # Extract WinPcap DLLs directly from installer (no execution required)
+          # This avoids GUI hangs in GitHub Actions headless environment
+          Write-Host "`nDownloading WinPcap installer for DLL extraction..."
 
+          $extractionSuccess = $false
+
+          # Method 1: Extract from WinPcap NSIS installer using 7-Zip
           try {
-            # Download installer
-            curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
+            # Download WinPcap installer (NSIS format, ~900KB)
+            curl -L -o WinPcap_Installer.exe https://www.winpcap.org/install/bin/WinPcap_4_1_3.exe
 
-            # Start installer with timeout protection
-            $process = Start-Process -FilePath "$PWD\npcap-installer.exe" `
-                                     -ArgumentList "/S", "/winpcap_mode" `
-                                     -PassThru -NoNewWindow
+            Write-Host "Extracting DLLs from NSIS installer (no execution)..."
 
-            # Wait maximum 2 minutes (120 seconds)
-            $completed = $process.WaitForExit(120000)
+            # 7-Zip is pre-installed on GitHub Actions Windows runners
+            # Extract NSIS installer contents
+            & 7z x WinPcap_Installer.exe -o"winpcap-extracted" -y | Out-Null
 
-            if (-not $completed) {
-              Write-Warning "Installer hung after 2 minutes - killing process"
-              $process.Kill()
-              Write-Warning "Npcap installer method failed (timeout)"
+            # NSIS installers typically store files in predictable locations
+            # Search recursively for the DLLs (x64 versions preferred)
+            Write-Host "Searching for DLLs in extracted files..."
+
+            # Find x64 DLLs first (preferred for 64-bit builds)
+            $wpcapSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "wpcap.dll" -ErrorAction SilentlyContinue |
+                        Where-Object { $_.DirectoryName -like "*x64*" -or $_.DirectoryName -like "*amd64*" } |
+                        Select-Object -First 1
+
+            $packetSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "Packet.dll" -ErrorAction SilentlyContinue |
+                         Where-Object { $_.DirectoryName -like "*x64*" -or $_.DirectoryName -like "*amd64*" } |
+                         Select-Object -First 1
+
+            # Fallback to any DLL if x64 not found
+            if (-not $wpcapSrc) {
+              $wpcapSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "wpcap.dll" -ErrorAction SilentlyContinue |
+                          Select-Object -First 1
             }
-            elseif ($process.ExitCode -eq 0) {
-              Write-Host "Npcap installer completed with exit code 0"
 
-              # Verify installation
-              if ((Test-Path "C:\Windows\System32\wpcap.dll") -and (Test-Path "C:\Windows\System32\Packet.dll")) {
-                Write-Host "✓ Npcap installed successfully via installer"
-                Copy-Item "C:\Windows\System32\wpcap.dll" "npcap-dlls\" -Force
-                Copy-Item "C:\Windows\System32\Packet.dll" "npcap-dlls\" -Force
-                $installerSuccess = $true
+            if (-not $packetSrc) {
+              $packetSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "Packet.dll" -ErrorAction SilentlyContinue |
+                           Select-Object -First 1
+            }
+
+            if ($wpcapSrc -and $packetSrc) {
+              Write-Host "Found DLLs in extraction:"
+              Write-Host "  wpcap.dll: $($wpcapSrc.FullName) ($($wpcapSrc.Length) bytes)"
+              Write-Host "  Packet.dll: $($packetSrc.FullName) ($($packetSrc.Length) bytes)"
+
+              # Verify size before copying (valid DLLs are >100KB)
+              if ($wpcapSrc.Length -gt 100KB -and $packetSrc.Length -gt 100KB) {
+                Copy-Item $wpcapSrc.FullName "npcap-dlls\wpcap.dll" -Force
+                Copy-Item $packetSrc.FullName "npcap-dlls\Packet.dll" -Force
+
+                Write-Host "✓ DLLs extracted successfully via 7-Zip (no installer execution)"
+                $extractionSuccess = $true
               }
               else {
-                Write-Warning "Installer succeeded but DLLs not found in System32"
+                Write-Warning "Extracted DLLs too small - may be stubs or invalid"
               }
             }
             else {
-              Write-Warning "Installer exited with code $($process.ExitCode)"
+              Write-Warning "DLLs not found in NSIS extraction"
             }
           }
           catch {
-            Write-Warning "Npcap installer method failed: $_"
+            Write-Warning "7-Zip NSIS extraction failed: $_"
           }
 
-          # Method 2: Fallback to WinPcap via Chocolatey (reliable in CI, older but functional)
-          if (-not $installerSuccess) {
-            Write-Host "`nFalling back to WinPcap via Chocolatey..."
+          # Method 2: Fallback to Chocolatey WinPcap (uses AutoHotkey, may hang but more reliable)
+          if (-not $extractionSuccess) {
+            Write-Host "`nFallback: Installing WinPcap via Chocolatey with timeout..."
 
             try {
-              # WinPcap package is more reliable in headless CI environments
-              choco install winpcap -y --no-progress --timeout 120
+              # Use job control to enforce timeout (Chocolatey can hang on headless systems)
+              $job = Start-Job -ScriptBlock {
+                choco install winpcap -y --no-progress 2>&1
+              }
 
-              # Wait for installation to complete
-              Start-Sleep -Seconds 10
+              # Wait maximum 2 minutes
+              $completed = Wait-Job -Job $job -Timeout 120
 
-              # Copy DLLs from System32
-              if ((Test-Path "C:\Windows\System32\wpcap.dll") -and (Test-Path "C:\Windows\System32\Packet.dll")) {
-                Write-Host "✓ WinPcap installed via Chocolatey"
-                Copy-Item "C:\Windows\System32\wpcap.dll" "npcap-dlls\" -Force
-                Copy-Item "C:\Windows\System32\Packet.dll" "npcap-dlls\" -Force
-                $installerSuccess = $true
+              if ($completed) {
+                $output = Receive-Job -Job $job
+                Write-Host "Chocolatey output: $output"
+
+                # Wait for file system sync
+                Start-Sleep -Seconds 5
+
+                # Check if DLLs were installed to System32
+                if ((Test-Path "C:\Windows\System32\wpcap.dll") -and (Test-Path "C:\Windows\System32\Packet.dll")) {
+                  Write-Host "✓ WinPcap installed via Chocolatey"
+                  Copy-Item "C:\Windows\System32\wpcap.dll" "npcap-dlls\" -Force
+                  Copy-Item "C:\Windows\System32\Packet.dll" "npcap-dlls\" -Force
+                  $extractionSuccess = $true
+                }
+                else {
+                  Write-Warning "Chocolatey completed but DLLs not found in System32"
+                }
               }
               else {
-                Write-Error "WinPcap Chocolatey install succeeded but DLLs not found"
-                exit 1
+                Write-Warning "Chocolatey installation timed out after 2 minutes"
+                Stop-Job -Job $job
               }
+
+              Remove-Job -Job $job -Force
             }
             catch {
-              Write-Error "WinPcap Chocolatey installation failed: $_"
-              exit 1
+              Write-Warning "Chocolatey installation failed: $_"
             }
           }
 
-          # Verify we obtained valid DLLs (real DLLs are >100KB, stubs are tiny)
+          # Verify we obtained valid DLLs
+          if (-not $extractionSuccess) {
+            Write-Error "All DLL extraction methods failed - cannot proceed"
+            Write-Host "`nTroubleshooting:"
+            Write-Host "  1. Check if WinPcap download URL is accessible"
+            Write-Host "  2. Verify 7-Zip is available: $(Get-Command 7z -ErrorAction SilentlyContinue)"
+            Write-Host "  3. Check Chocolatey status: $(choco --version 2>&1)"
+            exit 1
+          }
+
+          # Final validation
           $wpcap = Get-Item "npcap-dlls\wpcap.dll" -ErrorAction Stop
           $packet = Get-Item "npcap-dlls\Packet.dll" -ErrorAction Stop
 
@@ -176,15 +223,15 @@ jobs:
           Write-Host "  Packet.dll: $($packet.Length) bytes"
 
           if ($wpcap.Length -lt 100KB) {
-            Write-Error "wpcap.dll too small ($($wpcap.Length) bytes) - possibly stub file"
+            Write-Error "wpcap.dll too small ($($wpcap.Length) bytes) - invalid"
             exit 1
           }
           if ($packet.Length -lt 100KB) {
-            Write-Error "Packet.dll too small ($($packet.Length) bytes) - possibly stub file"
+            Write-Error "Packet.dll too small ($($packet.Length) bytes) - invalid"
             exit 1
           }
 
-          Write-Host "✓ Valid runtime DLLs obtained"
+          Write-Host "✓ Valid runtime DLLs obtained (extraction method, no GUI installers)"
 
           # Add SDK lib directory to LIB environment variable for linking
           echo "LIB=$PWD\npcap-sdk\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
@@ -192,8 +239,8 @@ jobs:
           # Add DLL directory to PATH for runtime
           echo "PATH=$PWD\npcap-dlls;$env:PATH" >> $env:GITHUB_ENV
 
-          # List what we got
-          Write-Host "`nRuntime DLLs:"
+          # Show final results
+          Write-Host "`nFinal DLLs:"
           Get-ChildItem "npcap-dlls" | Format-Table Name, Length -AutoSize
 
       - name: Cache dependencies

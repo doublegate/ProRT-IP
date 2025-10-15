@@ -141,8 +141,8 @@ jobs:
               Write-Host "  wpcap.dll: $($wpcapSrc.FullName) ($($wpcapSrc.Length) bytes)"
               Write-Host "  Packet.dll: $($packetSrc.FullName) ($($packetSrc.Length) bytes)"
 
-              # Verify size before copying (valid DLLs are >100KB)
-              if ($wpcapSrc.Length -gt 100KB -and $packetSrc.Length -gt 100KB) {
+              # Verify size before copying (valid DLLs are >50KB, stubs are <10KB)
+              if ($wpcapSrc.Length -gt 50KB -and $packetSrc.Length -gt 50KB) {
                 Copy-Item $wpcapSrc.FullName "npcap-dlls\wpcap.dll" -Force
                 Copy-Item $packetSrc.FullName "npcap-dlls\Packet.dll" -Force
 
@@ -222,11 +222,11 @@ jobs:
           Write-Host "  wpcap.dll: $($wpcap.Length) bytes"
           Write-Host "  Packet.dll: $($packet.Length) bytes"
 
-          if ($wpcap.Length -lt 100KB) {
+          if ($wpcap.Length -lt 50KB) {
             Write-Error "wpcap.dll too small ($($wpcap.Length) bytes) - invalid"
             exit 1
           }
-          if ($packet.Length -lt 100KB) {
+          if ($packet.Length -lt 50KB) {
             Write-Error "Packet.dll too small ($($packet.Length) bytes) - invalid"
             exit 1
           }

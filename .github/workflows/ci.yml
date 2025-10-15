@@ -158,7 +158,13 @@ jobs:
           Copy-Item "npcap-dlls\wpcap.dll" -Destination "target\debug\" -Force
           Copy-Item "npcap-dlls\Packet.dll" -Destination "target\debug\" -Force
 
-          # Verify destination DLLs
+          # ALSO copy to deps directory where test binaries are located
+          Write-Host "`n=== Copying DLLs to target/debug/deps ==="
+          New-Item -ItemType Directory -Force -Path "target\debug\deps" | Out-Null
+          Copy-Item "npcap-dlls\wpcap.dll" -Destination "target\debug\deps\" -Force
+          Copy-Item "npcap-dlls\Packet.dll" -Destination "target\debug\deps\" -Force
+
+          # Verify destination DLLs in both locations
           Write-Host "`nVerifying DLLs in target/debug:"
           if (-not (Test-Path "target\debug\wpcap.dll")) {
             Write-Error "Failed to copy wpcap.dll to target\debug"
@@ -169,18 +175,34 @@ jobs:
             exit 1
           }
 
+          Write-Host "`nVerifying DLLs in target/debug/deps:"
+          if (-not (Test-Path "target\debug\deps\wpcap.dll")) {
+            Write-Error "Failed to copy wpcap.dll to target\debug\deps"
+            exit 1
+          }
+          if (-not (Test-Path "target\debug\deps\Packet.dll")) {
+            Write-Error "Failed to copy Packet.dll to target\debug\deps"
+            exit 1
+          }
+
           Get-ChildItem "target\debug\*.dll" | Where-Object { $_.Name -match "pcap|Packet" } | Format-Table Name, Length -AutoSize
-          Write-Host "✓ Npcap DLLs successfully copied to target\debug"
+          Get-ChildItem "target\debug\deps\*.dll" | Where-Object { $_.Name -match "pcap|Packet" } | Format-Table Name, Length -AutoSize
+          Write-Host "✓ Npcap DLLs successfully copied to both target\debug and target\debug\deps"
+
+      - name: Add Npcap DLLs to PATH (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          # Add both debug and deps directories to GITHUB_PATH for persistent PATH
+          echo "${{ github.workspace }}/target/debug" >> $GITHUB_PATH
+          echo "${{ github.workspace }}/target/debug/deps" >> $GITHUB_PATH
+          echo "✓ Added DLL directories to GITHUB_PATH"
 
       - name: Run tests
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Windows: Convert Unix path to Windows format for Npcap DLL runtime loading
-            # Git Bash $(pwd) returns /d/a/... but Windows needs D:\a\...
-            # DLLs must be visible to subprocesses spawned by integration tests
-            WIN_PATH=$(cygpath -w "$(pwd)/target/debug")
-            export PATH="$WIN_PATH:$PATH"
             # Skip prtip-network tests due to actual network privileges requirement
+            # DLLs are in PATH via GITHUB_PATH (set in previous step)
             cargo test --workspace --locked --exclude prtip-network
           else
             cargo test --workspace --locked

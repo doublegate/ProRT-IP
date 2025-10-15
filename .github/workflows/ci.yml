@@ -130,6 +130,43 @@ jobs:
       - name: Build
         run: cargo build --workspace --locked --verbose
 
+      - name: Copy Npcap DLLs to binary directory (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # Verify source DLLs exist
+          Write-Host "=== Verifying Npcap DLLs in source directory ==="
+          if (-not (Test-Path "npcap-dlls\wpcap.dll")) {
+            Write-Error "Source wpcap.dll not found in npcap-dlls directory"
+            exit 1
+          }
+          if (-not (Test-Path "npcap-dlls\Packet.dll")) {
+            Write-Error "Source Packet.dll not found in npcap-dlls directory"
+            exit 1
+          }
+
+          Write-Host "Source DLLs found:"
+          Get-ChildItem "npcap-dlls\*.dll" | Format-Table Name, Length -AutoSize
+
+          # Copy DLLs to target/debug (where prtip.exe resides)
+          Write-Host "`n=== Copying DLLs to target/debug ==="
+          Copy-Item "npcap-dlls\wpcap.dll" -Destination "target\debug\" -Force
+          Copy-Item "npcap-dlls\Packet.dll" -Destination "target\debug\" -Force
+
+          # Verify destination DLLs
+          Write-Host "`nVerifying DLLs in target/debug:"
+          if (-not (Test-Path "target\debug\wpcap.dll")) {
+            Write-Error "Failed to copy wpcap.dll to target\debug"
+            exit 1
+          }
+          if (-not (Test-Path "target\debug\Packet.dll")) {
+            Write-Error "Failed to copy Packet.dll to target\debug"
+            exit 1
+          }
+
+          Get-ChildItem "target\debug\*.dll" | Where-Object { $_.Name -match "pcap|Packet" } | Format-Table Name, Length -AutoSize
+          Write-Host "✓ Npcap DLLs successfully copied to target\debug"
+
       - name: Run tests
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then

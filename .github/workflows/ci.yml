@@ -170,6 +170,8 @@ jobs:
             cargo test --workspace --locked
           fi
         shell: bash
+        env:
+          RUST_BACKTRACE: full
 
       - name: Build release
         run: cargo build --release --workspace --locked

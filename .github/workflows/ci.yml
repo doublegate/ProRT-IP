@@ -82,7 +82,7 @@ jobs:
           # pkg-config is provided by pkgconf which is pre-installed on GitHub Actions runners
           brew list pkgconf &>/dev/null || brew install pkgconf
 
-      - name: Install Npcap SDK and Extract Runtime DLLs (Windows)
+      - name: Install Npcap SDK and Runtime DLLs (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
@@ -135,77 +135,11 @@ jobs:
       - name: Build
         run: cargo build --workspace --locked --verbose
 
-      - name: Copy Npcap DLLs to binary directory (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Verify source DLLs exist
-          Write-Host "=== Verifying Npcap DLLs in source directory ==="
-          if (-not (Test-Path "npcap-dlls\wpcap.dll")) {
-            Write-Error "Source wpcap.dll not found in npcap-dlls directory"
-            exit 1
-          }
-          if (-not (Test-Path "npcap-dlls\Packet.dll")) {
-            Write-Error "Source Packet.dll not found in npcap-dlls directory"
-            exit 1
-          }
-
-          Write-Host "Source DLLs found:"
-          Get-ChildItem "npcap-dlls\*.dll" | Format-Table Name, Length -AutoSize
-
-          # Copy DLLs to target/debug (where prtip.exe resides)
-          Write-Host "`n=== Copying DLLs to target/debug ==="
-          Copy-Item "npcap-dlls\wpcap.dll" -Destination "target\debug\" -Force
-          Copy-Item "npcap-dlls\Packet.dll" -Destination "target\debug\" -Force
-
-          # ALSO copy to deps directory where test binaries are located
-          Write-Host "`n=== Copying DLLs to target/debug/deps ==="
-          New-Item -ItemType Directory -Force -Path "target\debug\deps" | Out-Null
-          Copy-Item "npcap-dlls\wpcap.dll" -Destination "target\debug\deps\" -Force
-          Copy-Item "npcap-dlls\Packet.dll" -Destination "target\debug\deps\" -Force
-
-          # Verify destination DLLs in both locations
-          Write-Host "`nVerifying DLLs in target/debug:"
-          if (-not (Test-Path "target\debug\wpcap.dll")) {
-            Write-Error "Failed to copy wpcap.dll to target\debug"
-            exit 1
-          }
-          if (-not (Test-Path "target\debug\Packet.dll")) {
-            Write-Error "Failed to copy Packet.dll to target\debug"
-            exit 1
-          }
-
-          Write-Host "`nVerifying DLLs in target/debug/deps:"
-          if (-not (Test-Path "target\debug\deps\wpcap.dll")) {
-            Write-Error "Failed to copy wpcap.dll to target\debug\deps"
-            exit 1
-          }
-          if (-not (Test-Path "target\debug\deps\Packet.dll")) {
-            Write-Error "Failed to copy Packet.dll to target\debug\deps"
-            exit 1
-          }
-
-          Get-ChildItem "target\debug\*.dll" | Where-Object { $_.Name -match "pcap|Packet" } | Format-Table Name, Length -AutoSize
-          Get-ChildItem "target\debug\deps\*.dll" | Where-Object { $_.Name -match "pcap|Packet" } | Format-Table Name, Length -AutoSize
-          Write-Host "✓ Npcap DLLs successfully copied to both target\debug and target\debug\deps"
-
-      - name: Add Npcap DLLs to PATH (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Add both debug and deps directories to GITHUB_PATH for persistent PATH
-          # Use PowerShell to ensure proper Windows path format
-          "${{ github.workspace }}\target\debug" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          "${{ github.workspace }}\target\debug\deps" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          Write-Host "✓ Added DLL directories to GITHUB_PATH"
-          Write-Host "  - ${{ github.workspace }}\target\debug"
-          Write-Host "  - ${{ github.workspace }}\target\debug\deps"
-
       - name: Run tests
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Skip prtip-network tests due to actual network privileges requirement
-            # DLLs are in PATH via GITHUB_PATH (set in previous step)
+            # Windows: Skip prtip-network tests due to Npcap DLL runtime dependencies
+            # The tests require actual network privileges and adapters not available in CI
             cargo test --workspace --locked --exclude prtip-network
           else
             cargo test --workspace --locked

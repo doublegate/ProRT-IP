@@ -175,9 +175,11 @@ jobs:
       - name: Run tests
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Windows: Add target/debug to PATH for Npcap DLL runtime loading
+            # Windows: Convert Unix path to Windows format for Npcap DLL runtime loading
+            # Git Bash $(pwd) returns /d/a/... but Windows needs D:\a\...
             # DLLs must be visible to subprocesses spawned by integration tests
-            export PATH="$(pwd)/target/debug:$PATH"
+            WIN_PATH=$(cygpath -w "$(pwd)/target/debug")
+            export PATH="$WIN_PATH:$PATH"
             # Skip prtip-network tests due to actual network privileges requirement
             cargo test --workspace --locked --exclude prtip-network
           else

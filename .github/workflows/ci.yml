@@ -92,146 +92,30 @@ jobs:
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
           Write-Host "✓ Npcap SDK extracted"
 
-          # Create runtime directory
-          New-Item -ItemType Directory -Force -Path "npcap-dlls"
+          # Download Npcap installer and extract DLLs without running (avoids hang)
+          Write-Host "`nDownloading Npcap 1.79 installer..."
+          curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
 
-          # Extract WinPcap DLLs directly from installer (no execution required)
-          # This avoids GUI hangs in GitHub Actions headless environment
-          Write-Host "`nDownloading WinPcap installer for DLL extraction..."
+          # Extract installer using 7zip (pre-installed on GitHub Actions)
+          Write-Host "Extracting DLLs from Npcap installer (no execution)..."
+          7z x npcap-installer.exe -o"npcap-runtime" -y | Out-Null
 
-          $extractionSuccess = $false
+          # Create runtime directory and copy DLLs
+          New-Item -ItemType Directory -Force -Path "npcap-dlls" | Out-Null
 
-          # Method 1: Extract from WinPcap NSIS installer using 7-Zip
-          try {
-            # Download WinPcap installer (NSIS format, ~900KB)
-            curl -L -o WinPcap_Installer.exe https://www.winpcap.org/install/bin/WinPcap_4_1_3.exe
-
-            Write-Host "Extracting DLLs from NSIS installer (no execution)..."
-
-            # 7-Zip is pre-installed on GitHub Actions Windows runners
-            # Extract NSIS installer contents
-            & 7z x WinPcap_Installer.exe -o"winpcap-extracted" -y | Out-Null
-
-            # NSIS installers typically store files in predictable locations
-            # Search recursively for the DLLs (x64 versions preferred)
-            Write-Host "Searching for DLLs in extracted files..."
-
-            # Find x64 DLLs first (preferred for 64-bit builds)
-            $wpcapSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "wpcap.dll" -ErrorAction SilentlyContinue |
-                        Where-Object { $_.DirectoryName -like "*x64*" -or $_.DirectoryName -like "*amd64*" } |
-                        Select-Object -First 1
-
-            $packetSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "Packet.dll" -ErrorAction SilentlyContinue |
-                         Where-Object { $_.DirectoryName -like "*x64*" -or $_.DirectoryName -like "*amd64*" } |
-                         Select-Object -First 1
-
-            # Fallback to any DLL if x64 not found
-            if (-not $wpcapSrc) {
-              $wpcapSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "wpcap.dll" -ErrorAction SilentlyContinue |
-                          Select-Object -First 1
-            }
-
-            if (-not $packetSrc) {
-              $packetSrc = Get-ChildItem -Path "winpcap-extracted" -Recurse -Filter "Packet.dll" -ErrorAction SilentlyContinue |
-                           Select-Object -First 1
-            }
-
-            if ($wpcapSrc -and $packetSrc) {
-              Write-Host "Found DLLs in extraction:"
-              Write-Host "  wpcap.dll: $($wpcapSrc.FullName) ($($wpcapSrc.Length) bytes)"
-              Write-Host "  Packet.dll: $($packetSrc.FullName) ($($packetSrc.Length) bytes)"
-
-              # Verify size before copying (valid DLLs are >50KB, stubs are <10KB)
-              if ($wpcapSrc.Length -gt 50KB -and $packetSrc.Length -gt 50KB) {
-                Copy-Item $wpcapSrc.FullName "npcap-dlls\wpcap.dll" -Force
-                Copy-Item $packetSrc.FullName "npcap-dlls\Packet.dll" -Force
-
-                Write-Host "✓ DLLs extracted successfully via 7-Zip (no installer execution)"
-                $extractionSuccess = $true
-              }
-              else {
-                Write-Warning "Extracted DLLs too small - may be stubs or invalid"
-              }
-            }
-            else {
-              Write-Warning "DLLs not found in NSIS extraction"
-            }
-          }
-          catch {
-            Write-Warning "7-Zip NSIS extraction failed: $_"
+          # Find and copy ONLY x64 DLLs (to avoid 32-bit/64-bit architecture mismatch)
+          Get-ChildItem -Path "npcap-runtime" -Recurse -Filter "*.dll" | Where-Object {
+            ($_.Name -eq "Packet.dll" -or $_.Name -eq "wpcap.dll") -and $_.DirectoryName -like "*x64*"
+          } | ForEach-Object {
+            Copy-Item $_.FullName -Destination "npcap-dlls\" -Force
+            Write-Host "Copied $($_.Name) from $($_.DirectoryName)"
           }
 
-          # Method 2: Fallback to Chocolatey WinPcap (uses AutoHotkey, may hang but more reliable)
-          if (-not $extractionSuccess) {
-            Write-Host "`nFallback: Installing WinPcap via Chocolatey with timeout..."
-
-            try {
-              # Use job control to enforce timeout (Chocolatey can hang on headless systems)
-              $job = Start-Job -ScriptBlock {
-                choco install winpcap -y --no-progress 2>&1
-              }
-
-              # Wait maximum 2 minutes
-              $completed = Wait-Job -Job $job -Timeout 120
-
-              if ($completed) {
-                $output = Receive-Job -Job $job
-                Write-Host "Chocolatey output: $output"
-
-                # Wait for file system sync
-                Start-Sleep -Seconds 5
-
-                # Check if DLLs were installed to System32
-                if ((Test-Path "C:\Windows\System32\wpcap.dll") -and (Test-Path "C:\Windows\System32\Packet.dll")) {
-                  Write-Host "✓ WinPcap installed via Chocolatey"
-                  Copy-Item "C:\Windows\System32\wpcap.dll" "npcap-dlls\" -Force
-                  Copy-Item "C:\Windows\System32\Packet.dll" "npcap-dlls\" -Force
-                  $extractionSuccess = $true
-                }
-                else {
-                  Write-Warning "Chocolatey completed but DLLs not found in System32"
-                }
-              }
-              else {
-                Write-Warning "Chocolatey installation timed out after 2 minutes"
-                Stop-Job -Job $job
-              }
-
-              Remove-Job -Job $job -Force
-            }
-            catch {
-              Write-Warning "Chocolatey installation failed: $_"
-            }
-          }
-
-          # Verify we obtained valid DLLs
-          if (-not $extractionSuccess) {
-            Write-Error "All DLL extraction methods failed - cannot proceed"
-            Write-Host "`nTroubleshooting:"
-            Write-Host "  1. Check if WinPcap download URL is accessible"
-            Write-Host "  2. Verify 7-Zip is available: $(Get-Command 7z -ErrorAction SilentlyContinue)"
-            Write-Host "  3. Check Chocolatey status: $(choco --version 2>&1)"
+          # Verify we got the x64 DLLs
+          if (-not (Test-Path "npcap-dlls\Packet.dll") -or -not (Test-Path "npcap-dlls\wpcap.dll")) {
+            Write-Error "Failed to extract x64 DLLs from installer"
             exit 1
           }
-
-          # Final validation
-          $wpcap = Get-Item "npcap-dlls\wpcap.dll" -ErrorAction Stop
-          $packet = Get-Item "npcap-dlls\Packet.dll" -ErrorAction Stop
-
-          Write-Host "`nDLL verification:"
-          Write-Host "  wpcap.dll: $($wpcap.Length) bytes"
-          Write-Host "  Packet.dll: $($packet.Length) bytes"
-
-          if ($wpcap.Length -lt 50KB) {
-            Write-Error "wpcap.dll too small ($($wpcap.Length) bytes) - invalid"
-            exit 1
-          }
-          if ($packet.Length -lt 50KB) {
-            Write-Error "Packet.dll too small ($($packet.Length) bytes) - invalid"
-            exit 1
-          }
-
-          Write-Host "✓ Valid runtime DLLs obtained (extraction method, no GUI installers)"
 
           # Add SDK lib directory to LIB environment variable for linking
           echo "LIB=$PWD\npcap-sdk\Lib\x64;$env:LIB" >> $env:GITHUB_ENV
@@ -239,40 +123,9 @@ jobs:
           # Add DLL directory to PATH for runtime
           echo "PATH=$PWD\npcap-dlls;$env:PATH" >> $env:GITHUB_ENV
 
-          # Show final results
-          Write-Host "`nFinal DLLs:"
+          # List what we extracted to verify
+          Write-Host "`nExtracted DLLs:"
           Get-ChildItem "npcap-dlls" | Format-Table Name, Length -AutoSize
-
-      - name: Install Visual C++ 2010 Redistributable (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # WinPcap 4.1.3 DLLs depend on Visual C++ 2010 runtime (msvcr100.dll, msvcp100.dll)
-          # GitHub Actions runners have VC++ 2015-2022 but not VC++ 2010
-          # This causes STATUS_DLL_NOT_FOUND (0xC0000135) when loading wpcap.dll
-          Write-Host "Installing Visual C++ 2010 Redistributable for WinPcap DLL dependencies..."
-
-          try {
-            # Install both x86 and x64 versions (vcredist2010 package includes both)
-            choco install vcredist2010 -y --no-progress
-
-            # Verify installation
-            $msvcr100_x64 = "C:\Windows\System32\msvcr100.dll"
-            $msvcr100_x86 = "C:\Windows\SysWOW64\msvcr100.dll"
-
-            if ((Test-Path $msvcr100_x64) -and (Test-Path $msvcr100_x86)) {
-              Write-Host "✓ Visual C++ 2010 runtime installed successfully"
-              Write-Host "  x64: $msvcr100_x64 ($(Get-Item $msvcr100_x64 | Select-Object -ExpandProperty Length) bytes)"
-              Write-Host "  x86: $msvcr100_x86 ($(Get-Item $msvcr100_x86 | Select-Object -ExpandProperty Length) bytes)"
-            }
-            else {
-              Write-Warning "VC++ 2010 installation completed but DLLs not found in expected locations"
-            }
-          }
-          catch {
-            Write-Error "Failed to install Visual C++ 2010 Redistributable: $_"
-            exit 1
-          }
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2

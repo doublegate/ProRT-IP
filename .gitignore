@@ -122,6 +122,10 @@ CLAUDE.local.md
 !.claude/commands/
 .claude/settings.local.json
 
+# Gemini AI & CLI Tools
+.gemini/
+GEMINI.md
+
 # Documentation build
 /docs/book/
 /target/doc/
@@ -130,3 +134,6 @@ CLAUDE.local.md
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# GitHub App credentials
+gha-creds-*.json

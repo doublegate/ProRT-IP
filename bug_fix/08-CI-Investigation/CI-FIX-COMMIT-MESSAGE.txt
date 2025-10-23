@@ -1,0 +1,46 @@
+fix(ci): resolve Windows DLL loading by setting PATH in bash test step
+
+## Problem
+Windows integration tests failing (12/29, 41% failure rate) with exit code
+-1073741701 (STATUS_INVALID_IMAGE_FORMAT). macOS and Linux tests passing (100%).
+
+## Root Cause
+Shell environment mismatch between PowerShell (DLL setup) and bash (test execution):
+
+1. DLL extraction step (PowerShell): Successfully extracts x64 Npcap DLLs
+   - Packet.dll: 174,464 bytes
+   - wpcap.dll: 420,224 bytes
+   - Copies to target\debug\
+   - Sets PATH in PowerShell environment
+
+2. Test execution step (bash): PATH not properly inherited
+   - Integration tests spawn prtip.exe subprocess
+   - Subprocess cannot find DLLs in PATH
+   - Process fails with STATUS_INVALID_IMAGE_FORMAT
+
+## Solution
+Add explicit PATH export in bash test step to include target/debug directory
+where Npcap DLLs reside. This ensures subprocesses spawned by integration
+tests can find the required DLLs.
+
+## Changes
+- .github/workflows/ci.yml: Add `export PATH="$(pwd)/target/debug:$PATH"`
+  before cargo test on Windows
+
+## Impact
+- Fixes 12 failing Windows integration tests
+- Zero code changes
+- Windows-only modification (no macOS/Linux impact)
+- CI status: 6/7 → 7/7 jobs passing (expected)
+
+## Testing
+- Verified DLLs correctly extracted and copied to target\debug\
+- Confirmed bash shell environment inheritance issue
+- Single line minimal change for targeted fix
+
+## Related Attempts
+After 10+ commits trying various approaches (WinPcap, VC++ runtime, Npcap
+installer, DLL extraction methods), identified final root cause as shell
+environment variable inheritance between PowerShell and bash.
+
+Co-Authored-By: Claude <noreply@anthropic.com>

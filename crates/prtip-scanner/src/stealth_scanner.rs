@@ -229,44 +229,76 @@ impl StealthScanner {
             // Use thread-local zero-copy buffer
             with_buffer(|buffer_pool| {
                 // Build packet in buffer
-                let packet_slice = TcpPacketBuilder::new()
+                let mut builder = TcpPacketBuilder::new()
                     .source_ip(self.local_ip)
                     .dest_ip(target)
                     .source_port(src_port)
                     .dest_port(port)
                     .sequence(sequence)
                     .flags(scan_type.flags())
-                    .window(1024)
-                    .build_ip_packet_with_buffer(buffer_pool)?;
+                    .window(1024);
 
-                // Capture packet to PCAPNG if writer is provided
+                // Apply TTL if configured (Sprint 4.20: Evasion features)
+                if let Some(ttl) = self.config.evasion.ttl {
+                    builder = builder.ttl(ttl);
+                }
+
+                let packet_slice = builder.build_ip_packet_with_buffer(buffer_pool)?;
+
+                // Sprint 4.20: Check if packet fragmentation is enabled
+                let packets_to_send: Vec<Vec<u8>> = if self.config.evasion.fragment_packets {
+                    // Fragment the packet using configured MTU
+                    use prtip_network::fragment_tcp_packet;
+                    let mtu = self.config.evasion.mtu.unwrap_or(1500);
+                    let packet_data = packet_slice.to_vec(); // Copy from pool for fragmentation
+                    fragment_tcp_packet(&packet_data, mtu)
+                        .map_err(|e| prtip_core::Error::Network(format!("Fragmentation failed: {}", e)))?
+                } else {
+                    // No fragmentation - send as single packet
+                    vec![packet_slice.to_vec()]
+                };
+
+                // Capture packets to PCAPNG if writer is provided
                 if let Some(ref writer) = pcapng_writer {
-                    // Clone packet data before sending (PCAPNG needs owned copy)
-                    let packet_data = packet_slice.to_vec();
-                    if let Ok(guard) = writer.lock() {
-                        if let Err(e) = guard.write_packet(&packet_data, Direction::Sent) {
-                            // Log error but don't fail scan (PCAPNG is optional)
-                            warn!("PCAPNG write error ({} probe): {}", scan_type.name(), e);
+                    for packet_data in &packets_to_send {
+                        if let Ok(guard) = writer.lock() {
+                            if let Err(e) = guard.write_packet(packet_data, Direction::Sent) {
+                                // Log error but don't fail scan (PCAPNG is optional)
+                                warn!("PCAPNG write error ({} probe): {}", scan_type.name(), e);
+                            }
                         }
                     }
                 }
 
-                // Send immediately
-                capture.send_packet(packet_slice).map_err(|e| {
-                    prtip_core::Error::Network(format!(
-                        "Failed to send {} probe: {}",
-                        scan_type.name(),
-                        e
-                    ))
-                })?;
+                // Send packet(s) (fragmented or whole)
+                for fragment in &packets_to_send {
+                    capture.send_packet(fragment).map_err(|e| {
+                        prtip_core::Error::Network(format!(
+                            "Failed to send {} probe: {}",
+                            scan_type.name(),
+                            e
+                        ))
+                    })?;
+                }
 
-                trace!(
-                    "Sent {} probe to {}:{} (src_port={}) [zero-copy]",
-                    scan_type.name(),
-                    target,
-                    port,
-                    src_port
-                );
+                if self.config.evasion.fragment_packets {
+                    trace!(
+                        "Sent {} fragmented {} probes to {}:{} (src_port={})",
+                        packets_to_send.len(),
+                        scan_type.name(),
+                        target,
+                        port,
+                        src_port
+                    );
+                } else {
+                    trace!(
+                        "Sent {} probe to {}:{} (src_port={}) [zero-copy]",
+                        scan_type.name(),
+                        target,
+                        port,
+                        src_port
+                    );
+                }
 
                 // Reset buffer
                 buffer_pool.reset();

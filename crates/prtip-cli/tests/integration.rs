@@ -1,5 +1,7 @@
 //! Integration tests for the CLI
 
+#![allow(clippy::needless_borrows_for_generic_args)]
+
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
@@ -391,7 +393,7 @@ fn test_db_list() {
 
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Scans in Database") | predicate::str::contains("scan"));
+        .stdout(predicate::str::contains("Scans in Database").or(predicate::str::contains("scan")));
 }
 
 #[test]
@@ -404,7 +406,7 @@ fn test_db_query_scan_id() {
     cmd.args(&["db", "query", &db_path, "--scan-id", "1"]);
 
     cmd.assert().success().stdout(
-        predicate::str::contains("Results for Scan") | predicate::str::contains("127.0.0.1"),
+        predicate::str::contains("Results for Scan").or(predicate::str::contains("127.0.0.1")),
     );
 }
 
@@ -419,7 +421,7 @@ fn test_db_query_target() {
 
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Open Ports") | predicate::str::contains(&target));
+        .stdout(predicate::str::contains("Open Ports").or(predicate::str::contains(&target)));
 }
 
 #[test]
@@ -537,7 +539,7 @@ fn test_db_compare_scans() {
 
     cmd3.assert()
         .success()
-        .stdout(predicate::str::contains("Comparing Scan") | predicate::str::contains("Summary"));
+        .stdout(predicate::str::contains("Comparing Scan").or(predicate::str::contains("Summary")));
 }
 
 #[test]
@@ -550,6 +552,6 @@ fn test_db_query_no_filter_error() {
     cmd.args(&["db", "query", &db_path]);
 
     cmd.assert().failure().stderr(
-        predicate::str::contains("At least one filter") | predicate::str::contains("required"),
+        predicate::str::contains("At least one filter").or(predicate::str::contains("required")),
     );
 }

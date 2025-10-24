@@ -2,8 +2,8 @@
 
 use clap::{Parser, ValueEnum};
 use prtip_core::{
-    Config, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, PortRange, ScanConfig,
-    ScanType, ServiceDetectionConfig, TimingTemplate,
+    Config, EvasionConfig, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, PortRange,
+    ScanConfig, ScanType, ServiceDetectionConfig, TimingTemplate,
 };
 use std::path::PathBuf;
 
@@ -685,6 +685,100 @@ pub struct Args {
     pub skip_ping: bool,
 
     // ============================================================================
+    // FIREWALL/IDS EVASION AND SPOOFING (nmap-compatible)
+    // ============================================================================
+    /// Fragment IP packets (nmap -f) - Send 8-byte fragments after IP header
+    ///
+    /// Split packets into small fragments to evade firewalls and IDS that don't
+    /// properly reassemble fragments. Each fragment is 8 bytes of data after the
+    /// IP header (minimum fragmentation, maximum stealth).
+    ///
+    /// Note: Some firewalls and IDS systems may drop fragmented packets or trigger alerts.
+    /// Use --mtu for less aggressive fragmentation.
+    ///
+    /// Example: prtip -sS -f -p 80,443 target.com
+    #[arg(
+        short = 'f',
+        long = "fragment",
+        help_heading = "FIREWALL/IDS EVASION AND SPOOFING"
+    )]
+    pub fragment: bool,
+
+    /// Custom MTU for packet fragmentation (nmap --mtu) - Must be multiple of 8
+    ///
+    /// Set a custom Maximum Transmission Unit for packet fragmentation. The MTU
+    /// must be a multiple of 8 and at least 68 bytes (20 IP header + 8 fragment min).
+    /// Larger MTU values create larger fragments (less fragmentation, faster scans).
+    ///
+    /// Common values:
+    /// - 28: Extremely aggressive (20 IP + 8 data, similar to -f)
+    /// - 200: Moderate fragmentation
+    /// - 1500: Standard Ethernet MTU (no fragmentation)
+    ///
+    /// Example: prtip -sS --mtu 200 -p 80,443 target.com
+    #[arg(
+        long,
+        value_name = "SIZE",
+        help_heading = "FIREWALL/IDS EVASION AND SPOOFING"
+    )]
+    pub mtu: Option<usize>,
+
+    /// Set IP Time-To-Live field (nmap --ttl) - Range: 1-255
+    ///
+    /// Set a custom TTL value for outgoing packets. Lower values can be used to
+    /// discover firewalls in the network path (packets expire before reaching target).
+    /// Higher values maximize packet lifetime.
+    ///
+    /// Default TTL varies by OS:
+    /// - Linux: 64
+    /// - Windows: 128
+    /// - Cisco: 255
+    ///
+    /// Example: prtip -sS --ttl 32 -p 80,443 target.com
+    #[arg(
+        long,
+        value_name = "VALUE",
+        help_heading = "FIREWALL/IDS EVASION AND SPOOFING"
+    )]
+    pub ttl: Option<u8>,
+
+    /// Cloak scan with decoys (nmap -D) - Format: RND:N or IP,IP,ME,IP
+    ///
+    /// Hide the real source IP among decoy IPs to make it harder to trace the scan origin.
+    /// The scanner mixes real probes with spoofed-source decoy probes sent in random order.
+    ///
+    /// Formats:
+    /// - RND:10          - Use 10 random decoy IPs
+    /// - 1.2.3.4,ME,5.6.7.8 - Use specific decoys (ME = your real IP)
+    /// - RND:5,10.0.0.1  - Mix random and specific decoys
+    ///
+    /// Note: ME token specifies position of real source IP (default: random position)
+    /// Effective decoy count: 5-10 decoys (more may trigger rate limiting)
+    ///
+    /// Example: prtip -sS -D RND:10 -p 80,443 target.com
+    /// Example: prtip -sS -D 1.2.3.4,ME,5.6.7.8 -p 80 target.com
+    #[arg(
+        short = 'D',
+        long = "decoys",
+        value_name = "decoy1,decoy2,...",
+        help_heading = "FIREWALL/IDS EVASION AND SPOOFING"
+    )]
+    pub decoys: Option<String>,
+
+    /// Use bad TCP/IP checksums (nmap --badsum) - Testing/debugging only
+    ///
+    /// Generate packets with intentionally incorrect checksums. This is used to test
+    /// whether firewalls and IDS properly validate checksums before processing packets.
+    ///
+    /// ⚠️  WARNING: Most targets will drop these packets immediately. This flag is only
+    /// useful for testing intermediate devices (firewalls, IDS) to verify they check
+    /// checksums. Expect zero responses from the target.
+    ///
+    /// Example: prtip -sS --badsum -p 80,443 target.com
+    #[arg(long, help_heading = "FIREWALL/IDS EVASION AND SPOOFING")]
+    pub badsum: bool,
+
+    // ============================================================================
     // MISCELLANEOUS FLAGS (nmap-compatible)
     // ============================================================================
     /// List network interfaces and routes (nmap --iflist)
@@ -842,6 +936,30 @@ impl Args {
             }
         }
 
+        // Validate fragmentation/evasion flags
+        if let Some(mtu) = self.mtu {
+            if mtu < 68 {
+                anyhow::bail!("MTU must be at least 68 bytes (20 IP header + 8 fragment minimum)");
+            }
+            if mtu % 8 != 0 {
+                anyhow::bail!(
+                    "MTU must be a multiple of 8 (IP fragment offset is in 8-byte units)"
+                );
+            }
+            if mtu > 65535 {
+                anyhow::bail!("MTU cannot exceed 65535 bytes");
+            }
+        }
+
+        // If -f flag is used without --mtu, we'll use default of 28 bytes (handled in config)
+        if self.fragment && self.mtu.is_some() {
+            if let Some(mtu) = self.mtu {
+                if mtu < 28 {
+                    anyhow::bail!("When using -f with --mtu, MTU should be at least 28 bytes (20 IP + 8 data)");
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -982,6 +1100,20 @@ impl Args {
                 batch_size: self.batch_size,
                 requested_ulimit: self.ulimit,
                 numa_enabled: self.numa && !self.no_numa, // Enabled only if --numa and not --no-numa
+            },
+            evasion: EvasionConfig {
+                fragment_packets: self.fragment,
+                mtu: self.mtu.or({
+                    // If -f flag is used without --mtu, default to aggressive 28-byte fragments
+                    if self.fragment {
+                        Some(28) // 20 IP header + 8 data (Nmap -f equivalent)
+                    } else {
+                        None
+                    }
+                }),
+                ttl: self.ttl,
+                decoys: self.decoys.clone(),
+                bad_checksums: self.badsum,
             },
         }
     }

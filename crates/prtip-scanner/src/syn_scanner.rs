@@ -268,7 +268,7 @@ impl SynScanner {
         // Build and send SYN packet using zero-copy API
         with_buffer(|pool| {
             // Build SYN packet (zero allocations)
-            let packet = TcpPacketBuilder::new()
+            let mut builder = TcpPacketBuilder::new()
                 .source_ip(self.local_ip)
                 .dest_ip(target)
                 .source_port(src_port)
@@ -278,35 +278,68 @@ impl SynScanner {
                 .window(65535)
                 .add_option(TcpOption::Mss(1460))
                 .add_option(TcpOption::WindowScale(7))
-                .add_option(TcpOption::SackPermitted)
-                .build_ip_packet_with_buffer(pool)?;
+                .add_option(TcpOption::SackPermitted);
 
-            // Capture packet to PCAPNG if writer is provided
+            // Apply TTL if configured (Sprint 4.20: Evasion features)
+            if let Some(ttl) = self.config.evasion.ttl {
+                builder = builder.ttl(ttl);
+            }
+
+            let packet = builder.build_ip_packet_with_buffer(pool)?;
+
+            // Sprint 4.20: Check if packet fragmentation is enabled
+            let packets_to_send: Vec<Vec<u8>> = if self.config.evasion.fragment_packets {
+                // Fragment the packet using configured MTU
+                use prtip_network::fragment_tcp_packet;
+                let mtu = self.config.evasion.mtu.unwrap_or(1500);
+                let packet_data = packet.to_vec(); // Copy from pool for fragmentation
+                fragment_tcp_packet(&packet_data, mtu)
+                    .map_err(|e| prtip_core::Error::Network(format!("Fragmentation failed: {}", e)))?
+            } else {
+                // No fragmentation - send as single packet
+                vec![packet.to_vec()]
+            };
+
+            // Capture packets to PCAPNG if writer is provided
             if let Some(ref writer) = pcapng_writer {
-                // Clone packet data before sending (PCAPNG needs owned copy)
-                let packet_data = packet.to_vec();
-                if let Ok(guard) = writer.lock() {
-                    if let Err(e) = guard.write_packet(&packet_data, Direction::Sent) {
-                        // Log error but don't fail scan (PCAPNG is optional)
-                        warn!("PCAPNG write error (SYN packet): {}", e);
+                for packet_data in &packets_to_send {
+                    if let Ok(guard) = writer.lock() {
+                        if let Err(e) = guard.write_packet(packet_data, Direction::Sent) {
+                            // Log error but don't fail scan (PCAPNG is optional)
+                            warn!("PCAPNG write error (SYN packet): {}", e);
+                        }
                     }
                 }
             }
 
-            // Send packet (while borrowed from pool)
+            // Send packet(s) (fragmented or whole)
             if let Some(ref mut capture) = *self.capture.lock() {
-                capture.send_packet(packet).map_err(|e| {
-                    prtip_core::Error::Network(format!("Failed to send SYN: {}", e))
-                })?;
+                for fragment in &packets_to_send {
+                    capture.send_packet(fragment).map_err(|e| {
+                        prtip_core::Error::Network(format!("Failed to send SYN: {}", e))
+                    })?;
+                }
 
-                trace!(
-                    "Sent SYN to {}:{} (src_port={}, seq={}, retry={})",
-                    target,
-                    port,
-                    src_port,
-                    sequence,
-                    retry
-                );
+                if self.config.evasion.fragment_packets {
+                    trace!(
+                        "Sent {} fragmented SYN packets to {}:{} (src_port={}, seq={}, retry={})",
+                        packets_to_send.len(),
+                        target,
+                        port,
+                        src_port,
+                        sequence,
+                        retry
+                    );
+                } else {
+                    trace!(
+                        "Sent SYN to {}:{} (src_port={}, seq={}, retry={})",
+                        target,
+                        port,
+                        src_port,
+                        sequence,
+                        retry
+                    );
+                }
             } else {
                 return Err(prtip_core::Error::Config(
                     "Packet capture not initialized".to_string(),

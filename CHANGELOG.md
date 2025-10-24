@@ -9,6 +9,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 4.20 Phase 2 COMPLETE - Packet Fragmentation & TTL Control:** IP-layer evasion features
+  - **Duration:** ~7 hours (Phase 1: Analysis 1h + Phase 2: Implementation 6h)
+  - **Status:** ⚠️ **PARTIAL** - Core features implemented, pending Phases 3-8
+  - **Objective:** Add packet fragmentation and TTL manipulation for firewall/IDS evasion
+  - **Deliverables (Phase 2):**
+    - **Fragmentation Module (`fragmentation.rs`):** IP-layer packet fragmentation (335 lines)
+      - `fragment_tcp_packet()`: Split packets into IP fragments with proper headers
+      - `validate_mtu()`: Enforce RFC 791 requirements (≥68 bytes, multiple of 8)
+      - `defragment_packets()`: Reassemble fragments for testing
+      - Constants: MIN_MTU (68), NMAP_F_MTU (28), STANDARD_MTU (1500)
+    - **CLI Flags:** 5 new evasion flags in args.rs
+      - `-f` / `--fragment`: Fragment packets (default 28 bytes, Nmap -f equivalent)
+      - `--mtu <SIZE>`: Custom MTU (must be ≥68 and multiple of 8)
+      - `--ttl <VALUE>`: Set IP Time-To-Live (1-255)
+      - `-D` / `--decoys <spec>`: Decoy scanning (wired, DecoyScanner already exists)
+      - `--badsum`: Bad checksums for testing (wired, implementation pending)
+    - **Configuration:** EvasionConfig struct in config.rs
+      - Fields: fragment_packets, mtu, ttl, decoys, bad_checksums
+      - Integrated into main Config struct
+    - **Scanner Integration:** Fragmentation + TTL in all 3 scanners
+      - **SynScanner:** Conditional fragmentation in `send_syn()`, TTL control via TcpPacketBuilder
+      - **StealthScanner:** Conditional fragmentation in `send_probe()`, TTL control
+      - **UdpScanner:** Conditional fragmentation in `send_udp_probe()`, TTL control via UdpPacketBuilder
+  - **Features Implemented:**
+    - **IP Fragmentation:** Split packets at IP layer to evade firewalls that don't reassemble
+    - **MTU Validation:** Enforce RFC 791 (minimum 68 bytes, multiple of 8 for fragment offset)
+    - **TTL Control:** Custom Time-To-Live values (bypass TTL-based filtering)
+    - **Nmap Compatibility:** `-f` flag defaults to 28-byte MTU (20 IP + 8 data)
+  - **Technical Details:**
+    - Fragmentation uses pnet MutableIpv4Packet for proper header manipulation
+    - Fragment offset calculated in 8-byte units (RFC 791)
+    - More Fragments (MF) flag set correctly on all but last fragment
+    - IP checksum recalculated for each fragment
+    - Zero-copy packet building preserved when fragmentation disabled
+  - **Compilation:** ✅ Successful (cargo build --release)
+  - **Code Quality:** ✅ Zero clippy warnings in Sprint 4.20 files
+  - **Remaining Work (Phases 3-8):**
+    - Phase 3: TTL CLI integration testing
+    - Phase 4: Decoy scanning CLI parser (RND:N and IP,IP,ME,IP formats)
+    - Phase 5: Source port manipulation (--source-port flag)
+    - Phase 6: Bad checksum corruption implementation
+    - Phase 7: Unit + integration tests (~23 unit, ~8 integration)
+    - Phase 8: EVASION-GUIDE.md documentation (~500 lines)
+  - **Usage Examples:**
+    ```bash
+    # Aggressive 8-byte fragmentation (Nmap -f)
+    prtip -sS -f -p 1-1000 192.168.1.0/24
+
+    # Custom MTU fragmentation
+    prtip -sS --mtu 200 -p 80,443 target.com
+
+    # TTL manipulation
+    prtip -sS --ttl 32 -p 1-1000 10.0.0.0/24
+
+    # Combined evasion
+    prtip -sS -f --ttl 16 -p 22,80,443 target.com
+    ```
+  - **Files Created/Modified:**
+    - Created: `crates/prtip-network/src/fragmentation.rs` (335 lines)
+    - Created: `/tmp/ProRT-IP/sprint-4.20/RESEARCH-NOTES.md` (120 lines)
+    - Modified: `crates/prtip-cli/src/args.rs` (+115 lines - 5 evasion flags, validation)
+    - Modified: `crates/prtip-core/src/config.rs` (+17 lines - EvasionConfig struct)
+    - Modified: `crates/prtip-network/src/lib.rs` (+3 lines - export fragmentation)
+    - Modified: `crates/prtip-core/src/lib.rs` (+2 lines - export EvasionConfig)
+    - Modified: `crates/prtip-scanner/src/syn_scanner.rs` (+35 lines - fragmentation + TTL)
+    - Modified: `crates/prtip-scanner/src/stealth_scanner.rs` (+40 lines - fragmentation + TTL)
+    - Modified: `crates/prtip-scanner/src/udp_scanner.rs` (+40 lines - fragmentation + TTL)
+    - Total: **~607 lines of new code**
+
 - **Sprint 4.18.1 COMPLETE - SQLite Query Interface & Export Utilities:** Database operations with CLI subcommands
   - **Duration:** ~11 hours actual (Phases 5-7 complete)
   - **Status:** ✅ **COMPLETE** - All phases implemented, tested, and documented

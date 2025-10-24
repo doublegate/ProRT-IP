@@ -319,7 +319,7 @@ impl ScanScheduler {
                 }
                 ScanType::Fin | ScanType::Null | ScanType::Xmas | ScanType::Ack => {
                     // Stealth scans (have PCAPNG support now!)
-                    use crate::{StealthScanner, StealthScanType};
+                    use crate::{StealthScanType, StealthScanner};
 
                     // Determine stealth scan type
                     let stealth_type = match self.config.scan.scan_type {
@@ -352,7 +352,13 @@ impl ScanScheduler {
                             .await
                         {
                             Ok(result) => results.push(result),
-                            Err(e) => warn!("Error scanning {} {}:{}: {}", stealth_type.name(), host, port, e),
+                            Err(e) => warn!(
+                                "Error scanning {} {}:{}: {}",
+                                stealth_type.name(),
+                                host,
+                                port,
+                                e
+                            ),
                         }
                     }
                     Ok(results)

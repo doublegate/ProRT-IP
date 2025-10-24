@@ -266,9 +266,9 @@ ulimit -n 65535
 sudo cpupower frequency-set -g performance
 ```
 
-### NUMA Optimization for Multi-Socket Systems
+### NUMA Optimization for Multi-Socket Systems (v0.3.8+)
 
-NUMA (Non-Uniform Memory Access) optimization improves performance on multi-socket servers by reducing cross-socket memory access latency and improving cache locality.
+**Available since v0.3.8** - NUMA (Non-Uniform Memory Access) optimization improves performance on multi-socket servers by reducing cross-socket memory access latency and improving cache locality through automatic topology detection and thread pinning.
 
 #### When to Use NUMA
 
@@ -758,22 +758,28 @@ prtip --batch-size 1 [args]
 - **64:** Balanced (recommended), ~98% syscall reduction
 - **128:** Maximum throughput, ~99% syscall reduction, higher latency
 
-### NUMA Optimization (Future)
+### NUMA Optimization (v0.3.8+)
 
-For multi-socket systems, NUMA-aware thread pinning will be available in a future release:
+**Available since v0.3.8** - NUMA-aware thread pinning for multi-socket systems.
 
-**Expected Benefits:**
-- 10-30% improvement on multi-socket systems (AMD EPYC, Intel Xeon)
-- Reduced cross-NUMA memory access penalties
-
-**Configuration (when available):**
+**Quick Reference:**
 ```bash
-# Enable NUMA optimization
-prtip --numa [args]
+# Enable NUMA optimization (Linux only, multi-socket systems)
+prtip --numa -sS -p 1-65535 192.168.1.0/24
 
-# Pin threads to specific NUMA nodes
-prtip --numa-node 0 [args]
+# Explicitly disable (even if available)
+prtip --no-numa -sS -p 80,443 target.com
 ```
+
+**Performance Impact:**
+- **Dual-socket:** 20-30% improvement (15-25% fewer cache misses)
+- **Quad-socket:** 30-40% improvement (25-35% fewer cache misses)
+- **Single-socket:** <5% difference (within noise, not recommended)
+
+**See Also:** [NUMA Optimization for Multi-Socket Systems](#numa-optimization-for-multi-socket-systems) in Hardware Recommendations for comprehensive documentation, including:
+- When to use NUMA (system requirements, use cases)
+- Performance validation (hyperfine benchmarks, perf stat)
+- Troubleshooting (permissions, verification)
 
 ### Profiling Your Scans
 

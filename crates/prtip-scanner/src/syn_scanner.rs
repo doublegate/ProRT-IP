@@ -131,7 +131,9 @@ impl SynScanner {
         let src_port: u16 = rand::thread_rng().gen_range(1024..65535);
 
         // Send initial SYN
-        let sequence = self.send_syn(target, port, src_port, 0, pcapng_writer.clone()).await?;
+        let sequence = self
+            .send_syn(target, port, src_port, 0, pcapng_writer.clone())
+            .await?;
 
         // Track connection
         let conn_state = ConnectionState {
@@ -219,8 +221,14 @@ impl SynScanner {
                         tokio::time::sleep(backoff).await;
 
                         // Resend SYN
-                        self.send_syn(target, port, src_port, (retry + 1) as u8, pcapng_writer.clone())
-                            .await?;
+                        self.send_syn(
+                            target,
+                            port,
+                            src_port,
+                            (retry + 1) as u8,
+                            pcapng_writer.clone(),
+                        )
+                        .await?;
                     }
                 }
             }

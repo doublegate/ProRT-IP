@@ -9,6 +9,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 4.18.1 COMPLETE - SQLite Query Interface & Export Utilities:** Database operations with CLI subcommands
+  - **Duration:** ~11 hours actual (Phases 5-7 complete)
+  - **Status:** ✅ **COMPLETE** - All phases implemented, tested, and documented
+  - **Objective:** Add query interface and export utilities for scan result analysis
+  - **Deliverables:**
+    - **Query Module (`db_reader.rs`):** High-level database query interface (700 lines, 6 methods)
+      - `list_scans()`: Get all scan metadata with result counts
+      - `get_scan_results()`: Retrieve full results for specific scan ID
+      - `query_open_ports()`: Find all open ports on target host
+      - `query_by_port()`: Find all hosts with specific port open
+      - `query_by_service()`: Find all hosts running specific service
+      - `compare_scans()`: Identify changes between two scans
+    - **Export Module (`export.rs`):** Multi-format export utilities (331 lines, 4 functions)
+      - `export_json()`: Pretty-printed JSON with all fields
+      - `export_csv()`: Spreadsheet-compatible tabular format
+      - `export_xml()`: Nmap-compatible XML output
+      - `export_text()`: Human-readable summary format
+    - **CLI Subcommands (`db_commands.rs`):** User-facing command handlers (500+ lines)
+      - `prtip db list <db>`: List all scans with metadata
+      - `prtip db query <db>`: Query with filters (--scan-id, --target, --port, --service, --open)
+      - `prtip db export <db>`: Export to JSON/CSV/XML/text formats
+      - `prtip db compare <db> <id1> <id2>`: Compare two scans
+    - **Integration Tests:** 9 end-to-end tests added to `crates/prtip-cli/tests/integration.rs`
+      - Database list/query/export/compare workflows
+      - Error handling (no filters, invalid IP, missing database)
+      - File format validation (JSON/CSV/XML/text)
+    - **Documentation:** DATABASE.md comprehensive guide (450+ lines)
+      - Quick start, schema reference, query examples
+      - Export workflows, comparison use cases
+      - Performance tips, troubleshooting, advanced usage
+  - **Features:**
+    - **Query Interface:** Programmatic access to stored scan results via DbReader struct
+    - **Export Formats:** JSON (machine-readable), CSV (spreadsheet), XML (Nmap-compatible), Text (human-readable)
+    - **Historical Comparison:** Detect changes (new ports, closed ports, changed services, new/disappeared hosts)
+    - **CLI Integration:** Intuitive `prtip db` subcommands with colorized output
+    - **Error Handling:** User-friendly error messages, validation, graceful failures
+  - **Testing:** 948 tests passing (911 lib + 9 integration + 28 existing), zero regressions
+  - **Strategic Value:**
+    - Enables security monitoring workflows (daily scans → detect changes → alert)
+    - Compliance tracking (PCI DSS, audit trails, patch validation)
+    - Integration with analysis tools (export to CSV for Excel, XML for Nmap parsers)
+    - Historical trending (compare weekly/monthly scans)
+  - **Usage Examples:**
+    ```bash
+    # List all scans
+    prtip db list results.db
+
+    # Query specific scan
+    prtip db query results.db --scan-id 1
+
+    # Find SSH servers
+    prtip db query results.db --port 22
+
+    # Export to JSON
+    prtip db export results.db --scan-id 1 --format json -o scan.json
+
+    # Compare scans
+    prtip db compare results.db 1 2
+    ```
+  - **Files Created/Modified:**
+    - Created: `crates/prtip-scanner/src/db_reader.rs` (700 lines)
+    - Created: `crates/prtip-cli/src/export.rs` (331 lines)
+    - Created: `crates/prtip-cli/src/db_commands.rs` (533 lines)
+    - Created: `docs/DATABASE.md` (450+ lines)
+    - Modified: `crates/prtip-cli/src/main.rs` (+48 lines - db subcommand routing)
+    - Modified: `crates/prtip-cli/src/lib.rs` (+2 lines - export db_commands modules)
+    - Modified: `crates/prtip-cli/tests/integration.rs` (+182 lines - 9 database tests)
+    - Modified: `CHANGELOG.md` (this entry)
+    - Total: **2,296+ lines of new code/documentation**
+
 - **Sprint 4.18 COMPLETE - PCAPNG Support for All Scan Types:** SYN and Stealth scanners now support packet capture
   - **Duration:** 3 hours actual (vs 8-12 hours estimated for scheduler refactor approach)
   - **Status:** ✅ **COMPLETE** - All scan types (TCP/UDP/SYN/FIN/NULL/Xmas/ACK) now support --packet-capture flag

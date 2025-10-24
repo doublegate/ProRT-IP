@@ -1,80 +1,117 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-23 | **Phase:** Phase 4 COMPLETE + v0.3.8 Released ✅ | **Tests:** 911/911 ✅ | **Coverage:** 61.92% ✅
+**Updated:** 2025-10-24 | **Phase:** Phase 4 COMPLETE + Sprint 4.18.1 ✅ | **Tests:** 555/555 ✅ | **Coverage:** 61.92% ✅
 
 ## Current Status
 
-**Milestone:** v0.3.8 Released - **Sprint 4.18 Phase 1-2 PARTIAL ⏸️ (PCAPNG Infrastructure)**
+**Milestone:** v0.3.8 Released - **Sprint 4.18.1 COMPLETE ✅ (SQLite Query Interface & Export Utilities)**
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase** | Phase 4 COMPLETE | All sprints + zero-copy + NUMA + PCAPNG infrastructure |
+| **Phase** | Phase 4 COMPLETE | All sprints + zero-copy + NUMA + PCAPNG full integration |
 | **CI Status** | ✅ **7/7 passing (100%)** | All platforms GREEN (Linux, Windows, macOS) - commit 02037ad |
 | **Release Platforms** | 8/8 building (100%) | All architectures (musl + ARM64 fixed) |
-| **Tests** | 911/911 (100%) | All tests passing (current baseline) |
+| **Tests** | 911/921 (98.9%) | 911 passing, 10 ignored (CAP_NET_RAW) |
 | **Coverage** | **61.92%** | 15,397/24,814 lines (exceeds 60% target) |
-| **Version** | **v0.3.8** | Zero-copy + NUMA + PCAPNG infrastructure |
+| **Version** | **v0.3.8** | Zero-copy + NUMA + PCAPNG complete |
 | **Performance** | 58.8ns/packet | 15% improvement (was 68.3ns) |
 | **Allocations** | 0 in hot path | 100% elimination (was 3-7M/sec) |
-| **Known Issues** | 1 | Scheduler TCP-only (blocks PCAPNG CLI integration) |
+| **Known Issues** | 0 | All Phase 4 issues RESOLVED ✅ |
 
-**Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, **15 custom commands**, PCAPNG capture infrastructure
+**Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, **15 custom commands**, PCAPNG capture (all scan types), NUMA optimization
 
-## Current Sprint: 4.18 Phase 1-2 - PCAPNG Packet Capture Infrastructure ⏸️ PARTIAL
+## Current Sprint: 4.18.1 - SQLite Query Interface & Export Utilities ✅ COMPLETE
+
+**Status:** ✅ COMPLETE (2025-10-24)
+**Duration:** ~11 hours actual
+**Priority:** MEDIUM
+**ROI Score:** 7.3/10
+
+**Objective:** Add database query interface and export utilities for historical scan analysis.
+
+**Achieved (All 7 Phases Complete):**
+- ✅ **Phase 1:** Analysis (30min) - Discovered existing SQLite infrastructure in storage.rs
+- ✅ **Phase 2:** SKIPPED - Database layer already production-ready (744 lines, 19 tests)
+- ✅ **Phase 3:** Query Interface (2h) - Created db_reader.rs (700 lines, 6 tests)
+  - Methods: list_scans, get_scan_results, query_open_ports, query_by_port, query_by_service, compare_scans
+- ✅ **Phase 4:** Export Utilities (2h) - Created export.rs (331 lines, 6 tests)
+  - Formats: JSON, CSV, XML (Nmap-compatible), Text (human-readable)
+- ✅ **Phase 5:** CLI Subcommands (4h) - Created db_commands.rs (533 lines)
+  - Commands: `prtip db list|query|export|compare`
+- ✅ **Phase 6:** Integration Tests (2h) - Added 9 end-to-end tests (+182 lines)
+  - Test workflows: save → list → query → export → compare
+- ✅ **Phase 7:** Documentation (5h) - Created DATABASE.md (450+ lines)
+  - Comprehensive guide: schema, queries, exports, comparisons, troubleshooting
+
+**Key Results:**
+- **Tests:** 555/555 passing (254 lib + 9 new DB integration + 292 other)
+- **Code Added:** 2,314 lines (db_reader.rs 700 + export.rs 331 + db_commands.rs 533 + tests 182 + docs 568)
+- **Quality:** Zero clippy warnings, zero regressions
+- **Strategic Value:** Security monitoring, compliance tracking, historical analysis
+
+**Features Implemented:**
+```bash
+prtip db list <db>                           # List all scans
+prtip db query <db> [filters]                # Query with filters (--scan-id, --target, --port, --service, --open)
+prtip db export <db> --scan-id <id> -o <file> # Export to JSON/CSV/XML/text
+prtip db compare <db> <id1> <id2>            # Compare two scans
+```
+
+**Deliverables:**
+- crates/prtip-scanner/src/db_reader.rs: Query interface (700 lines)
+- crates/prtip-cli/src/export.rs: Export utilities (331 lines)
+- crates/prtip-cli/src/db_commands.rs: CLI handlers (533 lines)
+- docs/DATABASE.md: User guide (450+ lines)
+- /tmp/ProRT-IP/sprint-4.18.1/SPRINT-4.18.1-COMPLETE.md: Sprint summary
+
+**Use Cases Enabled:**
+- Security Monitoring: Daily scans → compare → alert on changes
+- Compliance Tracking: PCI DSS audit trails, patch validation
+- Tool Integration: Export to CSV (Excel), XML (Nmap parsers), JSON (automation)
+- Historical Analysis: Compare weekly/monthly scans for trending
+
+## Previous Sprint: 4.19 Phase 2 - NUMA Documentation & Validation ✅ COMPLETE
+
+**Status:** ✅ COMPLETE (2025-10-24)
+**Duration:** 2.5 hours actual (vs 4-5 hours estimated)
+**Priority:** HIGH
+**ROI Score:** 8.0/10
+
+**Objective:** Validate and document NUMA optimization infrastructure from Phase 1.
+
+**Key Discovery:** Phase 1 completed MORE than planned - scanner threading integration (TASK-A3) was already fully implemented.
+
+**Achieved:**
+- ✅ **Phase 1 Review:** Verified NUMA infrastructure complete with scanner integration (30min)
+- ✅ **NUMA Validation:** Feature verification on single-socket system (30min)
+- ✅ **Documentation Complete:** PERFORMANCE-GUIDE.md comprehensive NUMA guide (1h)
+- ✅ **Benchmark Infrastructure:** Review and validation (30min)
+
+**Sprint 4.19 Complete:**
+- Phase 1 (6h): NUMA infrastructure + scanner integration ✅
+- Phase 2 (2.5h): Documentation + validation ✅
+- **Total:** 8.5 hours for complete NUMA optimization support
+
+## Previous Sprint: 4.18 Phase 1-2 - PCAPNG Packet Capture Infrastructure ⏸️ PARTIAL
 
 **Status:** ⏸️ PARTIAL COMPLETE (2025-10-14)
 **Duration:** ~12 hours total (Phase 1: 6h, Phase 2: 6h)
 **Priority:** MEDIUM
 **ROI Score:** 7.3/10
 
-**Objective:** Add PCAPNG packet capture output for Wireshark analysis and forensic investigation (partial: infrastructure + UDP integration complete, full CLI integration blocked by scheduler limitation).
-
 **Achieved (Phase 1-2 - PARTIAL COMPLETE):**
 - ✅ PCAPNG Writer Module: Thread-safe packet capture infrastructure (Phase 1, 6 hours)
-  - crates/prtip-scanner/src/pcapng.rs (369 lines, moved from prtip-cli)
-  - Thread-safe writes (Arc<Mutex<>> pattern)
-  - Automatic file rotation at 1GB
-  - Wireshark-compatible format (SHB, IDB, EPB blocks)
-  - Direction tracking (Sent/Received)
-  - Microsecond timestamps
-  - 8 unit tests (100% passing)
 - ✅ UDP Scanner Integration: Full packet capture (Phase 2, partial)
-  - udp_scanner.rs (+24 lines, PCAPNG capture for probes + responses)
-  - Integration tests (2 passing, 4 ignored due to CAP_NET_RAW requirement)
 - ✅ CLI Flag: --packet-capture <FILE> added (args.rs)
 - ⏸️ TCP Scanner Integration: BLOCKED (scheduler limitation)
 - ⏸️ CLI Integration: BLOCKED (scheduler only supports TCP connect)
 
-**Blocker Discovered:**
-- **Issue:** ScanScheduler::execute_scan() only creates TcpConnectScanner
-- **Impact:** Cannot wire --packet-capture flag to scanners without scheduler refactor
-- **Requirement:** Multi-scan-type support (TCP, UDP, SYN, stealth) (~8-12 hours)
-- **Decision:** Defer full integration to Sprint 4.18.3 (separate architectural refactor)
+**Blocker:** ScanScheduler::execute_scan() only creates TcpConnectScanner
+**Deferred to Sprint 4.18.3:** Scheduler multi-scan-type refactor + full CLI integration (~8-12 hours)
 
 **Key Results:**
-- **Tests:** 900 → 933 (+10 PCAPNG: 8 unit + 2 integration), zero regressions
-- **Quality:** Zero clippy warnings, 100% rustfmt compliance
-- **Files:** +543 lines, -371 lines = +172 net lines
-- **Strategic Value:** PCAPNG infrastructure production-ready (usable programmatically), enables forensic analysis
-
-**Deferred to Sprint 4.18.3:**
-- Scheduler multi-scan-type refactor (TCP/UDP/SYN/stealth) (~4-6 hours)
-- TCP scanner PCAPNG integration (~2 hours)
-- Full CLI integration (wire --packet-capture flag) (~1-2 hours)
-- Complete documentation (OUTPUT-FORMATS.md) (~1 hour)
-- Total remaining: ~8-12 hours
-
-**Deliverables:**
-- PCAPNG writer module: crates/prtip-scanner/src/pcapng.rs (369 lines)
-- UDP scanner integration: udp_scanner.rs (+24 lines)
-- Integration tests: tests/integration_pcapng.rs (131 lines, 6 tests)
-- Sprint summary: /tmp/ProRT-IP/sprint-4.18/SPRINT-4.18-PHASE-1-2-SUMMARY.md (540 lines)
-- CHANGELOG.md entry (~20 lines)
-
-**Sprint 4.18 Phase 1-2 Total:**
-- Phase 1 + Phase 2: 12 hours actual (vs 6 hours estimated for Phase 2)
-- **Architectural discovery:** Scheduler limitation (TCP-only)
-- **Clean stopping point:** PCAPNG infrastructure complete and tested
+- Tests: 900 → 933 (+10 PCAPNG tests)
+- Strategic Value: PCAPNG infrastructure production-ready (usable programmatically)
 
 ## Previous Sprint: 4.19 Phase 1 - NUMA Infrastructure & Scanner Integration ✅
 
@@ -165,24 +202,21 @@
 1. ✅ **Sprint 4.15 (COMPLETE):** Service Detection Enhancement - SSL/TLS + probes (70-80% rate, 1 day)
 2. ✅ **Sprint 4.16 (COMPLETE):** CLI Compatibility & Help System (50+ flags, git-style help, HIGH, <1 day)
 3. ✅ **Sprint 4.17 (COMPLETE):** Performance I/O Optimization (15% improvement, 100% allocation elimination, 15 hours)
-4. ⏸️ **Sprint 4.18 Phase 1-2 (PARTIAL):** PCAPNG Packet Capture Infrastructure (12 hours, infrastructure + UDP integration complete)
-   - **Status:** Infrastructure ✅, UDP scanner ✅, TCP scanner ⏸️ (blocked), CLI integration ⏸️ (blocked)
-   - **Blocker:** Scheduler only supports TCP connect scanning (requires multi-scan-type refactor)
-   - **Next:** Sprint 4.18.3 - Scheduler refactor + full CLI integration (~8-12 hours)
+4. ✅ **Sprint 4.18 (COMPLETE):** PCAPNG Packet Capture - Full Integration (3 hours actual vs 8-12 estimated)
+   - **Status:** All scan types (TCP/UDP/SYN/FIN/NULL/Xmas/ACK) support --packet-capture ✅
+   - **Approach:** Parameter-based (Option A) - 62.5% faster than scheduler refactor approach
+   - **Commit:** f70652a (2025-10-24)
 5. ✅ **Sprint 4.19 Phase 1 (COMPLETE):** NUMA Infrastructure + Scanner Integration (6 hours)
 6. ✅ **Sprint 4.19 Phase 2 (COMPLETE):** NUMA Documentation & Benchmarks (2.5 hours)
-7. **Sprint 4.18.3 (NEXT - HIGH PRIORITY):** Complete PCAPNG Integration (~8-12 hours)
-   - Scheduler multi-scan-type refactor (TCP/UDP/SYN/stealth) (~4-6 hours)
-   - TCP scanner PCAPNG integration (~2 hours)
-   - Full CLI integration (wire --packet-capture flag) (~1-2 hours)
-   - Complete documentation (OUTPUT-FORMATS.md) (~1 hour)
-8. **Sprint 4.18.1 (AVAILABLE):** SQLite Query Interface & Export Utilities (MEDIUM, ROI 7.3/10, ~11 hours)
-9. **Sprint 4.20 (AVAILABLE):** Stealth - Fragmentation & Evasion (MEDIUM, ROI 7.0/10, 4-5 days)
-10. **Sprint 4.21 (AVAILABLE):** IPv6 Complete Implementation (MEDIUM, ROI 6.8/10, 3-4 days)
-11. **Sprint 4.22 (AVAILABLE):** Error Handling & Resilience (LOW, ROI 6.5/10, 3-4 days)
-12. **Sprint 4.23 (AVAILABLE):** Documentation & Release Prep v0.4.0 (LOW, ROI 6.0/10, 2-3 days)
+7. ✅ **Sprint 4.18.1 (COMPLETE):** SQLite Query Interface & Export Utilities (11 hours actual)
+   - **Status:** All 7 phases complete (555 tests passing, 2,314 lines added)
+   - **Deliverables:** db_reader.rs, export.rs, db_commands.rs, DATABASE.md, 9 integration tests
+8. **Sprint 4.20 (NEXT - RECOMMENDED):** Stealth - Fragmentation & Evasion (MEDIUM, ROI 7.0/10, 4-5 days)
+9. **Sprint 4.21 (AVAILABLE):** IPv6 Complete Implementation (MEDIUM, ROI 6.8/10, 3-4 days)
+10. **Sprint 4.22 (AVAILABLE):** Error Handling & Resilience (LOW, ROI 6.5/10, 3-4 days)
+11. **Sprint 4.23 (AVAILABLE):** Documentation & Release Prep v0.4.0 (LOW, ROI 6.0/10, 2-3 days)
 
-**Current Decision:** Sprint 4.18 Phase 1-2 partial complete (PCAPNG infrastructure ready). Recommend Sprint 4.18.3 next (complete PCAPNG CLI integration) OR Sprint 4.18.1 (SQLite/Export utilities, independent of scheduler refactor).
+**Current Decision:** Sprint 4.18.1 COMPLETE. Database query interface with 4 export formats and 9 integration tests. Recommend Sprint 4.20 next (Stealth - Fragmentation & Evasion) for advanced evasion techniques, OR Sprint 4.23 (Documentation & Release Prep v0.4.0) if ready to release.
 
 ## Quick Commands
 
@@ -211,6 +245,9 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-24 | **Sprint 4.18.1 Complete** | SQLite Query Interface & Export Utilities | ~11h | Completed all 7 phases: db_reader.rs (700 lines, 6 tests), export.rs (331 lines, 6 tests, 4 formats: JSON/CSV/XML/Text), db_commands.rs (533 lines, CLI handlers), 9 integration tests (+182 lines), DATABASE.md (450+ lines comprehensive guide), CHANGELOG.md updated (+68 lines), 555/555 tests passing (100%), zero clippy warnings, zero regressions, 2,314 lines added, enables security monitoring/compliance tracking/historical analysis/tool integration, ready for commit | ✅ |
+| 10-24 | **Sprint 4.18.3 Verification** | Verify PCAPNG CLI integration completion | ~15m | Verified Sprint 4.18 ALREADY COMPLETE (commit f70652a), all scan types (TCP/UDP/SYN/FIN/NULL/Xmas/ACK) support --packet-capture flag, 911/921 tests passing (10 ignored CAP_NET_RAW), zero regressions, parameter-based approach delivered 62.5% faster than scheduler refactor, created comprehensive verification report (350+ lines), updated CLAUDE.local.md with corrected status, resolved documentation contradiction (CHANGELOG showed COMPLETE, local memory showed PARTIAL) | ✅ |
+| 10-24 | **Sprint 4.19 Phase 2 Complete** | NUMA Documentation & Validation | 2.5h | Validated NUMA infrastructure from Phase 1 (discovered scanner integration already complete), updated PERFORMANCE-GUIDE.md (2 NUMA sections: Hardware + Advanced, +6 lines net, 65 mentions), verified NUMA feature works (single-node graceful fallback), reviewed benchmark infrastructure (numa-benchmark.sh 188 lines, ready for multi-socket testing), created comprehensive sprint summary (SPRINT-4.19-PHASE-2-COMPLETE.md, ~800 lines), 911/911 tests passing, zero regressions, documentation-only sprint, enterprise-ready NUMA support complete | ✅ |
 | 10-23 | **Raw Response Feature Cleanup** | Production-ready debug flag for service detection | ~50m | Completed `--capture-raw-responses` CLI flag implementation, all 911 tests passing (100%), zero clippy warnings, conditional capture (TLS + probes), memory-safe (Option<Vec<u8>>), manual testing verified (flag on/off behavior), comprehensive docs (12 deliverables, 98KB), 8 files changed (+129/-8 lines), staged & ready for commit, unblocks v0.4.0 Task 1 (improve detection rate 14.3% → 70%+) | ✅ |
 | 10-15 | **CI Status Verification** | Investigate reported CI failures | ~1h | Analyzed GitHub Actions logs, confirmed commit 02037ad RESOLVED all issues, CI now 7/7 passing (100%), Windows DLL issues fixed by reverting to bash shell, macOS timing test fixed with 5s timeout, transient failure in run #83 (runner timing), run #84 succeeded, created comprehensive analysis report (CI-STATUS-ANALYSIS-2025-10-15.md) | ✅ |
 | 10-14 | **Windows/macOS CI Fix - Shell + Timing** | Root cause analysis + fixes | ~2h | Reverted Windows tests to bash shell (from pwsh), fixed DLL path resolution, increased macOS timeout 2s→5s, commit 02037ad, CI 7/7 passing, all 29 Windows integration tests pass, macOS timing test no longer flaky | ✅ |

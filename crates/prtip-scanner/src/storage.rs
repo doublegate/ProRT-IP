@@ -86,7 +86,7 @@ use tracing::{debug, info};
 /// # }
 /// ```
 pub struct ScanStorage {
-    pool: SqlitePool,
+    pub(crate) pool: SqlitePool,
 }
 
 impl ScanStorage {

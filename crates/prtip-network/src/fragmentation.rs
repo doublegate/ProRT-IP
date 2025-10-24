@@ -48,7 +48,7 @@
 //! - **Detection**: Unusual fragment sizes may trigger alerts
 //! - **Combination**: Most effective when combined with other evasion techniques
 
-use pnet::packet::ipv4::{checksum as ipv4_checksum, MutableIpv4Packet, Ipv4Flags};
+use pnet::packet::ipv4::{checksum as ipv4_checksum, Ipv4Flags, MutableIpv4Packet};
 use thiserror::Error;
 
 /// Errors that can occur during fragmentation
@@ -146,7 +146,7 @@ pub fn fragment_tcp_packet(packet: &[u8], mtu: usize) -> Result<Vec<Vec<u8>>> {
             &payload[offset_bytes..offset_bytes + data_size],
             offset_bytes,
             fragment_id,
-            !is_last,  // More Fragments flag
+            !is_last, // More Fragments flag
         )?;
 
         fragments.push(fragment);
@@ -201,15 +201,15 @@ fn create_fragment(
     let mut fragment = vec![0u8; total_size];
 
     // Create mutable IP packet
-    let mut ip_packet = MutableIpv4Packet::new(&mut fragment)
-        .ok_or(FragmentationError::InvalidIpHeader)?;
+    let mut ip_packet =
+        MutableIpv4Packet::new(&mut fragment).ok_or(FragmentationError::InvalidIpHeader)?;
 
     // Copy fields from original IP header
     let original_ip = pnet::packet::ipv4::Ipv4Packet::new(ip_header)
         .ok_or(FragmentationError::InvalidIpHeader)?;
 
     ip_packet.set_version(4);
-    ip_packet.set_header_length(5);  // 5 * 4 = 20 bytes
+    ip_packet.set_header_length(5); // 5 * 4 = 20 bytes
     ip_packet.set_dscp(original_ip.get_dscp());
     ip_packet.set_ecn(original_ip.get_ecn());
     ip_packet.set_total_length(total_size as u16);
@@ -270,8 +270,8 @@ pub fn defragment_packets(mut fragments: Vec<Vec<u8>>) -> Result<Vec<u8>> {
     // Extract IP header from first fragment
     let first_fragment = &fragments[0];
     if first_fragment.len() < IP_HEADER_SIZE {
-        return Err(FragmentationError::PacketTooSmall { 
-            size: first_fragment.len() 
+        return Err(FragmentationError::PacketTooSmall {
+            size: first_fragment.len(),
         });
     }
 
@@ -293,7 +293,7 @@ pub fn defragment_packets(mut fragments: Vec<Vec<u8>>) -> Result<Vec<u8>> {
     if let Some(mut ip_packet) = MutableIpv4Packet::new(&mut reassembled) {
         ip_packet.set_total_length(total_length);
         ip_packet.set_fragment_offset(0);
-        ip_packet.set_flags(0);  // Clear all flags
+        ip_packet.set_flags(0); // Clear all flags
 
         // Recalculate checksum
         let checksum = ipv4_checksum(&ip_packet.to_immutable());
@@ -309,28 +309,34 @@ mod tests {
 
     #[test]
     fn test_validate_mtu_valid() {
-        assert!(validate_mtu(68).is_ok());  // Minimum
-        assert!(validate_mtu(200).is_ok());  // Valid
-        assert!(validate_mtu(1500).is_ok());  // Standard
+        assert!(validate_mtu(68).is_ok()); // Minimum
+        assert!(validate_mtu(200).is_ok()); // Valid
+        assert!(validate_mtu(1500).is_ok()); // Standard
     }
 
     #[test]
     fn test_validate_mtu_too_small() {
         let result = validate_mtu(64);
-        assert!(matches!(result, Err(FragmentationError::MtuTooSmall { .. })));
+        assert!(matches!(
+            result,
+            Err(FragmentationError::MtuTooSmall { .. })
+        ));
     }
 
     #[test]
     fn test_validate_mtu_not_multiple_of_8() {
-        let result = validate_mtu(100);  // Not multiple of 8
-        assert!(matches!(result, Err(FragmentationError::MtuNotMultipleOf8 { .. })));
+        let result = validate_mtu(100); // Not multiple of 8
+        assert!(matches!(
+            result,
+            Err(FragmentationError::MtuNotMultipleOf8 { .. })
+        ));
     }
 
     #[test]
     fn test_calculate_fragment_data_size() {
-        assert_eq!(calculate_fragment_data_size(68), 48);  // 68 - 20 = 48
-        assert_eq!(calculate_fragment_data_size(200), 176);  // 200 - 20 = 180, round down to 176
-        assert_eq!(calculate_fragment_data_size(1500), 1480);  // 1500 - 20 = 1480
+        assert_eq!(calculate_fragment_data_size(68), 48); // 68 - 20 = 48
+        assert_eq!(calculate_fragment_data_size(200), 176); // 200 - 20 = 180, round down to 176
+        assert_eq!(calculate_fragment_data_size(1500), 1480); // 1500 - 20 = 1480
     }
 
     // Additional tests would go here (fragment_simple_packet, defragmentation, etc.)

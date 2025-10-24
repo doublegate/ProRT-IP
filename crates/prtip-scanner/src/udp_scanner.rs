@@ -178,8 +178,9 @@ impl UdpScanner {
                     use prtip_network::fragment_tcp_packet;
                     let mtu = self.config.evasion.mtu.unwrap_or(1500);
                     let packet_data = packet_slice.to_vec(); // Copy from pool for fragmentation
-                    fragment_tcp_packet(&packet_data, mtu)
-                        .map_err(|e| prtip_core::Error::Network(format!("Fragmentation failed: {}", e)))?
+                    fragment_tcp_packet(&packet_data, mtu).map_err(|e| {
+                        prtip_core::Error::Network(format!("Fragmentation failed: {}", e))
+                    })?
                 } else {
                     // No fragmentation - send as single packet
                     vec![packet_slice.to_vec()]

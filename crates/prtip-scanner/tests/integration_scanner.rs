@@ -291,6 +291,7 @@ async fn test_scheduler_config_validation() {
             requested_ulimit: None,
             numa_enabled: false,
         },
+        evasion: Default::default(),
     };
 
     use prtip_scanner::StorageBackend;

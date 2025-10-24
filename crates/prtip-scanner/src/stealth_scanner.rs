@@ -140,7 +140,8 @@ impl StealthScanner {
         port: u16,
         scan_type: StealthScanType,
     ) -> Result<ScanResult> {
-        self.scan_port_with_pcapng(target, port, scan_type, None).await
+        self.scan_port_with_pcapng(target, port, scan_type, None)
+            .await
     }
 
     /// Scan a single port with specified stealth technique and optional PCAPNG capture
@@ -158,7 +159,8 @@ impl StealthScanner {
         let src_port: u16 = rand::thread_rng().gen_range(1024..65535);
 
         // Send probe
-        self.send_probe(target, port, src_port, scan_type, pcapng_writer.clone()).await?;
+        self.send_probe(target, port, src_port, scan_type, pcapng_writer.clone())
+            .await?;
 
         // Wait for response
         let timeout_ms = self.config.scan.timeout_ms;

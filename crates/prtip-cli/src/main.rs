@@ -4,6 +4,8 @@
 
 mod args;
 mod banner;
+mod db_commands;
+mod export;
 mod help;
 mod output;
 
@@ -162,6 +164,48 @@ async fn run() -> Result<()> {
             // `prtip help <topic>` - show specific topic
             help_system.show_topic(&argv[2]);
         }
+        return Ok(());
+    }
+
+    // Check for db subcommand
+    // This allows `prtip db list`, `prtip db query`, etc.
+    if argv.len() >= 2 && argv[1] == "db" {
+        use clap::Parser;
+        use db_commands::{DbCommand, DbSubcommand};
+
+        let db_cmd = DbCommand::parse_from(&argv[1..]);
+
+        match db_cmd.command {
+            DbSubcommand::List { db_path } => {
+                db_commands::handle_list(db_path).await?;
+            }
+            DbSubcommand::Query {
+                db_path,
+                scan_id,
+                target,
+                port,
+                service,
+                open,
+            } => {
+                db_commands::handle_query(db_path, scan_id, target, port, service, open).await?;
+            }
+            DbSubcommand::Export {
+                db_path,
+                scan_id,
+                format,
+                output,
+            } => {
+                db_commands::handle_export(db_path, scan_id, format, output).await?;
+            }
+            DbSubcommand::Compare {
+                db_path,
+                scan_id_1,
+                scan_id_2,
+            } => {
+                db_commands::handle_compare(db_path, scan_id_1, scan_id_2).await?;
+            }
+        }
+
         return Ok(());
     }
 

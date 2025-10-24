@@ -349,3 +349,207 @@ fn test_cli_output_to_file() {
         assert!(content.contains("ProRT-IP"));
     }
 }
+
+// ============================================================================
+// DATABASE COMMAND TESTS (Sprint 4.18.1)
+// ============================================================================
+
+/// Helper to create a temporary test database with scan data
+fn create_test_db_with_scan(temp_dir: &TempDir) -> (String, String) {
+    let db_path = temp_dir
+        .path()
+        .join("test.db")
+        .to_str()
+        .unwrap()
+        .to_string();
+    let target = "127.0.0.1";
+
+    // Run a scan with database storage
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&["-p", "80,443", target, "--with-db", "--database", &db_path]);
+
+    let output = cmd.output().unwrap();
+
+    // Print debug output if failed
+    if !output.status.success() {
+        eprintln!("Scan stdout: {}", String::from_utf8_lossy(&output.stdout));
+        eprintln!("Scan stderr: {}", String::from_utf8_lossy(&output.stderr));
+        panic!("Scan command failed");
+    }
+
+    (db_path, target.to_string())
+}
+
+#[test]
+fn test_db_list() {
+    let temp_dir = TempDir::new().unwrap();
+    let (db_path, _target) = create_test_db_with_scan(&temp_dir);
+
+    // Test `prtip db list`
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&["db", "list", &db_path]);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("Scans in Database") | predicate::str::contains("scan"));
+}
+
+#[test]
+fn test_db_query_scan_id() {
+    let temp_dir = TempDir::new().unwrap();
+    let (db_path, _target) = create_test_db_with_scan(&temp_dir);
+
+    // Query scan ID 1 (first scan)
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&["db", "query", &db_path, "--scan-id", "1"]);
+
+    cmd.assert().success().stdout(
+        predicate::str::contains("Results for Scan") | predicate::str::contains("127.0.0.1"),
+    );
+}
+
+#[test]
+fn test_db_query_target() {
+    let temp_dir = TempDir::new().unwrap();
+    let (db_path, target) = create_test_db_with_scan(&temp_dir);
+
+    // Query by target IP
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&["db", "query", &db_path, "--target", &target]);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("Open Ports") | predicate::str::contains(&target));
+}
+
+#[test]
+fn test_db_query_port() {
+    let temp_dir = TempDir::new().unwrap();
+    let (db_path, _target) = create_test_db_with_scan(&temp_dir);
+
+    // Query by port
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&["db", "query", &db_path, "--port", "80"]);
+
+    cmd.assert().success(); // May or may not find port 80, but should not error
+}
+
+#[test]
+fn test_db_export_json() {
+    let temp_dir = TempDir::new().unwrap();
+    let (db_path, _target) = create_test_db_with_scan(&temp_dir);
+    let export_path = temp_dir
+        .path()
+        .join("export.json")
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    // Export to JSON
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&[
+        "db",
+        "export",
+        &db_path,
+        "--scan-id",
+        "1",
+        "--format",
+        "json",
+        "-o",
+        &export_path,
+    ]);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("Exported"));
+
+    // Verify file exists and is valid JSON
+    let content = fs::read_to_string(&export_path).unwrap();
+    assert!(!content.is_empty());
+    assert!(content.contains("[") || content.contains("target_ip")); // Should be JSON
+}
+
+#[test]
+fn test_db_export_csv() {
+    let temp_dir = TempDir::new().unwrap();
+    let (db_path, _target) = create_test_db_with_scan(&temp_dir);
+    let export_path = temp_dir
+        .path()
+        .join("export.csv")
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    // Export to CSV
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&[
+        "db",
+        "export",
+        &db_path,
+        "--scan-id",
+        "1",
+        "--format",
+        "csv",
+        "-o",
+        &export_path,
+    ]);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("Exported"));
+
+    // Verify file exists and has CSV header
+    let content = fs::read_to_string(&export_path).unwrap();
+    assert!(!content.is_empty());
+    assert!(content.contains("Target IP") || content.contains("Port")); // CSV header
+}
+
+#[test]
+fn test_db_compare_scans() {
+    let temp_dir = TempDir::new().unwrap();
+
+    // Create first scan
+    let db_path = temp_dir
+        .path()
+        .join("test.db")
+        .to_str()
+        .unwrap()
+        .to_string();
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&["-p", "80", "127.0.0.1", "--with-db", "--database", &db_path]);
+    cmd.output().unwrap();
+
+    // Create second scan (different ports)
+    let mut cmd2 = Command::cargo_bin("prtip").unwrap();
+    cmd2.args(&[
+        "-p",
+        "443",
+        "127.0.0.1",
+        "--with-db",
+        "--database",
+        &db_path,
+    ]);
+    cmd2.output().unwrap();
+
+    // Compare scans
+    let mut cmd3 = Command::cargo_bin("prtip").unwrap();
+    cmd3.args(&["db", "compare", &db_path, "1", "2"]);
+
+    cmd3.assert()
+        .success()
+        .stdout(predicate::str::contains("Comparing Scan") | predicate::str::contains("Summary"));
+}
+
+#[test]
+fn test_db_query_no_filter_error() {
+    let temp_dir = TempDir::new().unwrap();
+    let (db_path, _target) = create_test_db_with_scan(&temp_dir);
+
+    // Query without any filter should error
+    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    cmd.args(&["db", "query", &db_path]);
+
+    cmd.assert().failure().stderr(
+        predicate::str::contains("At least one filter") | predicate::str::contains("required"),
+    );
+}

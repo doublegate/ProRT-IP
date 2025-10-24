@@ -107,35 +107,41 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 4 COMPLETE ✅ | **Sprint 4.20 Phase 2** ⚠️ PARTIAL | Phase 5 Advanced Features - Next
+**Current Phase:** Phase 4 COMPLETE ✅ | **Sprint 4.20 Phases 2,4,5** ✅ COMPLETE | Phase 5 Advanced Features - Next
 
-**Latest Version:** v0.3.8 (Sprint 4.18.1 COMPLETE - SQLite Query Interface & Export Utilities)
+**Latest Version:** v0.3.8 (Sprint 4.20 Phases 2,4,5 - Fragmentation, Testing & Documentation)
 
-**Test Coverage:** 911/921 tests passing (98.9% success rate, 10 ignored CAP_NET_RAW) | 61.92% code coverage (exceeds 60% target)
+**Test Coverage:** 989/999 tests passing (99.0% success rate, 10 ignored CAP_NET_RAW) | 62.5% code coverage (exceeds 60% target)
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
 **Latest Achievements:**
 
-- ⚠️ **Sprint 4.20 Phase 2 PARTIAL - Packet Fragmentation & TTL Control:** IP-layer evasion features for firewall/IDS bypass
-  - **Duration:** ~7 hours (Phase 1: 1h analysis, Phase 2: 6h implementation)
-  - **Status:** ⚠️ PARTIAL - Core features working, phases 3-8 pending (~18h remaining)
+- ✅ **Sprint 4.20 Phases 2,4,5 COMPLETE - Fragmentation, Testing & Documentation:** IP-layer evasion with comprehensive test suite and docs
+  - **Duration:** ~17 hours total (Phase 1: 1h, Phase 2: 6h, Phase 4: 8h, Phase 5: 2h)
+  - **Status:** ✅ Core features tested and documented, phases 3,6-9 pending (~11h remaining)
   - **Features Implemented:**
     - **IP Packet Fragmentation:** Split packets at IP layer (RFC 791 compliant)
-    - **MTU Validation:** ≥68 bytes, multiple of 8 (fragment offset requirement)
+    - **MTU Validation:** ≥28 bytes (Nmap -f compatibility), multiple of 8
     - **TTL Control:** Custom Time-To-Live values for TTL-based filtering bypass
-    - **Nmap Compatibility:** `-f` flag (28-byte MTU = 20 IP + 8 data, Nmap equivalent)
-  - **Deliverables:**
+    - **Nmap Compatibility:** `-f`, `--mtu`, `--ttl` flags fully implemented
+  - **Deliverables (Phase 2 - Implementation):**
     - Fragmentation module (`fragmentation.rs`, 335 lines) with RFC 791 compliance
     - 5 new CLI flags: `-f`, `--mtu`, `--ttl`, `-D`, `--badsum`
     - EvasionConfig struct in config.rs with Default derive
     - Scanner integration (SYN, stealth, UDP) with fragmentation + TTL
-    - Zero-copy optimization preserved when fragmentation disabled
-  - **Code Added:** 607 lines (fragmentation.rs 335 + args.rs 115 + scanners 130 + config 27)
-  - **Compilation:** ✅ cargo build + clippy passing (Sprint 4.20 files clean)
-  - **Tests:** 911/921 passing (10 ignored CAP_NET_RAW), zero regressions
-  - **Strategic Value:** Firewall/IDS evasion, Nmap feature parity (40% → 100% after Sprint 4.20 complete)
-  - **Remaining Work (Phases 3-8):** TTL testing (1h), decoy CLI parser (4h), source port (1h), bad checksums (2h), tests (6h), docs (4h)
+  - **Deliverables (Phase 4 - Testing):**
+    - 78 comprehensive tests across 10 categories (92.6% code coverage)
+    - 5 test helper functions reducing duplication
+    - Production fixes: MIN_MTU 68→28, MTU validation logic corrected
+  - **Deliverables (Phase 5 - Documentation):**
+    - `docs/19-EVASION-GUIDE.md` (1,050+ lines): Comprehensive evasion reference
+    - 12 sections: Introduction, 5 techniques, examples, performance, troubleshooting
+    - 15+ practical command-line examples, 8 detailed tables
+  - **Code Added:** 2,762 lines total (fragmentation.rs 335 + tests 1,056 + docs 1,050 + integration 321)
+  - **Tests:** 989/999 passing (99.0%), 78 new fragmentation tests, zero regressions
+  - **Strategic Value:** Firewall/IDS evasion, Nmap feature parity, comprehensive documentation
+  - **Remaining Work (Phases 3,6-9):** TTL testing (1h), bad checksums (2h), integration tests (2h), decoy enhancements (4h), completion (2h)
 - ✅ **Sprint 4.18.1 COMPLETE - SQLite Query Interface & Export Utilities:** Database operations with CLI subcommands
   - **Duration:** ~11 hours actual (all 7 phases complete)
   - **Features:** `prtip db list|query|export|compare` subcommands with 4 export formats (JSON/CSV/XML/text)

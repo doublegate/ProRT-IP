@@ -562,6 +562,13 @@ mod tests {
                 requested_ulimit: None,
                 numa_enabled: false,
             },
+            evasion: prtip_core::EvasionConfig {
+                fragment_packets: false,
+                mtu: None,
+                ttl: None,
+                decoys: None,
+                bad_checksums: false,
+            },
         }
     }
 

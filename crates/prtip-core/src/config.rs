@@ -16,6 +16,8 @@ pub struct Config {
     pub output: OutputConfig,
     /// Performance configuration
     pub performance: PerformanceConfig,
+    /// Evasion/stealth configuration
+    pub evasion: EvasionConfig,
 }
 
 impl Config {
@@ -251,6 +253,23 @@ impl Default for PerformanceConfig {
             numa_enabled: false, // Disabled by default for compatibility
         }
     }
+}
+
+/// Evasion and stealth configuration
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct EvasionConfig {
+    /// Enable packet fragmentation
+    pub fragment_packets: bool,
+    /// Custom MTU for fragmentation (None = use default based on fragment_packets)
+    /// Must be ≥68 and multiple of 8
+    pub mtu: Option<usize>,
+    /// Custom TTL (Time To Live) value (None = OS default, typically 64)
+    pub ttl: Option<u8>,
+    /// Decoy specification (None = no decoys)
+    /// Format: "RND:N" for N random decoys or "IP,IP,ME,IP" for manual decoys
+    pub decoys: Option<String>,
+    /// Use bad TCP/IP checksums for testing (default: false)
+    pub bad_checksums: bool,
 }
 
 #[cfg(test)]

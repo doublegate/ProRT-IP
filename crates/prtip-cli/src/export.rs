@@ -23,7 +23,7 @@ pub fn export_csv(results: &[ScanResult]) -> Result<String, Box<dyn std::error::
     let mut wtr = csv::Writer::from_writer(vec![]);
 
     // Write header
-    wtr.write_record(&[
+    wtr.write_record([
         "Target IP",
         "Port",
         "State",
@@ -56,7 +56,7 @@ pub fn export_csv(results: &[ScanResult]) -> Result<String, Box<dyn std::error::
         let response_time_ms = result.response_time.as_millis().to_string();
         let timestamp = result.timestamp.to_rfc3339();
 
-        wtr.write_record(&[
+        wtr.write_record([
             &result.target_ip.to_string(),
             &result.port.to_string(),
             &format!("{:?}", result.state),
@@ -90,7 +90,7 @@ pub fn export_xml(results: &[ScanResult]) -> Result<String, Box<dyn std::error::
     for result in results {
         hosts
             .entry(result.target_ip.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(result);
     }
 
@@ -171,7 +171,7 @@ pub fn export_text(results: &[ScanResult]) -> Result<String, Box<dyn std::error:
     for result in results {
         hosts
             .entry(result.target_ip.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(result);
     }
 
@@ -205,7 +205,7 @@ pub fn export_text(results: &[ScanResult]) -> Result<String, Box<dyn std::error:
             ));
         }
 
-        output.push_str("\n");
+        output.push('\n');
     }
 
     // Summary statistics

@@ -1,10 +1,10 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-24 | **Phase:** Phase 4 COMPLETE + Sprint 4.18.1 ✅ | **Tests:** 555/555 ✅ | **Coverage:** 61.92% ✅
+**Updated:** 2025-10-24 | **Phase:** Phase 4 COMPLETE + Sprint 4.20 Phase 2 ⚠️ | **Tests:** 911/921 (98.9%) | **Coverage:** 61.92% ✅
 
 ## Current Status
 
-**Milestone:** v0.3.8 Released - **Sprint 4.18.1 COMPLETE ✅ (SQLite Query Interface & Export Utilities)**
+**Milestone:** v0.3.8 Released - **Sprint 4.20 Phase 2 PARTIAL ⚠️ (Packet Fragmentation & TTL Control)**
 
 | Metric | Value | Details |
 |--------|-------|---------|
@@ -20,7 +20,63 @@
 
 **Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, **15 custom commands**, PCAPNG capture (all scan types), NUMA optimization
 
-## Current Sprint: 4.18.1 - SQLite Query Interface & Export Utilities ✅ COMPLETE
+## Current Sprint: 4.20 Phase 2 - Packet Fragmentation & TTL Control ⚠️ PARTIAL
+
+**Status:** ⚠️ PARTIAL COMPLETE (2025-10-24)
+**Duration:** ~7 hours (Phase 1: 1h + Phase 2: 6h)
+**Priority:** MEDIUM
+**ROI Score:** 7.0/10
+
+**Objective:** Add packet fragmentation and TTL manipulation for firewall/IDS evasion.
+
+**Achieved (Phase 2 Complete, Phases 3-8 Pending):**
+- ✅ **Phase 1:** Analysis & Planning (1h) - Research, codebase analysis, implementation plan
+  - **Key Discovery:** 60% of Sprint 4.20 already exists (DecoyScanner, TTL/source port methods)
+- ✅ **Phase 2:** Fragmentation + TTL Implementation (6h)
+  - **Fragmentation Module:** `fragmentation.rs` (335 lines) with RFC 791 compliance
+  - **CLI Flags:** 5 evasion flags (-f, --mtu, --ttl, -D, --badsum)
+  - **Configuration:** EvasionConfig struct in config.rs
+  - **Scanner Integration:** Fragmentation + TTL in SYN/stealth/UDP scanners
+  - **Compilation:** ✅ cargo build + clippy passing (Sprint 4.20 files clean)
+
+**Features Implemented:**
+- **IP Fragmentation:** Split packets at IP layer (RFC 791 compliant)
+- **MTU Validation:** ≥68 bytes, multiple of 8 (fragment offset requirement)
+- **TTL Control:** Custom Time-To-Live values via TcpPacketBuilder/UdpPacketBuilder
+- **Nmap Compatibility:** `-f` defaults to 28-byte MTU (Nmap -f equivalent)
+
+**Key Results:**
+- **Tests:** 911/921 passing (10 ignored CAP_NET_RAW, zero regressions)
+- **Code Added:** 607 lines (fragmentation.rs 335 + args.rs 115 + scanners 130 + config 27)
+- **Quality:** Zero clippy warnings in Sprint 4.20 files, zero compilation errors
+- **Strategic Value:** Firewall/IDS evasion, Nmap feature parity (40% → 100% after Sprint 4.20 complete)
+
+**Usage Examples:**
+```bash
+prtip -sS -f -p 1-1000 192.168.1.0/24           # Nmap -f (aggressive fragmentation)
+prtip -sS --mtu 200 -p 80,443 target.com        # Custom MTU
+prtip -sS --ttl 32 -p 1-1000 10.0.0.0/24        # TTL control
+prtip -sS -f --ttl 16 -p 22,80,443 target.com   # Combined evasion
+```
+
+**Deliverables:**
+- crates/prtip-network/src/fragmentation.rs: IP fragmentation module (335 lines)
+- crates/prtip-cli/src/args.rs: 5 evasion CLI flags (+115 lines)
+- crates/prtip-core/src/config.rs: EvasionConfig struct (+17 lines)
+- crates/prtip-scanner/src/syn_scanner.rs: Fragmentation + TTL (+35 lines)
+- crates/prtip-scanner/src/stealth_scanner.rs: Fragmentation + TTL (+40 lines)
+- crates/prtip-scanner/src/udp_scanner.rs: Fragmentation + TTL (+40 lines)
+- /tmp/ProRT-IP/sprint-4.20/SPRINT-4.20-PHASE-2-COMPLETE.md: Comprehensive summary
+
+**Remaining Work (Phases 3-8, ~18 hours):**
+- Phase 3: TTL CLI testing (~1h)
+- Phase 4: Decoy scanning CLI parser (~4h)
+- Phase 5: Source port manipulation (~1h)
+- Phase 6: Bad checksum corruption (~2h)
+- Phase 7: Unit + integration tests (~6h, 23 unit + 8 integration)
+- Phase 8: EVASION-GUIDE.md documentation (~4h, ~500 lines)
+
+## Previous Sprint: 4.18.1 - SQLite Query Interface & Export Utilities ✅ COMPLETE
 
 **Status:** ✅ COMPLETE (2025-10-24)
 **Duration:** ~11 hours actual
@@ -29,46 +85,12 @@
 
 **Objective:** Add database query interface and export utilities for historical scan analysis.
 
-**Achieved (All 7 Phases Complete):**
-- ✅ **Phase 1:** Analysis (30min) - Discovered existing SQLite infrastructure in storage.rs
-- ✅ **Phase 2:** SKIPPED - Database layer already production-ready (744 lines, 19 tests)
-- ✅ **Phase 3:** Query Interface (2h) - Created db_reader.rs (700 lines, 6 tests)
-  - Methods: list_scans, get_scan_results, query_open_ports, query_by_port, query_by_service, compare_scans
-- ✅ **Phase 4:** Export Utilities (2h) - Created export.rs (331 lines, 6 tests)
-  - Formats: JSON, CSV, XML (Nmap-compatible), Text (human-readable)
-- ✅ **Phase 5:** CLI Subcommands (4h) - Created db_commands.rs (533 lines)
-  - Commands: `prtip db list|query|export|compare`
-- ✅ **Phase 6:** Integration Tests (2h) - Added 9 end-to-end tests (+182 lines)
-  - Test workflows: save → list → query → export → compare
-- ✅ **Phase 7:** Documentation (5h) - Created DATABASE.md (450+ lines)
-  - Comprehensive guide: schema, queries, exports, comparisons, troubleshooting
-
 **Key Results:**
-- **Tests:** 555/555 passing (254 lib + 9 new DB integration + 292 other)
+- **Tests:** 555/555 passing (254 lib + 9 integration + 292 other)
 - **Code Added:** 2,314 lines (db_reader.rs 700 + export.rs 331 + db_commands.rs 533 + tests 182 + docs 568)
-- **Quality:** Zero clippy warnings, zero regressions
 - **Strategic Value:** Security monitoring, compliance tracking, historical analysis
 
-**Features Implemented:**
-```bash
-prtip db list <db>                           # List all scans
-prtip db query <db> [filters]                # Query with filters (--scan-id, --target, --port, --service, --open)
-prtip db export <db> --scan-id <id> -o <file> # Export to JSON/CSV/XML/text
-prtip db compare <db> <id1> <id2>            # Compare two scans
-```
-
-**Deliverables:**
-- crates/prtip-scanner/src/db_reader.rs: Query interface (700 lines)
-- crates/prtip-cli/src/export.rs: Export utilities (331 lines)
-- crates/prtip-cli/src/db_commands.rs: CLI handlers (533 lines)
-- docs/DATABASE.md: User guide (450+ lines)
-- /tmp/ProRT-IP/sprint-4.18.1/SPRINT-4.18.1-COMPLETE.md: Sprint summary
-
-**Use Cases Enabled:**
-- Security Monitoring: Daily scans → compare → alert on changes
-- Compliance Tracking: PCI DSS audit trails, patch validation
-- Tool Integration: Export to CSV (Excel), XML (Nmap parsers), JSON (automation)
-- Historical Analysis: Compare weekly/monthly scans for trending
+**Features:** `prtip db list|query|export|compare` subcommands with 4 export formats (JSON/CSV/XML/text)
 
 ## Previous Sprint: 4.19 Phase 2 - NUMA Documentation & Validation ✅ COMPLETE
 

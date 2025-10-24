@@ -29,6 +29,7 @@
 
 pub mod batch_sender;
 pub mod capture;
+pub mod fragmentation;
 pub mod interface;
 pub mod numa;
 pub mod packet_buffer;
@@ -39,6 +40,7 @@ pub mod protocol_payloads;
 // Re-export commonly used items
 pub use batch_sender::{BatchReceiver, BatchSender, PacketBatch, ReceivedPacket, MAX_BATCH_SIZE};
 pub use capture::{create_capture, PacketCapture};
+pub use fragmentation::{fragment_tcp_packet, validate_mtu, defragment_packets, MIN_MTU, NMAP_F_MTU};
 pub use packet_buffer::{with_buffer, PacketBuffer};
 pub use packet_builder::{TcpFlags, TcpOption, TcpPacketBuilder, UdpPacketBuilder};
 pub use privilege::{check_privileges, drop_privileges, has_raw_socket_capability};

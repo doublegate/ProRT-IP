@@ -62,6 +62,10 @@ use std::time::{Duration, Instant};
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
 
+// PCAPNG packet capture support
+use crate::pcapng::{Direction, PcapngWriter};
+use std::sync::Mutex as StdMutex;
+
 /// Type of stealth scan to perform
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StealthScanType {
@@ -136,6 +140,17 @@ impl StealthScanner {
         port: u16,
         scan_type: StealthScanType,
     ) -> Result<ScanResult> {
+        self.scan_port_with_pcapng(target, port, scan_type, None).await
+    }
+
+    /// Scan a single port with specified stealth technique and optional PCAPNG capture
+    pub async fn scan_port_with_pcapng(
+        &self,
+        target: Ipv4Addr,
+        port: u16,
+        scan_type: StealthScanType,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
+    ) -> Result<ScanResult> {
         let start_time = Instant::now();
 
         // Generate random source port
@@ -143,7 +158,7 @@ impl StealthScanner {
         let src_port: u16 = rand::thread_rng().gen_range(1024..65535);
 
         // Send probe
-        self.send_probe(target, port, src_port, scan_type).await?;
+        self.send_probe(target, port, src_port, scan_type, pcapng_writer.clone()).await?;
 
         // Wait for response
         let timeout_ms = self.config.scan.timeout_ms;
@@ -151,7 +166,7 @@ impl StealthScanner {
 
         match timeout(
             wait_duration,
-            self.wait_for_response(target, port, src_port, scan_type),
+            self.wait_for_response(target, port, src_port, scan_type, pcapng_writer),
         )
         .await
         {
@@ -195,13 +210,14 @@ impl StealthScanner {
         }
     }
 
-    /// Send a stealth probe packet (zero-copy)
+    /// Send a stealth probe packet (zero-copy with optional PCAPNG capture)
     async fn send_probe(
         &self,
         target: Ipv4Addr,
         port: u16,
         src_port: u16,
         scan_type: StealthScanType,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<()> {
         use rand::Rng;
         let mut rng = rand::thread_rng();
@@ -220,6 +236,18 @@ impl StealthScanner {
                     .flags(scan_type.flags())
                     .window(1024)
                     .build_ip_packet_with_buffer(buffer_pool)?;
+
+                // Capture packet to PCAPNG if writer is provided
+                if let Some(ref writer) = pcapng_writer {
+                    // Clone packet data before sending (PCAPNG needs owned copy)
+                    let packet_data = packet_slice.to_vec();
+                    if let Ok(guard) = writer.lock() {
+                        if let Err(e) = guard.write_packet(&packet_data, Direction::Sent) {
+                            // Log error but don't fail scan (PCAPNG is optional)
+                            warn!("PCAPNG write error ({} probe): {}", scan_type.name(), e);
+                        }
+                    }
+                }
 
                 // Send immediately
                 capture.send_packet(packet_slice).map_err(|e| {
@@ -252,17 +280,28 @@ impl StealthScanner {
         Ok(())
     }
 
-    /// Wait for response
+    /// Wait for response with optional PCAPNG capture
     async fn wait_for_response(
         &self,
         target: Ipv4Addr,
         port: u16,
         src_port: u16,
         scan_type: StealthScanType,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<PortState> {
         loop {
             if let Some(ref mut capture) = *self.capture.lock() {
                 if let Some(packet) = capture.receive_packet(100)? {
+                    // Capture received packet to PCAPNG if writer is provided
+                    if let Some(ref writer) = pcapng_writer {
+                        if let Ok(guard) = writer.lock() {
+                            if let Err(e) = guard.write_packet(&packet, Direction::Received) {
+                                // Log error but don't fail scan (PCAPNG is optional)
+                                warn!("PCAPNG write error ({} response): {}", scan_type.name(), e);
+                            }
+                        }
+                    }
+
                     if let Some(state) =
                         self.parse_response(&packet, target, port, src_port, scan_type)?
                     {

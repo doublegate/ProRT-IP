@@ -825,6 +825,7 @@ mod tests {
                 requested_ulimit: None,
                 numa_enabled: false,
             },
+            evasion: Default::default(),
         }
     }
 

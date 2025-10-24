@@ -362,6 +362,10 @@ mod tests {
 
             [performance]
             parallelism = 100
+
+            [evasion]
+            fragment_packets = false
+            bad_checksums = false
         "#;
 
         let config = Config::load_from_str(toml_str).unwrap();
@@ -414,6 +418,10 @@ mod tests {
             [performance]
             max_rate = 100000
             parallelism = 1000
+
+            [evasion]
+            fragment_packets = false
+            bad_checksums = false
         "#;
 
         let config = Config::load_from_str(toml_str).unwrap();

@@ -9,6 +9,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 4.18 COMPLETE - PCAPNG Support for All Scan Types:** SYN and Stealth scanners now support packet capture
+  - **Duration:** 3 hours actual (vs 8-12 hours estimated for scheduler refactor approach)
+  - **Status:** ✅ **COMPLETE** - All scan types (TCP/UDP/SYN/FIN/NULL/Xmas/ACK) now support --packet-capture flag
+  - **Approach:** Parameter-based integration (Option A) following proven UDP scanner pattern
+  - **Deliverables:**
+    - **SynScanner PCAPNG Integration:**
+      - New method: `scan_port_with_pcapng()` with Direction tracking
+      - Updated `send_syn()` to capture outgoing SYN packets
+      - Updated `wait_for_response()` to capture incoming SYN/ACK or RST responses
+      - Zero-copy packet building preserved (Sprint 4.17 integration maintained)
+    - **StealthScanner PCAPNG Integration:**
+      - New method: `scan_port_with_pcapng()` supporting all stealth types (FIN/NULL/Xmas/ACK)
+      - Updated `send_probe()` to capture outgoing stealth packets
+      - Updated `wait_for_response()` to capture incoming responses
+      - Zero-copy packet building preserved
+    - **Scheduler Multi-Scan-Type Integration:**
+      - SYN scan: Creates SynScanner, calls scan_port_with_pcapng() per port
+      - Stealth scans: Creates StealthScanner, determines stealth type, calls scan_port_with_pcapng()
+      - Pattern consistency: All scanners now follow same PCAPNG integration approach
+  - **Features:**
+    - CLI flag: `--packet-capture <FILE>` works for `-sS`, `-sF`, `-sN`, `-sX`, `-sA` scans
+    - Thread-safe writes (Arc<Mutex<>> pattern, consistent across all scanners)
+    - Direction tracking (Sent/Received) for forensic analysis
+    - Error handling: PCAPNG write failures don't abort scans (logged as warnings)
+  - **Testing:** 911 tests passing (10 ignored CAP_NET_RAW), zero regressions, zero clippy warnings
+  - **Strategic Value:**
+    - Complete PCAPNG coverage across all ProRT-IP scan types
+    - Low-risk parameter-based approach (no architectural refactoring needed)
+    - Maintains Sprint 4.17 zero-copy performance optimizations
+    - Wireshark integration for deep packet inspection and forensic analysis
+  - **Usage Examples:**
+    ```bash
+    # SYN scan with packet capture
+    prtip --packet-capture syn.pcapng -sS -p 80,443 scanme.nmap.org
+
+    # Stealth FIN scan
+    prtip --packet-capture fin.pcapng -sF -p 1-1000 target.com
+
+    # Xmas scan
+    prtip --packet-capture xmas.pcapng -sX -p 80 target.com
+
+    # ACK scan (firewall detection)
+    prtip --packet-capture ack.pcapng -sA -p 1-65535 target.com
+    ```
+  - **Deferred:** OUTPUT-FORMATS.md documentation (~1h, can be added later)
+
 - **Sprint 4.18.3 - PCAPNG CLI Integration (PARTIAL COMPLETE):** Scheduler refactor + UDP packet capture working end-to-end
   - **Duration:** ~16 hours total (Phase 1: 6h, Phase 2: 6h, Phase 3: 4h)
   - **Status:** ✅ **UDP PCAPNG WORKING!** (`prtip -sU --packet-capture scan.pcapng target.com`)

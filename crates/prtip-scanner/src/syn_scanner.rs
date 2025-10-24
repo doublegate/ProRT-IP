@@ -51,6 +51,10 @@ use tokio::sync::mpsc;
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
 
+// PCAPNG packet capture support
+use crate::pcapng::{Direction, PcapngWriter};
+use std::sync::Mutex as StdMutex;
+
 /// Connection state for tracking SYN scan responses
 #[derive(Debug, Clone)]
 struct ConnectionState {
@@ -110,6 +114,16 @@ impl SynScanner {
 
     /// Scan a single port
     pub async fn scan_port(&self, target: Ipv4Addr, port: u16) -> Result<ScanResult> {
+        self.scan_port_with_pcapng(target, port, None).await
+    }
+
+    /// Scan a single port with optional PCAPNG packet capture
+    pub async fn scan_port_with_pcapng(
+        &self,
+        target: Ipv4Addr,
+        port: u16,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
+    ) -> Result<ScanResult> {
         let start_time = Instant::now();
 
         // Generate random source port
@@ -117,7 +131,7 @@ impl SynScanner {
         let src_port: u16 = rand::thread_rng().gen_range(1024..65535);
 
         // Send initial SYN
-        let sequence = self.send_syn(target, port, src_port, 0).await?;
+        let sequence = self.send_syn(target, port, src_port, 0, pcapng_writer.clone()).await?;
 
         // Track connection
         let conn_state = ConnectionState {
@@ -146,7 +160,7 @@ impl SynScanner {
 
             match timeout(
                 wait_duration,
-                self.wait_for_response(target, port, src_port),
+                self.wait_for_response(target, port, src_port, pcapng_writer.clone()),
             )
             .await
             {
@@ -205,7 +219,7 @@ impl SynScanner {
                         tokio::time::sleep(backoff).await;
 
                         // Resend SYN
-                        self.send_syn(target, port, src_port, (retry + 1) as u8)
+                        self.send_syn(target, port, src_port, (retry + 1) as u8, pcapng_writer.clone())
                             .await?;
                     }
                 }
@@ -227,7 +241,16 @@ impl SynScanner {
     /// Sprint 4.17 Phase 3: Integrated zero-copy packet building.
     /// Uses `with_buffer()` closure and `build_ip_packet_with_buffer()` to
     /// eliminate heap allocations in packet crafting hot path.
-    async fn send_syn(&self, target: Ipv4Addr, port: u16, src_port: u16, retry: u8) -> Result<u32> {
+    ///
+    /// Sprint 4.18: Added optional PCAPNG packet capture.
+    async fn send_syn(
+        &self,
+        target: Ipv4Addr,
+        port: u16,
+        src_port: u16,
+        retry: u8,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
+    ) -> Result<u32> {
         use rand::Rng;
         let mut rng = rand::thread_rng();
 
@@ -249,6 +272,18 @@ impl SynScanner {
                 .add_option(TcpOption::WindowScale(7))
                 .add_option(TcpOption::SackPermitted)
                 .build_ip_packet_with_buffer(pool)?;
+
+            // Capture packet to PCAPNG if writer is provided
+            if let Some(ref writer) = pcapng_writer {
+                // Clone packet data before sending (PCAPNG needs owned copy)
+                let packet_data = packet.to_vec();
+                if let Ok(guard) = writer.lock() {
+                    if let Err(e) = guard.write_packet(&packet_data, Direction::Sent) {
+                        // Log error but don't fail scan (PCAPNG is optional)
+                        warn!("PCAPNG write error (SYN packet): {}", e);
+                    }
+                }
+            }
 
             // Send packet (while borrowed from pool)
             if let Some(ref mut capture) = *self.capture.lock() {
@@ -316,12 +351,13 @@ impl SynScanner {
         Ok(())
     }
 
-    /// Wait for response (SYN/ACK, RST, or ICMP)
+    /// Wait for response (SYN/ACK, RST, or ICMP) with optional PCAPNG capture
     async fn wait_for_response(
         &self,
         target: Ipv4Addr,
         port: u16,
         src_port: u16,
+        pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<PortState> {
         // In a real implementation, this would:
         // 1. Set up a BPF filter to capture only relevant packets
@@ -335,6 +371,16 @@ impl SynScanner {
         loop {
             if let Some(ref mut capture) = *self.capture.lock() {
                 if let Some(packet) = capture.receive_packet(100)? {
+                    // Capture received packet to PCAPNG if writer is provided
+                    if let Some(ref writer) = pcapng_writer {
+                        if let Ok(guard) = writer.lock() {
+                            if let Err(e) = guard.write_packet(&packet, Direction::Received) {
+                                // Log error but don't fail scan (PCAPNG is optional)
+                                warn!("PCAPNG write error (SYN response): {}", e);
+                            }
+                        }
+                    }
+
                     // Parse packet and check if it matches our connection
                     if let Some(state) = self.parse_response(&packet, target, port, src_port)? {
                         return Ok(state);

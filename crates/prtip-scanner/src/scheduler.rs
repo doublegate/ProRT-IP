@@ -261,12 +261,33 @@ impl ScanScheduler {
                         .await
                 }
                 ScanType::Syn => {
-                    // SYN scan (requires initialization + PCAPNG support - TASK-3)
-                    // For now, fallback to TCP Connect
-                    warn!("SYN scan not fully integrated with PCAPNG yet, using TCP Connect");
-                    self.tcp_scanner
-                        .scan_ports(host, ports.clone(), parallelism)
-                        .await
+                    // SYN scan (has PCAPNG support now!)
+                    use crate::SynScanner;
+                    let mut syn_scanner = SynScanner::new(self.config.clone())?;
+                    syn_scanner.initialize().await?;
+
+                    // Scan each port individually (SYN scanner scans one port at a time)
+                    let mut results = Vec::new();
+                    for port in &ports {
+                        match syn_scanner
+                            .scan_port_with_pcapng(
+                                match host {
+                                    std::net::IpAddr::V4(ip) => ip,
+                                    std::net::IpAddr::V6(_) => {
+                                        warn!("SYN scan doesn't support IPv6 yet");
+                                        continue;
+                                    }
+                                },
+                                *port,
+                                pcapng_writer.clone(),
+                            )
+                            .await
+                        {
+                            Ok(result) => results.push(result),
+                            Err(e) => warn!("Error scanning SYN {}:{}: {}", host, port, e),
+                        }
+                    }
+                    Ok(results)
                 }
                 ScanType::Udp => {
                     // UDP scan (has PCAPNG support already!)
@@ -297,12 +318,44 @@ impl ScanScheduler {
                     Ok(results)
                 }
                 ScanType::Fin | ScanType::Null | ScanType::Xmas | ScanType::Ack => {
-                    // Stealth scans (require initialization + PCAPNG support - TASK-4)
-                    // For now, fallback to TCP Connect
-                    warn!("Stealth scans not fully integrated with PCAPNG yet, using TCP Connect");
-                    self.tcp_scanner
-                        .scan_ports(host, ports.clone(), parallelism)
-                        .await
+                    // Stealth scans (have PCAPNG support now!)
+                    use crate::{StealthScanner, StealthScanType};
+
+                    // Determine stealth scan type
+                    let stealth_type = match self.config.scan.scan_type {
+                        ScanType::Fin => StealthScanType::Fin,
+                        ScanType::Null => StealthScanType::Null,
+                        ScanType::Xmas => StealthScanType::Xmas,
+                        ScanType::Ack => StealthScanType::Ack,
+                        _ => unreachable!("Already matched stealth scan type"),
+                    };
+
+                    let mut stealth_scanner = StealthScanner::new(self.config.clone())?;
+                    stealth_scanner.initialize().await?;
+
+                    // Scan each port individually
+                    let mut results = Vec::new();
+                    for port in &ports {
+                        match stealth_scanner
+                            .scan_port_with_pcapng(
+                                match host {
+                                    std::net::IpAddr::V4(ip) => ip,
+                                    std::net::IpAddr::V6(_) => {
+                                        warn!("Stealth scan doesn't support IPv6 yet");
+                                        continue;
+                                    }
+                                },
+                                *port,
+                                stealth_type,
+                                pcapng_writer.clone(),
+                            )
+                            .await
+                        {
+                            Ok(result) => results.push(result),
+                            Err(e) => warn!("Error scanning {} {}:{}: {}", stealth_type.name(), host, port, e),
+                        }
+                    }
+                    Ok(results)
                 }
                 ScanType::Idle => {
                     // Idle scan (Phase 5 feature)

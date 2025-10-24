@@ -52,6 +52,8 @@ pub struct ServiceDetector {
     tls_handler: TlsHandshake,
     /// Whether to attempt TLS detection
     enable_tls: bool,
+    /// Whether to capture raw responses for debugging
+    capture_raw: bool,
 }
 
 /// Service detection result
@@ -75,6 +77,8 @@ pub struct ServiceInfo {
     pub cpe: Vec<String>,
     /// Detection method
     pub method: String,
+    /// Raw response
+    pub raw_response: Option<Vec<u8>>,
 }
 
 impl ServiceDetector {
@@ -85,12 +89,23 @@ impl ServiceDetector {
 
     /// Create new service detector with optional TLS
     pub fn with_tls(db: ServiceProbeDb, intensity: u8, enable_tls: bool) -> Self {
+        Self::with_options(db, intensity, enable_tls, false)
+    }
+
+    /// Create new service detector with all options
+    pub fn with_options(
+        db: ServiceProbeDb,
+        intensity: u8,
+        enable_tls: bool,
+        capture_raw: bool,
+    ) -> Self {
         Self {
             db: Arc::new(db),
             intensity: intensity.min(9),
             timeout: Duration::from_secs(5),
             tls_handler: TlsHandshake::with_timeout(Duration::from_secs(5)),
             enable_tls,
+            capture_raw,
         }
     }
 
@@ -125,8 +140,9 @@ impl ServiceDetector {
         if let Some(null_probe) = probes.iter().find(|p| p.name == "NULL") {
             debug!("Port {}: Trying NULL probe", port);
             match self.try_probe(target, null_probe).await {
-                Ok(info) => {
+                Ok((mut info, raw_response)) => {
                     debug!("Port {}: NULL probe matched: {}", port, info.service);
+                    info.raw_response = Some(raw_response);
                     return Ok(info);
                 }
                 Err(e) => {
@@ -145,11 +161,12 @@ impl ServiceDetector {
                     port, probe.name, probe.rarity
                 );
                 match self.try_probe(target, probe).await {
-                    Ok(info) => {
+                    Ok((mut info, raw_response)) => {
                         debug!(
                             "Port {}: Probe {} matched: {}",
                             port, probe.name, info.service
                         );
+                        info.raw_response = Some(raw_response);
                         return Ok(info);
                     }
                     Err(e) => {
@@ -176,45 +193,73 @@ impl ServiceDetector {
         }
 
         // No match found - return generic info
+
         Ok(ServiceInfo {
             service: "unknown".to_string(),
+
             product: None,
+
             version: None,
+
             extra_info: None,
+
             hostname: None,
+
             os_type: None,
+
             device_type: None,
+
             cpe: Vec::new(),
+
             method: "no match".to_string(),
+
+            raw_response: None,
         })
     }
 
     /// Try TLS detection and extract service info from certificate
     async fn try_tls_detection(&self, target: SocketAddr) -> Result<ServiceInfo, Error> {
         let host = target.ip().to_string();
+
         let port = target.port();
 
         // Attempt TLS handshake
+
         let server_info = self.tls_handler.connect(&host, port).await?;
 
         // Try to get HTTP response over TLS for better detection
+
         let mut service = "https".to_string();
+
         let mut product = None;
+
         let mut version = None;
 
+        let mut raw_response = None;
+
         // If port 443 or 8443, try HTTP GET to identify web server
+
         if port == 443 || port == 8443 {
             if let Ok(response) = self.tls_handler.https_get(&host, port, "/").await {
+                // Capture raw response if enabled
+                if self.capture_raw {
+                    raw_response = Some(response.as_bytes().to_vec());
+                }
+
                 // Parse Server header
+
                 if let Some(server_line) = response
                     .lines()
                     .find(|l| l.to_lowercase().starts_with("server:"))
                 {
                     if let Some(server_value) = server_line.split(':').nth(1) {
                         let server_value = server_value.trim();
+
                         // Extract product and version from "Server: nginx/1.18.0"
+
                         if let Some((prod, ver)) = server_value.split_once('/') {
                             product = Some(prod.to_string());
+
                             version = Some(ver.to_string());
                         } else {
                             product = Some(server_value.to_string());
@@ -236,8 +281,11 @@ impl ServiceDetector {
 
         Ok(ServiceInfo {
             service,
+
             product,
+
             version,
+
             extra_info: Some(format!(
                 "TLS {} ({})",
                 server_info.tls_version,
@@ -247,27 +295,38 @@ impl ServiceDetector {
                     &server_info.issuer
                 }
             )),
+
             hostname: Some(server_info.common_name.clone()),
+
             os_type: None,
+
             device_type: None,
+
             cpe: Vec::new(),
+
             method: "tls_handshake".to_string(),
+
+            raw_response,
         })
     }
 
     /// Try a specific probe
     async fn try_probe(
         &self,
+
         target: SocketAddr,
+
         probe: &ServiceProbe,
-    ) -> Result<ServiceInfo, Error> {
+    ) -> Result<(ServiceInfo, Vec<u8>), Error> {
         // Connect to target
+
         let mut stream = timeout(self.timeout, TcpStream::connect(target))
             .await
             .map_err(|_| Error::Network("Connection timeout".to_string()))?
             .map_err(|e| Error::Network(format!("Connection failed: {}", e)))?;
 
         // Send probe (if not NULL)
+
         if !probe.probe_string.is_empty() {
             stream
                 .write_all(&probe.probe_string)
@@ -276,29 +335,42 @@ impl ServiceDetector {
         }
 
         // Read response
+
         let mut response = Vec::new();
+
         let mut buf = [0u8; 4096];
 
         match timeout(self.timeout, stream.read(&mut buf)).await {
             Ok(Ok(n)) if n > 0 => {
                 response.extend_from_slice(&buf[..n]);
             }
+
             _ => {
                 return Err(Error::Network("No response".to_string()));
             }
         }
 
-        // Match response against patterns
+        // Log the raw response for debugging
+        debug!("Raw response for port {}: {:?}", target.port(), response);
+
+        // Conditionally capture raw response based on flag
+        let raw_response = if self.capture_raw {
+            response.clone()
+        } else {
+            Vec::new()
+        };
+
         for service_match in &probe.matches {
             if let Some(info) = self.match_response(&response, service_match) {
-                return Ok(info);
+                return Ok((info, raw_response));
             }
         }
 
         // Try soft matches
+
         for service_match in &probe.soft_matches {
             if let Some(info) = self.match_response(&response, service_match) {
-                return Ok(info);
+                return Ok((info, raw_response));
             }
         }
 
@@ -308,11 +380,14 @@ impl ServiceDetector {
     /// Match response against pattern
     fn match_response(&self, response: &[u8], service_match: &ServiceMatch) -> Option<ServiceInfo> {
         // Convert response to string (lossy)
+
         let response_str = String::from_utf8_lossy(response);
 
         // Check if pattern matches
+
         if let Some(captures) = service_match.pattern.captures(&response_str) {
             // Extract version info using capture groups
+
             let product = service_match
                 .product
                 .as_ref()
@@ -338,6 +413,7 @@ impl ServiceDetector {
                 device_type: service_match.device_type.clone(),
                 cpe: service_match.cpe.clone(),
                 method: "pattern match".to_string(),
+                raw_response: None,
             });
         }
 
@@ -369,6 +445,15 @@ mod tests {
     use super::*;
     use prtip_core::ServiceProbeDb;
     use regex::Regex;
+
+    #[tokio::test]
+    async fn test_detect_service_http() {
+        let db = ServiceProbeDb::default();
+        let detector = ServiceDetector::new(db, 9);
+        let addr = "45.33.32.156:80".parse().unwrap();
+        let result = detector.detect_service(addr).await.unwrap();
+        println!("{:?}", result);
+    }
 
     #[test]
     fn test_create_detector() {
@@ -494,6 +579,7 @@ mod tests {
             device_type: Some("general purpose".to_string()),
             cpe: vec!["cpe:/a:nginx:nginx:1.18.0".to_string()],
             method: "pattern match".to_string(),
+            raw_response: None,
         };
 
         assert_eq!(info.service, "http");
@@ -514,6 +600,7 @@ mod tests {
             device_type: None,
             cpe: Vec::new(),
             method: "no match".to_string(),
+            raw_response: None,
         };
 
         assert_eq!(info.service, "unknown");
@@ -535,6 +622,7 @@ mod tests {
             device_type: None,
             cpe: Vec::new(),
             method: "banner".to_string(),
+            raw_response: None,
         };
 
         let cloned = info.clone();
@@ -555,6 +643,7 @@ mod tests {
             device_type: None,
             cpe: Vec::new(),
             method: "test".to_string(),
+            raw_response: None,
         };
 
         let debug_str = format!("{:?}", info);
@@ -586,6 +675,7 @@ mod tests {
                 "cpe:/a:nginx:nginx".to_string(),
             ],
             method: "pattern".to_string(),
+            raw_response: None,
         };
 
         assert_eq!(info.cpe.len(), 2);

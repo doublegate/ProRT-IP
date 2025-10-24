@@ -494,6 +494,8 @@ pub struct ScanResult {
     pub service: Option<String>,
     /// Optional service version
     pub version: Option<String>,
+    /// Optional raw response from service detection
+    pub raw_response: Option<Vec<u8>>,
 }
 
 impl ScanResult {
@@ -508,6 +510,7 @@ impl ScanResult {
             banner: None,
             service: None,
             version: None,
+            raw_response: None,
         }
     }
 

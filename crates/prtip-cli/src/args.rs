@@ -406,6 +406,16 @@ pub struct Args {
     #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
     pub stats_file: Option<PathBuf>,
 
+    /// Capture raw service responses for debugging (increases memory usage)
+    ///
+    /// Stores the raw bytes returned by services when probed. Useful for diagnosing
+    /// service detection issues and understanding why patterns match or fail.
+    /// Increases memory usage proportional to number of detected services.
+    ///
+    /// Example: prtip --capture-raw-responses -sV -p 80,443 192.168.1.1
+    #[arg(long, help_heading = "OUTPUT")]
+    pub capture_raw_responses: bool,
+
     // ============================================================================
     // OUTPUT FILTERING AND DISPLAY FLAGS (nmap-compatible)
     // ============================================================================
@@ -953,6 +963,7 @@ impl Args {
                     banner_grab: self.banner_grab,
                     probe_db_path: self.probe_db.clone(),
                     enable_tls: !self.no_tls,
+                    capture_raw: self.capture_raw_responses,
                 },
                 progress: show_progress,
             },

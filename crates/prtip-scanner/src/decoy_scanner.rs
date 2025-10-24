@@ -381,6 +381,7 @@ impl DecoyScanner {
             banner: None,
             service: None,
             version: None,
+            raw_response: None,
         })
     }
 

@@ -142,6 +142,9 @@ pub struct ServiceDetectionConfig {
     /// Enable TLS/SSL service detection (default: true)
     #[serde(default = "default_enable_tls")]
     pub enable_tls: bool,
+    /// Capture raw service responses for debugging (default: false)
+    #[serde(default)]
+    pub capture_raw: bool,
 }
 
 fn default_enable_tls() -> bool {
@@ -156,6 +159,7 @@ impl Default for ServiceDetectionConfig {
             banner_grab: false,
             probe_db_path: None,
             enable_tls: true,
+            capture_raw: false,
         }
     }
 }

@@ -622,8 +622,12 @@ impl ScanScheduler {
                 } else {
                     ServiceProbeDb::default()
                 };
-                let detector =
-                    ServiceDetector::new(probe_db, self.config.scan.service_detection.intensity);
+                let detector = ServiceDetector::with_options(
+                    probe_db,
+                    self.config.scan.service_detection.intensity,
+                    self.config.scan.service_detection.enable_tls,
+                    self.config.scan.service_detection.capture_raw,
+                );
                 let grabber = BannerGrabber::new();
 
                 debug!("Detecting services on {} open ports", open_count);
@@ -638,6 +642,7 @@ impl ScanScheduler {
                             Ok(service_info) => {
                                 if service_info.service != "unknown" {
                                     result.service = Some(service_info.service.clone());
+                                    result.raw_response = service_info.raw_response;
 
                                     // Combine product and version
                                     if let Some(product) = service_info.product {

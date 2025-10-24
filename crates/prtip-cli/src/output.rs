@@ -184,6 +184,12 @@ impl OutputFormatter for TextFormatter {
                         };
                         output.push_str(&format!("        Banner: {}\n", truncated));
                     }
+
+                    if let Some(raw_response) = &result.raw_response {
+                        if !raw_response.is_empty() {
+                            output.push_str(&format!("        Raw Response: {:?}\n", raw_response));
+                        }
+                    }
                 }
             }
 

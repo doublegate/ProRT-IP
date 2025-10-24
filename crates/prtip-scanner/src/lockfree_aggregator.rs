@@ -354,6 +354,7 @@ mod tests {
             banner: None,
             service: None,
             version: None,
+            raw_response: None,
         }
     }
 

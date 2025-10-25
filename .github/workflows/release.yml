@@ -422,7 +422,7 @@ jobs:
         run: |
           VERSION="${{ needs.check-release.outputs.version }}"
           RELEASE_EXISTS="${{ needs.check-release.outputs.release_exists }}"
-          ATTACH_ONLY="${{ github.event_name == 'workflow_dispatch' && inputs.attach_only || 'false' }}"
+          ATTACH_ONLY="${{ github.event_name == 'workflow_dispatch' && inputs.attach_only || 'true' }}"
 
           echo "Version: $VERSION"
           echo "Release exists: $RELEASE_EXISTS"

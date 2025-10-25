@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-911_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-1,081_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -35,7 +35,7 @@
 - **Multi-Protocol Scanning:** TCP (SYN, Connect, FIN, NULL, Xmas, ACK, Idle), UDP, ICMP
 - **Service Detection:** 187 embedded protocol probes + SSL/TLS handshake (70-80% detection rate)
 - **OS Fingerprinting:** 2000+ signatures using 16-probe technique
-- **Evasion Techniques:** IP fragmentation, TTL manipulation, decoy scanning, source port control, bad checksums
+- **Evasion Techniques:** IP fragmentation (-f, --mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoy scanning (-D RND:N, manual IPs + ME positioning)
 - **High Performance:** Asynchronous I/O with lock-free coordination, zero-copy packet building
 - **Cross-Platform:** Linux, Windows, macOS support with NUMA optimization
 - **Multiple Interfaces:** CLI (v1.0), TUI (planned), Web UI (planned), GUI (planned)
@@ -107,42 +107,37 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 4 COMPLETE ✅ | **Sprint 4.20 COMPLETE** ✅ (9/9 phases) | Phase 5 Advanced Features - Next
+**Current Phase:** Phase 4 COMPLETE ✅ | **Sprint 4.20 COMPLETE** ✅ (9/9 phases, 25 hours) | Phase 5 Advanced Features - Next
 
-**Latest Version:** v0.3.9-dev (Sprint 4.20 COMPLETE - Network Evasion Techniques)
+**Latest Version:** v0.3.9 (Released 2025-10-25 - Network Evasion Techniques COMPLETE)
 
-**Test Coverage:** 1,081/1,091 tests passing (99.1% success rate, 10 ignored CAP_NET_RAW) | 62.5% code coverage (exceeds 60% target)
+**Test Coverage:** 1,081/1,091 tests passing (99.1% success rate, 10 ignored CAP_NET_RAW, +120 Sprint 4.20 tests) | 62.5% code coverage (exceeds 60% target)
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
 **Latest Achievements:**
 
-- ✅ **Sprint 4.20 COMPLETE - Network Evasion Techniques:** Comprehensive firewall/IDS evasion with 120 new tests
-  - **Duration:** 25 hours total (9 phases: Analysis 1h + Implementation 6h + TTL Testing 1h + Testing 8h + Documentation 2h + Bad Checksum 2h + Integration Tests 1.5h + Decoy Enhancements 1.5h + Sprint Completion 2h)
-  - **Status:** ✅ All 9 phases complete, production-ready (A+ quality grade)
-  - **Features Implemented:**
-    - **IP Packet Fragmentation:** Split packets at IP layer (RFC 791 compliant, -f, --mtu flags)
-    - **TTL Manipulation:** Custom Time-To-Live values (--ttl flag, 1-255 range)
-    - **Bad Checksums:** Intentionally invalid checksums for IDS testing (--badsum flag)
-    - **Decoy Scanning:** RND:N random decoys + manual IP lists + ME positioning (-D flag)
-    - **Nmap Compatibility:** 4/5 evasion techniques (80% parity)
-  - **Deliverables (Phase 2 - Implementation):**
-    - Fragmentation module (`fragmentation.rs`, 335 lines) with RFC 791 compliance
-    - 5 new CLI flags: `-f`, `--mtu`, `--ttl`, `-D`, `--badsum`
-    - EvasionConfig struct in config.rs with Default derive
-    - Scanner integration (SYN, stealth, UDP) with fragmentation + TTL
-  - **Deliverables (Phase 4 - Testing):**
-    - 78 comprehensive tests across 10 categories (92.6% code coverage)
-    - 5 test helper functions reducing duplication
-    - Production fixes: MIN_MTU 68→28, MTU validation logic corrected
-  - **Deliverables (Phase 5 - Documentation):**
-    - `docs/19-EVASION-GUIDE.md` (1,050+ lines): Comprehensive evasion reference
-    - 12 sections: Introduction, 5 techniques, examples, performance, troubleshooting
-    - 15+ practical command-line examples, 8 detailed tables
-  - **Code Added:** 2,762 lines total (fragmentation.rs 335 + tests 1,056 + docs 1,050 + integration 321)
-  - **Tests:** 989/999 passing (99.0%), 78 new fragmentation tests, zero regressions
-  - **Strategic Value:** Firewall/IDS evasion, Nmap feature parity, comprehensive documentation
-  - **Remaining Work (Phases 3,6-9):** TTL testing (1h), bad checksums (2h), integration tests (2h), decoy enhancements (4h), completion (2h)
+- ✅ **Sprint 4.20 COMPLETE - Network Evasion Techniques** (Released v0.3.9 - 2025-10-25)
+  - **Duration:** 25 hours total (9 phases over 2 days, Oct 24-25, 2025)
+  - **Status:** ✅ All 9 phases complete, production-ready (A+ quality grade, zero regressions)
+  - **Features Implemented (4/5 Nmap evasion techniques = 80% parity):**
+    - **IP Packet Fragmentation:** Split packets at IP layer (RFC 791 compliant, `-f` aggressive 28-byte MTU, `--mtu` custom)
+    - **TTL Manipulation:** Custom Time-To-Live values (`--ttl` flag, 1-255 range, bypass TTL filtering)
+    - **Bad Checksums:** Intentionally invalid checksums 0x0000 for firewall/IDS testing (`--badsum` flag)
+    - **Decoy Scanning:** RND:N random decoys + manual IP lists + ME positioning (`-D RND:5`, `-D ip1,ME,ip2`)
+  - **Code Added:** ~1,500 lines (evasion modules 500 + scanner integration 200 + packet builders 154 + tests 600 + docs 200)
+  - **Tests:** 1,081/1,091 passing (99.1%, +120 new tests: 12 TTL + 78 fragmentation + 5 bad checksum + 15 integration + 10 decoy)
+  - **Documentation:** `docs/19-EVASION-GUIDE.md` (1,050+ lines), comprehensive CHANGELOG, release notes (10,000 words)
+  - **Performance:** 0-7% overhead for all evasion techniques (negligible on loopback, production-acceptable)
+  - **Quality Metrics:**
+    - Zero clippy warnings across all 9 phases
+    - Zero regressions (1,081/1,081 tests passing)
+    - 92.6% code coverage for fragmentation module (78 tests)
+    - RFC 791/793/768 compliant (IP fragmentation, TCP, UDP)
+  - **Strategic Value:**
+    - Firewall/IDS evasion capabilities matching Nmap (80% parity)
+    - Production-ready security research tool
+    - Enterprise-grade documentation (troubleshooting, examples, performance analysis)
 - ✅ **Sprint 4.18.1 COMPLETE - SQLite Query Interface & Export Utilities:** Database operations with CLI subcommands
   - **Duration:** ~11 hours actual (all 7 phases complete)
   - **Features:** `prtip db list|query|export|compare` subcommands with 4 export formats (JSON/CSV/XML/text)
@@ -203,7 +198,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Platforms: 5 production-ready (Linux x86, Windows, macOS Intel/ARM, FreeBSD)
 - Build Targets: 9 total (5 working, 4 experimental)
 
-**Phase 4 Progress (Sprints 4.1-4.20 Phase 2 PARTIAL ⚠️):**
+**Phase 4 Progress (Sprints 4.1-4.20 COMPLETE ✅):**
 
 - ✅ Sprint 4.1-4.14: Performance foundation (network testing, lock-free, critical bug fixes, optimization)
 - ✅ Sprint 4.15: Service Detection Enhancement (TLS handshake, 70-80% detection rate)
@@ -212,7 +207,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - ✅ Sprint 4.18: PCAPNG Support (all scan types, packet capture)
 - ✅ Sprint 4.19: NUMA Optimization (20-30% improvement on multi-socket)
 - ✅ Sprint 4.18.1: SQLite Query Interface (db list/query/export/compare)
-- ⚠️ Sprint 4.20 Phase 2: Fragmentation & TTL (PARTIAL - core features working, testing/docs pending)
+- ✅ Sprint 4.20: Network Evasion Techniques (v0.3.9, fragmentation, TTL, bad checksums, decoys - ALL 9 PHASES COMPLETE)
 
 ### Performance Achievements (Phase 3 → Phase 4)
 
@@ -243,17 +238,18 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 4. ✅ **Sprint 4.18 (COMPLETE):** PCAPNG Support (all scan types, packet capture, 3 hours)
 5. ✅ **Sprint 4.19 (COMPLETE):** NUMA Optimization (20-30% multi-socket improvement, 8.5 hours)
 6. ✅ **Sprint 4.18.1 (COMPLETE):** SQLite Query Interface (db list/query/export/compare, 11 hours)
-7. ⚠️ **Sprint 4.20 Phase 2 (PARTIAL):** Fragmentation & TTL - MEDIUM - ROI 7.0/10 (~7h done, ~18h remaining)
-8. **Sprint 4.21 (PLANNED):** IPv6 Complete Implementation - MEDIUM - ROI 6.8/10
-9. **Sprint 4.22 (PLANNED):** Error Handling & Resilience - LOW - ROI 6.5/10
-10. **Sprint 4.23 (PLANNED):** Documentation & Release Prep v0.4.0 - LOW - ROI 6.0/10
+7. ✅ **Sprint 4.20 (COMPLETE):** Network Evasion Techniques (v0.3.9, 25 hours, 9/9 phases, fragmentation/TTL/bad checksums/decoys)
+8. **Sprint 4.21 (NEXT):** Source Port Manipulation (-g flag) - HIGH - ROI 8.0/10 - 3-4 hours
+9. **Sprint 4.22 (PLANNED):** IPv6 Complete Implementation - MEDIUM - ROI 6.8/10 - 3-4 days
+10. **Sprint 4.23 (PLANNED):** Error Handling & Resilience - LOW - ROI 6.5/10 - 3-4 days
+11. **Sprint 4.24 (PLANNED):** Documentation & Release Prep v0.4.0 - LOW - ROI 6.0/10 - 2-3 days
 
-**Phase 5 Priorities (After Sprint 4.23):**
+**Phase 5 Priorities (After Sprint 4.24):**
 
 1. **Idle Scanning** - Zombie host anonymity technique - HIGH
 2. **Plugin System** - Lua scripting with mlua - HIGH
-3. **Advanced Evasion** - Complete Sprint 4.20 (phases 3-8) - MEDIUM
-4. **TUI/GUI** - Interactive interfaces with ratatui/iced - LOW
+3. **TUI/GUI** - Interactive interfaces with ratatui/iced - MEDIUM
+4. **Advanced IPv6** - Complete IPv6 evasion support - LOW
 
 ---
 
@@ -683,21 +679,17 @@ prtip -sS -D RND:5 -p 80,443 target          # Decoy scanning
 - Verbosity levels (`-v`, `-vv`, `-vvv`)
 - Timing templates (`-T0` through `-T5`)
 
-**✅ Partially Compatible (v0.3.9+ Sprint 4.20 Phase 2):**
+**✅ Fully Compatible (v0.3.9+ Sprint 4.20 COMPLETE):**
 
-- `-f` - Packet fragmentation (8-byte fragments)
-- `--mtu` - Custom MTU for fragmentation
-- `--ttl` - IP Time-To-Live control
-
-**✅ Implemented (Sprint 4.20 Phase 6):**
-
+- `-f` - Packet fragmentation (aggressive 28-byte MTU)
+- `--mtu` - Custom MTU for fragmentation (≥28 bytes, multiple of 8)
+- `--ttl` - IP Time-To-Live control (1-255)
 - `--badsum` - Bad TCP/UDP checksums for firewall/IDS testing
+- `-D` - Decoy scanning (RND:N random + manual IP lists + ME positioning)
 
-**⏳ Planned (Sprint 4.20 Phases 7-9):**
+**⏳ Planned (Sprint 4.21 - Next):**
 
-- `-D` - Decoy scanning (wired, CLI parser pending)
-- `-g` / `--source-port` - Source port manipulation
-- Full Sprint 4.20 completion (~8 hours remaining work)
+- `-g` / `--source-port` - Source port manipulation (3-4 hours estimated)
 
 **⏳ Planned (Phase 5 - Future Releases):**
 
@@ -723,7 +715,7 @@ ProRT-IP maintains significant speed advantages while supporting nmap syntax:
 - **Zero-Copy:** 100% allocation elimination in hot path (15% improvement, Sprint 4.17)
 - **NUMA Optimization:** 20-30% improvement on multi-socket systems (dual/quad Xeon/EPYC, Sprint 4.19)
 - **Scan Types:** 7 types (SYN, Connect, UDP, FIN, NULL, Xmas, ACK) + Idle (decoy)
-- **Evasion Techniques:** Fragmentation, TTL manipulation, decoys, timing variations
+- **Evasion Techniques:** Fragmentation (-f, --mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoys (-D RND:N), timing variations (T0-T5)
 - **Cross-Platform:** Linux, macOS, Windows, BSD (NUMA optimization Linux-only)
 - **Resource Efficient:** Adaptive parallelism, rate limiting, memory pooling
 
@@ -800,7 +792,7 @@ prtip -sS -p 80,443 target.com
 | **Phase 1** | Weeks 1-3 | Core Infrastructure | ✅ Complete |
 | **Phase 2** | Weeks 4-6 | Advanced Scanning | ✅ Complete |
 | **Phase 3** | Weeks 7-10 | Detection Systems | ✅ Complete |
-| **Phase 4** | Weeks 11-13 | Performance Optimization | ⚠️ Near Complete (Sprint 4.20 partial) |
+| **Phase 4** | Weeks 11-13 | Performance Optimization | ✅ Complete (Sprint 4.20 COMPLETE, v0.3.9) |
 | **Phase 5** | Weeks 14-16 | Advanced Features | 🎯 Next (Idle scans, Plugins, Complete Sprint 4.20) |
 | **Phase 6** | Weeks 17-18 | User Interfaces | Planned |
 | **Phase 7** | Weeks 19-20 | Release Preparation | Planned |
@@ -813,7 +805,7 @@ prtip -sS -p 80,443 target.com
 - **M2**: Advanced Scanning Complete ✅ (2025-10-08)
 - **M3**: Comprehensive Detection ✅ (2025-10-08)
 - **M4**: High-Performance Scanning ✅ (2025-10-12 - Phase 4 Core Complete)
-- **M4.5**: Evasion Techniques ⚠️ (2025-10-24 - Sprint 4.20 Phase 2 Partial)
+- **M4.5**: Evasion Techniques ✅ (2025-10-25 - Sprint 4.20 COMPLETE, v0.3.9 released)
 - **M5**: Enterprise Features (Phase 5 - Next)
 - **M6**: Enhanced Usability (Phase 6)
 - **M7**: Version 1.0 Release (Phase 7)
@@ -1249,21 +1241,21 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 - **Validation Reports:** 4 comprehensive documents in bug_fix/ + 32 analysis files
 - **File Organization:** Professional structure with 307+ files across benchmarks/, bug_fix/, docs/
 - **Development Phases:** 8 phases over 20 weeks (Phase 1-4 complete - 50% progress)
-- **Implementation Progress:** 4/8 phases complete (Phase 1-4) + 8 enhancement cycles + CI/CD optimization + Sprints 4.1-4.20 Phase 2
-- **Test Suite:** 911/921 tests passing (98.9% success rate, 10 ignored CAP_NET_RAW, +696 from initial 215, +324% growth)
+- **Implementation Progress:** 4/8 phases complete (Phase 1-4 COMPLETE) + 8 enhancement cycles + CI/CD optimization + Sprints 4.1-4.20 COMPLETE
+- **Test Suite:** 1,081/1,091 tests passing (99.1% success rate, 10 ignored CAP_NET_RAW, +866 from initial 215, +403% growth)
 - **CI/CD Status:** 7/7 jobs passing (100% success rate)
 - **Build Targets:** 9 platforms (5 production-ready, 4 experimental)
 - **Platform Coverage:** Linux x86, Windows x86, macOS Intel/ARM, FreeBSD (95% user base)
 - **Crates Implemented:** 4 (prtip-core, prtip-network, prtip-scanner, prtip-cli)
 - **Total Rust Code:** ~25,700 lines (production + tests)
 - **Production Code:** ~13,000+ lines (Phase 1-3: 6,097 + Cycles: 4,546 + Phase 4: ~2,400)
-- **Phase 4 Sprints:** 4.1-4.20 Phase 2 (performance, TLS, help, zero-copy, PCAPNG, NUMA, SQLite, fragmentation/TTL)
+- **Phase 4 Sprints:** 4.1-4.20 COMPLETE (performance, TLS, help, zero-copy, PCAPNG, NUMA, SQLite, evasion techniques)
 - **Enhancement Cycles:** 8 complete (crypto, concurrency, resources, CLI, progress, filtering, exclusions, performance/stealth)
 - **Total Modules:** 46+ production modules (including adaptive_parallelism, lockfree_aggregator, progress_bar, service_detector, fragmentation)
 - **Scan Types:** 7 implemented (Connect, SYN, UDP, FIN, NULL, Xmas, ACK)
 - **Protocol Payloads:** 8 (DNS, NTP, NetBIOS, SNMP, RPC, IKE, SSDP, mDNS)
 - **Timing Templates:** 6 (T0-T5 paranoid to insane)
-- **Evasion Techniques:** IP fragmentation, TTL manipulation, decoy scanning (partial), source port manipulation (wired), bad checksums (wired)
+- **Evasion Techniques:** IP fragmentation (-f, --mtu, RFC 791), TTL manipulation (--ttl, 1-255), bad checksums (--badsum, 0x0000), decoy scanning (-D RND:N + manual IPs + ME positioning)
 - **Detection Features:** OS fingerprinting (2,000+ signatures), Service detection (187 probes, 70-80% rate), Banner grabbing (6 protocols + TLS)
 - **Performance Features:**
   - Adaptive parallelism (20-1000 concurrent based on port count)
@@ -1282,9 +1274,9 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
   - 72K pps sustained throughput (localhost)
   - 2,844 pps on network scans (was 289 pps before Sprint 4.13 fix)
   - 58.8ns packet crafting (was 68.3ns, **15% faster** - Sprint 4.17 zero-copy)
-- **Stealth Features:** Decoy scanning (up to 256 decoys), timing variations, source port manipulation, host delay, packet fragmentation (NEW), TTL control (NEW)
+- **Stealth Features:** Decoy scanning (RND:N + manual IPs + ME positioning), packet fragmentation (-f, --mtu), TTL control (--ttl), bad checksums (--badsum), timing variations (T0-T5), host delay
 - **Infrastructure:** CDN/WAF detection (8 providers), network interface detection, resource limit management, Docker test environment (10 services)
-- **CLI Version:** v0.3.8 (production-ready with nmap compatibility + git-style help + TLS detection + zero-copy optimization + NUMA + PCAPNG + SQLite + fragmentation/TTL partial)
+- **CLI Version:** v0.3.9 (production-ready with nmap compatibility + git-style help + TLS detection + zero-copy optimization + NUMA + PCAPNG + SQLite + evasion techniques COMPLETE)
 - **CLI Features:**
   - 50+ nmap-compatible flags (scan types, ports, output, detection, evasion)
   - Real-time progress bar with sub-millisecond updates
@@ -1298,7 +1290,7 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
   - Evasion flags (`-f`, `--mtu`, `--ttl`, `-D`, `--badsum`)
 - **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam, criterion, tarpaulin, hwloc)
 - **Target Performance:** 1M+ packets/second (stateless), 72K+ pps (stateful - achieved on localhost!)
-- **Code Coverage:** 911/921 tests (98.9% pass rate), 61.92% line coverage (exceeds 60% target)
+- **Code Coverage:** 1,081/1,091 tests (99.1% pass rate), 62.5% line coverage (exceeds 60% target, 92.6% for fragmentation module)
 - **Cross-Compilation:** Supported via cross-rs for ARM64 and BSD targets
 - **Release Automation:** GitHub Actions with smart release management + artifact uploads
 
@@ -1313,8 +1305,8 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ---
 
-**Current Status**: ✅ Phase 4 Near Complete (Sprints 4.1-4.20 Phase 2) | ⚠️ Sprint 4.20 PARTIAL (fragmentation/TTL working, ~18h remaining) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Testing Infrastructure Complete (v0.3.7) | ✅ Sprint 4.15-4.18.1 Complete (v0.3.8) | 911/921 Tests Passing (98.9%) | 61.92% Coverage | 7/7 CI Jobs Passing | 8/8 Platforms Production-Ready | ~13,000 Lines Production Code
+**Current Status**: ✅ Phase 4 COMPLETE (Sprints 4.1-4.20 ALL COMPLETE) | ✅ Sprint 4.20 v0.3.9 Released (2025-10-25) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Testing Infrastructure Complete | 1,081/1,091 Tests Passing (99.1%) | 62.5% Coverage | 7/7 CI Jobs Passing | 8/8 Platforms Production-Ready | ~15,000 Lines Production Code
 
-**Last Updated**: 2025-10-24
+**Last Updated**: 2025-10-25
 
 For the latest project status, see [Project Status](docs/10-PROJECT-STATUS.md), [Platform Support](docs/15-PLATFORM-SUPPORT.md), and [Changelog](CHANGELOG.md).

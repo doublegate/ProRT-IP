@@ -285,6 +285,11 @@ impl SynScanner {
                 builder = builder.ttl(ttl);
             }
 
+            // Apply bad checksum if configured (Sprint 4.20 Phase 6: Bad checksum)
+            if self.config.evasion.bad_checksums {
+                builder = builder.bad_checksum(true);
+            }
+
             let packet = builder.build_ip_packet_with_buffer(pool)?;
 
             // Sprint 4.20: Check if packet fragmentation is enabled
@@ -367,15 +372,26 @@ impl SynScanner {
     ) -> Result<()> {
         // Build and send RST packet using zero-copy API
         with_buffer(|pool| {
-            let packet = TcpPacketBuilder::new()
+            let mut builder = TcpPacketBuilder::new()
                 .source_ip(self.local_ip)
                 .dest_ip(target)
                 .source_port(src_port)
                 .dest_port(port)
                 .sequence(sequence)
                 .flags(TcpFlags::RST)
-                .window(0)
-                .build_ip_packet_with_buffer(pool)?;
+                .window(0);
+
+            // Apply TTL if configured
+            if let Some(ttl) = self.config.evasion.ttl {
+                builder = builder.ttl(ttl);
+            }
+
+            // Apply bad checksum if configured
+            if self.config.evasion.bad_checksums {
+                builder = builder.bad_checksum(true);
+            }
+
+            let packet = builder.build_ip_packet_with_buffer(pool)?;
 
             if let Some(ref mut capture) = *self.capture.lock() {
                 capture.send_packet(packet).map_err(|e| {

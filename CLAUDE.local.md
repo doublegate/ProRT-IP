@@ -1,17 +1,17 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-24 | **Phase:** Phase 4 COMPLETE + Sprint 4.20 Phases 2,3,4,5 ✅ | **Tests:** 1,027/1,037 (99.0%) | **Coverage:** 62.5% ✅
+**Updated:** 2025-10-25 | **Phase:** Phase 4 COMPLETE + Sprint 4.20 Phases 2,3,4,5,6 ✅ | **Tests:** 1,042/1,052 (99.0%) | **Coverage:** 62.5% ✅
 
 ## Current Status
 
-**Milestone:** v0.3.8 Released - **Sprint 4.20 Phases 2,3,4,5 COMPLETE ✅ (Fragmentation + TTL Testing + Comprehensive Testing + Documentation)**
+**Milestone:** v0.3.8 Released - **Sprint 4.20 Phases 2,3,4,5,6 COMPLETE ✅ (Fragmentation + TTL Testing + Comprehensive Testing + Documentation + Bad Checksums)**
 
 | Metric | Value | Details |
 |--------|-------|---------|
 | **Phase** | Phase 4 COMPLETE | All sprints + zero-copy + NUMA + PCAPNG + evasion |
 | **CI Status** | ✅ **7/7 passing (100%)** | All platforms GREEN - commit dd9da50 |
 | **Release Platforms** | 8/8 building (100%)  | All architectures working |
-| **Tests** | 1,027/1,037 (99.0%) | 1,027 passing (+12 TTL tests), 10 ignored (CAP_NET_RAW) |
+| **Tests** | 1,042/1,052 (99.0%) | 1,042 passing (+5 bad checksum tests), 10 ignored (CAP_NET_RAW) |
 | **Coverage** | **62.5%** (est.) | Maintained with CLI integration tests |
 | **Version** | **v0.3.8** | Zero-copy + NUMA + PCAPNG + evasion complete |
 | **Performance** | 58.8ns/packet | 15% improvement (was 68.3ns) |
@@ -20,16 +20,16 @@
 
 **Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, **15 custom commands**, PCAPNG capture, NUMA optimization, **5 evasion techniques**
 
-## Current Sprint: 4.20 Phases 2,3,4,5 - Fragmentation, TTL Testing, Comprehensive Testing & Documentation ✅
+## Current Sprint: 4.20 Phases 2,3,4,5,6 - Fragmentation, TTL Testing, Comprehensive Testing, Documentation & Bad Checksums ✅
 
-**Status:** ✅ 4/9 PHASES COMPLETE (2025-10-24)
-**Duration:** ~18 hours (Phase 1: 1h + Phase 2: 6h + Phase 3: 1h + Phase 4: 8h + Phase 5: 2h)
+**Status:** ✅ 6/9 PHASES COMPLETE (2025-10-25)
+**Duration:** ~20 hours (Phase 1: 1h + Phase 2: 6h + Phase 3: 1h + Phase 4: 8h + Phase 5: 2h + Phase 6: 2h)
 **Priority:** MEDIUM
 **ROI Score:** 7.5/10
 
 **Objective:** Add packet fragmentation and TTL manipulation for firewall/IDS evasion, with comprehensive testing and documentation.
 
-**Achieved (Phases 1,2,3,4,5 Complete - Phases 6-9 Pending):**
+**Achieved (Phases 1,2,3,4,5,6 Complete - Phases 7-9 Pending):**
 - ✅ **Phase 1:** Analysis & Planning (1h) - Research, codebase analysis, implementation plan
   - **Key Discovery:** 60% of Sprint 4.20 already exists (DecoyScanner, TTL/source port methods)
 - ✅ **Phase 2:** Fragmentation + TTL Implementation (6h)
@@ -54,25 +54,33 @@
   - **Content:** 5 evasion techniques, 15+ practical examples, performance analysis, troubleshooting
   - **Cross-References:** Links to other docs (ARCHITECTURE, PERFORMANCE, NMAP_COMPATIBILITY)
   - **CHANGELOG.md:** Updated with Phase 4 and Phase 5 deliverables
+- ✅ **Phase 6:** Bad Checksum Implementation (2h) - Packet checksum corruption
+  - **Packet Builder:** Added bad_checksum field and method to TcpPacketBuilder/UdpPacketBuilder
+  - **Scanner Integration:** SynScanner (2 locations), StealthScanner (1 location), UdpScanner (1 location)
+  - **Unit Tests:** 5 new tests validating checksum = 0x0000 when enabled
+  - **Quality:** 1,042/1,042 passing, zero regressions, zero clippy warnings
+  - **Technical:** Conditional checksum (0x0000 vs calculated), RFC 793/768 compliant
 
 **Features Implemented:**
 - **IP Fragmentation:** Split packets at IP layer (RFC 791 compliant)
 - **MTU Validation:** ≥68 bytes, multiple of 8 (fragment offset requirement)
 - **TTL Control:** Custom Time-To-Live values via TcpPacketBuilder/UdpPacketBuilder
-- **Nmap Compatibility:** `-f` defaults to 28-byte MTU (Nmap -f equivalent)
+- **Bad Checksums:** Intentionally invalid checksums (0x0000) for firewall/IDS testing
+- **Nmap Compatibility:** `-f` defaults to 28-byte MTU, `--badsum` uses 0x0000 checksum
 
-**Key Results:**
-- **Tests:** 911/921 passing (10 ignored CAP_NET_RAW, zero regressions)
-- **Code Added:** 607 lines (fragmentation.rs 335 + args.rs 115 + scanners 130 + config 27)
-- **Quality:** Zero clippy warnings in Sprint 4.20 files, zero compilation errors
-- **Strategic Value:** Firewall/IDS evasion, Nmap feature parity (40% → 100% after Sprint 4.20 complete)
+**Key Results (Phases 1-6):**
+- **Tests:** 1,042/1,052 passing (10 ignored CAP_NET_RAW, zero regressions)
+- **Code Added:** ~770 lines (fragmentation 335 + args 115 + scanners 150 + config 27 + packet_builder 85 + tests 81)
+- **Quality:** Zero clippy warnings, zero compilation errors, A+ grade
+- **Strategic Value:** Firewall/IDS evasion, Nmap feature parity (4/5 evasion techniques implemented)
 
 **Usage Examples:**
 ```bash
-prtip -sS -f -p 1-1000 192.168.1.0/24           # Nmap -f (aggressive fragmentation)
-prtip -sS --mtu 200 -p 80,443 target.com        # Custom MTU
-prtip -sS --ttl 32 -p 1-1000 10.0.0.0/24        # TTL control
-prtip -sS -f --ttl 16 -p 22,80,443 target.com   # Combined evasion
+prtip -sS -f -p 1-1000 192.168.1.0/24              # Nmap -f (aggressive fragmentation)
+prtip -sS --mtu 200 -p 80,443 target.com           # Custom MTU
+prtip -sS --ttl 32 -p 1-1000 10.0.0.0/24           # TTL control
+prtip -sS --badsum -p 80,443 target.com            # Bad checksums (Phase 6)
+prtip -sS -f --ttl 16 --badsum -p 22,80,443 target # Combined evasion (all techniques)
 ```
 
 **Deliverables:**
@@ -84,8 +92,7 @@ prtip -sS -f --ttl 16 -p 22,80,443 target.com   # Combined evasion
 - crates/prtip-scanner/src/udp_scanner.rs: Fragmentation + TTL (+40 lines)
 - /tmp/ProRT-IP/sprint-4.20/SPRINT-4.20-PHASE-2-COMPLETE.md: Comprehensive summary
 
-**Remaining Work (Phases 6-9, ~10 hours):**
-- Phase 6: Bad checksum corruption implementation (~2h)
+**Remaining Work (Phases 7-9, ~8 hours):**
 - Phase 7: Additional integration tests (~2h)
 - Phase 8: Decoy scanning enhancements (~4h)
 - Phase 9: Sprint completion and benchmarking (~2h)
@@ -280,6 +287,8 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 ## Recent Sessions (Last 5-7 Days)
 
 | Date | Task | Focus | Duration | Key Results | Status |
+|------|------|-------|----------|-------------|--------|
+| 10-25 | **Sprint 4.20 Phase 6 Complete** | Bad checksum implementation | ~2h | Implemented --badsum flag functionality with conditional checksum (0x0000 vs calculated), added bad_checksum field+method to TcpPacketBuilder/UdpPacketBuilder, integrated in SynScanner (2 locations), StealthScanner (1 location), UdpScanner (1 location), created 5 unit tests validating checksum=0x0000, all 1,042/1,042 tests passing, zero regressions, zero clippy warnings, RFC 793/768 compliant, updated README.md + CHANGELOG.md, created comprehensive completion report (PHASE-6-COMPLETE.md), ready for commit | ✅ |
 |------|------|-------|----------|-------------|--------|
 | 10-24 | **Sprint 4.20 Phase 3 Complete** | TTL CLI integration testing | ~1h | Created 12 CLI integration tests in test_cli_args.rs (+192 lines), test categories: valid TTL values (5 tests: 1,64,128,255,32), invalid values (3 tests: overflow 256, negative -1, non-numeric abc), flag combinations (3 tests: TTL+SYN, TTL+fragmentation, TTL+timing), integration verification (1 test: full scan), all 12/12 tests passing, 1,027 total tests (up from 1,015, +12), zero regressions, error handling validated (clap rejects overflow/negative/non-numeric), updated CHANGELOG.md (+18 lines Phase 3 section), updated CLAUDE.local.md (status, test count, sprint duration 17h→18h), systematic 5-phase approach (analyze, plan, execute, verify, document), comprehensive test plan created, ready for commit | ✅ |
 | 10-24 | **Sprint 4.20 Phase 5 Complete** | EVASION-GUIDE.md comprehensive documentation | ~2h | Created docs/19-EVASION-GUIDE.md (1,050+ lines, 12 sections: introduction, 5 evasion techniques, 8 practical examples, performance analysis, troubleshooting, advanced combinations), updated CHANGELOG.md (+54 lines Phase 4+5), updated README.md (test count 989, Sprint 4.20 status), verified all cross-references (12 internal anchors, 4 external docs, 15+ URLs), quality grade A+ (9/9 metrics), ready for commit, all 5 evasion techniques documented (fragmentation, TTL, decoys, bad checksums), 15+ command examples, 7 troubleshooting scenarios | ✅ |

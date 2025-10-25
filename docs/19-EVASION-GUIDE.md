@@ -619,6 +619,16 @@ prtip -sS -D RND:10 -f --ttl 32 -p 1-1000 target.com
 # - Fragmented packets (evade inspection)
 # - Custom TTL (bypass TTL rules)
 # Maximum stealth at cost of speed
+
+# Four-layer evasion (add bad checksums)
+prtip -sS -D RND:5 -f --ttl 32 --badsum -p 80,443 target.com
+
+# Combines all Sprint 4.20 evasion techniques:
+# - 5 random decoys (hide source)
+# - Fragmented packets (evade inspection)
+# - Custom TTL (bypass TTL rules)
+# - Bad checksums (firewall/IDS testing)
+# Ultimate evasion for testing defensive posture
 ```
 
 ### Performance Impact

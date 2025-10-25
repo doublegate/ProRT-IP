@@ -434,3 +434,172 @@ fn test_ttl_flag_full_scan() {
         );
     }
 }
+
+// ============================================================================
+// Bad Checksum (--badsum) Flag Tests - Sprint 4.20 Phase 7
+// ============================================================================
+
+#[test]
+fn test_badsum_flag_with_syn_scan() {
+    init();
+    // Test --badsum combined with SYN scan
+    let output = run_prtip(&["--badsum", "-sS", "-p", "80", "127.0.0.1"]);
+    // Should succeed or fail with privilege error (not parsing error)
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !output.status.success() {
+        assert!(
+            stderr.contains("privilege")
+                || stderr.contains("permission")
+                || stderr.contains("root")
+                || stderr.contains("CAP_NET_RAW")
+                || !stderr.contains("parse"),
+            "--badsum with SYN scan should not have parsing errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_flag_with_udp_scan() {
+    init();
+    // Test --badsum combined with UDP scan
+    let output = run_prtip(&["--badsum", "-sU", "-p", "53", "127.0.0.1"]);
+    // Should succeed or fail with privilege/connection error (not parsing error)
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !output.status.success() {
+        assert!(
+            stderr.contains("privilege")
+                || stderr.contains("permission")
+                || stderr.contains("timeout")
+                || !stderr.contains("parse"),
+            "--badsum with UDP scan should not have parsing errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_flag_with_stealth_scan() {
+    init();
+    // Test --badsum combined with FIN scan (stealth)
+    let output = run_prtip(&["--badsum", "--scan-type", "fin", "-p", "80", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !output.status.success() {
+        assert!(
+            stderr.contains("privilege")
+                || stderr.contains("permission")
+                || !stderr.contains("parse"),
+            "--badsum with stealth scan should not have parsing errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_flag_with_connect_scan() {
+    init();
+    // Test --badsum combined with TCP connect scan (no privileges required)
+    let output = run_prtip(&["--badsum", "-sT", "-p", "80", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // Connect scan should work (though --badsum has no effect on connect scans)
+    if !output.status.success() {
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "--badsum with connect scan should not have parsing errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_with_fragmentation() {
+    init();
+    // Test --badsum combined with fragmentation flag
+    let output = run_prtip(&["--badsum", "-f", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse")
+                && !stderr.contains("invalid")
+                && !stderr.contains("conflict"),
+            "--badsum with fragmentation should not have parsing/conflict errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_with_ttl() {
+    init();
+    // Test --badsum combined with TTL flag
+    let output = run_prtip(&["--badsum", "--ttl", "64", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse")
+                && !stderr.contains("invalid")
+                && !stderr.contains("conflict"),
+            "--badsum with TTL should not have parsing/conflict errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_with_timing() {
+    init();
+    // Test --badsum combined with timing template
+    let output = run_prtip(&["--badsum", "-T3", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse")
+                && !stderr.contains("invalid")
+                && !stderr.contains("conflict"),
+            "--badsum with timing template should not have parsing/conflict errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_all_evasion_flags() {
+    init();
+    // Test --badsum + -f + --ttl combined (all evasion techniques)
+    let output = run_prtip(&[
+        "--badsum",
+        "-f",
+        "--ttl",
+        "32",
+        "-sT",
+        "-p",
+        "80",
+        "127.0.0.1",
+    ]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse")
+                && !stderr.contains("invalid")
+                && !stderr.contains("conflict"),
+            "All evasion flags combined should not have parsing/conflict errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_badsum_flag_full_scan() {
+    init();
+    // Integration test: full scan with --badsum flag
+    let output = run_prtip(&["--badsum", "-sT", "-p", "80,443", "127.0.0.1"]);
+    // Should complete successfully or fail with connection error (not parsing error)
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "--badsum full scan should not have parsing errors: {}",
+            stderr
+        );
+    }
+}

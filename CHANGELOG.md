@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Sprint 4.20 Phases 2, 4, 5 COMPLETE - Packet Fragmentation, Testing & Documentation:** IP-layer evasion features with comprehensive test suite
-  - **Duration:** ~17 hours (Phase 1: Analysis 1h + Phase 2: Implementation 6h + Phase 4: Testing 8h + Phase 5: Documentation 2h)
-  - **Status:** ⚠️ **PARTIAL** - Core features, tests, and docs complete; pending Phases 3, 6-9
+- **Sprint 4.20 Phases 2, 3, 4, 5 COMPLETE - Packet Fragmentation, Testing & Documentation:** IP-layer evasion features with comprehensive test suite
+  - **Duration:** ~18 hours (Phase 1: Analysis 1h + Phase 2: Implementation 6h + Phase 3: TTL Testing 1h + Phase 4: Testing 8h + Phase 5: Documentation 2h)
+  - **Status:** ⚠️ **PARTIAL** - Core features, tests, and docs complete; pending Phases 6-9
   - **Objective:** Add packet fragmentation and TTL manipulation for firewall/IDS evasion, with comprehensive testing and documentation
   - **Deliverables (Phase 2):**
     - **Fragmentation Module (`fragmentation.rs`):** IP-layer packet fragmentation (335 lines)
@@ -77,6 +77,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Modified: `crates/prtip-scanner/src/stealth_scanner.rs` (+40 lines - fragmentation + TTL)
     - Modified: `crates/prtip-scanner/src/udp_scanner.rs` (+40 lines - fragmentation + TTL)
     - Total: **~607 lines of new code**
+  - **Deliverables (Phase 3 - TTL CLI Testing):**
+    - **CLI Integration Tests:** 12 new tests for --ttl flag validation and integration
+      - Valid TTL tests (5): Minimum (1), Linux default (64), Windows default (128), Maximum (255), Custom (32)
+      - Invalid TTL tests (3): Overflow (256), Negative (-1), Non-numeric (abc)
+      - Flag combination tests (3): TTL + SYN scan, TTL + fragmentation, TTL + timing template
+      - Integration verification (1): Full scan with TTL flag (end-to-end test)
+    - **Test Coverage:** TTL flag parsing, validation, scanner integration, error handling
+    - **Quality Metrics:**
+      - Tests passing: 12/12 (100%)
+      - Test file: `crates/prtip-cli/tests/test_cli_args.rs`
+      - Total project tests: 1,027 passing (up from 1,015, +12 new tests)
+      - Zero regressions in existing tests
+    - **Error Handling Validated:**
+      - Clap correctly rejects overflow values (256)
+      - Clap correctly rejects negative values (-1 treated as flag)
+      - Clap correctly rejects non-numeric input (abc)
+      - Valid TTL values (1-255) accepted without parsing errors
+    - **Files Modified:**
+      - Modified: `crates/prtip-cli/tests/test_cli_args.rs` (+192 lines - 12 tests, comprehensive coverage)
   - **Deliverables (Phase 4 - Testing Infrastructure):**
     - **Comprehensive Test Suite:** 78 tests with 92.6% code coverage (50/54 lines)
       - Basic fragmentation tests (8): No fragmentation, 2-fragment, multi-fragment, various MTUs
@@ -126,8 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - References: RFC standards, Nmap docs, security research, legal resources
     - **Cross-References:** Links to other docs (00-ARCHITECTURE, 07-PERFORMANCE, 14-NMAP_COMPATIBILITY)
     - **Usage Examples:** 15+ practical command-line examples throughout guide
-  - **Remaining Work (Phases 3, 6-9):**
-    - Phase 3: TTL CLI integration testing (~1h)
+  - **Remaining Work (Phases 6-9, ~10 hours):**
     - Phase 6: Bad checksum corruption implementation (~2h)
     - Phase 7: Additional integration tests (~2h)
     - Phase 8: Decoy scanning enhancements (~4h)

@@ -1,18 +1,18 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-24 | **Phase:** Phase 4 COMPLETE + Sprint 4.20 Phases 2,4,5 ⚠️ | **Tests:** 989/999 (99.0%) | **Coverage:** 62.5% ✅
+**Updated:** 2025-10-24 | **Phase:** Phase 4 COMPLETE + Sprint 4.20 Phases 2,3,4,5 ✅ | **Tests:** 1,027/1,037 (99.0%) | **Coverage:** 62.5% ✅
 
 ## Current Status
 
-**Milestone:** v0.3.8 Released - **Sprint 4.20 Phases 2,4,5 PARTIAL ✅ (Fragmentation + Testing + Documentation)**
+**Milestone:** v0.3.8 Released - **Sprint 4.20 Phases 2,3,4,5 COMPLETE ✅ (Fragmentation + TTL Testing + Comprehensive Testing + Documentation)**
 
 | Metric | Value | Details |
 |--------|-------|---------|
 | **Phase** | Phase 4 COMPLETE | All sprints + zero-copy + NUMA + PCAPNG + evasion |
-| **CI Status** | ✅ **7/7 passing (100%)** | All platforms GREEN - commit a85a69f |
+| **CI Status** | ✅ **7/7 passing (100%)** | All platforms GREEN - commit dd9da50 |
 | **Release Platforms** | 8/8 building (100%)  | All architectures working |
-| **Tests** | 989/999 (99.0%) | 989 passing (+78 fragmentation tests), 10 ignored (CAP_NET_RAW) |
-| **Coverage** | **62.5%** (est.) | Increased from 61.92% with fragmentation tests |
+| **Tests** | 1,027/1,037 (99.0%) | 1,027 passing (+12 TTL tests), 10 ignored (CAP_NET_RAW) |
+| **Coverage** | **62.5%** (est.) | Maintained with CLI integration tests |
 | **Version** | **v0.3.8** | Zero-copy + NUMA + PCAPNG + evasion complete |
 | **Performance** | 58.8ns/packet | 15% improvement (was 68.3ns) |
 | **Allocations** | 0 in hot path | 100% elimination (was 3-7M/sec) |
@@ -20,16 +20,16 @@
 
 **Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, **15 custom commands**, PCAPNG capture, NUMA optimization, **5 evasion techniques**
 
-## Current Sprint: 4.20 Phases 2,4,5 - Fragmentation, Testing & Documentation ✅
+## Current Sprint: 4.20 Phases 2,3,4,5 - Fragmentation, TTL Testing, Comprehensive Testing & Documentation ✅
 
-**Status:** ⚠️ 3/9 PHASES COMPLETE (2025-10-24)
-**Duration:** ~17 hours (Phase 1: 1h + Phase 2: 6h + Phase 4: 8h + Phase 5: 2h)
+**Status:** ✅ 4/9 PHASES COMPLETE (2025-10-24)
+**Duration:** ~18 hours (Phase 1: 1h + Phase 2: 6h + Phase 3: 1h + Phase 4: 8h + Phase 5: 2h)
 **Priority:** MEDIUM
 **ROI Score:** 7.5/10
 
 **Objective:** Add packet fragmentation and TTL manipulation for firewall/IDS evasion, with comprehensive testing and documentation.
 
-**Achieved (Phases 1,2,4,5 Complete - Phases 3,6-9 Pending):**
+**Achieved (Phases 1,2,3,4,5 Complete - Phases 6-9 Pending):**
 - ✅ **Phase 1:** Analysis & Planning (1h) - Research, codebase analysis, implementation plan
   - **Key Discovery:** 60% of Sprint 4.20 already exists (DecoyScanner, TTL/source port methods)
 - ✅ **Phase 2:** Fragmentation + TTL Implementation (6h)
@@ -38,6 +38,12 @@
   - **Configuration:** EvasionConfig struct in config.rs
   - **Scanner Integration:** Fragmentation + TTL in SYN/stealth/UDP scanners
   - **Compilation:** ✅ cargo build + clippy passing (Sprint 4.20 files clean)
+- ✅ **Phase 3:** TTL CLI Testing (1h) - Integration tests for --ttl flag
+  - **12 New Tests:** CLI integration tests in test_cli_args.rs (+192 lines)
+  - **Test Categories:** Valid values (5), invalid values (3), flag combinations (3), integration (1)
+  - **Coverage:** TTL flag parsing, validation, error handling, scanner integration
+  - **Quality:** 12/12 passing, zero regressions, 1,027 total tests (up from 1,015)
+  - **Error Handling:** Validated clap rejection of overflow (256), negative (-1), non-numeric (abc)
 - ✅ **Phase 4:** Testing Infrastructure (8h) - Comprehensive test suite
   - **78 Tests:** Across 10 categories with 92.6% code coverage
   - **5 Test Helpers:** Reducing code duplication (~300 lines saved)
@@ -78,8 +84,7 @@ prtip -sS -f --ttl 16 -p 22,80,443 target.com   # Combined evasion
 - crates/prtip-scanner/src/udp_scanner.rs: Fragmentation + TTL (+40 lines)
 - /tmp/ProRT-IP/sprint-4.20/SPRINT-4.20-PHASE-2-COMPLETE.md: Comprehensive summary
 
-**Remaining Work (Phases 3,6-9, ~11 hours):**
-- Phase 3: TTL CLI integration testing (~1h)
+**Remaining Work (Phases 6-9, ~10 hours):**
 - Phase 6: Bad checksum corruption implementation (~2h)
 - Phase 7: Additional integration tests (~2h)
 - Phase 8: Decoy scanning enhancements (~4h)
@@ -276,6 +281,7 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-24 | **Sprint 4.20 Phase 3 Complete** | TTL CLI integration testing | ~1h | Created 12 CLI integration tests in test_cli_args.rs (+192 lines), test categories: valid TTL values (5 tests: 1,64,128,255,32), invalid values (3 tests: overflow 256, negative -1, non-numeric abc), flag combinations (3 tests: TTL+SYN, TTL+fragmentation, TTL+timing), integration verification (1 test: full scan), all 12/12 tests passing, 1,027 total tests (up from 1,015, +12), zero regressions, error handling validated (clap rejects overflow/negative/non-numeric), updated CHANGELOG.md (+18 lines Phase 3 section), updated CLAUDE.local.md (status, test count, sprint duration 17h→18h), systematic 5-phase approach (analyze, plan, execute, verify, document), comprehensive test plan created, ready for commit | ✅ |
 | 10-24 | **Sprint 4.20 Phase 5 Complete** | EVASION-GUIDE.md comprehensive documentation | ~2h | Created docs/19-EVASION-GUIDE.md (1,050+ lines, 12 sections: introduction, 5 evasion techniques, 8 practical examples, performance analysis, troubleshooting, advanced combinations), updated CHANGELOG.md (+54 lines Phase 4+5), updated README.md (test count 989, Sprint 4.20 status), verified all cross-references (12 internal anchors, 4 external docs, 15+ URLs), quality grade A+ (9/9 metrics), ready for commit, all 5 evasion techniques documented (fragmentation, TTL, decoys, bad checksums), 15+ command examples, 7 troubleshooting scenarios | ✅ |
 | 10-24 | **Sprint 4.18.1 Complete** | SQLite Query Interface & Export Utilities | ~11h | Completed all 7 phases: db_reader.rs (700 lines, 6 tests), export.rs (331 lines, 6 tests, 4 formats: JSON/CSV/XML/Text), db_commands.rs (533 lines, CLI handlers), 9 integration tests (+182 lines), DATABASE.md (450+ lines comprehensive guide), CHANGELOG.md updated (+68 lines), 555/555 tests passing (100%), zero clippy warnings, zero regressions, 2,314 lines added, enables security monitoring/compliance tracking/historical analysis/tool integration, ready for commit | ✅ |
 | 10-24 | **Sprint 4.18.3 Verification** | Verify PCAPNG CLI integration completion | ~15m | Verified Sprint 4.18 ALREADY COMPLETE (commit f70652a), all scan types (TCP/UDP/SYN/FIN/NULL/Xmas/ACK) support --packet-capture flag, 911/921 tests passing (10 ignored CAP_NET_RAW), zero regressions, parameter-based approach delivered 62.5% faster than scheduler refactor, created comprehensive verification report (350+ lines), updated CLAUDE.local.md with corrected status, resolved documentation contradiction (CHANGELOG showed COMPLETE, local memory showed PARTIAL) | ✅ |

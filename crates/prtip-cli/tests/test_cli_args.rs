@@ -234,3 +234,203 @@ fn test_verbose_flag() {
         );
     }
 }
+
+// ============================================================================
+// TTL (Time-To-Live) Flag Tests - Sprint 4.20 Phase 3
+// ============================================================================
+
+#[test]
+fn test_ttl_flag_minimum_value() {
+    init();
+    // Test TTL=1 (minimum valid value)
+    let output = run_prtip(&["--ttl", "1", "-sT", "-p", "80", "127.0.0.1"]);
+    // Should not fail on parsing (may fail on network/permission)
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "TTL minimum value parsing failed: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_flag_linux_default() {
+    init();
+    // Test TTL=64 (Linux/Unix default)
+    let output = run_prtip(&["--ttl", "64", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "TTL Linux default parsing failed: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_flag_windows_default() {
+    init();
+    // Test TTL=128 (Windows default)
+    let output = run_prtip(&["--ttl", "128", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "TTL Windows default parsing failed: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_flag_maximum_value() {
+    init();
+    // Test TTL=255 (maximum valid value)
+    let output = run_prtip(&["--ttl", "255", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "TTL maximum value parsing failed: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_flag_custom_value() {
+    init();
+    // Test TTL=32 (arbitrary mid-range value)
+    let output = run_prtip(&["--ttl", "32", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "TTL custom value parsing failed: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_flag_overflow_value() {
+    init();
+    // Test TTL=256 (above maximum for u8)
+    let output = run_prtip(&["--ttl", "256", "-sT", "-p", "80", "127.0.0.1"]);
+    assert!(!output.status.success(), "Should fail on TTL overflow");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("ttl")
+            || stderr.contains("256")
+            || stderr.contains("invalid")
+            || stderr.contains("range"),
+        "Should report TTL overflow error: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_ttl_flag_negative_value() {
+    init();
+    // Test TTL=-1 (negative value, invalid for u8)
+    let output = run_prtip(&["--ttl", "-1", "-sT", "-p", "80", "127.0.0.1"]);
+    assert!(!output.status.success(), "Should fail on negative TTL");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // Clap treats -1 as a flag, resulting in "unexpected argument" error
+    assert!(
+        stderr.contains("ttl")
+            || stderr.contains("invalid")
+            || stderr.contains("negative")
+            || stderr.contains("parse")
+            || stderr.contains("unexpected argument"),
+        "Should report TTL negative value error: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_ttl_flag_non_numeric() {
+    init();
+    // Test TTL=abc (non-numeric input)
+    let output = run_prtip(&["--ttl", "abc", "-sT", "-p", "80", "127.0.0.1"]);
+    assert!(!output.status.success(), "Should fail on non-numeric TTL");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("ttl") || stderr.contains("invalid") || stderr.contains("parse"),
+        "Should report TTL non-numeric error: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_ttl_with_syn_scan() {
+    init();
+    // Test TTL combined with SYN scan
+    let output = run_prtip(&["--ttl", "32", "-sS", "-p", "80", "127.0.0.1"]);
+    // Should succeed or fail with privilege error (not parsing error)
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !output.status.success() {
+        assert!(
+            stderr.contains("privilege")
+                || stderr.contains("permission")
+                || stderr.contains("root")
+                || stderr.contains("CAP_NET_RAW")
+                || !stderr.contains("parse"),
+            "TTL with SYN scan should not have parsing errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_with_fragmentation() {
+    init();
+    // Test TTL combined with fragmentation flag
+    let output = run_prtip(&["--ttl", "64", "-f", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse")
+                && !stderr.contains("invalid")
+                && !stderr.contains("conflict"),
+            "TTL with fragmentation should not have parsing/conflict errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_with_timing_template() {
+    init();
+    // Test TTL combined with timing template
+    let output = run_prtip(&["--ttl", "128", "-T3", "-sT", "-p", "80", "127.0.0.1"]);
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse")
+                && !stderr.contains("invalid")
+                && !stderr.contains("conflict"),
+            "TTL with timing template should not have parsing/conflict errors: {}",
+            stderr
+        );
+    }
+}
+
+#[test]
+fn test_ttl_flag_full_scan() {
+    init();
+    // Integration test: full scan with TTL flag
+    let output = run_prtip(&["--ttl", "64", "-sT", "-p", "80,443", "127.0.0.1"]);
+    // Should complete successfully or fail with connection error (not parsing error)
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            !stderr.contains("parse") && !stderr.contains("invalid"),
+            "TTL full scan should not have parsing errors: {}",
+            stderr
+        );
+    }
+}

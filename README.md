@@ -659,7 +659,7 @@ prtip -sS -D RND:5 -p 80,443 target          # Decoy scanning
 | `--mtu <size>` | Custom MTU (≥68, multiple of 8) | ✅ **v0.3.9+** |
 | `--ttl <value>` | Set IP Time-To-Live | ✅ **v0.3.9+** |
 | `-D <decoy1,ME,decoy2>` | Cloak scan with decoys | ⚠️ **Wired (Sprint 4.20 Phase 2)** |
-| `--badsum` | Use bad TCP/UDP checksums | ⚠️ **Wired (Sprint 4.20 Phase 2)** |
+| `--badsum` | Use bad TCP/UDP checksums | ✅ **v0.3.9+ (Sprint 4.20 Phase 6)** |
 | `-g <port>` / `--source-port <port>` | Use given source port | ⏳ **Planned (Sprint 4.20 Phase 5)** |
 
 #### Verbosity & Timing
@@ -688,12 +688,15 @@ prtip -sS -D RND:5 -p 80,443 target          # Decoy scanning
 - `--mtu` - Custom MTU for fragmentation
 - `--ttl` - IP Time-To-Live control
 
-**⏳ Planned (Sprint 4.20 Phases 3-8):**
+**✅ Implemented (Sprint 4.20 Phase 6):**
+
+- `--badsum` - Bad TCP/UDP checksums for firewall/IDS testing
+
+**⏳ Planned (Sprint 4.20 Phases 7-9):**
 
 - `-D` - Decoy scanning (wired, CLI parser pending)
-- `--badsum` - Bad checksums (wired, implementation pending)
 - `-g` / `--source-port` - Source port manipulation
-- Full Sprint 4.20 completion (~18 hours remaining work)
+- Full Sprint 4.20 completion (~8 hours remaining work)
 
 **⏳ Planned (Phase 5 - Future Releases):**
 

@@ -243,6 +243,11 @@ impl StealthScanner {
                     builder = builder.ttl(ttl);
                 }
 
+                // Apply bad checksum if configured (Sprint 4.20 Phase 6: Bad checksum)
+                if self.config.evasion.bad_checksums {
+                    builder = builder.bad_checksum(true);
+                }
+
                 let packet_slice = builder.build_ip_packet_with_buffer(buffer_pool)?;
 
                 // Sprint 4.20: Check if packet fragmentation is enabled

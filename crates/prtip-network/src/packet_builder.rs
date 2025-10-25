@@ -168,6 +168,9 @@ pub struct TcpPacketBuilder {
 
     // Payload
     payload: Vec<u8>,
+
+    // Evasion
+    bad_checksum: bool,
 }
 
 impl Default for TcpPacketBuilder {
@@ -198,6 +201,7 @@ impl TcpPacketBuilder {
             urgent_ptr: 0,
             options: Vec::new(),
             payload: Vec::new(),
+            bad_checksum: false,
         }
     }
 
@@ -288,6 +292,17 @@ impl TcpPacketBuilder {
     /// Set payload data
     pub fn payload(mut self, data: Vec<u8>) -> Self {
         self.payload = data;
+        self
+    }
+
+    /// Enable bad checksum for testing/evasion (nmap --badsum)
+    ///
+    /// When enabled, sets TCP checksum to 0x0000 (invalid) instead of calculating
+    /// the correct checksum. Used for testing firewall/IDS checksum validation.
+    ///
+    /// Default: false (calculate correct checksum)
+    pub fn bad_checksum(mut self, enabled: bool) -> Self {
+        self.bad_checksum = enabled;
         self
     }
 
@@ -535,9 +550,13 @@ impl TcpPacketBuilder {
                 tcp_packet.set_payload(&self.payload);
             }
 
-            // Calculate and set checksum
-            let checksum = tcp_ipv4_checksum(&tcp_packet.to_immutable(), &src_ip, &dst_ip);
-            tcp_packet.set_checksum(checksum);
+            // Calculate and set checksum (or use bad checksum for testing)
+            if self.bad_checksum {
+                tcp_packet.set_checksum(0x0000); // Invalid checksum for testing
+            } else {
+                let checksum = tcp_ipv4_checksum(&tcp_packet.to_immutable(), &src_ip, &dst_ip);
+                tcp_packet.set_checksum(checksum);
+            }
         }
 
         Ok(&buffer[..total_size])
@@ -659,9 +678,13 @@ impl TcpPacketBuilder {
                 tcp_packet.set_payload(&self.payload);
             }
 
-            // Calculate and set checksum
-            let checksum = tcp_ipv4_checksum(&tcp_packet.to_immutable(), &src_ip, &dst_ip);
-            tcp_packet.set_checksum(checksum);
+            // Calculate and set checksum (or use bad checksum for testing)
+            if self.bad_checksum {
+                tcp_packet.set_checksum(0x0000); // Invalid checksum for testing
+            } else {
+                let checksum = tcp_ipv4_checksum(&tcp_packet.to_immutable(), &src_ip, &dst_ip);
+                tcp_packet.set_checksum(checksum);
+            }
         }
 
         Ok(buffer)
@@ -749,6 +772,9 @@ pub struct UdpPacketBuilder {
 
     // Payload
     payload: Vec<u8>,
+
+    // Evasion
+    bad_checksum: bool,
 }
 
 impl Default for UdpPacketBuilder {
@@ -773,6 +799,7 @@ impl UdpPacketBuilder {
             src_port: None,
             dst_port: None,
             payload: Vec::new(),
+            bad_checksum: false,
         }
     }
 
@@ -827,6 +854,17 @@ impl UdpPacketBuilder {
     /// Set payload data
     pub fn payload(mut self, data: Vec<u8>) -> Self {
         self.payload = data;
+        self
+    }
+
+    /// Enable bad checksum for testing/evasion (nmap --badsum)
+    ///
+    /// When enabled, sets UDP checksum to 0x0000 (invalid) instead of calculating
+    /// the correct checksum. Used for testing firewall/IDS checksum validation.
+    ///
+    /// Default: false (calculate correct checksum)
+    pub fn bad_checksum(mut self, enabled: bool) -> Self {
+        self.bad_checksum = enabled;
         self
     }
 
@@ -968,9 +1006,13 @@ impl UdpPacketBuilder {
                 udp_packet.set_payload(&self.payload);
             }
 
-            // Calculate and set checksum
-            let checksum = udp_ipv4_checksum(&udp_packet.to_immutable(), &src_ip, &dst_ip);
-            udp_packet.set_checksum(checksum);
+            // Calculate and set checksum (or use bad checksum for testing)
+            if self.bad_checksum {
+                udp_packet.set_checksum(0x0000); // Invalid checksum for testing
+            } else {
+                let checksum = udp_ipv4_checksum(&udp_packet.to_immutable(), &src_ip, &dst_ip);
+                udp_packet.set_checksum(checksum);
+            }
         }
 
         Ok(&buffer[..total_size])
@@ -1078,9 +1120,13 @@ impl UdpPacketBuilder {
                 udp_packet.set_payload(&self.payload);
             }
 
-            // Calculate and set checksum
-            let checksum = udp_ipv4_checksum(&udp_packet.to_immutable(), &src_ip, &dst_ip);
-            udp_packet.set_checksum(checksum);
+            // Calculate and set checksum (or use bad checksum for testing)
+            if self.bad_checksum {
+                udp_packet.set_checksum(0x0000); // Invalid checksum for testing
+            } else {
+                let checksum = udp_ipv4_checksum(&udp_packet.to_immutable(), &src_ip, &dst_ip);
+                udp_packet.set_checksum(checksum);
+            }
         }
 
         Ok(buffer)
@@ -1269,5 +1315,89 @@ mod tests {
 
         // IPv4 (20) + UDP (8) = 28 bytes
         assert_eq!(packet.len(), 28);
+    }
+
+    // Sprint 4.20 Phase 6: Bad checksum tests
+    #[test]
+    fn test_tcp_bad_checksum() {
+        let packet = TcpPacketBuilder::new()
+            .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+            .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+            .source_port(12345)
+            .dest_port(80)
+            .flags(TcpFlags::SYN)
+            .bad_checksum(true)
+            .build_ip_packet()
+            .expect("Failed to build packet");
+
+        // TCP checksum is at offset 36-37 (IP header 20 bytes + TCP offset 16)
+        let checksum = u16::from_be_bytes([packet[36], packet[37]]);
+        assert_eq!(checksum, 0x0000, "Bad checksum should be 0x0000");
+    }
+
+    #[test]
+    fn test_tcp_valid_checksum_default() {
+        let packet = TcpPacketBuilder::new()
+            .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+            .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+            .source_port(12345)
+            .dest_port(80)
+            .flags(TcpFlags::SYN)
+            .build_ip_packet()
+            .expect("Failed to build packet");
+
+        // TCP checksum should NOT be 0x0000 (valid checksum)
+        let checksum = u16::from_be_bytes([packet[36], packet[37]]);
+        assert_ne!(checksum, 0x0000, "Valid checksum should not be 0x0000");
+    }
+
+    #[test]
+    fn test_tcp_bad_checksum_false() {
+        let packet = TcpPacketBuilder::new()
+            .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+            .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+            .source_port(12345)
+            .dest_port(80)
+            .flags(TcpFlags::SYN)
+            .bad_checksum(false)
+            .build_ip_packet()
+            .expect("Failed to build packet");
+
+        // TCP checksum should NOT be 0x0000 when bad_checksum=false
+        let checksum = u16::from_be_bytes([packet[36], packet[37]]);
+        assert_ne!(checksum, 0x0000, "Valid checksum should not be 0x0000");
+    }
+
+    #[test]
+    fn test_udp_bad_checksum() {
+        let packet = UdpPacketBuilder::new()
+            .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+            .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+            .source_port(12345)
+            .dest_port(53)
+            .payload(b"test".to_vec())
+            .bad_checksum(true)
+            .build_ip_packet()
+            .expect("Failed to build packet");
+
+        // UDP checksum is at offset 26-27 (IP header 20 bytes + UDP offset 6)
+        let checksum = u16::from_be_bytes([packet[26], packet[27]]);
+        assert_eq!(checksum, 0x0000, "Bad checksum should be 0x0000");
+    }
+
+    #[test]
+    fn test_udp_valid_checksum_default() {
+        let packet = UdpPacketBuilder::new()
+            .source_ip(Ipv4Addr::new(10, 0, 0, 1))
+            .dest_ip(Ipv4Addr::new(10, 0, 0, 2))
+            .source_port(12345)
+            .dest_port(53)
+            .payload(b"test".to_vec())
+            .build_ip_packet()
+            .expect("Failed to build packet");
+
+        // UDP checksum should NOT be 0x0000 (valid checksum)
+        let checksum = u16::from_be_bytes([packet[26], packet[27]]);
+        assert_ne!(checksum, 0x0000, "Valid checksum should not be 0x0000");
     }
 }

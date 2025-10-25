@@ -2,9 +2,10 @@
 
 use clap::{Parser, ValueEnum};
 use prtip_core::{
-    Config, EvasionConfig, NetworkConfig, OutputConfig, OutputFormat, PerformanceConfig, PortRange,
-    ScanConfig, ScanType, ServiceDetectionConfig, TimingTemplate,
+    Config, DecoyConfig, EvasionConfig, NetworkConfig, OutputConfig, OutputFormat,
+    PerformanceConfig, PortRange, ScanConfig, ScanType, ServiceDetectionConfig, TimingTemplate,
 };
+use std::net::Ipv4Addr;
 use std::path::PathBuf;
 
 /// ProRT-IP WarScan - Modern Network Scanner
@@ -995,7 +996,7 @@ impl Args {
     /// - Small scans (≤1K ports): 20 concurrent
     /// - Medium scans (1K-10K ports): 100 concurrent
     /// - Large scans (>10K ports): 500-1000 concurrent
-    pub fn to_config(&self) -> Config {
+    pub fn to_config(&self) -> prtip_core::Result<Config> {
         let timing = match self.timing {
             0 => TimingTemplate::Paranoid,
             1 => TimingTemplate::Sneaky,
@@ -1067,7 +1068,7 @@ impl Args {
         // should be used during scan execution based on actual port count
         let parallelism = self.max_concurrent.unwrap_or(0);
 
-        Config {
+        Ok(Config {
             scan: ScanConfig {
                 scan_type,
                 timing_template: timing,
@@ -1112,10 +1113,16 @@ impl Args {
                     }
                 }),
                 ttl: self.ttl,
-                decoys: self.decoys.clone(),
+                decoys: if let Some(ref spec) = self.decoys {
+                    Some(parse_decoy_spec(spec).map_err(|e| {
+                        prtip_core::Error::Config(format!("Invalid -D/--decoy: {}", e))
+                    })?)
+                } else {
+                    None
+                },
                 bad_checksums: self.badsum,
             },
-        }
+        })
     }
 
     /// Check if host discovery should be performed
@@ -1168,6 +1175,69 @@ fn parse_timing(s: &str) -> Result<u8, String> {
     } else {
         Err("timing must be 0-5".to_string())
     }
+}
+
+/// Parse decoy specification from -D flag
+///
+/// Formats supported:
+/// - RND:N - Generate N random decoy IPs (e.g., RND:10)
+/// - ip1,ip2,ip3 - Manual list of IPs
+/// - ip1,ME,ip2 - Manual list with ME positioning
+///
+/// Examples:
+/// - parse_decoy_spec("RND:5") → Random { count: 5, me_position: None }
+/// - parse_decoy_spec("192.168.1.1,ME,192.168.1.2") → Manual { ips: [1.1, 1.2], me_position: Some(1) }
+fn parse_decoy_spec(spec: &str) -> Result<DecoyConfig, String> {
+    // Handle RND:N format
+    if spec.starts_with("RND:") || spec.starts_with("rnd:") {
+        let count_str = &spec[4..];
+        let count = count_str
+            .parse::<usize>()
+            .map_err(|_| format!("Invalid RND count: '{}'", count_str))?;
+
+        if count == 0 {
+            return Err("RND count must be at least 1".to_string());
+        }
+        if count > 1000 {
+            return Err("RND count must not exceed 1000".to_string());
+        }
+
+        return Ok(DecoyConfig::Random {
+            count,
+            me_position: None, // ME appended by default for RND
+        });
+    }
+
+    // Handle manual IP list (comma-separated)
+    let parts: Vec<&str> = spec.split(',').map(|s| s.trim()).collect();
+
+    if parts.is_empty() {
+        return Err("Decoy list cannot be empty".to_string());
+    }
+
+    let mut ips = Vec::new();
+    let mut me_position = None;
+
+    for (idx, part) in parts.iter().enumerate() {
+        if part.eq_ignore_ascii_case("ME") {
+            if me_position.is_some() {
+                return Err("ME can only appear once in decoy list".to_string());
+            }
+            me_position = Some(idx);
+        } else {
+            // Parse IP address
+            let ip = part
+                .parse::<Ipv4Addr>()
+                .map_err(|_| format!("Invalid IP address: '{}'", part))?;
+            ips.push(ip);
+        }
+    }
+
+    if ips.is_empty() {
+        return Err("Decoy list must contain at least one IP address".to_string());
+    }
+
+    Ok(DecoyConfig::Manual { ips, me_position })
 }
 
 #[cfg(test)]
@@ -1267,7 +1337,7 @@ mod tests {
     #[test]
     fn test_to_config() {
         let args = Args::parse_from(["prtip", "-p", "80", "-T", "4", "192.168.1.1"]);
-        let config = args.to_config();
+        let config = args.to_config().unwrap();
 
         assert_eq!(config.scan.scan_type, ScanType::Connect);
         assert_eq!(config.scan.timing_template, TimingTemplate::Aggressive);
@@ -1295,7 +1365,7 @@ mod tests {
             "500",
             "192.168.1.1",
         ]);
-        let config = args.to_config();
+        let config = args.to_config().unwrap();
 
         assert_eq!(config.scan.scan_type, ScanType::Syn);
         assert_eq!(config.scan.timing_template, TimingTemplate::Insane);
@@ -1422,7 +1492,7 @@ mod tests {
     #[test]
     fn test_to_config_with_batch_and_ulimit() {
         let args = Args::parse_from(["prtip", "-b", "3000", "--ulimit", "8000", "192.168.1.1"]);
-        let config = args.to_config();
+        let config = args.to_config().unwrap();
 
         assert_eq!(config.performance.batch_size, Some(3000));
         assert_eq!(config.performance.requested_ulimit, Some(8000));
@@ -1652,5 +1722,193 @@ mod tests {
     fn test_misc_no_dns_long() {
         let args = Args::parse_from(["prtip", "--no-dns", "192.168.1.1"]);
         assert!(args.no_dns);
+    }
+
+    // ========================================================================
+    // Sprint 4.20 Phase 8: Decoy Flag (-D) Tests
+    // ========================================================================
+
+    #[test]
+    fn test_decoy_flag_rnd_5() {
+        let args = Args::parse_from(["prtip", "-D", "RND:5", "-p", "80", "127.0.0.1"]);
+        assert!(args.decoys.is_some());
+        assert_eq!(args.decoys.as_ref().unwrap(), "RND:5");
+
+        // Verify config parsing
+        let config = args.to_config().expect("Config should parse");
+        assert!(config.evasion.decoys.is_some());
+        match config.evasion.decoys.unwrap() {
+            DecoyConfig::Random { count, me_position } => {
+                assert_eq!(count, 5);
+                assert_eq!(me_position, None); // ME appended by default
+            }
+            _ => panic!("Expected Random variant"),
+        }
+    }
+
+    #[test]
+    fn test_decoy_flag_rnd_10() {
+        let args = Args::parse_from(["prtip", "-D", "RND:10", "-p", "80", "127.0.0.1"]);
+        let config = args.to_config().expect("Config should parse");
+        assert!(config.evasion.decoys.is_some());
+        match config.evasion.decoys.unwrap() {
+            DecoyConfig::Random { count, .. } => assert_eq!(count, 10),
+            _ => panic!("Expected Random variant"),
+        }
+    }
+
+    #[test]
+    fn test_decoy_flag_manual_single_ip() {
+        let args = Args::parse_from(["prtip", "-D", "192.168.1.5", "-p", "80", "127.0.0.1"]);
+        let config = args.to_config().expect("Config should parse");
+        assert!(config.evasion.decoys.is_some());
+        match config.evasion.decoys.unwrap() {
+            DecoyConfig::Manual { ips, me_position } => {
+                assert_eq!(ips.len(), 1);
+                assert_eq!(ips[0], Ipv4Addr::new(192, 168, 1, 5));
+                assert_eq!(me_position, None);
+            }
+            _ => panic!("Expected Manual variant"),
+        }
+    }
+
+    #[test]
+    fn test_decoy_flag_manual_multiple_ips() {
+        let args = Args::parse_from([
+            "prtip",
+            "-D",
+            "192.168.1.5,192.168.1.10,192.168.1.15",
+            "-p",
+            "80",
+            "127.0.0.1",
+        ]);
+        let config = args.to_config().expect("Config should parse");
+        match config.evasion.decoys.unwrap() {
+            DecoyConfig::Manual { ips, .. } => {
+                assert_eq!(ips.len(), 3);
+                assert_eq!(ips[0], Ipv4Addr::new(192, 168, 1, 5));
+                assert_eq!(ips[1], Ipv4Addr::new(192, 168, 1, 10));
+                assert_eq!(ips[2], Ipv4Addr::new(192, 168, 1, 15));
+            }
+            _ => panic!("Expected Manual variant"),
+        }
+    }
+
+    #[test]
+    fn test_decoy_flag_with_me_first() {
+        let args = Args::parse_from([
+            "prtip",
+            "-D",
+            "ME,192.168.1.5,192.168.1.10",
+            "-p",
+            "80",
+            "127.0.0.1",
+        ]);
+        let config = args.to_config().expect("Config should parse");
+        match config.evasion.decoys.unwrap() {
+            DecoyConfig::Manual { ips, me_position } => {
+                assert_eq!(ips.len(), 2);
+                assert_eq!(me_position, Some(0)); // ME at position 0
+            }
+            _ => panic!("Expected Manual variant"),
+        }
+    }
+
+    #[test]
+    fn test_decoy_flag_with_me_middle() {
+        let args = Args::parse_from([
+            "prtip",
+            "-D",
+            "192.168.1.5,ME,192.168.1.10",
+            "-p",
+            "80",
+            "127.0.0.1",
+        ]);
+        let config = args.to_config().expect("Config should parse");
+        match config.evasion.decoys.unwrap() {
+            DecoyConfig::Manual { ips, me_position } => {
+                assert_eq!(ips.len(), 2);
+                assert_eq!(me_position, Some(1)); // ME at position 1 (middle)
+            }
+            _ => panic!("Expected Manual variant"),
+        }
+    }
+
+    #[test]
+    fn test_decoy_flag_with_me_last() {
+        let args = Args::parse_from([
+            "prtip",
+            "-D",
+            "192.168.1.5,192.168.1.10,ME",
+            "-p",
+            "80",
+            "127.0.0.1",
+        ]);
+        let config = args.to_config().expect("Config should parse");
+        match config.evasion.decoys.unwrap() {
+            DecoyConfig::Manual { ips, me_position } => {
+                assert_eq!(ips.len(), 2);
+                assert_eq!(me_position, Some(2)); // ME at position 2 (last)
+            }
+            _ => panic!("Expected Manual variant"),
+        }
+    }
+
+    #[test]
+    fn test_decoy_flag_with_scan_type() {
+        let args = Args::parse_from([
+            "prtip",
+            "--scan-type",
+            "syn",
+            "-D",
+            "RND:5",
+            "-p",
+            "80",
+            "127.0.0.1",
+        ]);
+        assert!(args.decoys.is_some());
+        let config = args.to_config().expect("Config should parse");
+        assert!(config.evasion.decoys.is_some());
+    }
+
+    #[test]
+    fn test_decoy_flag_combined_evasion() {
+        let args = Args::parse_from([
+            "prtip",
+            "--scan-type",
+            "syn",
+            "-D",
+            "RND:5",
+            "-f",
+            "--ttl",
+            "32",
+            "--badsum",
+            "-p",
+            "80",
+            "127.0.0.1",
+        ]);
+        let config = args.to_config().expect("Config should parse");
+
+        // Verify all evasion features enabled
+        assert!(config.evasion.decoys.is_some());
+        assert!(config.evasion.fragment_packets);
+        assert_eq!(config.evasion.ttl, Some(32));
+        assert!(config.evasion.bad_checksums);
+    }
+
+    #[test]
+    fn test_decoy_flag_invalid_rnd_format() {
+        let args = Args::parse_from([
+            "prtip",
+            "-D",
+            "RND:abc", // Invalid: not a number
+            "-p",
+            "80",
+            "127.0.0.1",
+        ]);
+        let result = args.to_config();
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Invalid RND count") || err.contains("Invalid -D"));
     }
 }

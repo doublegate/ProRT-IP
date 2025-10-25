@@ -3,6 +3,7 @@
 use crate::error::{Error, Result};
 use crate::types::{ScanType, TimingTemplate};
 use serde::{Deserialize, Serialize};
+use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
 
 /// Main configuration structure
@@ -255,6 +256,23 @@ impl Default for PerformanceConfig {
     }
 }
 
+/// Decoy scanning configuration (nmap -D)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum DecoyConfig {
+    /// Random decoy IPs: -D RND:N generates N random IPs
+    Random {
+        count: usize,
+        /// Position of real IP (ME) in decoy list (None = append at end)
+        me_position: Option<usize>,
+    },
+    /// Manual decoy IPs: -D ip1,ME,ip2 uses specified IPs
+    Manual {
+        ips: Vec<Ipv4Addr>,
+        /// Position of real IP (ME) in decoy list (None = append at end)
+        me_position: Option<usize>,
+    },
+}
+
 /// Evasion and stealth configuration
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct EvasionConfig {
@@ -265,9 +283,8 @@ pub struct EvasionConfig {
     pub mtu: Option<usize>,
     /// Custom TTL (Time To Live) value (None = OS default, typically 64)
     pub ttl: Option<u8>,
-    /// Decoy specification (None = no decoys)
-    /// Format: "RND:N" for N random decoys or "IP,IP,ME,IP" for manual decoys
-    pub decoys: Option<String>,
+    /// Decoy configuration (None = no decoys)
+    pub decoys: Option<DecoyConfig>,
     /// Use bad TCP/IP checksums for testing (default: false)
     pub bad_checksums: bool,
 }

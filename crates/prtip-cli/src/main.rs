@@ -283,7 +283,7 @@ async fn run() -> Result<()> {
     info!("Scanning {} port(s) per host", ports.count());
 
     // Create config from arguments
-    let mut config = args.to_config();
+    let mut config = args.to_config()?;
     info!(
         "Scan configuration: type={:?}, timing={:?}, timeout={}ms",
         config.scan.scan_type, config.scan.timing_template, config.scan.timeout_ms
@@ -796,7 +796,7 @@ mod tests {
     #[test]
     fn test_format_scan_banner() {
         let args = Args::parse_from(["prtip", "-p", "80", "192.168.1.1"]);
-        let config = args.to_config();
+        let config = args.to_config().unwrap();
         let targets = vec![ScanTarget::parse("192.168.1.1").unwrap()];
         let banner = format_scan_banner(&args, &config, 1, &targets);
 
@@ -808,7 +808,7 @@ mod tests {
     #[test]
     fn test_format_scan_banner_with_hostname() {
         let args = Args::parse_from(["prtip", "-p", "80", "127.0.0.1"]);
-        let config = args.to_config();
+        let config = args.to_config().unwrap();
         // Create a target with a hostname (simulate DNS resolution result)
         let mut target = ScanTarget::parse("127.0.0.1").unwrap();
         // Manually add hostname to simulate DNS resolution

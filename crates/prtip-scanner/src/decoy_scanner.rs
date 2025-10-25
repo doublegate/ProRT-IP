@@ -79,8 +79,8 @@ pub enum DecoyPlacement {
 
 /// Decoy scanner for stealth scanning with IP spoofing
 pub struct DecoyScanner {
-    /// Scanner configuration (reserved for future use)
-    _config: Config,
+    /// Scanner configuration
+    config: Config,
     /// List of decoy IP addresses (not including real source)
     decoys: Vec<Ipv4Addr>,
     /// Real source IP placement strategy
@@ -93,7 +93,7 @@ impl DecoyScanner {
     /// Create new decoy scanner with configuration
     pub fn new(config: Config) -> Self {
         Self {
-            _config: config,
+            config,
             decoys: Vec::new(),
             real_placement: DecoyPlacement::Random,
             random_decoy_count: None,
@@ -328,17 +328,42 @@ impl DecoyScanner {
 
         let src_port = rand::thread_rng().gen_range(10000..60000);
 
-        let packet = TcpPacketBuilder::new()
+        let mut builder = TcpPacketBuilder::new()
             .source_ip(source_ip)
             .dest_ip(dest_ip)
             .source_port(src_port)
             .dest_port(port)
             .flags(TcpFlags::SYN)
             .sequence(rand::thread_rng().gen())
-            .window(65535)
-            .build()?;
+            .window(65535);
 
-        Ok(packet)
+        // Apply evasion features from Sprint 4.20
+
+        // Apply TTL if configured (Phase 2)
+        if let Some(ttl) = self.config.evasion.ttl {
+            builder = builder.ttl(ttl);
+        }
+
+        // Apply bad checksum if configured (Phase 6)
+        if self.config.evasion.bad_checksums {
+            builder = builder.bad_checksum(true);
+        }
+
+        // Build packet
+        let packet = builder.build_ip_packet()?;
+
+        // Apply fragmentation if configured (Phase 2)
+        let packets_to_send: Vec<Vec<u8>> = if self.config.evasion.fragment_packets {
+            use prtip_network::fragment_tcp_packet;
+            let mtu = self.config.evasion.mtu.unwrap_or(1500);
+            fragment_tcp_packet(&packet, mtu)
+                .map_err(|e| Error::Network(format!("Fragmentation failed: {}", e)))?
+        } else {
+            vec![packet]
+        };
+
+        // For now, return first packet (TODO: handle multiple fragments properly)
+        Ok(packets_to_send.into_iter().next().unwrap_or_default())
     }
 
     /// Send raw packet (placeholder - should use actual packet sender)

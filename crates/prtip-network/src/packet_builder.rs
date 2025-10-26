@@ -30,8 +30,12 @@ use pnet::packet::{
     ethernet::{EtherTypes, MutableEthernetPacket},
     ip::IpNextHeaderProtocols,
     ipv4::{checksum as ipv4_checksum, MutableIpv4Packet},
-    tcp::{ipv4_checksum as tcp_ipv4_checksum, ipv6_checksum as tcp_ipv6_checksum, MutableTcpPacket},
-    udp::{ipv4_checksum as udp_ipv4_checksum, ipv6_checksum as udp_ipv6_checksum, MutableUdpPacket},
+    tcp::{
+        ipv4_checksum as tcp_ipv4_checksum, ipv6_checksum as tcp_ipv6_checksum, MutableTcpPacket,
+    },
+    udp::{
+        ipv4_checksum as udp_ipv4_checksum, ipv6_checksum as udp_ipv6_checksum, MutableUdpPacket,
+    },
 };
 use pnet::util::MacAddr;
 use std::net::{Ipv4Addr, Ipv6Addr};
@@ -731,11 +735,7 @@ impl TcpPacketBuilder {
     ///     .build_ipv6_packet(src, dst)
     ///     .unwrap();
     /// ```
-    pub fn build_ipv6_packet(
-        self,
-        src_ipv6: Ipv6Addr,
-        dst_ipv6: Ipv6Addr,
-    ) -> Result<Vec<u8>> {
+    pub fn build_ipv6_packet(self, src_ipv6: Ipv6Addr, dst_ipv6: Ipv6Addr) -> Result<Vec<u8>> {
         // Validate required fields
         let src_port = self
             .src_port
@@ -755,11 +755,12 @@ impl TcpPacketBuilder {
         // Build TCP header
         {
             let buffer_len = tcp_buffer.len(); // Capture before mutable borrow
-            let mut tcp_packet = MutableTcpPacket::new(&mut tcp_buffer)
-                .ok_or(PacketBuilderError::BufferTooSmall {
+            let mut tcp_packet = MutableTcpPacket::new(&mut tcp_buffer).ok_or(
+                PacketBuilderError::BufferTooSmall {
                     needed: tcp_total_size,
                     available: buffer_len,
-                })?;
+                },
+            )?;
 
             tcp_packet.set_source(src_port);
             tcp_packet.set_destination(dst_port);
@@ -798,7 +799,9 @@ impl TcpPacketBuilder {
             .next_header(6) // TCP
             .payload(tcp_buffer)
             .build()
-            .map_err(|e| PacketBuilderError::InvalidParameter(format!("IPv6 build failed: {}", e)))?;
+            .map_err(|e| {
+                PacketBuilderError::InvalidParameter(format!("IPv6 build failed: {}", e))
+            })?;
 
         Ok(ipv6_packet)
     }
@@ -1275,11 +1278,7 @@ impl UdpPacketBuilder {
     ///     .build_ipv6_packet(src, dst)
     ///     .unwrap();
     /// ```
-    pub fn build_ipv6_packet(
-        self,
-        src_ipv6: Ipv6Addr,
-        dst_ipv6: Ipv6Addr,
-    ) -> Result<Vec<u8>> {
+    pub fn build_ipv6_packet(self, src_ipv6: Ipv6Addr, dst_ipv6: Ipv6Addr) -> Result<Vec<u8>> {
         // Validate required fields
         let src_port = self
             .src_port
@@ -1297,11 +1296,12 @@ impl UdpPacketBuilder {
         // Build UDP header
         {
             let buffer_len = udp_buffer.len(); // Capture before mutable borrow
-            let mut udp_packet = MutableUdpPacket::new(&mut udp_buffer)
-                .ok_or(PacketBuilderError::BufferTooSmall {
+            let mut udp_packet = MutableUdpPacket::new(&mut udp_buffer).ok_or(
+                PacketBuilderError::BufferTooSmall {
                     needed: udp_total_size,
                     available: buffer_len,
-                })?;
+                },
+            )?;
 
             udp_packet.set_source(src_port);
             udp_packet.set_destination(dst_port);
@@ -1328,7 +1328,9 @@ impl UdpPacketBuilder {
             .next_header(17) // UDP
             .payload(udp_buffer)
             .build()
-            .map_err(|e| PacketBuilderError::InvalidParameter(format!("IPv6 build failed: {}", e)))?;
+            .map_err(|e| {
+                PacketBuilderError::InvalidParameter(format!("IPv6 build failed: {}", e))
+            })?;
 
         Ok(ipv6_packet)
     }
@@ -1618,7 +1620,8 @@ mod tests {
 
         // Verify checksum is non-zero (indicates it was calculated)
         let tcp_checksum_offset = 40 + 16; // IPv6 header + TCP checksum offset
-        let checksum = u16::from_be_bytes([packet[tcp_checksum_offset], packet[tcp_checksum_offset + 1]]);
+        let checksum =
+            u16::from_be_bytes([packet[tcp_checksum_offset], packet[tcp_checksum_offset + 1]]);
         assert_ne!(checksum, 0, "TCP checksum should be calculated");
     }
 
@@ -1648,7 +1651,8 @@ mod tests {
 
         // Verify checksum is non-zero
         let udp_checksum_offset = 40 + 6; // IPv6 header + UDP checksum offset
-        let checksum = u16::from_be_bytes([packet[udp_checksum_offset], packet[udp_checksum_offset + 1]]);
+        let checksum =
+            u16::from_be_bytes([packet[udp_checksum_offset], packet[udp_checksum_offset + 1]]);
         assert_ne!(checksum, 0, "UDP checksum should be calculated");
     }
 
@@ -1717,7 +1721,8 @@ mod tests {
 
         // TCP checksum is at offset 40 (IPv6 header) + 16 (TCP checksum offset)
         let tcp_checksum_offset = 40 + 16;
-        let checksum = u16::from_be_bytes([packet[tcp_checksum_offset], packet[tcp_checksum_offset + 1]]);
+        let checksum =
+            u16::from_be_bytes([packet[tcp_checksum_offset], packet[tcp_checksum_offset + 1]]);
         assert_eq!(checksum, 0x0000, "Bad checksum should be 0x0000");
     }
 }

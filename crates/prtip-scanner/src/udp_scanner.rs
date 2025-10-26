@@ -97,9 +97,13 @@ impl UdpScanner {
     ) -> Result<ScanResult> {
         let start_time = Instant::now();
 
-        // Generate random source port
+        // Use configured source port or generate random
         use rand::Rng;
-        let src_port: u16 = rand::thread_rng().gen_range(1024..65535);
+        let src_port: u16 = self
+            .config
+            .network
+            .source_port
+            .unwrap_or_else(|| rand::thread_rng().gen_range(1024..65535));
 
         // Get protocol-specific payload if available
         let payload = get_udp_payload(port).unwrap_or_default();

@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1,125_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-1,166_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -501,6 +501,14 @@ prtip -sS -f --ttl 16 -p 22,80,443 target.com
 # Decoy scanning (hide scan origin with spoofed sources)
 prtip -sS -D RND:5 -p 1-1000 192.168.1.1         # 5 random decoys
 prtip -sS -D 10.0.0.1,ME,10.0.0.3 -p 80 target   # Manual decoys
+
+# Source port manipulation (bypass port-based firewall rules)
+prtip -sS -g 53 -p 80,443 target.com             # DNS port (highly trusted)
+prtip -sS --source-port 20 -p 1-1000 target.com  # FTP-DATA port
+prtip -sS -g 80 -p 443 target.com                # HTTP port
+
+# Combined evasion (source port + fragmentation + TTL)
+prtip -sS -g 53 -f --ttl 32 -p 80,443 target.com
 ```
 
 ### Timing & Performance
@@ -672,7 +680,7 @@ prtip -sS -D RND:5 -p 80,443 target          # Decoy scanning
 | `--ttl <value>` | Set IP Time-To-Live | ✅ **v0.3.9+** |
 | `-D <decoy1,ME,decoy2>` | Cloak scan with decoys | ⚠️ **Wired (Sprint 4.20 Phase 2)** |
 | `--badsum` | Use bad TCP/UDP checksums | ✅ **v0.3.9+ (Sprint 4.20 Phase 6)** |
-| `-g <port>` / `--source-port <port>` | Use given source port | ⏳ **Planned (Sprint 4.20 Phase 5)** |
+| `-g <port>` / `--source-port <port>` | Use given source port | ✅ **v0.3.9+ (Sprint 4.20 Phase 5)** |
 
 #### Verbosity & Timing
 
@@ -701,10 +709,6 @@ prtip -sS -D RND:5 -p 80,443 target          # Decoy scanning
 - `--ttl` - IP Time-To-Live control (1-255)
 - `--badsum` - Bad TCP/UDP checksums for firewall/IDS testing
 - `-D` - Decoy scanning (RND:N random + manual IP lists + ME positioning)
-
-**⏳ Planned (Sprint 4.21 - Next):**
-
-- `-g` / `--source-port` - Source port manipulation (3-4 hours estimated)
 
 **⏳ Planned (Phase 5 - Future Releases):**
 

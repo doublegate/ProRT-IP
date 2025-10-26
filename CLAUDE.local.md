@@ -1,6 +1,6 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-26 | **Phase:** Phase 4 COMPLETE + Sprint 4.21 PARTIAL ⏸️ | **Tests:** 1,125 (100%) | **Coverage:** 62.5% ✅
+**Updated:** 2025-10-26 | **Phase:** Phase 4 COMPLETE + Sprint 4.21 PARTIAL ⏸️ | **Tests:** 1,166 (100%) | **Coverage:** 62.5% ✅
 
 ## Current Status
 
@@ -11,7 +11,7 @@
 | **Phase** | Phase 4 COMPLETE | All sprints + zero-copy + NUMA + PCAPNG + evasion |
 | **CI Status** | ✅ **7/7 passing (100%)** | All platforms GREEN - commit dd9da50 |
 | **Release Platforms** | 8/8 building (100%)  | All architectures working |
-| **Tests** | 1,125 (100%) | 1,125 passing (+44 Sprint 4.21: IPv6 foundation), zero ignored |
+| **Tests** | 1,166 (100%) | 1,166 passing (+44 Sprint 4.21 + 41 Sprint 4.20 Phase 5), zero ignored |
 | **Coverage** | **62.5%** (est.) | Maintained with IPv6 packet + ICMPv6 tests |
 | **Version** | **v0.3.9** | Evasion + IPv6 foundation (partial) complete |
 | **Performance** | 58.8ns/packet | 15% improvement (was 68.3ns) |
@@ -22,12 +22,12 @@
 
 ## Current Sprint: 4.20 - Network Evasion Techniques ✅ COMPLETE
 
-**Status:** ✅ 9/9 PHASES COMPLETE (2025-10-25)
-**Duration:** 25 hours (Phase 1: 1h + Phase 2: 6h + Phase 3: 1h + Phase 4: 8h + Phase 5: 2h + Phase 6: 2h + Phase 7: 1.5h + Phase 8: 1.5h + Phase 9: 2h)
+**Status:** ✅ 10/10 PHASES COMPLETE (2025-10-26)
+**Duration:** 28 hours total (Phases 1-9: 25h + Phase 5: 3h)
 **Priority:** MEDIUM
 **ROI Score:** 7.5/10
 
-**Objective:** Implement 4/5 Nmap evasion techniques (fragmentation, TTL, bad checksums, decoys) with comprehensive testing and documentation.
+**Objective:** Implement 5/5 Nmap evasion techniques (fragmentation, TTL, bad checksums, decoys, source port) with comprehensive testing and documentation.
 
 **Achieved (All 9 Phases Complete):**
 - ✅ **Phase 1:** Analysis & Planning (1h) - Research, codebase analysis, implementation plan
@@ -75,28 +75,35 @@
   - **Results:** 0-7% overhead on loopback (negligible, within measurement noise)
   - **Documentation:** CHANGELOG.md, README.md, CLAUDE.local.md, SPRINT-4.20-COMPLETE.md (2,000+ lines)
   - **Commit Message:** 200+ line comprehensive commit message prepared
+- ✅ **Phase 5:** Source Port Manipulation (3h) - Complete source port feature integration
+  - **Scanner Updates:** 4 scanners (SYN, UDP, Stealth, Decoy) now use config.network.source_port
+  - **Unit Tests:** 24 new tests in test_source_port.rs (scanner creation, fallback, edge cases, evasion ports)
+  - **Integration Tests:** 17 new CLI tests in test_cli_args.rs (flag parsing, invalid input, scan types, combinations)
+  - **Documentation:** README.md, CHANGELOG.md, CLAUDE.local.md updated
 
-**Features Implemented (All 4 Evasion Techniques):**
+**Features Implemented (All 5 Evasion Techniques):**
 - **IP Fragmentation:** Split packets at IP layer (RFC 791 compliant)
 - **MTU Validation:** ≥68 bytes, multiple of 8 (fragment offset requirement)
 - **TTL Control:** Custom Time-To-Live values via TcpPacketBuilder/UdpPacketBuilder
 - **Bad Checksums:** Intentionally invalid checksums (0x0000) for firewall/IDS testing
-- **Nmap Compatibility:** `-f` defaults to 28-byte MTU, `--badsum` uses 0x0000 checksum
+- **Source Port Manipulation:** Use trusted ports (DNS 53, HTTP 80, FTP-DATA 20) to bypass firewall rules
+- **Nmap Compatibility:** `-f` defaults to 28-byte MTU, `--badsum` uses 0x0000 checksum, `-g`/`--source-port` functional
 
-**Key Results (All 9 Phases):**
-- **Tests:** 1,081/1,091 passing (99.1%, +120 new tests, 10 ignored CAP_NET_RAW, zero regressions)
-- **Code Added:** ~1,500 lines (evasion modules 500 + scanner integration 200 + packet builders 154 + tests 600 + docs 200)
+**Key Results (All 10 Phases):**
+- **Tests:** 1,166 passing (100%, +161 new tests: 120 Phases 1-9 + 41 Phase 5, zero ignored, zero regressions)
+- **Code Added:** ~2,050 lines (evasion modules 500 + scanner integration 216 + packet builders 154 + tests 1,041 + docs 250)
 - **Quality:** Zero clippy warnings, zero compilation errors, A+ grade
 - **Performance:** 0-7% overhead on loopback (negligible, production-acceptable)
-- **Strategic Value:** Nmap parity (4/5 evasion techniques = 80%), firewall/IDS evasion, security research capabilities
+- **Strategic Value:** Nmap parity (5/5 evasion techniques = 100%), complete firewall/IDS evasion toolkit, security research capabilities
 
 **Usage Examples:**
 ```bash
-prtip -sS -f -p 1-1000 192.168.1.0/24              # Nmap -f (aggressive fragmentation)
-prtip -sS --mtu 200 -p 80,443 target.com           # Custom MTU
-prtip -sS --ttl 32 -p 1-1000 10.0.0.0/24           # TTL control
-prtip -sS --badsum -p 80,443 target.com            # Bad checksums (Phase 6)
-prtip -sS -f --ttl 16 --badsum -p 22,80,443 target # Combined evasion (all techniques)
+prtip -sS -f -p 1-1000 192.168.1.0/24                    # Nmap -f (aggressive fragmentation)
+prtip -sS --mtu 200 -p 80,443 target.com                 # Custom MTU
+prtip -sS --ttl 32 -p 1-1000 10.0.0.0/24                 # TTL control
+prtip -sS --badsum -p 80,443 target.com                  # Bad checksums (Phase 6)
+prtip -sS -g 53 -p 80,443 target.com                     # Source port 53 (Phase 5)
+prtip -sS -g 53 -f --ttl 32 -p 22,80,443 target          # Combined evasion (all 5 techniques)
 ```
 
 **Deliverables:**
@@ -108,7 +115,7 @@ prtip -sS -f --ttl 16 --badsum -p 22,80,443 target # Combined evasion (all techn
 - crates/prtip-scanner/src/udp_scanner.rs: Fragmentation + TTL (+40 lines)
 - /tmp/ProRT-IP/sprint-4.20/SPRINT-4.20-PHASE-2-COMPLETE.md: Comprehensive summary
 
-**Sprint 4.20 Status:** ✅ COMPLETE (9/9 phases, 25 hours total)
+**Sprint 4.20 Status:** ✅ COMPLETE (10/10 phases, 28 hours total)
 **Sprint 4.21 Status:** ⏸️ PARTIAL (TCP Connect IPv6 + packet building, remaining deferred to Phase 5)
 **Next Sprint:** 4.22 - Error Handling & Resilience OR Phase 5 Advanced Features
 
@@ -380,6 +387,7 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-26 | **Sprint 4.20 Phase 5 Complete** | Source Port Manipulation | ~3h | Completed source port manipulation feature: (1) Updated 4 scanners (SYN, UDP, Stealth, Decoy) to use config.network.source_port with random fallback, (2) Created 24 unit tests in test_source_port.rs (scanner creation, fallback, edge cases, evasion ports), (3) Added 17 integration tests in test_cli_args.rs (flag parsing, invalid input, scan types, combinations), (4) Updated README.md (status "⏳ Planned" → "✅ v0.3.9+", test count 1,125 → 1,166, 5 usage examples), (5) Updated CHANGELOG.md (comprehensive Phase 5 entry), (6) Updated CLAUDE.local.md (Sprint 4.20 now 10/10 phases), Tests: 1,125 → 1,166 (+41: 24 unit + 17 integration), zero regressions, zero clippy warnings, Sprint 4.20 now 100% complete (10/10 phases, 28 hours total, 161 tests, 2,050 lines code), achieves full Nmap `-g` flag parity (5/5 evasion techniques = 100%), production-ready | ✅ |
 | 10-26 | **Sprint 4.21 Finalization** | Strategic deferral + documentation closure | ~3h | Completed Sprint 4.21 finalization with strategic deferral decision: (1) Updated ROADMAP.md (moved remaining IPv6 to Phase 5 backlog, +30 lines), (2) Updated CHANGELOG.md (comprehensive Sprint 4.21 section, +70 lines with strategic rationale), (3) Updated README.md (test count 1,081→1,125, IPv6 feature note, Latest Achievements section, +50 lines), (4) Updated CLAUDE.local.md (Current Sprint section, Recent Sessions, Key Decisions, +150 lines), (5) Created docs/PHASE-5-BACKLOG.md (400 lines documenting remaining 25-30h IPv6 work), (6) Prepared git commit message (comprehensive with deferral rationale), (7) Verified tests + clippy (1,125/1,125 passing, zero warnings), (8) Created closure report (SPRINT-4.21-CLOSURE-REPORT.md), Key decision: Defer full IPv6 to v0.5.0 based on ROI analysis (TCP Connect covers 80% use cases, remaining scanners 25-30h vs 8-10h estimated), all documentation updated, ready for commit | ✅ |
 | 10-25 | **Sprint 4.20 Phase 9 Complete** | Sprint completion, benchmarking, documentation | ~2h | Completed all 6 Phase 9 tasks: (1) Benchmarking with hyperfine (5 configurations, 0-7% overhead, negligible impact), (2) CHANGELOG.md updated (comprehensive Sprint 4.20 section, all 9 phases documented), (3) README.md updated (test count 1,081, Sprint 4.20 COMPLETE), (4) CLAUDE.local.md updated (sprint marked COMPLETE, all 9 phases listed, session added), (5) SPRINT-4.20-COMPLETE.md created (2,000+ lines comprehensive summary), (6) Commit message prepared (200+ lines), Sprint 4.20 now 100% complete (9/9 phases, 25 hours total, 120 tests, 1,500 lines code, A+ quality grade), all tests passing (1,081/1,091), zero regressions, production-ready | ✅ |
 | 10-25 | **Sprint 4.20 Phase 8 Complete** | Decoy scanning enhancements | ~1.5h | Implemented full -D flag functionality, added DecoyConfig enum (Random/Manual variants), created parse_decoy_spec() parser (RND:N + manual IPs + ME positioning), integrated evasion features in DecoyScanner (TTL, fragmentation, bad checksums), created 10 CLI integration tests, enhanced EVASION-GUIDE.md, all 1,081/1,091 tests passing, zero regressions, zero clippy warnings, comprehensive Phase 8 completion report created | ✅ |

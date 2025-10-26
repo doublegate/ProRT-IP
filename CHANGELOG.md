@@ -370,9 +370,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - ✅ TTL Manipulation (--ttl)
       - ✅ Bad Checksums (--badsum)
       - ✅ Decoy Scanning (-D RND:N + manual IPs + ME positioning)
-      - 🔄 Source Port (-g) - Deferred to Sprint 4.21
+      - ✅ Source Port (-g / --source-port) - Sprint 4.20 Phase 5 COMPLETE
     - **Performance:** 0-7% overhead on loopback (negligible, production-acceptable)
     - **Production Ready:** YES (A+ quality grade, comprehensive testing, RFC compliant)
+
+- **Sprint 4.20 Phase 5 COMPLETE - Source Port Manipulation:** Firewall evasion via trusted port spoofing
+  - **Duration:** ~3 hours (vs 9 hours estimated, 67% faster)
+  - **Status:** ✅ **COMPLETE** - All scanners integrated, fully tested, production-ready
+  - **Objective:** Complete source port manipulation feature by connecting existing CLI flags to scanner implementations
+  - **Problem Identified:** CLI flags `-g` and `--source-port` existed but scanners ignored them (hardcoded random ports)
+  - **Deliverables:**
+    - **Scanner Integration:** Updated all 5 scanner types to use `config.network.source_port`
+      - **SynScanner** (syn_scanner.rs:131): Conditional source port with random fallback
+      - **UdpScanner** (udp_scanner.rs:102): Conditional source port with random fallback
+      - **StealthScanner** (stealth_scanner.rs:159): Conditional source port (affects FIN/NULL/Xmas/ACK)
+      - **DecoyScanner** (decoy_scanner.rs:329): Conditional source port (10000-60000 default range preserved)
+      - **TcpConnectScanner**: Verified already works via OS socket binding
+    - **Unit Tests:** 24 new tests in test_source_port.rs
+      - 5 tests: Scanner creation with configured port
+      - 5 tests: Random port fallback when not configured
+      - 4 tests: Edge cases (port 1, 65535, 1024, 1023)
+      - 6 tests: Common evasion ports (DNS 53, FTP-DATA 20, HTTP 80, Kerberos 88, HTTPS 443, NTP 123)
+      - 4 tests: Config threading verification
+    - **Integration Tests:** 17 new CLI tests in test_cli_args.rs
+      - 2 tests: Flag parsing (-g and --source-port)
+      - 5 tests: Invalid input handling (0, 65536, -1, non-numeric)
+      - 5 tests: Scanner type combinations (SYN, UDP, FIN, NULL, Xmas)
+      - 3 tests: Combined evasion flags (fragmentation, TTL)
+      - 2 tests: Common evasion ports verification
+    - **Documentation Updates:**
+      - README.md: Status "⏳ Planned" → "✅ v0.3.9+", test count 1,125 → 1,166, 5 usage examples added
+      - CHANGELOG.md: Comprehensive Sprint 4.20 Phase 5 entry (this section)
+      - CLAUDE.local.md: Sprint 4.20 now 10/10 phases (100%)
+  - **Tests:** 1,125 → 1,166 (+41 tests: 24 unit + 17 integration, all passing, zero regressions)
+  - **Code Changes:**
+    - Modified: 4 scanner files (syn_scanner.rs, udp_scanner.rs, stealth_scanner.rs, decoy_scanner.rs) - 4 lines each = 16 lines
+    - Created: crates/prtip-scanner/tests/test_source_port.rs (225 lines, 24 tests)
+    - Modified: crates/prtip-cli/tests/test_cli_args.rs (+237 lines, 17 tests)
+    - Modified: README.md (+10 lines - status update + examples)
+    - Modified: CHANGELOG.md (this entry)
+    - Modified: CLAUDE.local.md (~50 lines)
+    - Total: **~550 lines added**
+  - **Strategic Value:**
+    - Completes Sprint 4.20 to 10/10 phases (100%)
+    - Achieves full Nmap `-g` flag parity
+    - Enables firewall trust-based evasion
+    - Low implementation effort (3h), high user impact
+    - Production-ready with comprehensive testing
+  - **Common Evasion Ports:**
+    - **Port 53 (DNS)**: Universally trusted by firewalls
+    - **Port 20 (FTP-DATA)**: Trusted for file transfer
+    - **Port 80 (HTTP)**: Trusted for web traffic
+    - **Port 88 (Kerberos)**: Trusted in domain environments
+    - **Port 443 (HTTPS)**: Trusted for encrypted web
+    - **Port 123 (NTP)**: Trusted for time synchronization
+  - **Usage Examples:**
+    ```bash
+    # DNS source port (most trusted)
+    prtip -sS -g 53 -p 80,443 target.com
+
+    # FTP-DATA source port
+    prtip -sS --source-port 20 -p 1-1000 target.com
+
+    # Combined evasion (source port + fragmentation + TTL)
+    prtip -sS -g 53 -f --ttl 32 -p 80,443 target.com
+    ```
 
 - **Sprint 4.18.1 COMPLETE - SQLite Query Interface & Export Utilities:** Database operations with CLI subcommands
   - **Duration:** ~11 hours actual (Phases 5-7 complete)

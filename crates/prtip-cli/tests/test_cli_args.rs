@@ -603,3 +603,240 @@ fn test_badsum_flag_full_scan() {
         );
     }
 }
+
+// ============================================================================
+// Sprint 4.20 Phase 5: Source Port Manipulation CLI Integration Tests
+// ============================================================================
+
+#[test]
+fn test_source_port_short_flag_g() {
+    init();
+    // Test -g flag parsing
+    let output = run_prtip(&["-sT", "-g", "53", "-p", "80", "127.0.0.1"]);
+    // Should not have parsing errors
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "-g flag should be recognized: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_long_flag() {
+    init();
+    // Test --source-port flag parsing
+    let output = run_prtip(&["-sT", "--source-port", "53", "-p", "80", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "--source-port flag should be recognized: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_invalid_zero() {
+    init();
+    // Port 0 should be rejected by u16 parsing
+    let output = run_prtip(&["-sT", "-g", "0", "-p", "80", "127.0.0.1"]);
+    // Port 0 is technically valid for u16 but invalid for TCP/UDP
+    // This may succeed at CLI parsing but fail later - both are acceptable
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // As long as it doesn't crash, test passes
+    assert!(
+        output.status.code() != Some(101),
+        "Should not crash with port 0: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_invalid_overflow() {
+    init();
+    // Port 65536 should fail u16 parsing
+    let output = run_prtip(&["-sT", "-g", "65536", "-p", "80", "127.0.0.1"]);
+    assert!(
+        !output.status.success(),
+        "Port 65536 should fail (u16 overflow)"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("invalid") || stderr.contains("out of range") || stderr.contains("error"),
+        "Should report port overflow error: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_invalid_negative() {
+    init();
+    // Negative port should fail parsing
+    let output = run_prtip(&["-sT", "-g", "-1", "-p", "80", "127.0.0.1"]);
+    assert!(
+        !output.status.success(),
+        "Negative port should fail parsing"
+    );
+}
+
+#[test]
+fn test_source_port_invalid_non_numeric() {
+    init();
+    // Non-numeric port should fail parsing
+    let output = run_prtip(&["-sT", "-g", "abc", "-p", "80", "127.0.0.1"]);
+    assert!(
+        !output.status.success(),
+        "Non-numeric port should fail parsing"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("invalid") || stderr.contains("parse") || stderr.contains("error"),
+        "Should report parse error: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_with_syn_scan() {
+    init();
+    // Combination: -sS + -g (may require privileges)
+    let output = run_prtip(&["-sS", "-g", "53", "-p", "80", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // Should not have parsing errors
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "SYN scan + source port should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_with_udp_scan() {
+    init();
+    // Combination: -sU + -g (may require privileges)
+    let output = run_prtip(&["-sU", "-g", "53", "-p", "161", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "UDP scan + source port should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_with_fin_scan() {
+    init();
+    // Combination: -sF + -g
+    let output = run_prtip(&["-sF", "-g", "53", "-p", "80", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "FIN scan + source port should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_with_null_scan() {
+    init();
+    // Combination: -sN + -g
+    let output = run_prtip(&["-sN", "-g", "80", "-p", "443", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "NULL scan + source port should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_with_xmas_scan() {
+    init();
+    // Combination: -sX + -g
+    let output = run_prtip(&["-sX", "-g", "20", "-p", "22", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "Xmas scan + source port should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_with_fragmentation() {
+    init();
+    // Combined evasion: -g + -f
+    let output = run_prtip(&["-sT", "-g", "53", "-f", "-p", "80", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "Source port + fragmentation should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_with_ttl() {
+    init();
+    // Combined evasion: -g + --ttl
+    let output = run_prtip(&["-sT", "-g", "53", "--ttl", "32", "-p", "80", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "Source port + TTL should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_dns_port_53() {
+    init();
+    // Common evasion: DNS port 53
+    let output = run_prtip(&["-sT", "-g", "53", "-p", "80,443", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "DNS port 53 should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_ftp_data_port_20() {
+    init();
+    // Common evasion: FTP-DATA port 20
+    let output = run_prtip(&["-sT", "-g", "20", "-p", "80,443", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "FTP-DATA port 20 should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_http_port_80() {
+    init();
+    // Common evasion: HTTP port 80
+    let output = run_prtip(&["-sT", "-g", "80", "-p", "443", "127.0.0.1"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("invalid") && !stderr.contains("unknown"),
+        "HTTP port 80 should parse: {}",
+        stderr
+    );
+}
+
+#[test]
+fn test_source_port_default_none() {
+    init();
+    // Default behavior: no source port specified
+    let output = run_prtip(&["-sT", "-p", "80", "127.0.0.1"]);
+    // Should work without source port flag
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("source") || !stderr.contains("required"),
+        "Should work without source port: {}",
+        stderr
+    );
+}

@@ -326,7 +326,11 @@ impl DecoyScanner {
             }
         };
 
-        let src_port = rand::thread_rng().gen_range(10000..60000);
+        let src_port = self
+            .config
+            .network
+            .source_port
+            .unwrap_or_else(|| rand::thread_rng().gen_range(10000..60000));
 
         let mut builder = TcpPacketBuilder::new()
             .source_ip(source_ip)

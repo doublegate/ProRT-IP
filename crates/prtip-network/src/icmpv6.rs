@@ -281,7 +281,8 @@ impl Icmpv6ResponseParser {
 
         let icmpv6 = Icmpv6Packet::new(packet)?;
 
-        if icmpv6.get_icmpv6_type().0 != 129 { // Echo Reply
+        if icmpv6.get_icmpv6_type().0 != 129 {
+            // Echo Reply
             return None;
         }
 
@@ -311,7 +312,8 @@ impl Icmpv6ResponseParser {
 
         let icmpv6 = Icmpv6Packet::new(packet)?;
 
-        if icmpv6.get_icmpv6_type().0 != 136 { // Neighbor Advertisement
+        if icmpv6.get_icmpv6_type().0 != 136 {
+            // Neighbor Advertisement
             return None;
         }
 
@@ -365,10 +367,8 @@ impl Icmpv6ResponseParser {
         // For both UDP and TCP, destination port is at offset 2-3 of transport header
         let transport_start = ipv6_start + 40;
         if payload.len() >= transport_start + 4 {
-            let dest_port = u16::from_be_bytes([
-                payload[transport_start + 2],
-                payload[transport_start + 3],
-            ]);
+            let dest_port =
+                u16::from_be_bytes([payload[transport_start + 2], payload[transport_start + 3]]);
             Some((dest_addr, dest_port))
         } else {
             None

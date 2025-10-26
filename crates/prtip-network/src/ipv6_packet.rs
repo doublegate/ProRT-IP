@@ -185,17 +185,16 @@ impl Ipv6PacketBuilder {
     /// Returns error if packet construction fails or if headers are invalid.
     pub fn build(self) -> Result<Vec<u8>> {
         // Calculate total packet size
-        let extension_headers_size: usize = self.extension_headers.iter()
-            .map(|h| h.size())
-            .sum();
+        let extension_headers_size: usize = self.extension_headers.iter().map(|h| h.size()).sum();
         let total_size = 40 + extension_headers_size + self.payload.len();
 
         let mut buffer = vec![0u8; total_size];
 
         // Build IPv6 header (40 bytes fixed)
         {
-            let mut ipv6_packet = MutableIpv6Packet::new(&mut buffer[0..40])
-                .ok_or_else(|| Ipv6PacketError::PacketBuild("Failed to create IPv6 packet".into()))?;
+            let mut ipv6_packet = MutableIpv6Packet::new(&mut buffer[0..40]).ok_or_else(|| {
+                Ipv6PacketError::PacketBuild("Failed to create IPv6 packet".into())
+            })?;
 
             ipv6_packet.set_version(6);
             ipv6_packet.set_traffic_class(self.traffic_class);
@@ -380,7 +379,11 @@ impl ExtensionHeader {
     /// * `next_header` - Protocol number of the next header in the chain
     pub fn build(&self, next_header: u8) -> Result<Vec<u8>> {
         match self {
-            ExtensionHeader::Fragment { id, offset, more_fragments } => {
+            ExtensionHeader::Fragment {
+                id,
+                offset,
+                more_fragments,
+            } => {
                 // Validate fragment offset (must be multiple of 8 when converted to bytes)
                 // Note: offset is already in 8-byte units, so this check is for the value itself
                 if *offset > 8191 {
@@ -398,9 +401,9 @@ impl ExtensionHeader {
 
                 Ok(buffer)
             }
-            ExtensionHeader::HopByHop(data) |
-            ExtensionHeader::Routing(data) |
-            ExtensionHeader::DestinationOptions(data) => {
+            ExtensionHeader::HopByHop(data)
+            | ExtensionHeader::Routing(data)
+            | ExtensionHeader::DestinationOptions(data) => {
                 if data.is_empty() {
                     return Err(Ipv6PacketError::ExtensionHeaderTooLarge { size: 0 });
                 }

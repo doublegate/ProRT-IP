@@ -362,6 +362,33 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 **Goal:** Implement sophisticated stealth and extensibility features
 
+#### Backlog: IPv6 Scanner Integration (Deferred from Sprint 4.21)
+
+**Sprint 5.X**
+
+**Status:** Deferred from Phase 4 Sprint 4.21
+**Priority:** MEDIUM
+**Estimated Duration:** 25-30 hours
+**ROI Score:** 6.8/10
+
+- [ ] Phase 1: SYN Scanner IPv6 (5 hours) - Refactor to IpAddr, IPv6 response parsing, dual-stack
+- [ ] Phase 2: UDP + Stealth Scanners IPv6 (8 hours) - ICMPv6 handling, dual-stack tracking
+- [ ] Phase 3: Discovery + Decoy Scanners IPv6 (7 hours) - ICMPv6 Echo, NDP, random IPv6
+- [ ] Phase 4: Integration + Documentation (5 hours) - CLI flags, IPv6 guide
+
+**Deliverables:**
+
+- IPv6 support for all 6 scanner types
+- CLI flags: -6, -4, --dual-stack
+- Comprehensive IPv6 documentation
+- 50+ new tests
+
+**Current Status (v0.4.0):**
+
+- ✅ IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
+- ✅ TCP Connect scanner IPv6 support
+- ⏸️ Remaining scanners: SYN, UDP, Stealth, Discovery, Decoy
+
 #### Week 14: Idle Scanning and Decoys
 
 **Sprint 5.1**

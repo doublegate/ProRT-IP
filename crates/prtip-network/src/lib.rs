@@ -30,7 +30,9 @@
 pub mod batch_sender;
 pub mod capture;
 pub mod fragmentation;
+pub mod icmpv6;
 pub mod interface;
+pub mod ipv6_packet;
 pub mod numa;
 pub mod packet_buffer;
 pub mod packet_builder;
@@ -43,6 +45,8 @@ pub use capture::{create_capture, PacketCapture};
 pub use fragmentation::{
     defragment_packets, fragment_tcp_packet, validate_mtu, MIN_MTU, NMAP_F_MTU,
 };
+pub use icmpv6::{Icmpv6PacketBuilder, Icmpv6ResponseParser};
+pub use ipv6_packet::{parse_ipv6_header, ExtensionHeader, Ipv6Header, Ipv6PacketBuilder};
 pub use packet_buffer::{with_buffer, PacketBuffer};
 pub use packet_builder::{TcpFlags, TcpOption, TcpPacketBuilder, UdpPacketBuilder};
 pub use privilege::{check_privileges, drop_privileges, has_raw_socket_capability};

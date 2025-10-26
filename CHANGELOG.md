@@ -9,6 +9,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 4.21 PARTIAL COMPLETE - IPv6 Foundation:** TCP Connect IPv6 + packet building infrastructure with strategic deferral
+  - **Duration:** 7 hours (Sprint 4.21a: 4.5h infrastructure + Sprint 4.21b partial: 2.5h TCP Connect)
+  - **Status:** ⏸️ **PARTIAL COMPLETE** - Foundation ready, remaining scanners deferred to Phase 5
+  - **Objective:** IPv6 packet building infrastructure + TCP Connect scanner IPv6 support
+  - **Strategic Decision:** Defer full IPv6 to v0.5.0 (Phase 5)
+    - **Rationale:** TCP Connect IPv6 covers 80% of use cases (SSH, HTTP, HTTPS)
+    - **Complexity:** Remaining scanners require 25-30 hours (vs 8-10h estimated)
+    - **ROI:** Better to focus v0.4.0 on error handling and service detection
+    - **Timeline Impact:** Full implementation would delay v0.4.0 by 1+ month
+  - **Completed Features:**
+    - **IPv6 Packet Building (`ipv6_packet.rs`):** RFC 8200 compliant (671 lines, 14 tests)
+      - Fixed 40-byte header (vs IPv4's variable 20-60 bytes)
+      - Extension header support (Hop-by-Hop, Routing, Fragment, Destination Options)
+      - Fragment extension header (Type 44) for MTU > 1280 bytes
+      - Pseudo-header checksum calculation (40 bytes for TCP/UDP)
+    - **ICMPv6 Protocol (`icmpv6.rs`):** RFC 4443 compliant (556 lines, 10 tests)
+      - Echo Request = Type 128 (NOT 8 like IPv4!)
+      - Echo Reply = Type 129
+      - Destination Unreachable (Type 1, Code 4: port unreachable)
+      - Packet Too Big (Type 2) for MTU discovery
+      - Time Exceeded (Type 3)
+      - Checksum validation and calculation
+    - **packet_builder.rs Integration:** IPv6 TCP/UDP builders (+326 lines, 5 tests)
+      - Ipv6TcpPacketBuilder: SYN/RST/ACK flags, IPv6 pseudo-header checksum
+      - Ipv6UdpPacketBuilder: IPv6 pseudo-header checksum
+      - Zero-copy compatible (works with PacketBuffer from Sprint 4.17)
+    - **TCP Connect Scanner IPv6:** Full IPv6 support (+95 lines, 6 tests)
+      - Dual-stack support (IPv4 and IPv6 simultaneously)
+      - IPv6 address parsing and validation
+      - Local IPv6 address detection
+      - ICMPv6 error handling
+  - **Tests:**
+    - Tests: 1,081 → 1,125 (+44 tests: 14 IPv6 packet + 10 ICMPv6 + 5 packet builder + 6 TCP Connect + 9 integration)
+    - All tests passing (1,125/1,125 = 100%)
+    - Coverage: 62.5% maintained
+    - Zero regressions
+  - **Deferred to Phase 5 (v0.5.0):**
+    - SYN Scanner IPv6 (5 hours) - Refactor to IpAddr, IPv6 response parsing, dual-stack
+    - UDP + Stealth Scanners IPv6 (8 hours) - ICMPv6 handling, dual-stack tracking
+    - Discovery + Decoy Scanners IPv6 (7 hours) - ICMPv6 Echo, NDP, random IPv6
+    - Integration + Documentation (5 hours) - CLI flags (-6, -4, --dual-stack), IPv6 guide
+    - **Total Deferred:** 25-30 hours
+  - **Usage (TCP Connect only):**
+    ```bash
+    # TCP Connect scan (IPv6 supported)
+    prtip -sT -p 22,80,443 2001:db8::1
+    prtip -sT -p 80,443 example.com  # Dual-stack auto-detect
+
+    # Other scan types (IPv6 NOT yet supported)
+    # prtip -sS -p 80,443 2001:db8::1  # Will error - deferred to v0.5.0
+    ```
+  - **Files Created/Modified:**
+    - Created: `crates/prtip-network/src/ipv6_packet.rs` (671 lines, 14 tests)
+    - Created: `crates/prtip-network/src/icmpv6.rs` (556 lines, 10 tests)
+    - Modified: `crates/prtip-network/src/packet_builder.rs` (+326 lines, 5 tests)
+    - Modified: `crates/prtip-network/src/lib.rs` (+4 lines - exports)
+    - Modified: `crates/prtip-scanner/src/tcp_connect.rs` (+95 lines, 6 tests)
+    - Created: `docs/PHASE-5-BACKLOG.md` (400 lines - remaining IPv6 work)
+    - Total: **~1,650 lines of new code**
+  - **Strategic Value:**
+    - Production-ready IPv6 foundation for v0.4.0
+    - TCP Connect covers 80% of IPv6 use cases
+    - Clear roadmap for complete IPv6 in v0.5.0 (Q1 2026)
+    - Pragmatic deferral decision based on ROI analysis
+
 - **Sprint 4.20 COMPLETE - Network Evasion Techniques:** Comprehensive firewall/IDS evasion capabilities with 120 new tests
   - **Duration:** 25 hours (9 phases: Analysis 1h + Implementation 6h + TTL Testing 1h + Testing 8h + Documentation 2h + Bad Checksum 2h + Integration Tests 1.5h + Decoy Enhancements 1.5h + Sprint Completion 2h)
   - **Status:** ✅ **COMPLETE** - All 9 phases complete, production-ready

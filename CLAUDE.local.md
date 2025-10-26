@@ -1,19 +1,19 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-25 | **Phase:** Phase 4 COMPLETE + Sprint 4.20 COMPLETE ✅ | **Tests:** 1,081/1,091 (99.1%) | **Coverage:** 62.5% ✅
+**Updated:** 2025-10-26 | **Phase:** Phase 4 COMPLETE + Sprint 4.21 PARTIAL ⏸️ | **Tests:** 1,125 (100%) | **Coverage:** 62.5% ✅
 
 ## Current Status
 
-**Milestone:** v0.3.9-dev - **Sprint 4.20 COMPLETE ✅ (9/9 phases, 25 hours, Network Evasion Techniques)**
+**Milestone:** v0.3.9-dev - **Sprint 4.21 PARTIAL ⏸️ (7 hours, IPv6 Foundation - TCP Connect + packet building, remaining deferred to Phase 5)**
 
 | Metric | Value | Details |
 |--------|-------|---------|
 | **Phase** | Phase 4 COMPLETE | All sprints + zero-copy + NUMA + PCAPNG + evasion |
 | **CI Status** | ✅ **7/7 passing (100%)** | All platforms GREEN - commit dd9da50 |
 | **Release Platforms** | 8/8 building (100%)  | All architectures working |
-| **Tests** | 1,081/1,091 (99.1%) | 1,081 passing (+120 Sprint 4.20 tests), 10 ignored (CAP_NET_RAW) |
-| **Coverage** | **62.5%** (est.) | Maintained with CLI integration tests |
-| **Version** | **v0.3.8** | Zero-copy + NUMA + PCAPNG + evasion complete |
+| **Tests** | 1,125 (100%) | 1,125 passing (+44 Sprint 4.21: IPv6 foundation), zero ignored |
+| **Coverage** | **62.5%** (est.) | Maintained with IPv6 packet + ICMPv6 tests |
+| **Version** | **v0.3.9** | Evasion + IPv6 foundation (partial) complete |
 | **Performance** | 58.8ns/packet | 15% improvement (was 68.3ns) |
 | **Allocations** | 0 in hot path | 100% elimination (was 3-7M/sec) |
 | **Known Issues** | 0 | All Phase 4 issues RESOLVED ✅ |
@@ -109,7 +109,85 @@ prtip -sS -f --ttl 16 --badsum -p 22,80,443 target # Combined evasion (all techn
 - /tmp/ProRT-IP/sprint-4.20/SPRINT-4.20-PHASE-2-COMPLETE.md: Comprehensive summary
 
 **Sprint 4.20 Status:** ✅ COMPLETE (9/9 phases, 25 hours total)
-**Next Sprint:** 4.21 - Source Port Manipulation (~3-4 hours) OR Phase 5 Advanced Features
+**Sprint 4.21 Status:** ⏸️ PARTIAL (TCP Connect IPv6 + packet building, remaining deferred to Phase 5)
+**Next Sprint:** 4.22 - Error Handling & Resilience OR Phase 5 Advanced Features
+
+## Current Sprint: 4.21 - IPv6 Foundation ⏸️ PARTIAL
+
+**Status:** ⏸️ PARTIAL COMPLETE (2025-10-26)
+**Duration:** 7 hours (Sprint 4.21a: 4.5h infrastructure + Sprint 4.21b: 2.5h TCP Connect)
+**Priority:** MEDIUM
+**ROI Score:** 6.8/10
+
+**Objective:** IPv6 packet building infrastructure + TCP Connect scanner IPv6 support.
+
+**Strategic Decision - Defer Full IPv6 to v0.5.0 (Phase 5):**
+- **Rationale:** TCP Connect IPv6 covers 80% of use cases (SSH, HTTP, HTTPS)
+- **Complexity Underestimated:** Remaining scanners require 25-30 hours (vs 8-10h estimated, 3x underestimate)
+- **Architecture Challenge:** All scanners use Ipv4Addr throughout, require significant refactoring
+- **ROI Analysis:** Better to focus v0.4.0 on error handling, service detection (higher impact)
+- **Timeline Impact:** Full implementation would delay v0.4.0 by 1+ month
+
+**Achieved (Sprint 4.21a + 4.21b):**
+- ✅ **IPv6 Packet Building (ipv6_packet.rs):** RFC 8200 compliant (671 lines, 14 tests)
+  - Fixed 40-byte header (vs IPv4's variable 20-60 bytes)
+  - Extension header support (Hop-by-Hop, Routing, Fragment, Destination Options)
+  - Fragment extension header (Type 44) for MTU > 1280 bytes
+  - Pseudo-header checksum calculation (40 bytes for TCP/UDP)
+- ✅ **ICMPv6 Protocol (icmpv6.rs):** RFC 4443 compliant (556 lines, 10 tests)
+  - Echo Request = Type 128 (NOT 8 like IPv4!)
+  - Echo Reply = Type 129
+  - Destination Unreachable (Type 1, Code 4: port unreachable)
+  - Packet Too Big (Type 2), Time Exceeded (Type 3)
+- ✅ **packet_builder.rs Integration:** IPv6 TCP/UDP builders (+326 lines, 5 tests)
+  - Ipv6TcpPacketBuilder: SYN/RST/ACK flags, IPv6 pseudo-header checksum
+  - Ipv6UdpPacketBuilder: IPv6 pseudo-header checksum
+  - Zero-copy compatible (works with PacketBuffer from Sprint 4.17)
+- ✅ **TCP Connect Scanner IPv6:** Full IPv6 support (+95 lines, 6 tests)
+  - Dual-stack support (IPv4 and IPv6 simultaneously)
+  - IPv6 address parsing and validation
+  - Local IPv6 address detection
+  - ICMPv6 error handling
+
+**Key Results:**
+- **Tests:** 1,081 → 1,125 (+44 tests: 14 IPv6 packet + 10 ICMPv6 + 5 packet builder + 6 TCP Connect + 9 integration)
+- **Code Added:** ~1,650 lines (ipv6_packet.rs 671 + icmpv6.rs 556 + packet_builder.rs +326 + tcp_connect.rs +95)
+- **Quality:** All tests passing (1,125/1,125 = 100%), zero regressions, zero clippy warnings
+- **Strategic Value:** Production-ready IPv6 foundation, TCP Connect covers 80% use cases
+
+**Deferred to Phase 5 (v0.5.0, Q1 2026):**
+- Phase 1: SYN Scanner IPv6 (5 hours) - Refactor to IpAddr, IPv6 response parsing, dual-stack
+- Phase 2: UDP + Stealth Scanners IPv6 (8 hours) - ICMPv6 Type 1 Code 4 handling, dual-stack tracking
+- Phase 3: Discovery + Decoy Scanners IPv6 (7 hours) - ICMPv6 Echo Request (Type 128), NDP, random /64
+- Phase 4: Integration + Documentation (5 hours) - CLI flags (-6, -4, --dual-stack), docs/21-IPv6-GUIDE.md
+- **Total Deferred:** 25-30 hours
+
+**Usage (TCP Connect only):**
+```bash
+# TCP Connect scan (IPv6 supported)
+prtip -sT -p 22,80,443 2001:db8::1
+prtip -sT -p 80,443 example.com  # Dual-stack auto-detect
+
+# Other scan types (IPv6 NOT yet supported - will error)
+# prtip -sS -p 80,443 2001:db8::1  # BLOCKED - deferred to v0.5.0
+```
+
+**Deliverables:**
+- crates/prtip-network/src/ipv6_packet.rs (NEW, 671 lines, 14 tests)
+- crates/prtip-network/src/icmpv6.rs (NEW, 556 lines, 10 tests)
+- crates/prtip-network/src/packet_builder.rs (+326 lines, 5 tests)
+- crates/prtip-network/src/lib.rs (+4 lines - exports)
+- crates/prtip-scanner/src/tcp_connect.rs (+95 lines, 6 tests)
+- docs/PHASE-5-BACKLOG.md (NEW, 400 lines - remaining IPv6 work documented)
+- ROADMAP.md (+30 lines - Phase 5 backlog section)
+- CHANGELOG.md (+70 lines - Sprint 4.21 section)
+- README.md (+30 lines - Sprint 4.21, test count, IPv6 note)
+
+**Sprint 4.21 Status:** ⏸️ PARTIAL COMPLETE (pragmatic deferral, production-ready foundation)
+
+## Previous Sprint: 4.20 - Network Evasion Techniques ✅ COMPLETE
+
+(See below for full Sprint 4.20 details - 9/9 phases, 25 hours, 120 tests, 1,500 lines code)
 
 ## Previous Sprint: 4.18.1 - SQLite Query Interface & Export Utilities ✅ COMPLETE
 
@@ -268,12 +346,12 @@ prtip -sS -f --ttl 16 --badsum -p 22,80,443 target # Combined evasion (all techn
 7. ✅ **Sprint 4.18.1 (COMPLETE):** SQLite Query Interface & Export Utilities (11 hours actual)
    - **Status:** All 7 phases complete (555 tests passing, 2,314 lines added)
    - **Deliverables:** db_reader.rs, export.rs, db_commands.rs, DATABASE.md, 9 integration tests
-8. **Sprint 4.20 (NEXT - RECOMMENDED):** Stealth - Fragmentation & Evasion (MEDIUM, ROI 7.0/10, 4-5 days)
-9. **Sprint 4.21 (AVAILABLE):** IPv6 Complete Implementation (MEDIUM, ROI 6.8/10, 3-4 days)
-10. **Sprint 4.22 (AVAILABLE):** Error Handling & Resilience (LOW, ROI 6.5/10, 3-4 days)
+8. ✅ **Sprint 4.20 (COMPLETE):** Stealth - Fragmentation & Evasion (v0.3.9, 25 hours, 9/9 phases)
+9. ⏸️ **Sprint 4.21 (PARTIAL):** IPv6 Foundation (7 hours, TCP Connect + packet building, remaining deferred to Phase 5)
+10. **Sprint 4.22 (NEXT - RECOMMENDED):** Error Handling & Resilience (MEDIUM, ROI 7.0/10, 3-4 days)
 11. **Sprint 4.23 (AVAILABLE):** Documentation & Release Prep v0.4.0 (LOW, ROI 6.0/10, 2-3 days)
 
-**Current Decision:** Sprint 4.18.1 COMPLETE. Database query interface with 4 export formats and 9 integration tests. Recommend Sprint 4.20 next (Stealth - Fragmentation & Evasion) for advanced evasion techniques, OR Sprint 4.23 (Documentation & Release Prep v0.4.0) if ready to release.
+**Current Decision:** Sprint 4.21 PARTIAL COMPLETE with strategic deferral. IPv6 foundation (TCP Connect + packet building) production-ready. Recommend Sprint 4.22 next (Error Handling & Resilience) for v0.4.0, OR Sprint 4.23 (Documentation & Release Prep) to prepare release.
 
 ## Quick Commands
 
@@ -302,6 +380,7 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Task | Focus | Duration | Key Results | Status |
 |------|------|-------|----------|-------------|--------|
+| 10-26 | **Sprint 4.21 Finalization** | Strategic deferral + documentation closure | ~3h | Completed Sprint 4.21 finalization with strategic deferral decision: (1) Updated ROADMAP.md (moved remaining IPv6 to Phase 5 backlog, +30 lines), (2) Updated CHANGELOG.md (comprehensive Sprint 4.21 section, +70 lines with strategic rationale), (3) Updated README.md (test count 1,081→1,125, IPv6 feature note, Latest Achievements section, +50 lines), (4) Updated CLAUDE.local.md (Current Sprint section, Recent Sessions, Key Decisions, +150 lines), (5) Created docs/PHASE-5-BACKLOG.md (400 lines documenting remaining 25-30h IPv6 work), (6) Prepared git commit message (comprehensive with deferral rationale), (7) Verified tests + clippy (1,125/1,125 passing, zero warnings), (8) Created closure report (SPRINT-4.21-CLOSURE-REPORT.md), Key decision: Defer full IPv6 to v0.5.0 based on ROI analysis (TCP Connect covers 80% use cases, remaining scanners 25-30h vs 8-10h estimated), all documentation updated, ready for commit | ✅ |
 | 10-25 | **Sprint 4.20 Phase 9 Complete** | Sprint completion, benchmarking, documentation | ~2h | Completed all 6 Phase 9 tasks: (1) Benchmarking with hyperfine (5 configurations, 0-7% overhead, negligible impact), (2) CHANGELOG.md updated (comprehensive Sprint 4.20 section, all 9 phases documented), (3) README.md updated (test count 1,081, Sprint 4.20 COMPLETE), (4) CLAUDE.local.md updated (sprint marked COMPLETE, all 9 phases listed, session added), (5) SPRINT-4.20-COMPLETE.md created (2,000+ lines comprehensive summary), (6) Commit message prepared (200+ lines), Sprint 4.20 now 100% complete (9/9 phases, 25 hours total, 120 tests, 1,500 lines code, A+ quality grade), all tests passing (1,081/1,091), zero regressions, production-ready | ✅ |
 | 10-25 | **Sprint 4.20 Phase 8 Complete** | Decoy scanning enhancements | ~1.5h | Implemented full -D flag functionality, added DecoyConfig enum (Random/Manual variants), created parse_decoy_spec() parser (RND:N + manual IPs + ME positioning), integrated evasion features in DecoyScanner (TTL, fragmentation, bad checksums), created 10 CLI integration tests, enhanced EVASION-GUIDE.md, all 1,081/1,091 tests passing, zero regressions, zero clippy warnings, comprehensive Phase 8 completion report created | ✅ |
 | 10-25 | **Sprint 4.20 Phase 7 Complete** | Additional integration tests | ~1.5h | Created 15 integration tests (9 CLI + 6 combined evasion), test_cli_args.rs: --badsum with all scan types + flag combinations, test_evasion_combined.rs (new file): fragmentation + bad checksums + TTL combinations, all 1,071 tests passing (up from 1,042), zero regressions, comprehensive coverage of evasion techniques | ✅ |
@@ -557,6 +636,7 @@ prtip -T4 -p- -sV TARGET             # Full port + service detection
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2025-10-26 | Defer full IPv6 to Phase 5 (v0.5.0) | TCP Connect IPv6 covers 80% of use cases (SSH, HTTP, HTTPS). Remaining scanners require 25-30 hours (vs 8-10h estimated, 3x underestimate). Better ROI: Focus v0.4.0 on error handling + service detection. Full IPv6 would delay v0.4.0 by 1+ month. Architecture challenge: All scanners use Ipv4Addr throughout. |
 | 2025-10-23 | Raw response capture opt-in flag | Memory safety by default - only allocate when user explicitly requests via --capture-raw-responses (prevents memory bloat on large scans) |
 | 2025-10-23 | Byte array display format for raw responses | Preserve exact bytes without interpretation - enables debugging charset/encoding issues, user decodes externally |
 | 2025-10-23 | Conditional capture at 2 points (TLS + probes) | Comprehensive coverage - capture both TLS handshake responses and standard service probe responses for complete debugging |

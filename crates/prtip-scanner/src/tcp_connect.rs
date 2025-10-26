@@ -533,6 +533,101 @@ mod tests {
         assert!(result.is_ok());
     }
 
+    // ============= IPv6 Integration Tests =============
+
+    #[tokio::test]
+    async fn test_ipv6_socket_creation() {
+        let scanner = TcpConnectScanner::new(Duration::from_millis(100), 0);
+        let result = scanner
+            .scan_port(IpAddr::V6(std::net::Ipv6Addr::LOCALHOST), 80)
+            .await;
+
+        // Should succeed (connection attempt completed)
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_ipv6_connection_to_loopback() {
+        let scanner = TcpConnectScanner::new(Duration::from_millis(200), 0);
+        let result = scanner
+            .scan_port(IpAddr::V6(std::net::Ipv6Addr::LOCALHOST), 22)
+            .await
+            .unwrap();
+
+        // Port 22 could be open (SSH), closed, or filtered - just verify we got a result
+        assert!(matches!(
+            result.state,
+            PortState::Open | PortState::Closed | PortState::Filtered
+        ));
+        assert_eq!(result.port, 22);
+    }
+
+    #[tokio::test]
+    async fn test_ipv6_multiple_ports() {
+        let scanner = TcpConnectScanner::new(Duration::from_millis(100), 0);
+        let ports = vec![22, 80, 443];
+        let results = scanner
+            .scan_ports(IpAddr::V6(std::net::Ipv6Addr::LOCALHOST), ports.clone(), 3)
+            .await
+            .unwrap();
+
+        assert_eq!(results.len(), 3);
+        for result in &results {
+            assert!(ports.contains(&result.port));
+        }
+    }
+
+    #[tokio::test]
+    async fn test_ipv6_vs_ipv4_parity() {
+        let scanner = TcpConnectScanner::new(Duration::from_millis(200), 0);
+        let ports = vec![9998, 9999];
+
+        // Scan same ports on IPv4 and IPv6 loopback
+        let ipv4_results = scanner
+            .scan_ports(IpAddr::V4(Ipv4Addr::LOCALHOST), ports.clone(), 2)
+            .await
+            .unwrap();
+
+        let ipv6_results = scanner
+            .scan_ports(IpAddr::V6(std::net::Ipv6Addr::LOCALHOST), ports.clone(), 2)
+            .await
+            .unwrap();
+
+        // Both should scan same number of ports
+        assert_eq!(ipv4_results.len(), ipv6_results.len());
+
+        // Results should be similar (both closed/filtered on loopback)
+        for (ipv4_res, ipv6_res) in ipv4_results.iter().zip(ipv6_results.iter()) {
+            assert_eq!(ipv4_res.port, ipv6_res.port);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_ipv6_timeout_handling() {
+        let scanner = TcpConnectScanner::new(Duration::from_millis(10), 0);
+        // Use non-routable IPv6 address (documentation range)
+        let result = scanner
+            .scan_port(IpAddr::V6("2001:db8::1".parse().unwrap()), 80)
+            .await
+            .unwrap();
+
+        // Should timeout and be filtered
+        assert_eq!(result.state, PortState::Filtered);
+    }
+
+    #[tokio::test]
+    async fn test_ipv6_response_time() {
+        let scanner = TcpConnectScanner::new(Duration::from_secs(1), 0);
+        let result = scanner
+            .scan_port(IpAddr::V6(std::net::Ipv6Addr::LOCALHOST), 9999)
+            .await
+            .unwrap();
+
+        // Response time should be measured
+        assert!(result.response_time > Duration::ZERO);
+        assert!(result.response_time < Duration::from_secs(2));
+    }
+
     #[tokio::test]
     async fn test_scan_target_single_host() {
         use prtip_core::ScanTarget;

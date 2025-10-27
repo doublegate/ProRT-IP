@@ -122,11 +122,7 @@ impl ErrorFormatter {
     /// Format a recovery suggestion with emoji and color
     fn format_suggestion(&self, suggestion: &str) -> String {
         if self.colorize {
-            format!(
-                "{} {}\n",
-                "💡 Suggestion:".cyan().bold(),
-                suggestion.cyan()
-            )
+            format!("{} {}\n", "💡 Suggestion:".cyan().bold(), suggestion.cyan())
         } else {
             format!("💡 Suggestion: {}\n", suggestion)
         }
@@ -145,7 +141,8 @@ impl ErrorFormatter {
             return Some("Reduce parallelism with --max-parallelism or increase system file descriptor limit (ulimit -n)".to_string());
         }
 
-        if error_str.contains("permission denied") || error_str.contains("Insufficient privileges") {
+        if error_str.contains("permission denied") || error_str.contains("Insufficient privileges")
+        {
             return Some(if cfg!(target_os = "windows") {
                 "Run as Administrator or use TCP Connect scan (-sT) which doesn't require elevated privileges".to_string()
             } else {
@@ -166,7 +163,10 @@ impl ErrorFormatter {
         }
 
         if error_str.contains("Output file already exists") {
-            return Some("Use --force to overwrite existing file, or specify a different output path".to_string());
+            return Some(
+                "Use --force to overwrite existing file, or specify a different output path"
+                    .to_string(),
+            );
         }
 
         None

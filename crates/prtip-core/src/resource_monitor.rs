@@ -63,7 +63,7 @@ impl Default for ResourceMonitorConfig {
     fn default() -> Self {
         Self {
             memory_threshold: 512 * 1024 * 1024, // 512 MB
-            cpu_threshold: 80.0,                   // 80%
+            cpu_threshold: 80.0,                 // 80%
             check_interval: Duration::from_secs(5),
         }
     }
@@ -77,7 +77,7 @@ impl ResourceMonitorConfig {
     pub fn conservative() -> Self {
         Self {
             memory_threshold: 1024 * 1024 * 1024, // 1 GB
-            cpu_threshold: 70.0,                    // 70%
+            cpu_threshold: 70.0,                  // 70%
             check_interval: Duration::from_secs(3),
         }
     }
@@ -89,7 +89,7 @@ impl ResourceMonitorConfig {
     pub fn aggressive() -> Self {
         Self {
             memory_threshold: 256 * 1024 * 1024, // 256 MB
-            cpu_threshold: 90.0,                  // 90%
+            cpu_threshold: 90.0,                 // 90%
             check_interval: Duration::from_secs(10),
         }
     }
@@ -104,7 +104,7 @@ impl ResourceMonitorConfig {
 /// # Example
 ///
 /// ```no_run
-/// use prtip_core::resource_monitor::{ResourceMonitor, ResourceMonitorConfig};
+/// use prtip_core::resource_monitor::{ResourceMonitor, ResourceMonitorConfig, ResourceStatus};
 ///
 /// let mut monitor = ResourceMonitor::new(ResourceMonitorConfig::default());
 ///

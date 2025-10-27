@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1,166_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-1,338_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -112,12 +112,35 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Latest Version:** v0.3.9 (Released 2025-10-25 - Network Evasion Techniques COMPLETE)
 
-**Test Coverage:** 1,125/1,125 tests passing (100% success rate, +44 Sprint 4.21 tests: IPv6 foundation) | 62.5% code coverage (exceeds 60% target)
+**Test Coverage:** 1,338/1,338 tests passing (100% success rate, +122 Sprint 4.22 Phase 7 tests: comprehensive error handling) | 61.92%+ code coverage (exceeds 60% target)
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
 **Latest Achievements:**
 
+- ✅ **Sprint 4.22 Phase 7 COMPLETE - Comprehensive Error Handling Testing** (2025-10-27)
+  - **Duration:** 6-8 hours
+  - **Status:** ✅ Complete - All 7 subtasks complete, production-ready
+  - **Tests Added:** 1,216 → 1,338 (+122 tests = +10%)
+    - Error injection framework: 22 tests
+    - Circuit breaker testing: 18 tests
+    - Retry logic testing: 14 tests
+    - Resource monitor testing: 15 tests
+    - Error message validation: 20 tests
+    - CLI integration testing: 15 tests
+    - Edge case testing: 18 tests
+  - **Features Tested:**
+    - Circuit breaker: State transitions, failure thresholds, cooldown, per-target isolation
+    - Retry logic: Exponential backoff, transient vs permanent errors, timing templates
+    - Resource monitoring: Memory/CPU thresholds, graceful degradation
+    - Error messages: User-facing clarity, recovery suggestions, no stack traces
+    - Integration: CLI scenarios, exit codes, permissions, network failures
+    - Edge cases: Port 0/65535/65536, CIDR /0//31//32, resource limits
+  - **Quality Metrics:**
+    - Success rate: 100% (all passing, zero regressions)
+    - Coverage: 61.92%+ maintained
+    - Performance: < 5% overhead
+    - Zero clippy warnings
 - ⏸️ **Sprint 4.21 PARTIAL - IPv6 Foundation** (2025-10-26)
   - **Duration:** 7 hours (Sprint 4.21a: 4.5h infrastructure + Sprint 4.21b: 2.5h TCP Connect)
   - **Status:** ⏸️ Partial complete - TCP Connect IPv6 + packet building, remaining scanners deferred to Phase 5
@@ -510,6 +533,23 @@ prtip -sS -g 80 -p 443 target.com                # HTTP port
 # Combined evasion (source port + fragmentation + TTL)
 prtip -sS -g 53 -f --ttl 32 -p 80,443 target.com
 ```
+
+### Error Handling & Resilience (NEW in Sprint 4.22)
+
+ProRT-IP includes comprehensive error handling infrastructure tested with 122 dedicated tests:
+
+- **Circuit breaker:** Auto-disable failing targets (5 failure threshold, 30s cooldown)
+- **Retry logic:** Exponential backoff for transient failures (3 attempts, 1s→2s→4s)
+- **Resource monitoring:** Memory/FD limits with graceful degradation
+- **User-friendly errors:** Clear messages with recovery suggestions (no stack traces)
+- **Error injection testing:** 122 tests covering all failure modes
+  - Error injection framework (22 tests)
+  - Circuit breaker (18 tests)
+  - Retry logic (14 tests)
+  - Resource monitor (15 tests)
+  - Error message validation (20 tests)
+  - CLI integration (15 tests)
+  - Edge cases (18 tests)
 
 ### Timing & Performance
 

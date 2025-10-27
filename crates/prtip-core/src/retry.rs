@@ -189,7 +189,10 @@ where
                             config.max_attempts
                         );
                     } else {
-                        debug!("Error is not retriable, giving up after attempt {}", attempt);
+                        debug!(
+                            "Error is not retriable, giving up after attempt {}",
+                            attempt
+                        );
                     }
                     return Err(e);
                 }

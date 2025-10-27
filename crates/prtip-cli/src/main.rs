@@ -206,12 +206,15 @@ async fn run() -> Result<()> {
     let args = Args::parse_from(processed_args);
 
     // Print banner unless quiet mode or piped output
-    if !args.quiet && atty::is(atty::Stream::Stdout) {
-        let banner = Banner::new(env!("CARGO_PKG_VERSION"));
-        if args.compact_banner {
-            banner.print_compact();
-        } else {
-            banner.print();
+    {
+        use std::io::{stdout, IsTerminal};
+        if !args.quiet && stdout().is_terminal() {
+            let banner = Banner::new(env!("CARGO_PKG_VERSION"));
+            if args.compact_banner {
+                banner.print_compact();
+            } else {
+                banner.print();
+            }
         }
     }
 
@@ -400,7 +403,10 @@ async fn run() -> Result<()> {
     info!("Scan complete: {} results", results.len());
 
     // Format and output results
-    let is_terminal = atty::is(atty::Stream::Stdout);
+    let is_terminal = {
+        use std::io::{stdout, IsTerminal};
+        stdout().is_terminal()
+    };
     let formatter = output::create_formatter(config.output.format, is_terminal);
     let formatted = formatter
         .format_results(&results, &config)
@@ -716,34 +722,6 @@ fn handle_interface_list() -> Result<()> {
     println!("Total: {} interface(s)", interface_count);
 
     Ok(())
-}
-
-// Add atty dependency for terminal detection
-mod atty {
-    pub enum Stream {
-        Stdout,
-    }
-
-    pub fn is(_stream: Stream) -> bool {
-        // Simple check if stdout is a tty
-        #[cfg(unix)]
-        {
-            use std::os::unix::io::AsRawFd;
-            let fd = std::io::stdout().as_raw_fd();
-            unsafe { libc::isatty(fd) != 0 }
-        }
-
-        #[cfg(windows)]
-        {
-            // On Windows, assume terminal for now
-            true
-        }
-
-        #[cfg(not(any(unix, windows)))]
-        {
-            true
-        }
-    }
 }
 
 #[cfg(test)]

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Fixed:** Replaced deprecated `atty v0.2.14` with `std::io::IsTerminal` (Rust 1.70+)
+  - Resolves GitHub Dependabot alert #3 (low severity)
+  - Zero-dependency solution using Rust standard library
+  - Maintains all error formatting functionality (colored output, TTY detection)
+  - No breaking changes or behavior differences
+  - Files modified: `crates/prtip-cli/Cargo.toml`, `crates/prtip-cli/src/error_formatter.rs`, `crates/prtip-cli/src/main.rs`
+
+### Changed
+
+- **Dependencies:** Removed `atty` dependency from `prtip-cli` crate (security improvement)
+
 ### Added
 
 - **Sprint 4.22 Phase 7 COMPLETE - Comprehensive Testing:** Added 100 tests for error handling infrastructure

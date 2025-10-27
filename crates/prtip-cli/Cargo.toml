@@ -48,7 +48,6 @@ thiserror = { workspace = true }
 
 # Terminal colors
 colored = { workspace = true }
-atty = "0.2"
 
 # Progress bar
 indicatif = { workspace = true }

@@ -479,6 +479,9 @@ impl TcpPacketBuilder {
 
         // Build Ethernet header if MAC addresses provided
         if has_ethernet {
+            // SAFETY: unwrap() is safe here because has_ethernet is only true when both
+            // src_mac and dst_mac are Some() (checked earlier in the function). This is the
+            // "After Explicit Check" pattern - mathematically impossible to panic.
             let src_mac = self.src_mac.unwrap();
             let dst_mac = self.dst_mac.unwrap();
 
@@ -604,6 +607,9 @@ impl TcpPacketBuilder {
 
         // Build Ethernet header if MAC addresses provided
         if has_ethernet {
+            // SAFETY: unwrap() is safe here because has_ethernet is only true when both
+            // src_mac and dst_mac are Some() (checked earlier in the function). This is the
+            // "After Explicit Check" pattern - mathematically impossible to panic.
             let src_mac = self.src_mac.unwrap();
             let dst_mac = self.dst_mac.unwrap();
             let buffer_len = buffer.len(); // Capture before mutable borrow
@@ -1048,6 +1054,9 @@ impl UdpPacketBuilder {
 
         // Build Ethernet header if MAC addresses provided
         if has_ethernet {
+            // SAFETY: unwrap() is safe here because has_ethernet is only true when both
+            // src_mac and dst_mac are Some() (checked earlier in the function). This is the
+            // "After Explicit Check" pattern - mathematically impossible to panic.
             let src_mac = self.src_mac.unwrap();
             let dst_mac = self.dst_mac.unwrap();
 
@@ -1159,6 +1168,9 @@ impl UdpPacketBuilder {
 
         // Build Ethernet header if MAC addresses provided
         if has_ethernet {
+            // SAFETY: unwrap() is safe here because has_ethernet is only true when both
+            // src_mac and dst_mac are Some() (checked earlier in the function). This is the
+            // "After Explicit Check" pattern - mathematically impossible to panic.
             let src_mac = self.src_mac.unwrap();
             let dst_mac = self.dst_mac.unwrap();
             let buffer_len = buffer.len(); // Capture before mutable borrow

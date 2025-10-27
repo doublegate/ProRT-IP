@@ -204,7 +204,8 @@ impl ErrorFormatter {
 ///
 /// Automatically detects if stdout is a TTY and enables colors accordingly
 pub fn create_error_formatter() -> ErrorFormatter {
-    ErrorFormatter::new(atty::is(atty::Stream::Stdout))
+    use std::io::{stdout, IsTerminal};
+    ErrorFormatter::new(stdout().is_terminal())
 }
 
 impl fmt::Display for ErrorFormatter {
@@ -346,8 +347,9 @@ mod tests {
 
     #[test]
     fn test_create_error_formatter_auto_detect() {
+        use std::io::{stdout, IsTerminal};
         let formatter = create_error_formatter();
         // Should create successfully (color detection happens at runtime)
-        assert!(formatter.colorize == atty::is(atty::Stream::Stdout));
+        assert!(formatter.colorize == stdout().is_terminal());
     }
 }

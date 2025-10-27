@@ -410,7 +410,6 @@ mod tests {
             success_threshold: 3, // Need 3 successes to close
             timeout: Duration::from_millis(50),
             half_open_limit: 3,
-            ..Default::default()
         };
         let breaker = CircuitBreaker::new(config);
         let target: IpAddr = "192.168.1.1".parse().unwrap();

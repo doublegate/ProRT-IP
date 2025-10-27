@@ -91,30 +91,21 @@ fn test_graceful_degradation_reduces_parallelism() {
 #[test]
 fn test_resource_status_detection_all_variants() {
     // Test all 4 resource status states
-    assert_eq!(ResourceStatus::Normal.is_constrained(), false);
-    assert_eq!(ResourceStatus::Normal.is_memory_constrained(), false);
-    assert_eq!(ResourceStatus::Normal.is_cpu_constrained(), false);
+    assert!(!ResourceStatus::Normal.is_constrained());
+    assert!(!ResourceStatus::Normal.is_memory_constrained());
+    assert!(!ResourceStatus::Normal.is_cpu_constrained());
 
-    assert_eq!(ResourceStatus::MemoryConstrained.is_constrained(), true);
-    assert_eq!(
-        ResourceStatus::MemoryConstrained.is_memory_constrained(),
-        true
-    );
-    assert_eq!(
-        ResourceStatus::MemoryConstrained.is_cpu_constrained(),
-        false
-    );
+    assert!(ResourceStatus::MemoryConstrained.is_constrained());
+    assert!(ResourceStatus::MemoryConstrained.is_memory_constrained());
+    assert!(!ResourceStatus::MemoryConstrained.is_cpu_constrained());
 
-    assert_eq!(ResourceStatus::CpuConstrained.is_constrained(), true);
-    assert_eq!(
-        ResourceStatus::CpuConstrained.is_memory_constrained(),
-        false
-    );
-    assert_eq!(ResourceStatus::CpuConstrained.is_cpu_constrained(), true);
+    assert!(ResourceStatus::CpuConstrained.is_constrained());
+    assert!(!ResourceStatus::CpuConstrained.is_memory_constrained());
+    assert!(ResourceStatus::CpuConstrained.is_cpu_constrained());
 
-    assert_eq!(ResourceStatus::Constrained.is_constrained(), true);
-    assert_eq!(ResourceStatus::Constrained.is_memory_constrained(), true);
-    assert_eq!(ResourceStatus::Constrained.is_cpu_constrained(), true);
+    assert!(ResourceStatus::Constrained.is_constrained());
+    assert!(ResourceStatus::Constrained.is_memory_constrained());
+    assert!(ResourceStatus::Constrained.is_cpu_constrained());
 }
 
 #[test]
@@ -318,10 +309,10 @@ fn test_adaptive_config_minimum_values() {
     // Test edge case with small base values
     let adaptive = AdaptiveConfig::new(2, 10);
 
-    let (p_cpu, b_cpu) = adaptive.adapt(ResourceStatus::CpuConstrained);
+    let (p_cpu, _b_cpu) = adaptive.adapt(ResourceStatus::CpuConstrained);
     assert_eq!(p_cpu, 1, "Minimum parallelism should be 1");
 
-    let (p_mem, b_mem) = adaptive.adapt(ResourceStatus::MemoryConstrained);
+    let (_p_mem, b_mem) = adaptive.adapt(ResourceStatus::MemoryConstrained);
     assert_eq!(b_mem, 5, "Batch size should halve to 5");
 
     let (p_both, b_both) = adaptive.adapt(ResourceStatus::Constrained);

@@ -221,10 +221,10 @@ mod tests {
 
     // Test helper: Create a nested error chain for testing
     fn create_test_error_chain() -> io::Error {
-        io::Error::new(
-            io::ErrorKind::Other,
-            io::Error::new(io::ErrorKind::PermissionDenied, "Permission denied"),
-        )
+        io::Error::other(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "Permission denied",
+        ))
     }
 
     #[test]
@@ -267,7 +267,7 @@ mod tests {
     #[test]
     fn test_extract_suggestion_too_many_files() {
         let formatter = ErrorFormatter::new(false);
-        let err = io::Error::new(io::ErrorKind::Other, "too many open files");
+        let err = io::Error::other("too many open files");
         let output = formatter.format_error(&err);
 
         assert!(output.contains("💡 Suggestion:"));
@@ -291,7 +291,7 @@ mod tests {
     #[test]
     fn test_extract_suggestion_rate_limit() {
         let formatter = ErrorFormatter::new(false);
-        let err = io::Error::new(io::ErrorKind::Other, "Rate limit exceeded");
+        let err = io::Error::other("Rate limit exceeded");
         let output = formatter.format_error(&err);
 
         assert!(output.contains("💡 Suggestion:"));
@@ -338,7 +338,7 @@ mod tests {
     #[test]
     fn test_no_suggestion_for_generic_error() {
         let formatter = ErrorFormatter::new(false);
-        let err = io::Error::new(io::ErrorKind::Other, "Some generic error");
+        let err = io::Error::other("Some generic error");
         let output = formatter.format_error(&err);
 
         // Should NOT contain suggestion for unknown error types

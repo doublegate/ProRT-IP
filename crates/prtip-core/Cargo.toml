@@ -19,6 +19,9 @@ tracing = { workspace = true }
 rlimit = { workspace = true }
 indicatif = { workspace = true }
 regex = { workspace = true }
+tokio = { workspace = true }
+rand = { workspace = true }
+sysinfo = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

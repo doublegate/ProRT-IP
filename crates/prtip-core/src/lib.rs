@@ -22,6 +22,7 @@
 //! ```
 
 pub mod cdn_detector;
+pub mod circuit_breaker;
 pub mod config;
 pub mod crypto;
 pub mod error;
@@ -29,12 +30,15 @@ pub mod errors;
 pub mod os_db;
 pub mod progress;
 pub mod resource_limits;
+pub mod resource_monitor;
+pub mod retry;
 pub mod service_db;
 pub mod top_ports;
 pub mod types;
 
 // Re-export commonly used types
 pub use cdn_detector::{CdnDetector, CdnProvider, Ipv4Cidr};
+pub use circuit_breaker::{CircuitBreaker, CircuitBreakerConfig, CircuitState, CircuitStats};
 pub use config::{
     Config, DecoyConfig, EvasionConfig, NetworkConfig, OutputConfig, OutputFormat,
     PerformanceConfig, ScanConfig, ServiceDetectionConfig,
@@ -43,5 +47,7 @@ pub use error::{Error, Result};
 pub use errors::{ScanError, ScanErrorKind};
 pub use os_db::{OsFingerprint, OsFingerprintDb, ProbeResults};
 pub use progress::{ErrorCategory, ScanProgress};
+pub use resource_monitor::{AdaptiveConfig, ResourceMonitor, ResourceMonitorConfig, ResourceStatus};
+pub use retry::{retry_with_backoff, RetryConfig};
 pub use service_db::{ServiceMatch, ServiceProbe, ServiceProbeDb};
 pub use types::{PortRange, PortState, Protocol, ScanResult, ScanTarget, ScanType, TimingTemplate};

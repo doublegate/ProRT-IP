@@ -6,11 +6,11 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 
 **ProRT-IP WarScan**: Modern network scanner combining Masscan/ZMap speed with Nmap detection depth.
 
-**Status**: Phase 4 COMPLETE + **v0.3.7 Testing Infrastructure**. 789 tests (100%), 61.92% coverage (15,397/24,814 lines, exceeds 60% target), 67 integration tests, OS fingerprinting, service detection, 20+ nmap-compatible flags, 7 scan types, greppable output. CI/CD 7/7 passing, 8/8 release targets (100%).
+**Status**: Phase 4 COMPLETE + **v0.3.9 Evasion & IPv6**. 1,166 tests (100%), 62.5% coverage, 67 integration tests, OS fingerprinting, service detection, 50+ nmap-compatible flags, 7+decoy scan types, greppable output, 5 evasion techniques. CI/CD 7/7 passing, 8/8 release targets (100%).
 
 **Repository**: <https://github.com/doublegate/ProRT-IP>
 **License**: GPL-3.0
-**Updated**: 2025-10-13
+**Updated**: 2025-10-26
 
 ## Architecture
 
@@ -38,10 +38,10 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 | Phase | Status | Tests | Key Features |
 |-------|--------|-------|--------------|
 | 1-3 | ✅ COMPLETE | 391 | Core scanning, protocols, detection |
-| **4: Performance** | **✅ COMPLETE** | **789** | **Testing infra, lock-free, sendmmsg, CDN, adaptive** |
-| 5: Advanced | PLANNED | - | Idle scan, Lua plugins, fragmentation, TUI/GUI |
+| **4: Performance** | **✅ COMPLETE** | **1,166** | **Testing infra, zero-copy, NUMA, PCAPNG, evasion, IPv6 foundation** |
+| 5: Advanced | PLANNED | - | Full IPv6, Idle scan, Lua plugins, TUI/GUI |
 
-**Custom Commands**: /rust-check, /bench-compare, /sprint-*, /perf-profile, /module-create, /doc-update, /test-quick, /ci-status, /bug-report
+**Custom Commands** (15): /rust-check, /bench-compare, /sprint-*, /perf-profile, /module-create, /doc-update, /test-quick, /ci-status, /bug-report, /inspire-me, /daily-log, /next-sprint, /mem-reduce
 
 ## Critical Dependencies
 
@@ -86,7 +86,7 @@ SQLite/PostgreSQL storage: scans (metadata), scan_results (port/service/banner).
 ## CLI Design
 
 **Binary**: `prtip`
-**Nmap Compatibility**: 20+ flags (`-sS`, `-sT`, `-sU`, `-p`, `-F`, `-oN`, `-oX`, `-oG`, `-v`, `-A`)
+**Nmap Compatibility**: 50+ flags (`-sS`, `-sT`, `-sU`, `-p`, `-F`, `-oN`, `-oX`, `-oG`, `-v`, `-A`, `-f`, `--mtu`, `--ttl`, `-D`, `--badsum`, `-g`, etc.)
 
 ```bash
 prtip -sS -p 1-1000 10.0.0.0/24          # SYN scan
@@ -113,10 +113,6 @@ prtip -A -p 80,443 target.com             # Aggressive
 
 **Quick Start**: 00-ARCHITECTURE → 03-DEV-SETUP → 10-PROJECT-STATUS → 04-IMPLEMENTATION-GUIDE → 08-SECURITY
 
-### Local Memory (`CLAUDE.local.md`)
-
-Living document: Current status, recent sessions (5-7 days), decisions, next actions, quick commands
-
 ## Important Notes
 
 **Security**: Penetration testing/red team tool. Include: user confirmation (internet-scale), audit logging, rate limiting (prevent DoS)
@@ -124,3 +120,23 @@ Living document: Current status, recent sessions (5-7 days), decisions, next act
 **Performance**: Zero-copy >10KB, sendmmsg/recvmmsg @1M+ pps, NUMA penalties need IRQ affinity
 
 **Cross-Platform**: Windows Npcap init (90s loss old versions), macOS ChmodBPF/root, FIN/NULL/Xmas fail Windows/Cisco, UDP 10-100x slower (ICMP limiting)
+
+## Release Standards
+
+**Tag Messages** (100-150 lines min): Executive summary, features, performance metrics, technical details, files changed, testing, docs, strategic value, future work
+
+**GitHub Releases** (150-200 lines): All tag content + links, installation, platform matrix, known issues, asset downloads
+
+**Process**: Read /tmp/ProRT-IP/RELEASE-NOTES-v*.md → Read SPRINT-*-COMPLETE.md → Review commits → Create tag (100-150 lines) → Create GitHub release (150-200 lines) → Verify vs quality standard → Push
+
+**Reference**: v0.3.7, v0.3.8, v0.3.9 (extensive, technically detailed)
+
+## Input Validation
+
+✅ IP parsing (IPv4/IPv6) | ✅ CIDR (0-32/0-128) | ✅ Ports (1-65535) | ✅ Filename sanitization | ✅ Rate limits (anti-DoS) | ✅ Memory bounds
+
+## Maintenance
+
+- Update CLAUDE.local.md after sessions | Sync 10-PROJECT-STATUS.md | Update CHANGELOG per release
+- cargo fmt + clippy before commits | Maintain >60% coverage (>90% core) | Document public APIs
+- Review 08-SECURITY.md before releases | Weekly cargo audit | Fuzz input validation

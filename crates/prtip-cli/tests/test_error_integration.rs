@@ -19,7 +19,7 @@ fn get_binary() -> &'static str {
 #[test]
 fn test_invalid_ip_address_999() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "999.999.999.999"])
+        .args(["-sT", "-p", "80", "999.999.999.999"])
         .output()
         .expect("Failed to execute");
 
@@ -43,7 +43,7 @@ fn test_invalid_ip_address_999() {
 #[test]
 fn test_invalid_port_range_reversed() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80-79", "127.0.0.1"])
+        .args(["-sT", "-p", "80-79", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -63,7 +63,7 @@ fn test_invalid_port_range_reversed() {
 #[test]
 fn test_port_overflow_65537() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "65537", "127.0.0.1"])
+        .args(["-sT", "-p", "65537", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -83,7 +83,7 @@ fn test_port_overflow_65537() {
 #[test]
 fn test_invalid_cidr_prefix_33() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "192.168.1.0/33"])
+        .args(["-sT", "-p", "80", "192.168.1.0/33"])
         .output()
         .expect("Failed to execute");
 
@@ -102,7 +102,7 @@ fn test_invalid_cidr_prefix_33() {
 #[test]
 fn test_empty_port_specification() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "", "127.0.0.1"])
+        .args(["-sT", "-p", "", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -132,7 +132,7 @@ fn test_syn_scan_without_root() {
     }
 
     let output = Command::new(get_binary())
-        .args(&["-sS", "-p", "80", "127.0.0.1"])
+        .args(["-sS", "-p", "80", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -166,7 +166,7 @@ fn test_fin_scan_without_root() {
     }
 
     let output = Command::new(get_binary())
-        .args(&["-sF", "-p", "80", "127.0.0.1"])
+        .args(["-sF", "-p", "80", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -195,7 +195,7 @@ fn test_write_to_readonly_directory() {
     let readonly_path = "C:\\Windows\\System32\\output.txt"; // Typically restricted
 
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "127.0.0.1", "-oN", readonly_path])
+        .args(["-sT", "-p", "80", "127.0.0.1", "-oN", readonly_path])
         .output()
         .expect("Failed to execute");
 
@@ -226,13 +226,13 @@ fn test_write_to_readonly_directory() {
 fn test_scan_unreachable_network() {
     // TEST-NET-1 (RFC 5737) - reserved for documentation, should be unreachable
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "192.0.2.1", "--timeout", "100ms"])
+        .args(["-sT", "-p", "80", "192.0.2.1", "--timeout", "100ms"])
         .output()
         .expect("Failed to execute");
 
     // May succeed with 0 results or fail with error
     // Either is acceptable for unreachable network
-    let stdout = String::from_utf8_lossy(&output.stdout);
+    let _stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     // Should not panic or crash
@@ -245,7 +245,7 @@ fn test_scan_unreachable_network() {
 #[test]
 fn test_connection_timeout_short_timeout() {
     let output = Command::new(get_binary())
-        .args(&[
+        .args([
             "-sT",
             "-p",
             "80",
@@ -257,7 +257,7 @@ fn test_connection_timeout_short_timeout() {
         .expect("Failed to execute");
 
     // Should complete (may timeout)
-    let stdout = String::from_utf8_lossy(&output.stdout);
+    let _stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     // Should handle timeouts gracefully (not crash)
@@ -272,7 +272,7 @@ fn test_connection_timeout_short_timeout() {
 #[test]
 fn test_localhost_scan_succeeds() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "1-10", "127.0.0.1"])
+        .args(["-sT", "-p", "1-10", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -286,7 +286,7 @@ fn test_localhost_scan_succeeds() {
     // Should produce output
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
-        stdout.len() > 0 || output.stderr.len() > 0,
+        !stdout.is_empty() || !output.stderr.is_empty(),
         "Should produce output"
     );
 }
@@ -294,7 +294,7 @@ fn test_localhost_scan_succeeds() {
 #[test]
 fn test_invalid_hostname_resolution() {
     let output = Command::new(get_binary())
-        .args(&[
+        .args([
             "-sT",
             "-p",
             "80",
@@ -324,7 +324,7 @@ fn test_invalid_hostname_resolution() {
 #[test]
 fn test_conflicting_scan_types() {
     let output = Command::new(get_binary())
-        .args(&["-sS", "-sT", "-p", "80", "127.0.0.1"])
+        .args(["-sS", "-sT", "-p", "80", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -343,7 +343,7 @@ fn test_conflicting_scan_types() {
 #[test]
 fn test_invalid_timing_template_t6() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "-T6", "127.0.0.1"])
+        .args(["-sT", "-p", "80", "-T6", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -366,7 +366,7 @@ fn test_invalid_timing_template_t6() {
 #[test]
 fn test_invalid_output_format() {
     let output = Command::new(get_binary())
-        .args(&[
+        .args([
             "-sT",
             "-p",
             "80",

@@ -19,7 +19,7 @@ fn get_binary() -> &'static str {
 #[test]
 fn test_empty_port_range_80_to_79() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80-79", "127.0.0.1"])
+        .args(["-sT", "-p", "80-79", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -39,7 +39,7 @@ fn test_empty_port_range_80_to_79() {
 #[test]
 fn test_port_zero() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "0", "127.0.0.1"])
+        .args(["-sT", "-p", "0", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -56,7 +56,7 @@ fn test_port_zero() {
 #[test]
 fn test_port_65535_maximum() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "65535", "127.0.0.1"])
+        .args(["-sT", "-p", "65535", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -71,7 +71,7 @@ fn test_port_65535_maximum() {
 #[test]
 fn test_port_65536_overflow() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "65536", "127.0.0.1"])
+        .args(["-sT", "-p", "65536", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -91,7 +91,7 @@ fn test_port_65536_overflow() {
 #[test]
 fn test_single_port_range_80_to_80() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80-80", "127.0.0.1"])
+        .args(["-sT", "-p", "80-80", "127.0.0.1"])
         .output()
         .expect("Failed to execute");
 
@@ -110,14 +110,14 @@ fn test_single_port_range_80_to_80() {
 #[test]
 fn test_cidr_slash_0_entire_internet() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "0.0.0.0/0"])
+        .args(["-sT", "-p", "80", "0.0.0.0/0"])
         .output()
         .expect("Failed to execute");
 
     // /0 is valid but represents the entire internet (4.3 billion IPs)
     // Current implementation may panic due to integer overflow during target expansion
     let stderr = String::from_utf8_lossy(&output.stderr);
-    let stdout = String::from_utf8_lossy(&output.stdout);
+    let _stdout = String::from_utf8_lossy(&output.stdout);
 
     // The binary executed without freezing (Command returned)
     // Exit code indicates failure (panic or validation error)
@@ -129,7 +129,7 @@ fn test_cidr_slash_0_entire_internet() {
 
     // Should produce some error message (either panic or validation error)
     assert!(
-        stderr.len() > 0,
+        !stderr.is_empty(),
         "Should produce error message for /0 CIDR: {}",
         stderr
     );
@@ -141,7 +141,7 @@ fn test_cidr_slash_0_entire_internet() {
 #[test]
 fn test_cidr_slash_32_single_host() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "192.168.1.1/32"])
+        .args(["-sT", "-p", "80", "192.168.1.1/32"])
         .output()
         .expect("Failed to execute");
 
@@ -156,7 +156,7 @@ fn test_cidr_slash_32_single_host() {
 #[test]
 fn test_cidr_slash_31_two_hosts() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "192.168.1.0/31"])
+        .args(["-sT", "-p", "80", "192.168.1.0/31"])
         .output()
         .expect("Failed to execute");
 
@@ -171,7 +171,7 @@ fn test_cidr_slash_31_two_hosts() {
 #[test]
 fn test_cidr_slash_33_invalid() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "192.168.1.0/33"])
+        .args(["-sT", "-p", "80", "192.168.1.0/33"])
         .output()
         .expect("Failed to execute");
 
@@ -195,7 +195,7 @@ fn test_cidr_slash_33_invalid() {
 #[test]
 fn test_timeout_zero_milliseconds() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "127.0.0.1", "--timeout", "0ms"])
+        .args(["-sT", "-p", "80", "127.0.0.1", "--timeout", "0ms"])
         .output()
         .expect("Failed to execute");
 
@@ -218,7 +218,7 @@ fn test_timeout_zero_milliseconds() {
 #[test]
 fn test_timeout_extremely_large_one_year() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "127.0.0.1", "--timeout", "31536000000ms"])
+        .args(["-sT", "-p", "80", "127.0.0.1", "--timeout", "31536000000ms"])
         .output()
         .expect("Failed to execute");
 
@@ -239,7 +239,7 @@ fn test_timeout_extremely_large_one_year() {
 #[test]
 fn test_parallelism_zero() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "127.0.0.1", "--max-parallelism", "0"])
+        .args(["-sT", "-p", "80", "127.0.0.1", "--max-parallelism", "0"])
         .output()
         .expect("Failed to execute");
 
@@ -259,7 +259,7 @@ fn test_parallelism_zero() {
 #[test]
 fn test_parallelism_one_million() {
     let output = Command::new(get_binary())
-        .args(&[
+        .args([
             "-sT",
             "-p",
             "80",
@@ -292,7 +292,7 @@ fn test_parallelism_one_million() {
 #[test]
 fn test_output_file_empty_path() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "127.0.0.1", "-oN", ""])
+        .args(["-sT", "-p", "80", "127.0.0.1", "-oN", ""])
         .output()
         .expect("Failed to execute");
 
@@ -312,7 +312,7 @@ fn test_output_file_empty_path() {
 #[test]
 fn test_output_file_in_nonexistent_directory() {
     let output = Command::new(get_binary())
-        .args(&[
+        .args([
             "-sT",
             "-p",
             "80",
@@ -345,7 +345,7 @@ fn test_output_file_in_nonexistent_directory() {
 #[test]
 fn test_ipv6_localhost() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "::1"])
+        .args(["-sT", "-p", "80", "::1"])
         .output()
         .expect("Failed to execute");
 
@@ -361,7 +361,7 @@ fn test_ipv6_localhost() {
 #[test]
 fn test_multiple_targets_with_mixed_validity() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "127.0.0.1,999.999.999.999,192.168.1.1"])
+        .args(["-sT", "-p", "80", "127.0.0.1,999.999.999.999,192.168.1.1"])
         .output()
         .expect("Failed to execute");
 
@@ -380,7 +380,7 @@ fn test_multiple_targets_with_mixed_validity() {
 #[test]
 fn test_rate_limit_zero() {
     let output = Command::new(get_binary())
-        .args(&["-sT", "-p", "80", "127.0.0.1", "--max-rate", "0"])
+        .args(["-sT", "-p", "80", "127.0.0.1", "--max-rate", "0"])
         .output()
         .expect("Failed to execute");
 

@@ -147,6 +147,10 @@ mod tests {
 
         let result = returns_result();
         assert!(result.is_err());
-        assert!(matches!(result, Err(Error::Timeout)), "Expected Timeout error, got {:?}", result);
+        assert!(
+            matches!(result, Err(Error::Timeout)),
+            "Expected Timeout error, got {:?}",
+            result
+        );
     }
 }

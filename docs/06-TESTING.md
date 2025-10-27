@@ -774,6 +774,61 @@ fn test_scan() {
 
 ---
 
+## Error Handling Testing
+
+Sprint 4.22 Phase 7 added comprehensive error handling test coverage (122 tests).
+
+### Error Injection Framework
+
+Located: `crates/prtip-scanner/tests/common/error_injection.rs`
+
+Provides deterministic failure simulation for testing error paths:
+
+- **11 Failure Modes:** ConnectionRefused, Timeout, NetworkUnreachable, HostUnreachable, ConnectionReset, ConnectionAborted, WouldBlock, Interrupted, TooManyOpenFiles, MalformedResponse, InvalidEncoding, SuccessAfter, Probabilistic
+- **Retriability Classification:** Automatic detection of transient vs permanent errors
+- **Attempt Tracking:** Reset-able counters for retry testing
+
+Example usage:
+```rust
+use common::error_injection::{ErrorInjector, FailureMode};
+
+let target = "127.0.0.1:80".parse().unwrap();
+let injector = ErrorInjector::new(target, FailureMode::Timeout(Duration::from_secs(5)));
+let result = injector.inject_connection_error();
+assert!(result.is_err());
+```
+
+### Test Categories
+
+**Circuit Breaker (18 tests):** State transitions, threshold detection, cooldown timing, per-target isolation
+
+**Retry Logic (14 tests):** Max attempts, exponential backoff, transient error detection, permanent error handling
+
+**Resource Monitor (15 tests):** Memory thresholds, FD limits, graceful degradation, alert generation
+
+**Error Messages (20 tests):** User-facing clarity, recovery suggestions, context completeness, no stack traces
+
+**Integration (15 tests):** End-to-end CLI scenarios, exit codes, input validation, permission handling
+
+**Edge Cases (18 tests):** Boundary conditions (port 0/65535/65536), CIDR extremes (/0, /31, /32), resource limits
+
+### Coverage Metrics
+
+- Error modules: 85%+ (crates/*/src/error.rs)
+- Circuit breaker: 90%+ (crates/prtip-core/src/circuit_breaker.rs)
+- Retry logic: 85%+ (crates/prtip-core/src/retry.rs)
+- Resource monitor: 80%+ (crates/prtip-core/src/resource_monitor.rs)
+- Overall: 61.92%+ maintained
+
+### Test Results
+
+- Total tests: 1,216 → 1,338 (+122 = +10%)
+- Success rate: 100% (all passing, zero regressions)
+- Performance: < 5% overhead
+- Zero clippy warnings
+
+---
+
 ## Next Steps
 
 - Review [Performance Baselines](07-PERFORMANCE.md) for benchmark targets

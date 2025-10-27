@@ -47,7 +47,9 @@ pub use error::{Error, Result};
 pub use errors::{ScanError, ScanErrorKind};
 pub use os_db::{OsFingerprint, OsFingerprintDb, ProbeResults};
 pub use progress::{ErrorCategory, ScanProgress};
-pub use resource_monitor::{AdaptiveConfig, ResourceMonitor, ResourceMonitorConfig, ResourceStatus};
+pub use resource_monitor::{
+    AdaptiveConfig, ResourceMonitor, ResourceMonitorConfig, ResourceStatus,
+};
 pub use retry::{retry_with_backoff, RetryConfig};
 pub use service_db::{ServiceMatch, ServiceProbe, ServiceProbeDb};
 pub use types::{PortRange, PortState, Protocol, ScanResult, ScanTarget, ScanType, TimingTemplate};

@@ -61,6 +61,10 @@ pub enum Error {
     /// Detection error (OS fingerprinting, service detection)
     #[error("Detection error: {0}")]
     Detection(String),
+
+    /// Scanner operation error (from prtip-scanner crate)
+    #[error("Scanner operation failed: {0}")]
+    ScannerOperation(String),
 }
 
 impl From<AddrParseError> for Error {
@@ -143,10 +147,6 @@ mod tests {
 
         let result = returns_result();
         assert!(result.is_err());
-        if let Err(Error::Timeout) = result {
-            // Success
-        } else {
-            panic!("Expected Timeout error");
-        }
+        assert!(matches!(result, Err(Error::Timeout)), "Expected Timeout error, got {:?}", result);
     }
 }

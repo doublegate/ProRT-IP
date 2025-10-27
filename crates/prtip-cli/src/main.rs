@@ -130,19 +130,9 @@ fn preprocess_argv() -> Vec<String> {
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("Error: {}", e);
-
-        // Print error chain if available
-        if let Some(cause) = e.source() {
-            eprintln!("\nCaused by:");
-            let mut current_cause = Some(cause);
-            let mut level = 1;
-            while let Some(cause) = current_cause {
-                eprintln!("  {}: {}", level, cause);
-                current_cause = cause.source();
-                level += 1;
-            }
-        }
+        // Use enhanced error formatter for user-friendly messages
+        let formatter = prtip_cli::create_error_formatter();
+        eprint!("{}", formatter.format_error(e.as_ref()));
 
         std::process::exit(1);
     }

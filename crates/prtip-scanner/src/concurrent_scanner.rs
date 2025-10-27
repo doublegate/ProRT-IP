@@ -240,11 +240,12 @@ async fn scan_socket_tcp(socket: SocketAddr, config: Config) -> Result<ScanResul
 
                 // Fatal errors that shouldn't be retried
                 if error_str.contains("too many open files") {
-                    panic!(
-                        "Too many open files. Reduce parallelism from {} to a lower value (try {})",
-                        config.performance.parallelism,
-                        config.performance.parallelism / 2
+                    // Convert to ScannerError, then to core::Error
+                    let scanner_err = crate::error::ScannerError::too_many_open_files(
+                        config.performance.parallelism as u64,
+                        (config.performance.parallelism / 2) as u64,
                     );
+                    return Err(prtip_core::Error::ScannerOperation(scanner_err.to_string()));
                 }
 
                 // Connection refused = port closed (no retry needed)

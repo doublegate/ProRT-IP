@@ -9,6 +9,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 4.22 Phase 5 COMPLETE - User-Friendly Error Messages:** Enhanced error formatting with colors, chains, and recovery suggestions
+  - **Duration:** 3.5 hours
+  - **Status:** ✅ **COMPLETE** - All 7 phases complete, production-ready
+  - **Objective:** Provide user-friendly error messages with colored output, error chains, and actionable recovery suggestions
+  - **Features Implemented:**
+    - **ErrorFormatter Module (`error_formatter.rs`):** Comprehensive error formatting (347 lines, 15 tests)
+      - Colored output: Errors (red), warnings (yellow), suggestions (cyan), info (cyan), success (green)
+      - Error chain display: Shows full cause chain with indentation and arrow symbols
+      - Recovery suggestions: Pattern-based suggestion extraction for common errors
+      - TTY detection: Auto-detects color support via `atty` crate
+    - **Integrated into main CLI:** Replaced basic eprintln! with ErrorFormatter
+      - main.rs: Uses `create_error_formatter()` for auto-detected color support
+      - Single line integration: `formatter.format_error(e.as_ref())`
+    - **Recovery Suggestions for 6 Error Types:**
+      1. **Permission Denied:** Suggests sudo/Administrator or TCP Connect (-sT) alternative
+      2. **Too Many Open Files:** Suggests --max-parallelism or ulimit -n increase
+      3. **Rate Limit Exceeded:** Suggests timing templates (-T0 to -T3) or --max-rate
+      4. **Timeout:** Suggests --timeout increase or faster timing (-T3, -T4)
+      5. **No Valid Targets:** Suggests IP (192.168.1.1), CIDR (10.0.0.0/24), hostname examples
+      6. **Output File Exists:** Suggests --force or different output path
+    - **Error Chain Display:** Recursively walks error sources with "Caused by:" header
+    - **Helper Functions:** format_warning(), format_info(), format_success() for non-error messages
+  - **Tests:**
+    - 15 new tests in error_formatter module
+    - Tests for: colored output, error chains, suggestions (6 types), warnings, info, success
+    - All 270 tests passing (zero regressions)
+    - Zero clippy warnings
+  - **Usage Examples:**
+    ```rust
+    // In main CLI
+    let formatter = prtip_cli::create_error_formatter();
+    eprint!("{}", formatter.format_error(error));
+
+    // Example output for permission denied:
+    // Error: Permission denied
+    //
+    // 💡 Suggestion: Run with sudo, or set CAP_NET_RAW capability:
+    //                sudo setcap cap_net_raw+ep $(which prtip),
+    //                or use TCP Connect scan (-sT)
+    ```
+  - **Files Modified/Created:**
+    - Created: `crates/prtip-cli/src/error_formatter.rs` (347 lines, 15 tests)
+    - Modified: `crates/prtip-cli/src/lib.rs` (+2 lines exports)
+    - Modified: `crates/prtip-cli/src/main.rs` (-11/+3 lines simpler error handling)
+    - Modified: `crates/prtip-cli/Cargo.toml` (+1 dependency: atty 0.2)
+    - Total: **~350 lines of new code**
+  - **Strategic Value:**
+    - Improved user experience: Clear, actionable error messages
+    - Reduced support burden: Users get recovery suggestions automatically
+    - Professional appearance: Colored output matches modern CLI tools
+    - Completes Sprint 4.22 Phase 5: Error chain + suggestions + colors
+
 - **Sprint 4.21 PARTIAL COMPLETE - IPv6 Foundation:** TCP Connect IPv6 + packet building infrastructure with strategic deferral
   - **Duration:** 7 hours (Sprint 4.21a: 4.5h infrastructure + Sprint 4.21b partial: 2.5h TCP Connect)
   - **Status:** ⏸️ **PARTIAL COMPLETE** - Foundation ready, remaining scanners deferred to Phase 5

@@ -117,6 +117,9 @@ impl StorageBackend {
             Self::Memory(storage) => storage.add_result(result),
             Self::AsyncDatabase { tx, .. } => {
                 // Send to async worker (non-blocking!)
+                // SAFETY: unwrap() is acceptable here - if the mutex is poisoned (thread panicked
+                // while holding lock), we want to fail-fast rather than risk data corruption.
+                // This is the "Fail-Fast on Mutex Poisoning" pattern for critical data.
                 let tx_guard = tx.lock().unwrap();
                 if let Some(sender) = tx_guard.as_ref() {
                     sender.send(vec![result]).map_err(|_| {
@@ -149,6 +152,7 @@ impl StorageBackend {
         match self {
             Self::Memory(storage) => storage.add_results_batch(&results),
             Self::AsyncDatabase { tx, .. } => {
+                // SAFETY: Same as add_result() - fail-fast on mutex poisoning for data integrity
                 let tx_guard = tx.lock().unwrap();
                 if let Some(sender) = tx_guard.as_ref() {
                     sender.send(results).map_err(|_| {
@@ -185,6 +189,7 @@ impl StorageBackend {
 
                 // Step 1: Take ownership of tx and drop it (signals channel closure)
                 {
+                    // SAFETY: Fail-fast on mutex poisoning during shutdown - better than partial flush
                     let mut tx_guard = tx.lock().unwrap();
                     if let Some(sender) = tx_guard.take() {
                         debug!("Dropping sender to signal channel closure");
@@ -198,6 +203,7 @@ impl StorageBackend {
 
                 // Step 2: Wait for worker completion signal
                 let rx = {
+                    // SAFETY: Fail-fast on mutex poisoning - same rationale as above
                     let mut rx_guard = completion_rx.lock().unwrap();
                     rx_guard.take() // Take ownership of receiver
                 };

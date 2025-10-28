@@ -159,7 +159,11 @@ impl PcapngWriter {
         };
 
         // Write block
-        let mut writer = self.writer.lock().unwrap();
+        // Handle poisoned mutex by recovering the data (better than panic)
+        let mut writer = self.writer.lock().unwrap_or_else(|poisoned| {
+            warn!("PCAPNG writer mutex was poisoned, recovering");
+            poisoned.into_inner()
+        });
         writer
             .write_block(&Block::EnhancedPacket(epb))
             .context("Failed to write Enhanced Packet Block")?;
@@ -186,7 +190,11 @@ impl PcapngWriter {
         let new_writer =
             Self::create_writer(&self.base_path, &self.file_index, &self.current_file_size)?;
 
-        let mut writer = self.writer.lock().unwrap();
+        // Handle poisoned mutex by recovering the data (better than panic)
+        let mut writer = self.writer.lock().unwrap_or_else(|poisoned| {
+            warn!("PCAPNG writer mutex was poisoned during rotation, recovering");
+            poisoned.into_inner()
+        });
         *writer = new_writer;
 
         Ok(())
@@ -194,7 +202,11 @@ impl PcapngWriter {
 
     /// Flush buffered data to disk
     pub fn flush(&self) -> Result<()> {
-        let mut writer = self.writer.lock().unwrap();
+        // Handle poisoned mutex by recovering the data (better than panic)
+        let mut writer = self.writer.lock().unwrap_or_else(|poisoned| {
+            warn!("PCAPNG writer mutex was poisoned during flush, recovering");
+            poisoned.into_inner()
+        });
         writer
             .get_mut()
             .flush()

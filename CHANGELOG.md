@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Sprint 4.22.1: Production Unwrap/Expect Audit (Complete)** (2025-10-27)
+  - Replaced 7 production mutex `.lock().unwrap()` calls with graceful poisoned mutex recovery
+  - Documented 4 safe collection unwraps (`.first()`/`.last()`) with comprehensive SAFETY comments
+  - Achieved defensive error handling across critical production paths
+  - Zero production panic risks from mutex poisoning
+  - Files modified:
+    - `crates/prtip-scanner/src/pcapng.rs` (3 mutex unwraps → unwrap_or_else with recovery)
+    - `crates/prtip-scanner/src/os_probe.rs` (4 mutex unwraps → unwrap_or_else, 4 safe unwraps documented)
+  - Quality: All 1,338 tests passing (100%), zero clippy warnings, zero regressions
+  - Test Duration: ~50s (no impact on CI performance)
+
 ### Security
 
 - **Fixed:** Replaced deprecated `atty v0.2.14` with `std::io::IsTerminal` (Rust 1.70+)

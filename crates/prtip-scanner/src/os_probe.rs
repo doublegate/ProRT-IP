@@ -102,7 +102,11 @@ impl OsProbeEngine {
 
     /// Initialize packet capture
     pub fn with_capture(self, capture: Box<dyn PacketCapture>) -> Self {
-        *self.capture.lock().unwrap() = Some(capture);
+        // Handle poisoned mutex by recovering the data (better than panic)
+        *self.capture.lock().unwrap_or_else(|poisoned| {
+            tracing::warn!("OS probe capture mutex was poisoned, recovering");
+            poisoned.into_inner()
+        }) = Some(capture);
         self
     }
 
@@ -324,7 +328,11 @@ impl OsProbeEngine {
         expected_port: u16,
     ) -> Result<TcpProbeResult, Error> {
         // Send packet
-        if let Some(ref mut capture) = *self.capture.lock().unwrap() {
+        // Handle poisoned mutex by recovering the data (better than panic)
+        if let Some(ref mut capture) = *self.capture.lock().unwrap_or_else(|poisoned| {
+            tracing::warn!("OS probe capture mutex was poisoned during TCP send, recovering");
+            poisoned.into_inner()
+        }) {
             capture
                 .send_packet(packet)
                 .map_err(|e| Error::Network(format!("Failed to send probe: {}", e)))?;
@@ -356,7 +364,11 @@ impl OsProbeEngine {
     /// Send ICMP probe and capture response
     async fn send_and_capture_icmp(&self, packet: &[u8]) -> Result<IcmpProbeResult, Error> {
         // Send packet
-        if let Some(ref mut capture) = *self.capture.lock().unwrap() {
+        // Handle poisoned mutex by recovering the data (better than panic)
+        if let Some(ref mut capture) = *self.capture.lock().unwrap_or_else(|poisoned| {
+            tracing::warn!("OS probe capture mutex was poisoned during ICMP send, recovering");
+            poisoned.into_inner()
+        }) {
             capture
                 .send_packet(packet)
                 .map_err(|e| Error::Network(format!("Failed to send probe: {}", e)))?;
@@ -392,7 +404,11 @@ impl OsProbeEngine {
         expected_port: u16,
     ) -> Result<IcmpProbeResult, Error> {
         // Send packet
-        if let Some(ref mut capture) = *self.capture.lock().unwrap() {
+        // Handle poisoned mutex by recovering the data (better than panic)
+        if let Some(ref mut capture) = *self.capture.lock().unwrap_or_else(|poisoned| {
+            tracing::warn!("OS probe capture mutex was poisoned during UDP send, recovering");
+            poisoned.into_inner()
+        }) {
             capture
                 .send_packet(packet)
                 .map_err(|e| Error::Network(format!("Failed to send probe: {}", e)))?;
@@ -791,6 +807,7 @@ impl OsProbeEngine {
 
         // Calculate ISN rate (ISR)
         if results.len() >= 2 {
+            // SAFETY: We just checked results.len() >= 2, so first() and last() cannot return None
             let time_diff = results
                 .last()
                 .unwrap()
@@ -799,6 +816,7 @@ impl OsProbeEngine {
                 .as_secs_f64();
 
             if time_diff > 0.0 {
+                // SAFETY: Same length check as above guarantees these unwraps are safe
                 let isn_diff = results
                     .last()
                     .unwrap()

@@ -70,7 +70,7 @@ impl Banner {
                 .underline(),
             "│".bright_black(),
             "Tests:".bright_white().bold(),
-            "790 passing".bright_green()
+            "1,338 passing".bright_green()
         );
         println!(
             "  {} {} {}",

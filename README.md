@@ -108,15 +108,62 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 4 COMPLETE ✅ | **Sprint 4.20 COMPLETE** ✅ (9/9 phases, 25 hours) | Phase 5 Advanced Features - Next
+**Current Phase:** Phase 4 COMPLETE ✅ | **v0.4.0 Released** ✅ (2025-10-27 - Production Ready) | Phase 5 Advanced Features - Next
 
-**Latest Version:** v0.3.9 (Released 2025-10-25 - Network Evasion Techniques COMPLETE)
+**Latest Version:** v0.4.0 (Released 2025-10-27 - Error Handling, PCAPNG, Evasion, IPv6 Foundation)
 
-**Test Coverage:** 1,338/1,338 tests passing (100% success rate, +122 Sprint 4.22 Phase 7 tests: comprehensive error handling) | 61.92%+ code coverage (exceeds 60% target)
+**Test Coverage:** 1,338/1,338 tests passing (100% success rate) | 62%+ code coverage (exceeds 60% target)
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
 **Latest Achievements:**
+
+### 🚀 v0.4.0 Release Highlights (2025-10-27)
+
+**Phase 4 Complete - Production Ready** ✨
+
+**Error Handling & Resilience:**
+- Circuit breaker pattern with per-target tracking (Closed/Open/HalfOpen states)
+- Exponential backoff retry logic (T0-T5 timing templates, jitter ±25%)
+- Resource monitoring with adaptive degradation (memory/CPU thresholds)
+- User-friendly error messages (colored output, recovery suggestions)
+- 100% panic-free production code (defensive mutex handling)
+
+**Performance Optimization:**
+- Zero-copy packet building (15% improvement: 68.3ns → 58.8ns per packet)
+- NUMA-aware thread pinning (30% multi-socket improvement)
+- Lock-free architecture with crossbeam queues
+- <5% error handling overhead (4.2% measured)
+
+**Network Evasion (5/5 Nmap techniques - Full Parity):**
+- IP fragmentation (RFC 791 compliant, `-f`/`--mtu`)
+- TTL manipulation (`--ttl`)
+- Bad checksum generation (`--badsum`)
+- Decoy scanning (`-D RND:N`, manual IPs)
+- Source port manipulation (`-g`/`--source-port`)
+
+**Packet Capture:**
+- PCAPNG output format for all scan types
+- Thread-safe writer with automatic rotation
+- Forensics and debugging support (`--packet-capture`)
+
+**IPv6 Foundation:**
+- IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
+- TCP Connect scanner IPv6 support
+- Dual-stack capability
+- Remaining scanners → Phase 5 (v0.5.0)
+
+**Quality Metrics:**
+- Tests: 1,216 → 1,338 (+122 = +10% growth)
+- Coverage: 61.92%+ → 62%+ maintained
+- Clippy warnings: 0
+- Production panics: 0
+- CI/CD: 7/7 platforms GREEN
+- Release targets: 8/8 architectures
+
+---
+
+### Detailed Sprint History
 
 - ✅ **Sprint 4.22 Phase 7 COMPLETE - Comprehensive Error Handling Testing** (2025-10-27)
   - **Duration:** 6-8 hours
@@ -279,8 +326,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 6. ✅ **Sprint 4.18.1 (COMPLETE):** SQLite Query Interface (db list/query/export/compare, 11 hours)
 7. ✅ **Sprint 4.20 (COMPLETE):** Network Evasion Techniques (v0.3.9, 25 hours, 9/9 phases, fragmentation/TTL/bad checksums/decoys)
 8. ⏸️ **Sprint 4.21 (PARTIAL):** IPv6 Foundation (7 hours, TCP Connect + packet building, remaining deferred to Phase 5)
-9. **Sprint 4.22 (NEXT):** Error Handling & Resilience - MEDIUM - ROI 7.0/10 - 3-4 days
-10. **Sprint 4.23 (PLANNED):** Documentation & Release Prep v0.4.0 - LOW - ROI 6.0/10 - 2-3 days
+9. ✅ **Sprint 4.22 (COMPLETE):** Error Handling & Resilience (32-37 hours, circuit breaker, retry logic, resource monitoring, user-friendly errors, 122 tests)
+10. ✅ **Sprint 4.22.1 (COMPLETE):** Production Unwrap Audit (4 hours, 7 mutex unwraps replaced, 4 documented, 100% panic-free)
+11. ✅ **Sprint 4.23 (COMPLETE):** Maintenance & Release Prep v0.4.0 (8 hours, TROUBLESHOOTING.md, documentation updates, v0.4.0 release)
 
 **Phase 5 Priorities (After Sprint 4.23):**
 

@@ -7,7 +7,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.4.0] - 2025-10-27
+
+### Added
+
+**Sprint 4.22: Error Handling Infrastructure (COMPLETE)**
+- Circuit breaker pattern with Closed/Open/HalfOpen states
+- Exponential backoff retry logic with T0-T5 timing templates
+- Resource monitoring with adaptive degradation (memory/CPU thresholds)
+- User-friendly error messages with colored output and recovery suggestions
+- Error injection framework for deterministic testing (11 failure modes)
+- 122 comprehensive error handling tests (injection, circuit, retry, monitor, messages, integration, edges)
+
+**Sprint 4.20: Network Evasion (COMPLETE)**
+- IP fragmentation with RFC 791 compliance (--fragment, --mtu)
+- TTL manipulation (--ttl)
+- Bad checksum generation (--badsum)
+- Decoy scanning with random and manual modes (-D RND:N, -D ip1,ip2,ME)
+- Source port manipulation (-g/--source-port)
+- 161 new tests (1,005 → 1,166)
+
+**Sprint 4.19: NUMA Optimization (COMPLETE)**
+- NUMA-aware thread pinning with hwloc integration
+- Topology detection and automatic core assignment
+- IRQ affinity guidance and configuration
+- CLI flags: --numa, --no-numa
+- Comprehensive PERFORMANCE-GUIDE.md
+
+**Sprint 4.18: PCAPNG Capture (COMPLETE)**
+- PCAPNG output format support
+- Thread-safe packet writer
+- Automatic file rotation
+- Support for all scan types
+- CLI flag: --packet-capture
+
+**Sprint 4.17: Zero-Copy Performance (COMPLETE)**
+- Zero-copy packet building with PacketBuffer
+- 15% performance improvement (68.3ns → 58.8ns per packet)
+- 100% allocation elimination in hot path (3-7M/sec → 0)
+- SYN scanner integration
+- 9 Criterion benchmarks
+
+**Sprint 4.21: IPv6 Foundation (PARTIAL)**
+- IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
+- TCP Connect scanner IPv6 support
+- Dual-stack capability
+- 44 new tests
+- Remaining scanners deferred to Phase 5
+
+**Sprint 4.18.1: SQLite Query Interface (COMPLETE)**
+- Database query interface (db_reader.rs, export.rs, db_commands.rs)
+- 4 export formats (JSON/CSV/XML/text)
+- CLI subcommands: prtip db list|query|export|compare
+- 9 integration tests
+
+**Documentation:**
+- docs/TROUBLESHOOTING.md (new, 1,200+ lines) - Comprehensive troubleshooting guide
+- docs/19-EVASION-GUIDE.md (new, 1,050+ lines) - Network evasion techniques
+- docs/PERFORMANCE-GUIDE.md (enhanced) - NUMA optimization guide
+
 ### Changed
+
+- Enhanced error types with context-aware information
+- Improved CLI help system (git-style categories, 50+ flags)
+- Updated service detection with TLS handshake module
+
+### Fixed
+
+- **Dependabot Alert #3:** Replaced deprecated atty v0.2.14 with std::io::IsTerminal
+- Resolved 56 clippy warnings in Phase 7 test code
+- Eliminated 2 critical production panics (100% elimination)
+
+### Performance
+
+- 15% packet building improvement (68.3ns → 58.8ns)
+- <5% error handling overhead (4.2% measured)
+- Zero allocations in scanning hot path (100% elimination)
+- NUMA optimization for multi-socket systems (+30% improvement)
+
+### Quality Metrics
+
+- Tests: 1,216 → 1,338 (+122 = +10% growth)
+- Coverage: 61.92%+ → 62%+ maintained
+- Clippy warnings: 0 (all resolved)
+- Production panics: 0 (100% elimination)
+- CI/CD: 7/7 platforms passing (100%)
+
+### Changed (Detailed Sprint 4.22.1)
 
 - **Sprint 4.22.1: Production Unwrap/Expect Audit (Complete)** (2025-10-27)
   - Replaced 7 production mutex `.lock().unwrap()` calls with graceful poisoned mutex recovery

@@ -17,13 +17,21 @@
 //! support is complete.
 
 use prtip_core::{Error, Result};
-use std::net::{IpAddr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::TcpStream;
 use tokio::sync::Semaphore;
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
+
+// ICMPv4/v6 packet types and transport
+use pnet::packet::icmp::IcmpTypes;
+use pnet::packet::ip::IpNextHeaderProtocols;
+use pnet::packet::Packet;
+use pnet::transport::{
+    icmp_packet_iter, transport_channel, TransportChannelType, TransportProtocol,
+};
 
 /// Host discovery methods
 ///
@@ -129,28 +137,282 @@ impl DiscoveryEngine {
 
     /// Perform ICMP echo request
     ///
-    /// # Phase 2 Implementation
+    /// Dispatches to IPv4 or IPv6 implementation based on target address type.
+    async fn icmp_ping(&self, target: IpAddr) -> Result<bool> {
+        match target {
+            IpAddr::V4(target_v4) => self.icmp_echo_ipv4(target_v4).await,
+            IpAddr::V6(target_v6) => self.icmp_echo_ipv6(target_v6).await,
+        }
+    }
+
+    /// Perform ICMPv4 Echo Request/Reply
     ///
-    /// This will be fully implemented in Phase 2 when raw socket support is available.
-    /// For now, it returns an error directing users to use TCP SYN ping.
-    async fn icmp_ping(&self, _target: IpAddr) -> Result<bool> {
-        warn!("ICMP ping not yet implemented (Phase 2 feature)");
-        Err(Error::Network(
-            "ICMP ping requires Phase 2 raw socket support. Use TCP SYN ping instead.".to_string(),
-        ))
+    /// Sends ICMP Echo Request (Type 8) and waits for Echo Reply (Type 0).
+    /// Validates identifier to ensure reply matches our request.
+    ///
+    /// # Requirements
+    ///
+    /// Requires CAP_NET_RAW capability (root/sudo on Unix).
+    async fn icmp_echo_ipv4(&self, target: Ipv4Addr) -> Result<bool> {
+        use pnet::packet::icmp::{echo_request, IcmpCode, MutableIcmpPacket};
+
+        // Create ICMP transport channel (requires CAP_NET_RAW)
+        let protocol =
+            TransportChannelType::Layer4(TransportProtocol::Ipv4(IpNextHeaderProtocols::Icmp));
+
+        let (mut tx, mut rx) = transport_channel(1024, protocol)
+            .map_err(|e| Error::Network(format!("Failed to create ICMP transport: {}", e)))?;
+
+        // Build ICMP Echo Request (Type 8, Code 0)
+        let identifier = std::process::id() as u16;
+        let sequence = 1u16;
+        let payload = b"ProRT-IP";
+
+        let mut buffer = vec![0u8; 8 + payload.len()];
+        let mut icmp_packet = MutableIcmpPacket::new(&mut buffer)
+            .ok_or_else(|| Error::Network("Failed to create ICMP packet".to_string()))?;
+
+        icmp_packet.set_icmp_type(IcmpTypes::EchoRequest);
+        icmp_packet.set_icmp_code(IcmpCode(0));
+
+        // Use pnet's echo_request module for proper formatting
+        let mut echo_buffer = vec![
+            0u8;
+            echo_request::MutableEchoRequestPacket::minimum_packet_size()
+                + payload.len()
+        ];
+        let mut echo_packet = echo_request::MutableEchoRequestPacket::new(&mut echo_buffer)
+            .ok_or_else(|| Error::Network("Failed to create echo request".to_string()))?;
+
+        echo_packet.set_icmp_type(IcmpTypes::EchoRequest);
+        echo_packet.set_icmp_code(IcmpCode(0));
+        echo_packet.set_identifier(identifier);
+        echo_packet.set_sequence_number(sequence);
+        echo_packet.set_payload(payload);
+
+        // Calculate checksum
+        let checksum = pnet::util::checksum(echo_packet.packet(), 1);
+        echo_packet.set_checksum(checksum);
+
+        // Send ICMP Echo Request
+        tx.send_to(echo_packet, IpAddr::V4(target))
+            .map_err(|e| Error::Network(format!("Failed to send ICMP request: {}", e)))?;
+
+        // Wait for Echo Reply (Type 0) with timeout
+        let start = std::time::Instant::now();
+        let mut iter = icmp_packet_iter(&mut rx);
+
+        while start.elapsed() < self.timeout {
+            if let Ok(Some((packet, IpAddr::V4(src_ip)))) =
+                iter.next_with_timeout(Duration::from_millis(100))
+            {
+                if src_ip == target && packet.get_icmp_type() == IcmpTypes::EchoReply {
+                    // Parse echo reply to validate identifier
+                    if let Some(echo_reply) = echo_request::EchoRequestPacket::new(packet.packet())
+                    {
+                        if echo_reply.get_identifier() == identifier {
+                            debug!("Host {} alive (ICMP Echo Reply)", target);
+                            return Ok(true);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Timeout - no response
+        debug!("Host {} timeout (ICMP Echo)", target);
+        Ok(false)
+    }
+
+    /// Perform ICMPv6 Echo Request/Reply
+    ///
+    /// Sends ICMPv6 Echo Request (Type 128) and waits for Echo Reply (Type 129).
+    /// Uses the existing icmpv6 packet builder infrastructure.
+    ///
+    /// # Requirements
+    ///
+    /// Requires CAP_NET_RAW capability (root/sudo on Unix).
+    async fn icmp_echo_ipv6(&self, target: Ipv6Addr) -> Result<bool> {
+        use pnet::packet::icmpv6::{Icmpv6Types, MutableIcmpv6Packet};
+        use prtip_network::icmpv6::Icmpv6PacketBuilder;
+
+        // Create ICMPv6 transport channel (requires CAP_NET_RAW)
+        let protocol =
+            TransportChannelType::Layer4(TransportProtocol::Ipv6(IpNextHeaderProtocols::Icmpv6));
+
+        let (mut tx, mut rx) = transport_channel(1024, protocol)
+            .map_err(|e| Error::Network(format!("Failed to create ICMPv6 transport: {}", e)))?;
+
+        // Get local IPv6 address (use link-local or unspecified)
+        let local_ip = if target.is_loopback() {
+            Ipv6Addr::LOCALHOST
+        } else {
+            // Use unspecified - kernel will select appropriate source
+            Ipv6Addr::UNSPECIFIED
+        };
+
+        // Build ICMPv6 Echo Request (Type 128)
+        let identifier = std::process::id() as u16;
+        let sequence = 1u16;
+        let payload = b"ProRT-IP".to_vec();
+
+        let packet_bytes = Icmpv6PacketBuilder::echo_request(identifier, sequence, payload)
+            .build(local_ip, target)
+            .map_err(|e| Error::Network(format!("Failed to build ICMPv6 packet: {}", e)))?;
+
+        // Send ICMPv6 Echo Request using MutableIcmpv6Packet
+        if let Some(icmpv6_packet) = MutableIcmpv6Packet::owned(packet_bytes) {
+            tx.send_to(icmpv6_packet, IpAddr::V6(target))
+                .map_err(|e| Error::Network(format!("Failed to send ICMPv6 request: {}", e)))?;
+        } else {
+            return Err(Error::Network(
+                "Failed to create ICMPv6 packet for sending".to_string(),
+            ));
+        }
+
+        // Wait for Echo Reply (Type 129) with timeout
+        let start = std::time::Instant::now();
+        let mut iter = pnet::transport::icmpv6_packet_iter(&mut rx);
+
+        while start.elapsed() < self.timeout {
+            if let Ok(Some((packet_data, IpAddr::V6(src_ip)))) =
+                iter.next_with_timeout(Duration::from_millis(100))
+            {
+                if src_ip == target && packet_data.get_icmpv6_type() == Icmpv6Types::EchoReply {
+                    // Validate identifier
+                    let payload = packet_data.payload();
+                    if payload.len() >= 4 {
+                        let reply_id = u16::from_be_bytes([payload[0], payload[1]]);
+                        if reply_id == identifier {
+                            debug!("Host {} alive (ICMPv6 Echo Reply)", target);
+                            return Ok(true);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Timeout - no response
+        debug!("Host {} timeout (ICMPv6 Echo)", target);
+        Ok(false)
     }
 
     /// Perform ARP request (local network)
     ///
-    /// # Phase 2 Implementation
+    /// Dispatches to ARP (IPv4) or NDP (IPv6) based on target address type.
+    /// ARP for IPv4 is not yet implemented - returns error.
+    /// NDP for IPv6 is implemented below.
+    async fn arp_ping(&self, target: IpAddr) -> Result<bool> {
+        match target {
+            IpAddr::V4(_target_v4) => {
+                // ARP for IPv4 (future work - Phase 5.x)
+                warn!("ARP ping not yet implemented for IPv4");
+                Err(Error::Network(
+                    "ARP ping not yet implemented for IPv4. Use TCP SYN or ICMP ping.".to_string(),
+                ))
+            }
+            IpAddr::V6(target_v6) => {
+                // NDP replaces ARP for IPv6
+                self.ndp_neighbor_discovery(target_v6).await
+            }
+        }
+    }
+
+    /// Perform NDP (Neighbor Discovery Protocol) for IPv6
     ///
-    /// This will be fully implemented in Phase 2 when raw socket support is available.
-    /// For now, it returns an error directing users to use TCP SYN ping.
-    async fn arp_ping(&self, _target: IpAddr) -> Result<bool> {
-        warn!("ARP ping not yet implemented (Phase 2 feature)");
-        Err(Error::Network(
-            "ARP ping requires Phase 2 raw socket support. Use TCP SYN ping instead.".to_string(),
-        ))
+    /// Sends Neighbor Solicitation (Type 135) to solicited-node multicast address
+    /// and waits for Neighbor Advertisement (Type 136).
+    ///
+    /// # NDP Process
+    ///
+    /// 1. Calculate solicited-node multicast address from target
+    /// 2. Send Neighbor Solicitation to multicast address
+    /// 3. Wait for Neighbor Advertisement from target
+    ///
+    /// # Requirements
+    ///
+    /// Requires CAP_NET_RAW capability (root/sudo on Unix).
+    async fn ndp_neighbor_discovery(&self, target: Ipv6Addr) -> Result<bool> {
+        use prtip_network::icmpv6::{Icmpv6PacketBuilder, Icmpv6ResponseParser};
+
+        // NDP only works for link-local or on-link addresses
+        // For loopback, use ICMP Echo instead
+        if target.is_loopback() {
+            return self.icmp_echo_ipv6(target).await;
+        }
+
+        // Create ICMPv6 transport channel (requires CAP_NET_RAW)
+        let protocol =
+            TransportChannelType::Layer4(TransportProtocol::Ipv6(IpNextHeaderProtocols::Icmpv6));
+
+        let (mut tx, mut rx) = transport_channel(1024, protocol)
+            .map_err(|e| Error::Network(format!("Failed to create ICMPv6 transport: {}", e)))?;
+
+        // Get local IPv6 address (typically link-local fe80::)
+        let local_ip = Ipv6Addr::UNSPECIFIED; // Kernel will select
+
+        // Calculate solicited-node multicast address: ff02::1:ff00:0/104 + last 24 bits of target
+        let target_segments = target.segments();
+        let last_segment = target_segments[7];
+        let multicast_last = 0xff00 | (last_segment & 0x00ff);
+        let solicited_node = Ipv6Addr::new(
+            0xff02,
+            0,
+            0,
+            0,
+            0,
+            1,
+            (target_segments[6] & 0x00ff) << 8 | (last_segment >> 8),
+            multicast_last,
+        );
+
+        // Build NDP Neighbor Solicitation (Type 135)
+        // Source link-layer address option (Type 1) - use zeros (kernel will fill)
+        let source_ll_addr = [0u8; 6];
+        let packet_bytes = Icmpv6PacketBuilder::neighbor_solicitation(target, Some(source_ll_addr))
+            .build(local_ip, solicited_node)
+            .map_err(|e| Error::Network(format!("Failed to build NDP packet: {}", e)))?;
+
+        // Send NDP Neighbor Solicitation
+        use pnet::packet::icmpv6::MutableIcmpv6Packet;
+        if let Some(icmpv6_packet) = MutableIcmpv6Packet::owned(packet_bytes) {
+            tx.send_to(icmpv6_packet, IpAddr::V6(solicited_node))
+                .map_err(|e| Error::Network(format!("Failed to send NDP solicitation: {}", e)))?;
+        } else {
+            return Err(Error::Network(
+                "Failed to create NDP packet for sending".to_string(),
+            ));
+        }
+
+        // Wait for Neighbor Advertisement (Type 136)
+        let start = std::time::Instant::now();
+        let mut iter = pnet::transport::icmpv6_packet_iter(&mut rx);
+
+        while start.elapsed() < self.timeout {
+            if let Ok(Some((packet_data, addr))) =
+                iter.next_with_timeout(Duration::from_millis(100))
+            {
+                // Type 136 = Neighbor Advertisement
+                if packet_data.get_icmpv6_type().0 == 136 {
+                    // Parse target address from Neighbor Advertisement
+                    if let Some(advertised_target) =
+                        Icmpv6ResponseParser::parse_neighbor_advertisement(packet_data.packet())
+                    {
+                        if advertised_target == target {
+                            debug!(
+                                "Host {} alive (NDP Neighbor Advertisement from {})",
+                                target, addr
+                            );
+                            return Ok(true);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Timeout - no response
+        debug!("Host {} timeout (NDP)", target);
+        Ok(false)
     }
 
     /// Perform TCP SYN ping to common ports

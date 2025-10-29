@@ -128,10 +128,8 @@ impl OutputFormatter for TextFormatter {
             self.format_number(total_filtered)
         ));
 
-        // Output by host
+        // Output by host (only show hosts with open ports by default)
         for (host, host_results) in &by_host {
-            output.push_str(&self.format_header(&format!("Host: {}", self.format_ip(host))));
-
             // Count states for this host
             let open_count = host_results
                 .iter()
@@ -145,6 +143,13 @@ impl OutputFormatter for TextFormatter {
                 .iter()
                 .filter(|r| r.state == PortState::Filtered)
                 .count();
+
+            // Skip hosts with no open ports (only show interesting results)
+            if open_count == 0 {
+                continue;
+            }
+
+            output.push_str(&self.format_header(&format!("Host: {}", self.format_ip(host))));
 
             output.push_str(&format!(
                 "Ports: {} open, {} closed, {} filtered\n",
@@ -900,5 +905,58 @@ mod tests {
         let config = create_test_config();
         let output = formatter.format_results(&results, &config).unwrap();
         assert!(output.contains("# Nmap-style"));
+    }
+
+    #[test]
+    fn test_text_formatter_filters_hosts_without_open_ports() {
+        // Create results for multiple hosts:
+        // - 192.168.1.1 has 1 open port (should be displayed)
+        // - 192.168.1.2 has only closed ports (should NOT be displayed)
+        // - 192.168.1.3 has only filtered ports (should NOT be displayed)
+        // - 192.168.1.4 has both closed and filtered (should NOT be displayed)
+        let results = vec![
+            // Host 1: has open port
+            create_test_result("192.168.1.1", 80, PortState::Open),
+            create_test_result("192.168.1.1", 81, PortState::Closed),
+            // Host 2: only closed
+            create_test_result("192.168.1.2", 80, PortState::Closed),
+            create_test_result("192.168.1.2", 81, PortState::Closed),
+            // Host 3: only filtered
+            create_test_result("192.168.1.3", 80, PortState::Filtered),
+            create_test_result("192.168.1.3", 81, PortState::Filtered),
+            // Host 4: closed + filtered
+            create_test_result("192.168.1.4", 80, PortState::Closed),
+            create_test_result("192.168.1.4", 81, PortState::Filtered),
+        ];
+
+        let formatter = TextFormatter::new(false);
+        let config = create_test_config();
+        let output = formatter.format_results(&results, &config).unwrap();
+
+        // Host with open ports should be displayed
+        assert!(
+            output.contains("Host: 192.168.1.1"),
+            "Host with open ports should be displayed"
+        );
+
+        // Hosts without open ports should NOT be displayed
+        assert!(
+            !output.contains("Host: 192.168.1.2"),
+            "Host with only closed ports should NOT be displayed"
+        );
+        assert!(
+            !output.contains("Host: 192.168.1.3"),
+            "Host with only filtered ports should NOT be displayed"
+        );
+        assert!(
+            !output.contains("Host: 192.168.1.4"),
+            "Host with only closed/filtered ports should NOT be displayed"
+        );
+
+        // Summary should still mention all hosts scanned
+        assert!(
+            output.contains("Hosts Scanned:"),
+            "Summary should still include all hosts"
+        );
     }
 }

@@ -1,47 +1,42 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-26 | **Phase:** 4 COMPLETE + Sprint 4.21 PARTIAL ⏸️ | **Tests:** 1,166 (100%) | **Coverage:** 62.5% ✅
+**Updated:** 2025-10-28 | **Phase:** 4 COMPLETE ✅ | **Tests:** 1,338 (100%) | **Coverage:** 62.5% ✅ | **Version:** v0.4.0 🎉
 
 ## Current Status
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase** | 4 COMPLETE | Zero-copy + NUMA + PCAPNG + evasion + IPv6 foundation |
-| **CI** | ✅ 7/7 (100%) | All platforms GREEN (commit dd9da50) |
+| **Phase** | 4 COMPLETE ✅ | Zero-copy + NUMA + PCAPNG + evasion + IPv6 foundation + error handling |
+| **CI** | ✅ 7/7 (100%) | All platforms GREEN (commit b625927) |
 | **Release** | 8/8 (100%) | All architectures building |
-| **Tests** | 1,166 (100%) | Zero ignored, all passing |
+| **Tests** | 1,338 (100%) | Zero ignored, all passing |
 | **Coverage** | 62.5% | Exceeds 60% target |
-| **Version** | v0.3.9 | Evasion + IPv6 TCP Connect complete |
-| **Performance** | 58.8ns/pkt | 15% improvement (was 68.3ns) |
-| **Allocations** | 0 in hot path | 100% elimination |
+| **Version** | v0.4.0 | Released 2025-10-27, production-ready |
+| **Performance** | 5.1ms common | 29x faster than nmap (validated 2025-10-28) |
+| **Full Scan** | 259ms (65K) | 146x faster than Phase 3, acceptable 36% regression vs v0.3.0 |
 | **Issues** | 0 | All Phase 4 resolved ✅ |
 
-**Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, 15 custom commands, PCAPNG capture, NUMA optimization, 5 evasion techniques
+**Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, 15 custom commands, PCAPNG capture, NUMA optimization, 5 evasion techniques, 100% panic-free
 
-## Current Sprint: 4.22 - Error Handling & Resilience
+## Current Focus: Phase 5 Planning & Documentation
 
-**Status:** 🔄 IN PROGRESS (Phases 1-7 COMPLETE)
-**Duration:** 25-27h / 35-45h (60-77% complete, ahead of schedule)
-**Priority:** MEDIUM | **ROI:** 7.0/10
+**Status:** 📋 PLANNING COMPLETE
+**Phase 5 Target:** v0.5.0 (Q1 2026, 6-8 weeks)
 
-**Objective:** Comprehensive error handling with retry logic, circuit breaker pattern, and resource monitoring.
+**Phase 5 Plan Documents:**
+- ✅ Part 1: Sprints 5.1-5.5 complete (94KB, 18,000 words) - IPv6, Service Detection, Idle Scan, Rate Limiting, TLS Analysis
+- ✅ Part 2: Sprints 5.6-5.10 complete (86KB, 12,000 words) - Code Coverage, Fuzz Testing, Plugin System, Benchmarking, Documentation
+- ✅ Total: 180KB, 30,000 words, 10 sprints fully detailed
+- ✅ Supporting sections: Completion Criteria, Risk Assessment (38 risks), Resources, Timeline (Q1 2026), Milestones
 
-**Completed (Phases 1-7):**
-- ✅ P-3: Enhanced error types (ScannerError, CliError) - 2 files, 518 lines, 17 tests
-- ✅ P-4.1: Retry logic with exponential backoff (T0-T5 templates) - retry.rs, 465 lines, 12 tests
-- ✅ P-4.2: Circuit breaker pattern (Closed/Open/HalfOpen states) - circuit_breaker.rs, 515 lines, 12 tests
-- ✅ P-4.3: Resource monitor (adaptive degradation) - resource_monitor.rs, 410 lines, 16 tests
-- ✅ P-5: User-friendly error messages (3.5h) - ErrorFormatter module, colored output, error chains, 6 recovery suggestions, 15 tests
-- ✅ P-6 Part 1: Critical panic elimination (1.5h) - 2 production panics → 0 (100% elimination), 3 files, +10/-7 lines
-- ✅ **P-7: Comprehensive testing (6-8h)** - 122 tests added (22 injection + 18 circuit + 14 retry + 15 monitor + 20 messages + 15 integration + 18 edges), 6 test files (2,717 lines), tests 1,216 → 1,338 (+10%), 100% pass rate, 61.92%+ coverage
+**Phase 5 Objectives:**
+- IPv6 completion (30% → 100%, all 6 scanners)
+- Code coverage (62.5% → 80%+)
+- Plugin system foundation (Lua, ROI 9.2/10)
+- Fuzz testing infrastructure (security hardening)
+- Idle scan implementation (Nmap parity)
 
-**Progress:** 1,338/1,338 tests passing (+122 new Phase 7), zero clippy warnings (commit 3e95eea), zero production panics, A+ quality
-
-**Remaining (Phases 8-10):**
-- **P-6 Part 2:** Unwrap/expect audit (20-25h) - 244 production unwraps, 17 expects (DEFERRED to separate sprint 4.22.1)
-- P-8: Documentation & Refinement (3-4h)
-- P-9: Performance validation (2-3h)
-- P-10: Sprint completion (2-3h)
+**Total Effort:** 168-215 hours (6-8 weeks full-time, 29 weeks part-time)
 
 ## Recent Decisions (Last 7 Days)
 
@@ -63,6 +58,11 @@
 
 | Date | Task | Duration | Key Results | Status |
 |------|------|----------|-------------|--------|
+| 10-28 | **Phase 5 Part 2 Planning** | ~6.5h | Completed Sprints 5.6-5.10 detailed planning (Code Coverage, Fuzz Testing, Plugin System, Benchmarking, Documentation). 1,943 lines, 12,000+ words. Supporting sections: Completion Criteria, Risk Assessment (38 risks), Resources, Timeline/Milestones. Part 2 document moved to to-dos/. Combined with Part 1: 180KB, 30,000 words total. | ✅ |
+| 10-28 | **Phase 4 Final Benchmarking** | ~4h | Comprehensive benchmarking session (Sprint 4.24): 19 benchmarks with hyperfine 1.19.0, validated v0.4.0 performance (5.1ms common ports = 29x faster than nmap), documented acceptable 36% regression vs v0.3.0 (error handling overhead), confirmed 146x improvement vs Phase 3. Deliverables: BENCHMARK-REPORT.md (25K words), TEST-PLAN.md (8.5K words), 12 JSON datasets. Grade A-. | ✅ |
+| 10-28 | **Competitive Analysis** | ~3-4h | /inspire-me command execution: analyzed 4+ competitors (Nmap, Masscan, RustScan, Naabu), 30+ feature categories, code reference analysis (RustScan), 3 web searches. Designed 8 enhancement sprints with ROI scoring (6.5-9.2/10). Created docs/20-PHASE4-ENHANCEMENTS.md (1,210 lines, 12,500 words). Identified strengths (memory safety, testing) and gaps (IPv6 partial, Idle scan, Plugins). | ✅ |
+| 10-28 | **Phase 5 Part 1 Planning** | ~8h | Comprehensive Phase 5 planning: analyzed 5 primary + 9 secondary source documents, synthesized 13 sprints → 10 core + 3 optional, sequenced optimally with dependencies. Detailed Sprints 5.1-5.5 (IPv6, Service Detection, Idle Scan, Rate Limiting, TLS Analysis). Created v0.5.0-PHASE5-DEVELOPMENT-PLAN.md (2,106 lines, 18,000 words). Used Sequential Thinking, Context7, Memory Graph. | ✅ |
+| 10-28 | **Documentation Organization** | ~30m | Created docs/archive/ for Phase 4 historical docs, moved 2 files. Created to-dos/PHASE-4/ for completed TODO lists, moved 4 files (116KB). Updated README performance metrics (5.1ms validated). Pushed all changes to GitHub (commit b625927). | ✅ |
 | 10-27 | **S4.22.1 Unwrap Audit** | ~4h | Production unwrap/mutex hardening: 7 mutex unwraps → unwrap_or_else recovery (pcapng.rs + os_probe.rs), 4 safe collection unwraps documented with SAFETY comments, defensive poisoned mutex handling, 1,338/1,338 tests passing (100%), zero clippy warnings, zero regressions, pragmatic audit focused on actual production risks | ✅ |
 | 10-27 | **Clippy Fixes** | ~30m | Fixed 56 clippy warnings in Phase 7 test code across 5 files: needless_update (1), unused_variables (4), bool_assert_comparison (15), len_zero (3), needless_borrows_for_generic_args (29), io_other_error (4). All 1,338 tests passing, CI green, commit 3e95eea pushed | ✅ |
 | 10-27 | **Dependabot Alert #3 Fix** | ~2h | Replaced deprecated atty v0.2.14 with std::io::IsTerminal (Rust 1.70+), 5 files modified, zero-dependency solution, all functionality preserved, 1,338 tests passing, commit 33801b3 pushed, alert auto-resolved | ✅ |

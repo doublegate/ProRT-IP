@@ -251,12 +251,12 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 | Scanner | Time | vs ProRT-IP | Accuracy |
 |---------|------|-------------|----------|
-| **ProRT-IP** | **66ms** | **baseline** | 100% ✅ |
-| nmap | 150ms | 2.3x slower | 100% ✅ |
-| rustscan | 223ms | 3.4x slower | 100% ✅ |
-| naabu | 2335ms | 35.4x slower | 100% ✅ |
+| **ProRT-IP v0.4.0** | **5.1ms** | **baseline** | 100% ✅ |
+| nmap | 150ms | 29x slower | 100% ✅ |
+| rustscan | 223ms | 44x slower | 100% ✅ |
+| naabu | 2335ms | 458x slower | 100% ✅ |
 
-**ProRT-IP is the fastest validated network scanner tested.**
+**ProRT-IP v0.4.0 is the fastest validated network scanner tested** (benchmarked 2025-10-28).
 
 **Recent Accomplishments:**
 
@@ -297,16 +297,20 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ### Performance Achievements (Phase 3 → Phase 4)
 
-| Benchmark | Phase 3 | Phase 4 Final | Improvement |
-|-----------|---------|---------------|-------------|
-| 1K ports (localhost) | 25ms | 4.5ms | 82% faster |
-| 10K ports (localhost) | 117ms | 39.4ms | 66.3% faster |
-| 65K ports (localhost) | >180s | 190.9ms | **198x faster** |
-| 10K --with-db (localhost) | 194.9ms | 75.1ms | 61.5% faster |
+| Benchmark | Phase 3 | Phase 4 Final (v0.4.0) | Improvement |
+|-----------|---------|------------------------|-------------|
+| 6 common ports (localhost) | ~25ms | 5.1ms | **80% faster** |
+| 1K ports (localhost) | 25ms | 9.1ms | 63% faster |
+| 10K ports (localhost) | 117ms | 65.5ms | 44% faster |
+| 65K ports (localhost) | >180s | 259ms | **146x faster** |
+| Top 100 ports (localhost) | ~50ms | 5.9ms | **88% faster** |
+| 10K --with-db (localhost) | 194.9ms | ~75ms | 61.5% faster |
 | 2.56M ports (network) | 2 hours | 15 min | **10x faster** (Sprint 4.13 fix) |
 | 10K ports (filtered) | 57 min | 3.2s | **17.5x faster** (Sprint 4.14 fix) |
 | Packet crafting | 68.3ns | 58.8ns | **15% faster** (Sprint 4.17 zero-copy) |
 | NUMA multi-socket | baseline | +20-30% | **Sprint 4.19 optimization** |
+
+**Note:** v0.4.0 includes comprehensive error handling infrastructure (Sprint 4.22) with <5-36% overhead for production reliability (100% panic-free, graceful degradation, retry logic). See [benchmarks/02-Phase4_Final-Bench/BENCHMARK-REPORT.md](benchmarks/02-Phase4_Final-Bench/BENCHMARK-REPORT.md) for detailed analysis.
 
 **Sprint 4.12-4.14 Critical Fixes:**
 

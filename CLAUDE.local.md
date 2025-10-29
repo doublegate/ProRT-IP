@@ -1,22 +1,22 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-28 | **Phase:** 4 COMPLETE ✅ | **Tests:** 1,338 (100%) | **Coverage:** 62.5% ✅ | **Version:** v0.4.0 🎉
+**Updated:** 2025-10-28 | **Phase:** 5 IN PROGRESS (Sprint 5.1 47% complete) | **Tests:** 1,338 (100%) | **Coverage:** 62.5% ✅ | **Version:** v0.4.0 🎉
 
 ## Current Status
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase** | 4 COMPLETE ✅ | Zero-copy + NUMA + PCAPNG + evasion + IPv6 foundation + error handling |
+| **Phase** | 5 IN PROGRESS | Sprint 5.1 IPv6 Completion: Phases 1-2.2 complete (SYN/UDP/Stealth dual-stack) |
 | **CI** | ✅ 7/7 (100%) | All platforms GREEN (commit b625927) |
 | **Release** | 8/8 (100%) | All architectures building |
-| **Tests** | 1,338 (100%) | Zero ignored, all passing |
+| **Tests** | 1,338 (100%) | Zero ignored, all passing (270 lib tests + 24 IPv6 integration tests) |
 | **Coverage** | 62.5% | Exceeds 60% target |
 | **Version** | v0.4.0 | Released 2025-10-27, production-ready |
 | **Performance** | 5.1ms common | 29x faster than nmap (validated 2025-10-28) |
 | **Full Scan** | 259ms (65K) | 146x faster than Phase 3, acceptable 36% regression vs v0.3.0 |
 | **Issues** | 0 | All Phase 4 resolved ✅ |
 
-**Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, 15 custom commands, PCAPNG capture, NUMA optimization, 5 evasion techniques, 100% panic-free
+**Key Stats**: 4 crates, 7+decoy scan types, 8 protocols, 6 timing templates, 15 custom commands, PCAPNG capture, NUMA optimization, 5 evasion techniques, 100% panic-free, IPv6 dual-stack (3/6 scanners complete)
 
 ## Current Focus: Phase 5 Planning & Documentation
 
@@ -58,6 +58,7 @@
 
 | Date | Task | Duration | Key Results | Status |
 |------|------|----------|-------------|--------|
+| 10-28 | **Sprint 5.1 Phases 1-2.2** | ~14h | IPv6 dual-stack implementation for SYN/UDP/Stealth scanners. Phase 1: SYN scanner IPv6 (send_syn_ipv6, parse_response, 8 tests), Phase 1.6: SYN integration tests (272L), Phase 2.1: UDP scanner IPv6 (ICMPv6 Type 1 Code 4, 8 tests, 282L), Phase 2.2: Stealth scanner IPv6 (FIN/NULL/Xmas/ACK, 8 tests, 295L). Total: 3 scanners refactored, 24 integration tests, 849L new test code, +1,049/-339 lines modified. 270 lib tests passing, zero clippy warnings, zero regressions. Runtime dispatch pattern (match IpAddr variants), ICMPv6 error handling, dual-stack architecture. Sprint progress: 47% (14h / 30h). | ⏳ |
 | 10-28 | **Phase 5 Part 2 Planning** | ~6.5h | Completed Sprints 5.6-5.10 detailed planning (Code Coverage, Fuzz Testing, Plugin System, Benchmarking, Documentation). 1,943 lines, 12,000+ words. Supporting sections: Completion Criteria, Risk Assessment (38 risks), Resources, Timeline/Milestones. Part 2 document moved to to-dos/. Combined with Part 1: 180KB, 30,000 words total. | ✅ |
 | 10-28 | **Phase 4 Final Benchmarking** | ~4h | Comprehensive benchmarking session (Sprint 4.24): 19 benchmarks with hyperfine 1.19.0, validated v0.4.0 performance (5.1ms common ports = 29x faster than nmap), documented acceptable 36% regression vs v0.3.0 (error handling overhead), confirmed 146x improvement vs Phase 3. Deliverables: BENCHMARK-REPORT.md (25K words), TEST-PLAN.md (8.5K words), 12 JSON datasets. Grade A-. | ✅ |
 | 10-28 | **Competitive Analysis** | ~3-4h | /inspire-me command execution: analyzed 4+ competitors (Nmap, Masscan, RustScan, Naabu), 30+ feature categories, code reference analysis (RustScan), 3 web searches. Designed 8 enhancement sprints with ROI scoring (6.5-9.2/10). Created docs/20-PHASE4-ENHANCEMENTS.md (1,210 lines, 12,500 words). Identified strengths (memory safety, testing) and gaps (IPv6 partial, Idle scan, Plugins). | ✅ |
@@ -138,4 +139,4 @@ prtip -sS -g 53 -f --ttl 32 TARGET   # Combined evasion (all 5 techniques)
 **Refs:** Rust docs, Tokio guide, Nmap book, pnet docs
 
 ---
-**Status:** Phase 4 COMPLETE (Production-Ready) | **Sprint 4.22:** Phases 1-7 COMPLETE (40.5-42.5h / 35-45h = 90-121%) | **Next:** Sprint 4.22 Phases 8-10 (Documentation, Performance validation, Completion) OR Phase 5 | **Updated:** 2025-10-27
+**Status:** Phase 5 IN PROGRESS | **Sprint 5.1:** Phases 1-2.2 COMPLETE (14h / 30h = 47%) | **Next:** Sprint 5.1 Phases 3.1-4.5 (Discovery/Decoy IPv6, CLI, Docs, Validation) | **Updated:** 2025-10-28

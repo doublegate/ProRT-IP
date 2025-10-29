@@ -267,17 +267,12 @@ impl ScanScheduler {
                     syn_scanner.initialize().await?;
 
                     // Scan each port individually (SYN scanner scans one port at a time)
+                    // Sprint 5.1: Now supports both IPv4 and IPv6
                     let mut results = Vec::new();
                     for port in &ports {
                         match syn_scanner
                             .scan_port_with_pcapng(
-                                match host {
-                                    std::net::IpAddr::V4(ip) => ip,
-                                    std::net::IpAddr::V6(_) => {
-                                        warn!("SYN scan doesn't support IPv6 yet");
-                                        continue;
-                                    }
-                                },
+                                host, // Pass IpAddr directly (Sprint 5.1: dual-stack support)
                                 *port,
                                 pcapng_writer.clone(),
                             )
@@ -294,18 +289,12 @@ impl ScanScheduler {
                     let mut udp_scanner = UdpScanner::new(self.config.clone())?;
                     udp_scanner.initialize().await?;
 
-                    // Scan each port individually (UDP scanner doesn't have scan_ports yet)
+                    // Scan each port individually (Sprint 5.1: UDP now supports dual-stack IPv4/IPv6)
                     let mut results = Vec::new();
                     for port in &ports {
                         match udp_scanner
                             .scan_port_with_pcapng(
-                                match host {
-                                    std::net::IpAddr::V4(ip) => ip,
-                                    std::net::IpAddr::V6(_) => {
-                                        warn!("UDP scan doesn't support IPv6 yet");
-                                        continue;
-                                    }
-                                },
+                                host, // Pass IpAddr directly (dual-stack support)
                                 *port,
                                 pcapng_writer.clone(),
                             )
@@ -334,17 +323,12 @@ impl ScanScheduler {
                     stealth_scanner.initialize().await?;
 
                     // Scan each port individually
+                    // Sprint 5.1 Phase 2.2: Stealth scanner now supports IPv6
                     let mut results = Vec::new();
                     for port in &ports {
                         match stealth_scanner
                             .scan_port_with_pcapng(
-                                match host {
-                                    std::net::IpAddr::V4(ip) => ip,
-                                    std::net::IpAddr::V6(_) => {
-                                        warn!("Stealth scan doesn't support IPv6 yet");
-                                        continue;
-                                    }
-                                },
+                                host, // Pass IpAddr directly - dual-stack support
                                 *port,
                                 stealth_type,
                                 pcapng_writer.clone(),

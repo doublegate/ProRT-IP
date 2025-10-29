@@ -8,7 +8,7 @@ use prtip_scanner::pcapng::{Direction, PcapngWriter};
 use prtip_scanner::UdpScanner;
 use std::fs;
 use std::io::Read;
-use std::net::Ipv4Addr;
+use std::net::{IpAddr, Ipv4Addr};
 use std::sync::{Arc, Mutex};
 use tempfile::tempdir;
 
@@ -48,7 +48,7 @@ async fn test_pcapng_capture_udp_scan() {
         .expect("Failed to initialize UDP scanner");
 
     // Scan localhost DNS port (53) with PCAPNG capture
-    let target = Ipv4Addr::new(127, 0, 0, 1);
+    let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
     let port = 53;
 
     let result = scanner
@@ -114,7 +114,7 @@ async fn test_pcapng_file_rotation() {
         .expect("Failed to initialize UDP scanner");
 
     // Scan multiple ports to generate enough packets for rotation
-    let target = Ipv4Addr::new(127, 0, 0, 1);
+    let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
     let ports = vec![53, 123, 161, 137, 138, 139, 445, 500, 514, 520];
 
     for port in ports {
@@ -154,7 +154,7 @@ async fn test_scan_without_pcapng() {
         .await
         .expect("Failed to initialize UDP scanner");
 
-    let target = Ipv4Addr::new(127, 0, 0, 1);
+    let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
     let port = 9999;
 
     // Scan without PCAPNG writer (should use existing scan_port() method)
@@ -271,7 +271,7 @@ async fn test_pcapng_error_handling() {
         }
     };
 
-    let target = Ipv4Addr::new(127, 0, 0, 1);
+    let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
     let port = 53;
 
     // Scan should complete even if PCAPNG write fails
@@ -311,7 +311,7 @@ async fn test_pcapng_tshark_validation() {
         .await
         .expect("Failed to initialize UDP scanner");
 
-    let target = Ipv4Addr::new(127, 0, 0, 1);
+    let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
     let _ = scanner
         .scan_port_with_pcapng(target, 53, Some(pcapng_writer.clone()))
         .await;

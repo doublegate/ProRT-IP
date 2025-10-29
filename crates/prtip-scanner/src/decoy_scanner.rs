@@ -22,7 +22,7 @@
 //! ```no_run
 //! use prtip_scanner::DecoyScanner;
 //! use prtip_core::{Config, ScanTarget};
-//! use std::net::Ipv4Addr;
+//! use std::net::{IpAddr, Ipv4Addr};
 //!
 //! # async fn example() -> prtip_core::Result<()> {
 //! let config = Config::default();
@@ -31,9 +31,9 @@
 //! // Add 5 random decoys
 //! scanner.set_random_decoys(5);
 //!
-//! // Or specify exact decoys
-//! scanner.add_decoy(Ipv4Addr::new(192, 168, 1, 100));
-//! scanner.add_decoy(Ipv4Addr::new(192, 168, 1, 101));
+//! // Or specify exact decoys (both IPv4 and IPv6 supported)
+//! scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100)));
+//! scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 101)));
 //!
 //! // Set position of real IP (0 = first, None = random)
 //! scanner.set_real_position(None);
@@ -55,7 +55,7 @@ use prtip_core::{Config, Error, PortState, Result, ScanResult, ScanTarget};
 use prtip_network::{TcpFlags, TcpPacketBuilder};
 use rand::Rng;
 use std::collections::HashSet;
-use std::net::Ipv4Addr;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::time::Duration;
 use tokio::time;
 
@@ -81,8 +81,8 @@ pub enum DecoyPlacement {
 pub struct DecoyScanner {
     /// Scanner configuration
     config: Config,
-    /// List of decoy IP addresses (not including real source)
-    decoys: Vec<Ipv4Addr>,
+    /// List of decoy IP addresses (not including real source) - supports both IPv4 and IPv6
+    decoys: Vec<IpAddr>,
     /// Real source IP placement strategy
     real_placement: DecoyPlacement,
     /// Number of random decoys to generate
@@ -100,22 +100,22 @@ impl DecoyScanner {
         }
     }
 
-    /// Add a specific decoy IP address
+    /// Add a specific decoy IP address (supports both IPv4 and IPv6)
     ///
     /// # Arguments
     ///
-    /// * `decoy` - IPv4 address to use as decoy
+    /// * `decoy` - IP address to use as decoy (IPv4 or IPv6)
     ///
     /// # Example
     ///
     /// ```no_run
     /// # use prtip_scanner::DecoyScanner;
     /// # use prtip_core::Config;
-    /// # use std::net::Ipv4Addr;
+    /// # use std::net::{IpAddr, Ipv4Addr};
     /// let mut scanner = DecoyScanner::new(Config::default());
-    /// scanner.add_decoy(Ipv4Addr::new(192, 168, 1, 100));
+    /// scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100)));
     /// ```
-    pub fn add_decoy(&mut self, decoy: Ipv4Addr) {
+    pub fn add_decoy(&mut self, decoy: IpAddr) {
         if self.decoys.len() < MAX_DECOYS - 1 {
             // -1 to reserve space for real IP
             self.decoys.push(decoy);
@@ -166,8 +166,51 @@ impl DecoyScanner {
         };
     }
 
-    /// Generate random decoy IPs
-    fn generate_random_decoys(&self, count: usize, exclude: &[Ipv4Addr]) -> Vec<Ipv4Addr> {
+    /// Generate random decoy IPs (dispatcher for IPv4/IPv6)
+    fn generate_random_decoys(
+        &self,
+        target: IpAddr,
+        count: usize,
+        exclude: &[IpAddr],
+    ) -> Vec<IpAddr> {
+        match target {
+            IpAddr::V4(_) => {
+                // Extract IPv4 addresses from exclude list
+                let exclude_v4: Vec<Ipv4Addr> = exclude
+                    .iter()
+                    .filter_map(|ip| match ip {
+                        IpAddr::V4(v4) => Some(*v4),
+                        _ => None,
+                    })
+                    .collect();
+
+                // Generate IPv4 decoys
+                Self::generate_random_decoys_ipv4(count, &exclude_v4)
+                    .into_iter()
+                    .map(IpAddr::V4)
+                    .collect()
+            }
+            IpAddr::V6(target_v6) => {
+                // Extract IPv6 addresses from exclude list
+                let exclude_v6: Vec<Ipv6Addr> = exclude
+                    .iter()
+                    .filter_map(|ip| match ip {
+                        IpAddr::V6(v6) => Some(*v6),
+                        _ => None,
+                    })
+                    .collect();
+
+                // Generate IPv6 decoys within same /64
+                Self::generate_random_decoys_ipv6(target_v6, count, &exclude_v6)
+                    .into_iter()
+                    .map(IpAddr::V6)
+                    .collect()
+            }
+        }
+    }
+
+    /// Generate random IPv4 decoy IPs
+    fn generate_random_decoys_ipv4(count: usize, exclude: &[Ipv4Addr]) -> Vec<Ipv4Addr> {
         let mut rng = rand::thread_rng();
         let mut decoys = Vec::with_capacity(count);
         let exclude_set: HashSet<Ipv4Addr> = exclude.iter().copied().collect();
@@ -182,7 +225,7 @@ impl DecoyScanner {
             );
 
             // Skip reserved ranges and duplicates
-            if !Self::is_reserved_ip(ip) && !exclude_set.contains(&ip) && !decoys.contains(&ip) {
+            if !Self::is_reserved_ipv4(ip) && !exclude_set.contains(&ip) && !decoys.contains(&ip) {
                 decoys.push(ip);
             }
         }
@@ -190,8 +233,67 @@ impl DecoyScanner {
         decoys
     }
 
-    /// Check if IP is in reserved range
-    fn is_reserved_ip(ip: Ipv4Addr) -> bool {
+    /// Generate random IPv6 decoys within same /64 subnet as target
+    fn generate_random_decoys_ipv6(
+        target: Ipv6Addr,
+        count: usize,
+        exclude: &[Ipv6Addr],
+    ) -> Vec<Ipv6Addr> {
+        use rand::Rng;
+
+        // Extract /64 prefix (first 64 bits)
+        let target_segments = target.segments();
+        let prefix = [
+            target_segments[0],
+            target_segments[1],
+            target_segments[2],
+            target_segments[3],
+        ]; // First 4 u16 segments = 64 bits
+
+        let mut decoys = Vec::with_capacity(count);
+        let mut rng = rand::thread_rng();
+        let mut attempts = 0;
+        const MAX_ATTEMPTS: usize = 10000; // Prevent infinite loops
+
+        while decoys.len() < count && attempts < MAX_ATTEMPTS {
+            attempts += 1;
+
+            // Generate random interface identifier (last 64 bits)
+            let iid = [
+                rng.gen::<u16>(),
+                rng.gen::<u16>(),
+                rng.gen::<u16>(),
+                rng.gen::<u16>(),
+            ];
+
+            // Combine prefix + interface identifier
+            let decoy = Ipv6Addr::new(
+                prefix[0], prefix[1], prefix[2], prefix[3], iid[0], iid[1], iid[2], iid[3],
+            );
+
+            // Validate: not target, not reserved, not in exclude list, unique
+            if decoy != target
+                && !Self::is_reserved_ipv6(decoy)
+                && !exclude.contains(&decoy)
+                && !decoys.contains(&decoy)
+            {
+                decoys.push(decoy);
+            }
+        }
+
+        if decoys.len() < count {
+            tracing::warn!(
+                "Could only generate {} IPv6 decoys (requested {})",
+                decoys.len(),
+                count
+            );
+        }
+
+        decoys
+    }
+
+    /// Check if IPv4 address is in reserved range
+    fn is_reserved_ipv4(ip: Ipv4Addr) -> bool {
         let octets = ip.octets();
         matches!(octets[0], 0 | 10 | 127 | 169 | 172 | 192 | 224..=255)
             || (octets[0] == 172 && (16..=31).contains(&octets[1]))
@@ -199,13 +301,55 @@ impl DecoyScanner {
             || (octets[0] == 169 && octets[1] == 254)
     }
 
-    /// Build final decoy list with real IP inserted
-    fn build_decoy_list(&self, real_ip: Ipv4Addr) -> Vec<Ipv4Addr> {
+    /// Check if IPv6 address is reserved/special
+    fn is_reserved_ipv6(ip: Ipv6Addr) -> bool {
+        // Loopback (::1)
+        if ip.is_loopback() {
+            return true;
+        }
+
+        // Unspecified (::)
+        if ip.is_unspecified() {
+            return true;
+        }
+
+        // Multicast (ff00::/8)
+        if ip.is_multicast() {
+            return true;
+        }
+
+        let segments = ip.segments();
+
+        // Link-local (fe80::/10)
+        if (segments[0] & 0xffc0) == 0xfe80 {
+            return true;
+        }
+
+        // Unique local addresses (fc00::/7)
+        if (segments[0] & 0xfe00) == 0xfc00 {
+            return true;
+        }
+
+        // Documentation prefix (2001:db8::/32)
+        if segments[0] == 0x2001 && segments[1] == 0x0db8 {
+            return true;
+        }
+
+        // IPv4-mapped IPv6 (::ffff:0:0/96)
+        if segments[0..5] == [0, 0, 0, 0, 0] && segments[5] == 0xffff {
+            return true;
+        }
+
+        false
+    }
+
+    /// Build final decoy list with real IP inserted (supports IPv4 and IPv6)
+    fn build_decoy_list(&self, real_ip: IpAddr) -> Vec<IpAddr> {
         let mut all_decoys = self.decoys.clone();
 
         // Add random decoys if requested
         if let Some(count) = self.random_decoy_count {
-            let random = self.generate_random_decoys(count, &[real_ip]);
+            let random = self.generate_random_decoys(real_ip, count, &[real_ip]);
             all_decoys.extend(random);
         }
 
@@ -298,18 +442,28 @@ impl DecoyScanner {
     }
 
     /// Get source IP for target (from routing table or config)
-    fn get_source_ip(&self, _target: &ScanTarget) -> Result<Ipv4Addr> {
+    fn get_source_ip(&self, target: &ScanTarget) -> Result<IpAddr> {
         // For now, use a placeholder - should integrate with interface detection
         // In production, this would query routing table or use configured source IP
-        Ok(Ipv4Addr::new(192, 168, 1, 10)) // Placeholder
+
+        // Determine IP version from target
+        let hosts = target.expand_hosts();
+        if !hosts.is_empty() {
+            match hosts[0] {
+                IpAddr::V4(_) => Ok(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 10))), // IPv4 placeholder
+                IpAddr::V6(_) => Ok(IpAddr::V6(Ipv6Addr::new(0xfe80, 0, 0, 0, 0, 0, 0, 1))), // IPv6 placeholder (link-local)
+            }
+        } else {
+            Ok(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 10))) // Default to IPv4
+        }
     }
 
-    /// Build SYN probe packet with spoofed source
+    /// Build SYN probe packet with spoofed source (supports IPv4 and IPv6)
     fn build_syn_probe(
         &self,
         target: &ScanTarget,
         port: u16,
-        source_ip: Ipv4Addr,
+        source_ip: IpAddr,
     ) -> Result<Vec<u8>> {
         // Extract first host from target
         let hosts = target.expand_hosts();
@@ -317,14 +471,16 @@ impl DecoyScanner {
             return Err(Error::Network("No hosts in target".to_string()));
         }
 
-        let dest_ip = match hosts[0] {
-            std::net::IpAddr::V4(ip) => ip,
-            std::net::IpAddr::V6(_) => {
-                return Err(Error::Network(
-                    "Target must be IPv4 for decoy scanning".to_string(),
-                ))
-            }
-        };
+        let dest_ip = hosts[0];
+
+        // Ensure IP versions match
+        if (source_ip.is_ipv4() && dest_ip.is_ipv6()) || (source_ip.is_ipv6() && dest_ip.is_ipv4())
+        {
+            return Err(Error::Network(format!(
+                "IP version mismatch: source {:?}, dest {:?}",
+                source_ip, dest_ip
+            )));
+        }
 
         let src_port = self
             .config
@@ -332,9 +488,8 @@ impl DecoyScanner {
             .source_port
             .unwrap_or_else(|| rand::thread_rng().gen_range(10000..60000));
 
+        // Build SYN packet (dual-stack support)
         let mut builder = TcpPacketBuilder::new()
-            .source_ip(source_ip)
-            .dest_ip(dest_ip)
             .source_port(src_port)
             .dest_port(port)
             .flags(TcpFlags::SYN)
@@ -353,8 +508,17 @@ impl DecoyScanner {
             builder = builder.bad_checksum(true);
         }
 
-        // Build packet
-        let packet = builder.build_ip_packet()?;
+        // Build packet based on IP version
+        let packet = match (source_ip, dest_ip) {
+            (IpAddr::V4(src_v4), IpAddr::V4(dst_v4)) => {
+                builder = builder.source_ip(src_v4).dest_ip(dst_v4);
+                builder.build_ip_packet()?
+            }
+            (IpAddr::V6(src_v6), IpAddr::V6(dst_v6)) => {
+                builder.build_ipv6_packet(src_v6, dst_v6)?
+            }
+            _ => unreachable!("IP version mismatch already checked"),
+        };
 
         // Apply fragmentation if configured (Phase 2)
         let packets_to_send: Vec<Vec<u8>> = if self.config.evasion.fragment_packets {
@@ -383,7 +547,7 @@ impl DecoyScanner {
         &self,
         target: &ScanTarget,
         port: u16,
-        _real_source: Ipv4Addr,
+        _real_source: IpAddr,
     ) -> Result<ScanResult> {
         // TODO: Integrate with actual response receiver
         // For now, return placeholder result
@@ -414,8 +578,8 @@ impl DecoyScanner {
         })
     }
 
-    /// Shuffle decoy order using Fisher-Yates
-    fn shuffle_decoys(&self, decoys: &mut [Ipv4Addr]) {
+    /// Shuffle decoy order using Fisher-Yates (supports IPv4 and IPv6)
+    fn shuffle_decoys(&self, decoys: &mut [IpAddr]) {
         let mut rng = rand::thread_rng();
         for i in (1..decoys.len()).rev() {
             let j = rng.gen_range(0..=i);
@@ -448,8 +612,8 @@ mod tests {
     #[test]
     fn test_add_decoy() {
         let mut scanner = DecoyScanner::new(Config::default());
-        scanner.add_decoy(Ipv4Addr::new(192, 168, 1, 100));
-        scanner.add_decoy(Ipv4Addr::new(192, 168, 1, 101));
+        scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100)));
+        scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 101)));
 
         assert_eq!(scanner.decoy_count(), 3); // 2 decoys + real IP
     }
@@ -489,8 +653,9 @@ mod tests {
     #[test]
     fn test_generate_random_decoys() {
         let scanner = DecoyScanner::new(Config::default());
-        let exclude = vec![Ipv4Addr::new(192, 168, 1, 1)];
-        let decoys = scanner.generate_random_decoys(10, &exclude);
+        let target = IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1));
+        let exclude = vec![IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1))];
+        let decoys = scanner.generate_random_decoys(target, 10, &exclude);
 
         assert_eq!(decoys.len(), 10);
 
@@ -503,22 +668,24 @@ mod tests {
     }
 
     #[test]
-    fn test_is_reserved_ip() {
-        assert!(DecoyScanner::is_reserved_ip(Ipv4Addr::new(10, 0, 0, 1))); // Private
-        assert!(DecoyScanner::is_reserved_ip(Ipv4Addr::new(127, 0, 0, 1))); // Loopback
-        assert!(DecoyScanner::is_reserved_ip(Ipv4Addr::new(192, 168, 1, 1))); // Private
-        assert!(DecoyScanner::is_reserved_ip(Ipv4Addr::new(224, 0, 0, 1))); // Multicast
-        assert!(!DecoyScanner::is_reserved_ip(Ipv4Addr::new(8, 8, 8, 8))); // Public
+    fn test_is_reserved_ipv4() {
+        assert!(DecoyScanner::is_reserved_ipv4(Ipv4Addr::new(10, 0, 0, 1))); // Private
+        assert!(DecoyScanner::is_reserved_ipv4(Ipv4Addr::new(127, 0, 0, 1))); // Loopback
+        assert!(DecoyScanner::is_reserved_ipv4(Ipv4Addr::new(
+            192, 168, 1, 1
+        ))); // Private
+        assert!(DecoyScanner::is_reserved_ipv4(Ipv4Addr::new(224, 0, 0, 1))); // Multicast
+        assert!(!DecoyScanner::is_reserved_ipv4(Ipv4Addr::new(8, 8, 8, 8))); // Public
     }
 
     #[test]
     fn test_build_decoy_list_fixed_position() {
         let mut scanner = DecoyScanner::new(Config::default());
-        scanner.add_decoy(Ipv4Addr::new(1, 1, 1, 1));
-        scanner.add_decoy(Ipv4Addr::new(2, 2, 2, 2));
+        scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(1, 1, 1, 1)));
+        scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(2, 2, 2, 2)));
         scanner.set_real_position(Some(1)); // Real IP at position 1
 
-        let real_ip = Ipv4Addr::new(10, 0, 0, 1);
+        let real_ip = IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1));
         let list = scanner.build_decoy_list(real_ip);
 
         assert_eq!(list.len(), 3);
@@ -530,7 +697,7 @@ mod tests {
         let mut scanner = DecoyScanner::new(Config::default());
         scanner.set_random_decoys(3);
 
-        let real_ip = Ipv4Addr::new(10, 0, 0, 1);
+        let real_ip = IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1));
         let list = scanner.build_decoy_list(real_ip);
 
         assert_eq!(list.len(), 4); // 3 random + real
@@ -541,10 +708,10 @@ mod tests {
     fn test_shuffle_decoys() {
         let scanner = DecoyScanner::new(Config::default());
         let original = vec![
-            Ipv4Addr::new(1, 1, 1, 1),
-            Ipv4Addr::new(2, 2, 2, 2),
-            Ipv4Addr::new(3, 3, 3, 3),
-            Ipv4Addr::new(4, 4, 4, 4),
+            IpAddr::V4(Ipv4Addr::new(1, 1, 1, 1)),
+            IpAddr::V4(Ipv4Addr::new(2, 2, 2, 2)),
+            IpAddr::V4(Ipv4Addr::new(3, 3, 3, 3)),
+            IpAddr::V4(Ipv4Addr::new(4, 4, 4, 4)),
         ];
 
         let mut shuffled = original.clone();
@@ -560,7 +727,7 @@ mod tests {
     #[test]
     fn test_clear_decoys() {
         let mut scanner = DecoyScanner::new(Config::default());
-        scanner.add_decoy(Ipv4Addr::new(1, 1, 1, 1));
+        scanner.add_decoy(IpAddr::V4(Ipv4Addr::new(1, 1, 1, 1)));
         scanner.set_random_decoys(5);
 
         assert_eq!(scanner.decoy_count(), 7);

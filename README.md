@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1,338_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-1,349_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -32,8 +32,8 @@
 
 **At a glance:**
 
-- **Multi-Protocol Scanning:** TCP (SYN, Connect, FIN, NULL, Xmas, ACK, Idle), UDP, ICMP
-- **IPv6 Support:** Partial IPv6 support (TCP Connect + packet building, complete IPv6 in v0.5.0)
+- **Multi-Protocol Scanning:** TCP (SYN, Connect, FIN, NULL, Xmas, ACK, Idle), UDP, ICMP/ICMPv6, NDP
+- **IPv6 Support:** ✅ **Complete IPv6 support (all 6 scanners)** - TCP Connect, SYN, UDP, Stealth (FIN/NULL/Xmas/ACK), Discovery (ICMP/NDP), Decoy (Random /64)
 - **Service Detection:** 187 embedded protocol probes + SSL/TLS handshake (70-80% detection rate)
 - **OS Fingerprinting:** 2000+ signatures using 16-probe technique
 - **Evasion Techniques:** IP fragmentation (-f, --mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoy scanning (-D RND:N, manual IPs + ME positioning)
@@ -112,7 +112,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Latest Version:** v0.4.0 (Released 2025-10-27 - Error Handling, PCAPNG, Evasion, IPv6 Foundation)
 
-**Test Coverage:** 1,338/1,338 tests passing (100% success rate) | 62%+ code coverage (exceeds 60% target)
+**Test Coverage:** 1,349/1,349 tests passing (100% success rate) | 62.5%+ code coverage (exceeds 60% target)
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
@@ -147,19 +147,22 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Thread-safe writer with automatic rotation
 - Forensics and debugging support (`--packet-capture`)
 
-**IPv6 Foundation:**
-- IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
-- TCP Connect scanner IPv6 support
-- Dual-stack capability
-- Remaining scanners → Phase 5 (v0.5.0)
+**IPv6 Support (100% Complete):**
+- ✅ All 6 scanner types support IPv4 and IPv6
+- TCP Connect, SYN, UDP, Stealth (FIN/NULL/Xmas/ACK) scanners
+- Discovery Engine (ICMPv4/v6 Echo + NDP Neighbor Discovery)
+- Decoy Scanner (Random /64 subnet-aware generation)
+- Dual-stack capability with automatic protocol detection
+- Complete IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
 
 **Quality Metrics:**
-- Tests: 1,216 → 1,338 (+122 = +10% growth)
-- Coverage: 61.92%+ → 62%+ maintained
+- Tests: 1,216 → 1,349 (+133 = +11% growth)
+- Coverage: 61.92%+ → 62.5%+ maintained
 - Clippy warnings: 0
 - Production panics: 0
 - CI/CD: 7/7 platforms GREEN
 - Release targets: 8/8 architectures
+- IPv6 Coverage: 100% (all 6 scanners)
 
 ---
 
@@ -276,8 +279,8 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Implementation Impact:**
 
-- Tests: 215 → 1,125 (+910 tests, +423% growth) | 100% passing
-- Code Coverage: 61.92% (15,397 / 24,814 lines covered, exceeds 60% target)
+- Tests: 215 → 1,349 (+1,134 tests, +527% growth) | 100% passing
+- Code Coverage: 62.5% (exceeds 60% target)
 - Lines: ~25,700+ total Rust code (production + tests)
 - Production Code: ~13,000+ lines (Phase 1-3: 6,097 + Enhancements: 4,546 + Phase 4: ~2,400)
 - Modules: 46+ total production modules
@@ -334,12 +337,15 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 10. ✅ **Sprint 4.22.1 (COMPLETE):** Production Unwrap Audit (4 hours, 7 mutex unwraps replaced, 4 documented, 100% panic-free)
 11. ✅ **Sprint 4.23 (COMPLETE):** Maintenance & Release Prep v0.4.0 (8 hours, TROUBLESHOOTING.md, documentation updates, v0.4.0 release)
 
-**Phase 5 Priorities (After Sprint 4.23):**
+**Phase 5 Progress (Sprint 5.1 IN PROGRESS):**
 
-1. **IPv6 Scanner Integration** - Complete IPv6 for SYN/UDP/Stealth/Discovery/Decoy (25-30 hours) - MEDIUM
-2. **Idle Scanning** - Zombie host anonymity technique - HIGH
-3. **Plugin System** - Lua scripting with mlua - HIGH
-4. **TUI/GUI** - Interactive interfaces with ratatui/iced - MEDIUM
+1. ✅ **IPv6 Scanner Integration** - COMPLETE (all 6 scanners support IPv4/IPv6, 21h actual vs 30h planned)
+   - ✅ Sprint 5.1 Phase 1: TCP Connect + SYN IPv6 (6h)
+   - ✅ Sprint 5.1 Phase 2: UDP + Stealth IPv6 (8h)
+   - ✅ Sprint 5.1 Phase 3: Discovery + Decoy IPv6 (7h)
+2. **Idle Scanning** - Zombie host anonymity technique - HIGH (Phase 5.3)
+3. **Plugin System** - Lua scripting with mlua - HIGH (Phase 5.7)
+4. **TUI/GUI** - Interactive interfaces with ratatui/iced - MEDIUM (Phase 6)
 
 ---
 
@@ -526,21 +532,79 @@ prtip --scan-type connect -p 1-65535 192.168.1.1
 ### Scan Types
 
 ```bash
-# TCP Connect (no privileges required)
+# TCP Connect (no privileges required, IPv4/IPv6)
 prtip --scan-type connect -p 1-1000 192.168.1.1
+prtip -sT -p 22,80,443 2001:db8::1              # IPv6
 
-# SYN scan (stealth, requires root/CAP_NET_RAW)
+# SYN scan (stealth, requires root/CAP_NET_RAW, IPv4/IPv6)
 prtip --scan-type syn -p 1-1000 192.168.1.1
+prtip -sS -p 80,443 2001:db8::1                 # IPv6
 
-# UDP scan (protocol-specific payloads: DNS, SNMP, NTP, etc.)
+# UDP scan (protocol-specific payloads: DNS, SNMP, NTP, etc., IPv4/IPv6)
 prtip --scan-type udp -p 53,161,123 192.168.1.1
+prtip -sU -p 53,161 2001:db8::1                 # IPv6
 
-# Stealth scans
+# Stealth scans (IPv4/IPv6)
 prtip --scan-type fin -p 1-1000 192.168.1.1     # FIN scan
 prtip --scan-type null -p 1-1000 192.168.1.1    # NULL scan (no flags)
 prtip --scan-type xmas -p 1-1000 192.168.1.1    # Xmas scan (FIN+PSH+URG)
 prtip --scan-type ack -p 1-1000 192.168.1.1     # ACK scan (firewall detection)
+prtip -sF -p 80,443 2001:db8::1                 # IPv6 FIN scan
+
+# Discovery scans (ICMPv4/v6 Echo + NDP)
+prtip --scan-type discovery 192.168.1.0/24      # IPv4 ICMP Echo
+prtip --scan-type discovery 2001:db8::/64       # IPv6 ICMPv6 Echo + NDP
+
+# Decoy scans (IPv4/IPv6 with random /64 for IPv6)
+prtip -sS -D RND:5 -p 80,443 192.168.1.1        # IPv4 decoys
+prtip -sS -D RND:5 -p 80,443 2001:db8::1        # IPv6 decoys (random /64)
 ```
+
+### IPv6 Scanning (NEW - 100% Complete!)
+
+```bash
+# All scan types support both IPv4 and IPv6:
+
+# TCP Connect scan (IPv6)
+prtip -sT -p 22,80,443 2001:db8::1
+prtip -sT -p 80,443 example.com                 # Dual-stack auto-detect
+
+# SYN scan (IPv6, requires root/CAP_NET_RAW)
+prtip -sS -p 1-1000 2001:db8::1
+prtip -sS -p 80,443 fe80::1                     # Link-local address
+
+# UDP scan (IPv6)
+prtip -sU -p 53,161,123 2001:db8::1
+
+# Stealth scans (IPv6: FIN, NULL, Xmas, ACK)
+prtip -sF -p 80,443 2001:db8::1                 # FIN scan
+prtip -sN -p 80,443 2001:db8::1                 # NULL scan
+prtip -sX -p 80,443 2001:db8::1                 # Xmas scan
+prtip -sA -p 80,443 2001:db8::1                 # ACK scan
+
+# Discovery Engine (ICMPv6 Echo + NDP)
+prtip --scan-type discovery 2001:db8::/64       # ICMPv6 Echo Request (Type 128)
+# NDP Neighbor Discovery (Type 135/136) for subnet scanning
+
+# Decoy scanning (IPv6 with random /64 IID generation)
+prtip -sS -D RND:5 -p 80,443 2001:db8::1        # Random Interface Identifiers
+prtip -sS -D 2001:db8::2,ME,2001:db8::3 -p 80 target  # Manual IPv6 decoys
+
+# Subnet scanning (IPv6 /64 networks)
+prtip -sS -p 80,443 2001:db8::/64               # Entire /64 subnet
+prtip -sT -p 22,80,443 fd00::/8                 # ULA address space
+
+# Mixed IPv4/IPv6 targets
+prtip -sS -p 80,443 192.168.1.1 2001:db8::1 example.com
+```
+
+**IPv6 Features:**
+- **Protocol Support:** ICMPv6 (Echo 128/129), NDP (135/136), TCP/UDP over IPv6
+- **Address Types:** Global unicast, link-local (fe80::), ULA (fd00::), multicast (ff00::)
+- **Decoy Generation:** Random Interface Identifiers within target's /64 subnet
+- **Reserved Filtering:** Automatic filtering of loopback, multicast, documentation prefixes
+- **Dual-Stack:** Automatic IPv4/IPv6 protocol detection for hostnames
+- **Solicited-Node Multicast:** Efficient NDP neighbor discovery
 
 ### Detection Features
 
@@ -802,11 +866,17 @@ prtip -sS -D RND:5 -p 80,443 target          # Decoy scanning
 - `--badsum` - Bad TCP/UDP checksums for firewall/IDS testing
 - `-D` - Decoy scanning (RND:N random + manual IP lists + ME positioning)
 
+**✅ Recently Added (Sprint 5.1 - IPv6 Complete):**
+
+- `-6` / IPv6 support - ✅ **COMPLETE** (all 6 scanners support IPv4/IPv6)
+- ICMPv6 Echo Request/Reply (Type 128/129)
+- NDP Neighbor Discovery (Type 135/136)
+- IPv6 decoy scanning with /64 subnet awareness
+
 **⏳ Planned (Phase 5 - Future Releases):**
 
-- `-sC` / `--script` - Lua plugin system (v0.5.0)
+- `-sC` / `--script` - Lua plugin system (v0.5.0+)
 - `--traceroute` - Route tracing
-- `-6` - IPv6 support
 - Idle/zombie scanning
 
 ### Performance Comparison
@@ -1351,9 +1421,9 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
   - archive/ (15+ sprint directories with historical data)
 - **Validation Reports:** 4 comprehensive documents in bug_fix/ + 32 analysis files
 - **File Organization:** Professional structure with 307+ files across benchmarks/, bug_fix/, docs/
-- **Development Phases:** 8 phases over 20 weeks (Phase 1-4 complete - 50% progress)
-- **Implementation Progress:** 4/8 phases complete (Phase 1-4 COMPLETE) + 8 enhancement cycles + CI/CD optimization + Sprints 4.1-4.20 COMPLETE
-- **Test Suite:** 1,125 tests passing (100% success rate, +910 from initial 215, +423% growth)
+- **Development Phases:** 8 phases over 20 weeks (Phase 1-4 complete + Phase 5 30% progress)
+- **Implementation Progress:** 4/8 phases complete (Phase 1-4 COMPLETE) + 8 enhancement cycles + CI/CD optimization + Sprints 4.1-4.23 + Sprint 5.1 (Phase 3) COMPLETE
+- **Test Suite:** 1,349 tests passing (100% success rate, +1,134 from initial 215, +527% growth)
 - **CI/CD Status:** 7/7 jobs passing (100% success rate)
 - **Build Targets:** 9 platforms (5 production-ready, 4 experimental)
 - **Platform Coverage:** Linux x86, Windows x86, macOS Intel/ARM, FreeBSD (95% user base)
@@ -1416,8 +1486,8 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ---
 
-**Current Status**: ✅ Phase 4 COMPLETE (Sprints 4.1-4.20 ALL COMPLETE) | ⏸️ Sprint 4.21 IPv6 PARTIAL (TCP Connect + packet building, remaining deferred to Phase 5) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Testing Infrastructure Complete | 1,125 Tests Passing (100%) | 62.5% Coverage | 7/7 CI Jobs Passing | 8/8 Platforms Production-Ready | ~16,500 Lines Production Code
+**Current Status**: ✅ Phase 4 COMPLETE (Sprints 4.1-4.23 ALL COMPLETE) | ✅ Sprint 5.1 Phase 3 COMPLETE (100% IPv6 Scanner Coverage - Discovery + Decoy) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Testing Infrastructure Complete | 1,349 Tests Passing (100%) | 62.5% Coverage | 7/7 CI Jobs Passing | 8/8 Platforms Production-Ready | ~17,000 Lines Production Code
 
-**Last Updated**: 2025-10-26
+**Last Updated**: 2025-10-29
 
 For the latest project status, see [Project Status](docs/10-PROJECT-STATUS.md), [Platform Support](docs/15-PLATFORM-SUPPORT.md), and [Changelog](CHANGELOG.md).

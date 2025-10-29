@@ -23,13 +23,13 @@
 //! ```no_run
 //! use prtip_scanner::SynScanner;
 //! use prtip_core::{Config, ScanTarget};
-//! use std::net::Ipv4Addr;
+//! use std::net::{IpAddr, Ipv4Addr};
 //!
 //! # async fn example() -> prtip_core::Result<()> {
 //! let config = Config::default();
 //! let scanner = SynScanner::new(config)?;
 //!
-//! let target = Ipv4Addr::new(192, 168, 1, 1);
+//! let target = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
 //! let result = scanner.scan_port(target, 80).await?;
 //!
 //! println!("Port 80 state: {:?}", result.state);
@@ -44,7 +44,7 @@ use prtip_network::{
     create_capture, packet_buffer::with_buffer, PacketCapture, TcpFlags, TcpOption,
     TcpPacketBuilder,
 };
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
@@ -58,8 +58,8 @@ use std::sync::Mutex as StdMutex;
 /// Connection state for tracking SYN scan responses
 #[derive(Debug, Clone)]
 struct ConnectionState {
-    /// Target IP address
-    target_ip: Ipv4Addr,
+    /// Target IP address (IPv4 or IPv6)
+    target_ip: IpAddr,
     /// Target port
     target_port: u16,
     /// Source port used
@@ -73,27 +73,35 @@ struct ConnectionState {
 }
 
 /// Connection tracking table (lock-free with DashMap for Phase 4 performance)
-type ConnectionTable = Arc<DashMap<(Ipv4Addr, u16, u16), ConnectionState>>;
+/// Sprint 5.1: Updated to IpAddr for dual-stack IPv4/IPv6 support
+type ConnectionTable = Arc<DashMap<(IpAddr, u16, u16), ConnectionState>>;
 
 /// SYN scanner with raw packet support
+/// Sprint 5.1: Enhanced with dual-stack IPv4/IPv6 support
 pub struct SynScanner {
     config: Config,
     capture: Arc<Mutex<Option<Box<dyn PacketCapture>>>>,
     connections: ConnectionTable,
-    local_ip: Ipv4Addr,
+    /// Local IPv4 address for IPv4 scans
+    local_ipv4: Ipv4Addr,
+    /// Local IPv6 address for IPv6 scans (if available)
+    local_ipv6: Option<Ipv6Addr>,
 }
 
 impl SynScanner {
     /// Create a new SYN scanner
+    /// Sprint 5.1: Enhanced to detect both IPv4 and IPv6 local addresses
     pub fn new(config: Config) -> Result<Self> {
-        // Get local IP address (simplified - in production would detect interface)
-        let local_ip = Self::detect_local_ip()?;
+        // Get local IP addresses (simplified - in production would detect interface)
+        let local_ipv4 = Self::detect_local_ipv4()?;
+        let local_ipv6 = Self::detect_local_ipv6();
 
         Ok(Self {
             config,
             capture: Arc::new(Mutex::new(None)),
             connections: Arc::new(DashMap::new()),
-            local_ip,
+            local_ipv4,
+            local_ipv6,
         })
     }
 
@@ -105,22 +113,43 @@ impl SynScanner {
         Ok(())
     }
 
-    /// Detect local IP address for the interface
-    fn detect_local_ip() -> Result<Ipv4Addr> {
+    /// Detect local IPv4 address for the interface
+    fn detect_local_ipv4() -> Result<Ipv4Addr> {
         // Simplified detection - in production would use interface detection
         // For now, use a placeholder
         Ok(Ipv4Addr::new(192, 168, 1, 100))
     }
 
+    /// Detect local IPv6 address for the interface
+    /// Returns None if no IPv6 address is available
+    fn detect_local_ipv6() -> Option<Ipv6Addr> {
+        // Simplified detection - in production would use interface detection
+        // Use link-local placeholder (fe80::1)
+        Some(Ipv6Addr::new(0xfe80, 0, 0, 0, 0, 0, 0, 1))
+    }
+
+    /// Get appropriate local IP address for target
+    /// Returns IPv4 address for IPv4 targets, IPv6 address for IPv6 targets
+    fn get_local_ip_for_target(&self, target: IpAddr) -> Result<IpAddr> {
+        match target {
+            IpAddr::V4(_) => Ok(IpAddr::V4(self.local_ipv4)),
+            IpAddr::V6(_) => self.local_ipv6.map(IpAddr::V6).ok_or_else(|| {
+                prtip_core::Error::Config("No IPv6 address available for IPv6 scan".to_string())
+            }),
+        }
+    }
+
     /// Scan a single port
-    pub async fn scan_port(&self, target: Ipv4Addr, port: u16) -> Result<ScanResult> {
+    /// Sprint 5.1: Updated to accept IpAddr for dual-stack support
+    pub async fn scan_port(&self, target: IpAddr, port: u16) -> Result<ScanResult> {
         self.scan_port_with_pcapng(target, port, None).await
     }
 
     /// Scan a single port with optional PCAPNG packet capture
+    /// Sprint 5.1: Updated to accept IpAddr for dual-stack IPv4/IPv6 support
     pub async fn scan_port_with_pcapng(
         &self,
-        target: Ipv4Addr,
+        target: IpAddr,
         port: u16,
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<ScanResult> {
@@ -189,8 +218,9 @@ impl SynScanner {
                         start_time.elapsed()
                     };
 
-                    return Ok(ScanResult::new(IpAddr::V4(target), port, state)
-                        .with_response_time(response_time));
+                    return Ok(
+                        ScanResult::new(target, port, state).with_response_time(response_time)
+                    );
                 }
                 Ok(Err(e)) => {
                     warn!("Error waiting for response: {}", e);
@@ -242,10 +272,7 @@ impl SynScanner {
         self.connections.remove(&(target, port, src_port));
         let response_time = start_time.elapsed();
 
-        Ok(
-            ScanResult::new(IpAddr::V4(target), port, PortState::Filtered)
-                .with_response_time(response_time),
-        )
+        Ok(ScanResult::new(target, port, PortState::Filtered).with_response_time(response_time))
     }
 
     /// Send a SYN packet
@@ -255,9 +282,10 @@ impl SynScanner {
     /// eliminate heap allocations in packet crafting hot path.
     ///
     /// Sprint 4.18: Added optional PCAPNG packet capture.
+    /// Sprint 5.1: Enhanced with dual-stack IPv4/IPv6 support
     async fn send_syn(
         &self,
-        target: Ipv4Addr,
+        target: IpAddr,
         port: u16,
         src_port: u16,
         retry: u8,
@@ -269,71 +297,145 @@ impl SynScanner {
         // Generate sequence number (for stateless, could use SipHash)
         let sequence: u32 = rng.gen();
 
-        // Build and send SYN packet using zero-copy API
-        with_buffer(|pool| {
-            // Build SYN packet (zero allocations)
-            let mut builder = TcpPacketBuilder::new()
-                .source_ip(self.local_ip)
-                .dest_ip(target)
-                .source_port(src_port)
-                .dest_port(port)
-                .sequence(sequence)
-                .flags(TcpFlags::SYN)
-                .window(65535)
-                .add_option(TcpOption::Mss(1460))
-                .add_option(TcpOption::WindowScale(7))
-                .add_option(TcpOption::SackPermitted);
+        // Get appropriate local IP for target
+        let local_ip = self.get_local_ip_for_target(target)?;
 
-            // Apply TTL if configured (Sprint 4.20: Evasion features)
-            if let Some(ttl) = self.config.evasion.ttl {
-                builder = builder.ttl(ttl);
+        // Build and send SYN packet (dispatch based on IP version)
+        match (local_ip, target) {
+            (IpAddr::V4(src_ipv4), IpAddr::V4(dst_ipv4)) => {
+                // IPv4 SYN packet
+                with_buffer(|pool| {
+                    let mut builder = TcpPacketBuilder::new()
+                        .source_ip(src_ipv4)
+                        .dest_ip(dst_ipv4)
+                        .source_port(src_port)
+                        .dest_port(port)
+                        .sequence(sequence)
+                        .flags(TcpFlags::SYN)
+                        .window(65535)
+                        .add_option(TcpOption::Mss(1460))
+                        .add_option(TcpOption::WindowScale(7))
+                        .add_option(TcpOption::SackPermitted);
+
+                    // Apply TTL if configured (Sprint 4.20: Evasion features)
+                    if let Some(ttl) = self.config.evasion.ttl {
+                        builder = builder.ttl(ttl);
+                    }
+
+                    // Apply bad checksum if configured (Sprint 4.20 Phase 6: Bad checksum)
+                    if self.config.evasion.bad_checksums {
+                        builder = builder.bad_checksum(true);
+                    }
+
+                    let packet = builder.build_ip_packet_with_buffer(pool)?;
+
+                    // Sprint 4.20: Check if packet fragmentation is enabled
+                    let packets_to_send: Vec<Vec<u8>> = if self.config.evasion.fragment_packets {
+                        // Fragment the packet using configured MTU
+                        use prtip_network::fragment_tcp_packet;
+                        let mtu = self.config.evasion.mtu.unwrap_or(1500);
+                        let packet_data = packet.to_vec(); // Copy from pool for fragmentation
+                        fragment_tcp_packet(&packet_data, mtu).map_err(|e| {
+                            prtip_core::Error::Network(format!("Fragmentation failed: {}", e))
+                        })?
+                    } else {
+                        // No fragmentation - send as single packet
+                        vec![packet.to_vec()]
+                    };
+
+                    // Capture packets to PCAPNG if writer is provided
+                    if let Some(ref writer) = pcapng_writer {
+                        for packet_data in &packets_to_send {
+                            if let Ok(guard) = writer.lock() {
+                                if let Err(e) = guard.write_packet(packet_data, Direction::Sent) {
+                                    // Log error but don't fail scan (PCAPNG is optional)
+                                    warn!("PCAPNG write error (SYN packet): {}", e);
+                                }
+                            }
+                        }
+                    }
+
+                    // Send packet(s) (fragmented or whole)
+                    if let Some(ref mut capture) = *self.capture.lock() {
+                        for fragment in &packets_to_send {
+                            capture.send_packet(fragment).map_err(|e| {
+                                prtip_core::Error::Network(format!("Failed to send SYN: {}", e))
+                            })?;
+                        }
+
+                        if self.config.evasion.fragment_packets {
+                            trace!(
+                                "Sent {} fragmented SYN packets to {}:{} (src_port={}, seq={}, retry={})",
+                                packets_to_send.len(),
+                                target,
+                                port,
+                                src_port,
+                                sequence,
+                                retry
+                            );
+                        } else {
+                            trace!(
+                                "Sent SYN to {}:{} (src_port={}, seq={}, retry={})",
+                                target,
+                                port,
+                                src_port,
+                                sequence,
+                                retry
+                            );
+                        }
+                    } else {
+                        return Err(prtip_core::Error::Config(
+                            "Packet capture not initialized".to_string(),
+                        ));
+                    }
+
+                    // Reset buffer for reuse
+                    pool.reset();
+                    Ok::<_, prtip_core::Error>(())
+                })?;
             }
+            (IpAddr::V6(src_ipv6), IpAddr::V6(dst_ipv6)) => {
+                // IPv6 SYN packet - Sprint 5.1
+                let mut builder = TcpPacketBuilder::new()
+                    .source_port(src_port)
+                    .dest_port(port)
+                    .sequence(sequence)
+                    .flags(TcpFlags::SYN)
+                    .window(65535)
+                    .add_option(TcpOption::Mss(1460))
+                    .add_option(TcpOption::WindowScale(7))
+                    .add_option(TcpOption::SackPermitted);
 
-            // Apply bad checksum if configured (Sprint 4.20 Phase 6: Bad checksum)
-            if self.config.evasion.bad_checksums {
-                builder = builder.bad_checksum(true);
-            }
+                // Apply hop limit if configured (IPv6 equivalent of TTL)
+                if let Some(ttl) = self.config.evasion.ttl {
+                    builder = builder.ttl(ttl);
+                }
 
-            let packet = builder.build_ip_packet_with_buffer(pool)?;
+                // Apply bad checksum if configured
+                if self.config.evasion.bad_checksums {
+                    builder = builder.bad_checksum(true);
+                }
 
-            // Sprint 4.20: Check if packet fragmentation is enabled
-            let packets_to_send: Vec<Vec<u8>> = if self.config.evasion.fragment_packets {
-                // Fragment the packet using configured MTU
-                use prtip_network::fragment_tcp_packet;
-                let mtu = self.config.evasion.mtu.unwrap_or(1500);
-                let packet_data = packet.to_vec(); // Copy from pool for fragmentation
-                fragment_tcp_packet(&packet_data, mtu).map_err(|e| {
-                    prtip_core::Error::Network(format!("Fragmentation failed: {}", e))
-                })?
-            } else {
-                // No fragmentation - send as single packet
-                vec![packet.to_vec()]
-            };
+                // Build IPv6+TCP packet (no fragmentation support for IPv6 yet - Sprint 5.1 Phase 1)
+                let packet = builder.build_ipv6_packet(src_ipv6, dst_ipv6)?;
 
-            // Capture packets to PCAPNG if writer is provided
-            if let Some(ref writer) = pcapng_writer {
-                for packet_data in &packets_to_send {
+                // Capture packet to PCAPNG if writer is provided
+                if let Some(ref writer) = pcapng_writer {
                     if let Ok(guard) = writer.lock() {
-                        if let Err(e) = guard.write_packet(packet_data, Direction::Sent) {
-                            // Log error but don't fail scan (PCAPNG is optional)
-                            warn!("PCAPNG write error (SYN packet): {}", e);
+                        if let Err(e) = guard.write_packet(&packet, Direction::Sent) {
+                            warn!("PCAPNG write error (IPv6 SYN packet): {}", e);
                         }
                     }
                 }
-            }
 
-            // Send packet(s) (fragmented or whole)
-            if let Some(ref mut capture) = *self.capture.lock() {
-                for fragment in &packets_to_send {
-                    capture.send_packet(fragment).map_err(|e| {
-                        prtip_core::Error::Network(format!("Failed to send SYN: {}", e))
+                // Send packet
+                if let Some(ref mut capture) = *self.capture.lock() {
+                    capture.send_packet(&packet).map_err(|e| {
+                        prtip_core::Error::Network(format!("Failed to send IPv6 SYN: {}", e))
                     })?;
-                }
 
-                if self.config.evasion.fragment_packets {
                     trace!(
-                        "Sent {} fragmented SYN packets to {}:{} (src_port={}, seq={}, retry={})",
-                        packets_to_send.len(),
+                        "Sent IPv6 SYN to {}:{} (src_port={}, seq={}, retry={})",
                         target,
                         port,
                         src_port,
@@ -341,25 +443,18 @@ impl SynScanner {
                         retry
                     );
                 } else {
-                    trace!(
-                        "Sent SYN to {}:{} (src_port={}, seq={}, retry={})",
-                        target,
-                        port,
-                        src_port,
-                        sequence,
-                        retry
-                    );
+                    return Err(prtip_core::Error::Config(
+                        "Packet capture not initialized".to_string(),
+                    ));
                 }
-            } else {
-                return Err(prtip_core::Error::Config(
-                    "Packet capture not initialized".to_string(),
-                ));
             }
-
-            // Reset buffer for reuse
-            pool.reset();
-            Ok::<_, prtip_core::Error>(())
-        })?;
+            _ => {
+                return Err(prtip_core::Error::Config(format!(
+                    "IP version mismatch: local {} vs target {}",
+                    local_ip, target
+                )));
+            }
+        }
 
         Ok(sequence)
     }
@@ -367,56 +462,105 @@ impl SynScanner {
     /// Send a RST packet to close the connection
     ///
     /// Sprint 4.17 Phase 3: Integrated zero-copy packet building.
+    /// Sprint 5.1: Updated for dual-stack IPv4/IPv6 support
     async fn send_rst(
         &self,
-        target: Ipv4Addr,
+        target: IpAddr,
         port: u16,
         src_port: u16,
         sequence: u32,
     ) -> Result<()> {
-        // Build and send RST packet using zero-copy API
-        with_buffer(|pool| {
-            let mut builder = TcpPacketBuilder::new()
-                .source_ip(self.local_ip)
-                .dest_ip(target)
-                .source_port(src_port)
-                .dest_port(port)
-                .sequence(sequence)
-                .flags(TcpFlags::RST)
-                .window(0);
+        // Get appropriate local IP for target
+        let local_ip = self.get_local_ip_for_target(target)?;
 
-            // Apply TTL if configured
-            if let Some(ttl) = self.config.evasion.ttl {
-                builder = builder.ttl(ttl);
-            }
+        match (local_ip, target) {
+            (IpAddr::V4(src_ipv4), IpAddr::V4(dst_ipv4)) => {
+                // Build and send IPv4 RST packet using zero-copy API
+                with_buffer(|pool| {
+                    let mut builder = TcpPacketBuilder::new()
+                        .source_ip(src_ipv4)
+                        .dest_ip(dst_ipv4)
+                        .source_port(src_port)
+                        .dest_port(port)
+                        .sequence(sequence)
+                        .flags(TcpFlags::RST)
+                        .window(0);
 
-            // Apply bad checksum if configured
-            if self.config.evasion.bad_checksums {
-                builder = builder.bad_checksum(true);
-            }
+                    // Apply TTL if configured
+                    if let Some(ttl) = self.config.evasion.ttl {
+                        builder = builder.ttl(ttl);
+                    }
 
-            let packet = builder.build_ip_packet_with_buffer(pool)?;
+                    // Apply bad checksum if configured
+                    if self.config.evasion.bad_checksums {
+                        builder = builder.bad_checksum(true);
+                    }
 
-            if let Some(ref mut capture) = *self.capture.lock() {
-                capture.send_packet(packet).map_err(|e| {
-                    prtip_core::Error::Network(format!("Failed to send RST: {}", e))
+                    let packet = builder.build_ip_packet_with_buffer(pool)?;
+
+                    if let Some(ref mut capture) = *self.capture.lock() {
+                        capture.send_packet(packet).map_err(|e| {
+                            prtip_core::Error::Network(format!("Failed to send RST: {}", e))
+                        })?;
+
+                        trace!("Sent RST to {}:{} (src_port={})", target, port, src_port);
+                    }
+
+                    // Reset buffer for reuse
+                    pool.reset();
+                    Ok::<_, prtip_core::Error>(())
                 })?;
-
-                trace!("Sent RST to {}:{} (src_port={})", target, port, src_port);
             }
+            (IpAddr::V6(src_ipv6), IpAddr::V6(dst_ipv6)) => {
+                // Build and send IPv6 RST packet
+                let mut builder = TcpPacketBuilder::new()
+                    .source_port(src_port)
+                    .dest_port(port)
+                    .sequence(sequence)
+                    .flags(TcpFlags::RST)
+                    .window(0);
 
-            // Reset buffer for reuse
-            pool.reset();
-            Ok::<_, prtip_core::Error>(())
-        })?;
+                // Apply hop limit if configured
+                if let Some(ttl) = self.config.evasion.ttl {
+                    builder = builder.ttl(ttl);
+                }
+
+                // Apply bad checksum if configured
+                if self.config.evasion.bad_checksums {
+                    builder = builder.bad_checksum(true);
+                }
+
+                let packet = builder.build_ipv6_packet(src_ipv6, dst_ipv6)?;
+
+                if let Some(ref mut capture) = *self.capture.lock() {
+                    capture.send_packet(&packet).map_err(|e| {
+                        prtip_core::Error::Network(format!("Failed to send IPv6 RST: {}", e))
+                    })?;
+
+                    trace!(
+                        "Sent IPv6 RST to {}:{} (src_port={})",
+                        target,
+                        port,
+                        src_port
+                    );
+                }
+            }
+            _ => {
+                return Err(prtip_core::Error::Config(format!(
+                    "IP version mismatch: local {} vs target {}",
+                    local_ip, target
+                )));
+            }
+        }
 
         Ok(())
     }
 
     /// Wait for response (SYN/ACK, RST, or ICMP) with optional PCAPNG capture
+    /// Sprint 5.1: Updated for dual-stack IPv4/IPv6 support
     async fn wait_for_response(
         &self,
-        target: Ipv4Addr,
+        target: IpAddr,
         port: u16,
         src_port: u16,
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
@@ -456,14 +600,17 @@ impl SynScanner {
     }
 
     /// Parse a received packet and determine port state
+    /// Sprint 5.1: Updated for dual-stack IPv4/IPv6 support
     fn parse_response(
         &self,
         packet: &[u8],
-        target: Ipv4Addr,
+        target: IpAddr,
         port: u16,
         src_port: u16,
     ) -> Result<Option<PortState>> {
-        use pnet::packet::{ethernet::EthernetPacket, ipv4::Ipv4Packet, tcp::TcpPacket, Packet};
+        use pnet::packet::{
+            ethernet::EthernetPacket, ipv4::Ipv4Packet, ipv6::Ipv6Packet, tcp::TcpPacket, Packet,
+        };
 
         // Parse Ethernet frame
         let eth_packet = match EthernetPacket::new(packet) {
@@ -471,63 +618,137 @@ impl SynScanner {
             None => return Ok(None),
         };
 
-        // Parse IPv4 packet
-        let ipv4_packet = match Ipv4Packet::new(eth_packet.payload()) {
-            Some(p) => p,
-            None => return Ok(None),
-        };
+        // Match on target IP version and parse accordingly
+        match target {
+            IpAddr::V4(target_ipv4) => {
+                // Parse IPv4 packet
+                let ipv4_packet = match Ipv4Packet::new(eth_packet.payload()) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
 
-        // Check if it's from our target
-        if ipv4_packet.get_source() != target {
-            return Ok(None);
-        }
+                // Check if it's from our target
+                if ipv4_packet.get_source() != target_ipv4 {
+                    return Ok(None);
+                }
 
-        // Parse TCP packet
-        let tcp_packet = match TcpPacket::new(ipv4_packet.payload()) {
-            Some(p) => p,
-            None => return Ok(None),
-        };
+                // Parse TCP packet
+                let tcp_packet = match TcpPacket::new(ipv4_packet.payload()) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
 
-        // Check if it matches our connection
-        if tcp_packet.get_source() != port || tcp_packet.get_destination() != src_port {
-            return Ok(None);
-        }
+                // Check if it matches our connection
+                if tcp_packet.get_source() != port || tcp_packet.get_destination() != src_port {
+                    return Ok(None);
+                }
 
-        // Validate sequence number against stored connection state
-        if let Some(conn) = self.connections.get(&(target, port, src_port)) {
-            let ack_num = tcp_packet.get_acknowledgement();
-            // For SYN/ACK, the ACK should be our sequence + 1
-            if ack_num != conn.sequence.wrapping_add(1) {
-                trace!(
-                    "Sequence mismatch: expected {}, got {}",
-                    conn.sequence.wrapping_add(1),
-                    ack_num
-                );
-                return Ok(None);
+                // Validate sequence number against stored connection state
+                if let Some(conn) = self.connections.get(&(target, port, src_port)) {
+                    let ack_num = tcp_packet.get_acknowledgement();
+                    // For SYN/ACK, the ACK should be our sequence + 1
+                    if ack_num != conn.sequence.wrapping_add(1) {
+                        trace!(
+                            "Sequence mismatch: expected {}, got {}",
+                            conn.sequence.wrapping_add(1),
+                            ack_num
+                        );
+                        return Ok(None);
+                    }
+                }
+
+                // Determine state based on flags
+                let flags = tcp_packet.get_flags();
+
+                // SYN/ACK = open
+                if (flags & 0x12) == 0x12 {
+                    debug!("Received SYN/ACK from {}:{} - OPEN", target, port);
+                    return Ok(Some(PortState::Open));
+                }
+
+                // RST = closed
+                if (flags & 0x04) == 0x04 {
+                    debug!("Received RST from {}:{} - CLOSED", target, port);
+                    return Ok(Some(PortState::Closed));
+                }
+
+                // Unknown response
+                Ok(None)
+            }
+            IpAddr::V6(target_ipv6) => {
+                // Parse IPv6 packet
+                let ipv6_packet = match Ipv6Packet::new(eth_packet.payload()) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
+
+                // Check if it's from our target
+                if ipv6_packet.get_source() != target_ipv6 {
+                    return Ok(None);
+                }
+
+                // Sprint 5.1 Phase 1: Skip extension headers to find TCP
+                // Note: This is a simplified implementation - production should handle all extension header types
+                let tcp_payload = ipv6_packet.payload();
+                let next_header = ipv6_packet.get_next_header();
+
+                // Check if next header is TCP (protocol 6)
+                if next_header.0 != 6 {
+                    // TODO Sprint 5.1 Phase 1.5: Handle extension headers (Fragment, Hop-by-Hop, Routing, Destination Options)
+                    // For now, only support direct TCP (no extension headers)
+                    trace!("IPv6 packet with non-TCP next header: {}", next_header.0);
+                    return Ok(None);
+                }
+
+                // Parse TCP packet
+                let tcp_packet = match TcpPacket::new(tcp_payload) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
+
+                // Check if it matches our connection
+                if tcp_packet.get_source() != port || tcp_packet.get_destination() != src_port {
+                    return Ok(None);
+                }
+
+                // Validate sequence number against stored connection state
+                if let Some(conn) = self.connections.get(&(target, port, src_port)) {
+                    let ack_num = tcp_packet.get_acknowledgement();
+                    // For SYN/ACK, the ACK should be our sequence + 1
+                    if ack_num != conn.sequence.wrapping_add(1) {
+                        trace!(
+                            "Sequence mismatch: expected {}, got {}",
+                            conn.sequence.wrapping_add(1),
+                            ack_num
+                        );
+                        return Ok(None);
+                    }
+                }
+
+                // Determine state based on flags
+                let flags = tcp_packet.get_flags();
+
+                // SYN/ACK = open
+                if (flags & 0x12) == 0x12 {
+                    debug!("Received IPv6 SYN/ACK from {}:{} - OPEN", target, port);
+                    return Ok(Some(PortState::Open));
+                }
+
+                // RST = closed
+                if (flags & 0x04) == 0x04 {
+                    debug!("Received IPv6 RST from {}:{} - CLOSED", target, port);
+                    return Ok(Some(PortState::Closed));
+                }
+
+                // Unknown response
+                Ok(None)
             }
         }
-
-        // Determine state based on flags
-        let flags = tcp_packet.get_flags();
-
-        // SYN/ACK = open
-        if (flags & 0x12) == 0x12 {
-            debug!("Received SYN/ACK from {}:{} - OPEN", target, port);
-            return Ok(Some(PortState::Open));
-        }
-
-        // RST = closed
-        if (flags & 0x04) == 0x04 {
-            debug!("Received RST from {}:{} - CLOSED", target, port);
-            return Ok(Some(PortState::Closed));
-        }
-
-        // Unknown response
-        Ok(None)
     }
 
     /// Scan multiple ports in parallel
-    pub async fn scan_ports(&self, target: Ipv4Addr, ports: Vec<u16>) -> Result<Vec<ScanResult>> {
+    /// Sprint 5.1: Updated for dual-stack IPv4/IPv6 support
+    pub async fn scan_ports(&self, target: IpAddr, ports: Vec<u16>) -> Result<Vec<ScanResult>> {
         let (tx, mut rx) = mpsc::channel(1000);
         let mut tasks = Vec::new();
 
@@ -568,12 +789,14 @@ impl SynScanner {
     }
 
     /// Clone scanner for task spawning (shares connection table and capture)
+    /// Sprint 5.1: Updated for dual-stack IPv4/IPv6 support
     fn clone_for_task(&self) -> Self {
         Self {
             config: self.config.clone(),
             capture: Arc::clone(&self.capture),
             connections: Arc::clone(&self.connections),
-            local_ip: self.local_ip,
+            local_ipv4: self.local_ipv4,
+            local_ipv6: self.local_ipv6,
         }
     }
 }
@@ -585,7 +808,7 @@ mod tests {
     #[test]
     fn test_connection_state_creation() {
         let state = ConnectionState {
-            target_ip: Ipv4Addr::new(192, 168, 1, 1),
+            target_ip: IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1)),
             target_port: 80,
             source_port: 12345,
             sequence: 0x12345678,

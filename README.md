@@ -11,7 +11,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1,349_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-1,389_passing-brightgreen.svg)]
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -112,7 +112,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Latest Version:** v0.4.0 (Released 2025-10-27 - Error Handling, PCAPNG, Evasion, IPv6 Foundation)
 
-**Test Coverage:** 1,349/1,349 tests passing (100% success rate) | 62.5%+ code coverage (exceeds 60% target)
+**Test Coverage:** 1,389/1,389 tests passing (100% success rate) | 62.5%+ code coverage (exceeds 60% target)
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
@@ -123,6 +123,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 **Phase 4 Complete - Production Ready** ✨
 
 **Error Handling & Resilience:**
+
 - Circuit breaker pattern with per-target tracking (Closed/Open/HalfOpen states)
 - Exponential backoff retry logic (T0-T5 timing templates, jitter ±25%)
 - Resource monitoring with adaptive degradation (memory/CPU thresholds)
@@ -130,12 +131,14 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - 100% panic-free production code (defensive mutex handling)
 
 **Performance Optimization:**
+
 - Zero-copy packet building (15% improvement: 68.3ns → 58.8ns per packet)
 - NUMA-aware thread pinning (30% multi-socket improvement)
 - Lock-free architecture with crossbeam queues
 - <5% error handling overhead (4.2% measured)
 
 **Network Evasion (5/5 Nmap techniques - Full Parity):**
+
 - IP fragmentation (RFC 791 compliant, `-f`/`--mtu`)
 - TTL manipulation (`--ttl`)
 - Bad checksum generation (`--badsum`)
@@ -143,11 +146,13 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Source port manipulation (`-g`/`--source-port`)
 
 **Packet Capture:**
+
 - PCAPNG output format for all scan types
 - Thread-safe writer with automatic rotation
 - Forensics and debugging support (`--packet-capture`)
 
 **IPv6 Support (100% Complete):**
+
 - ✅ All 6 scanner types support IPv4 and IPv6
 - TCP Connect, SYN, UDP, Stealth (FIN/NULL/Xmas/ACK) scanners
 - Discovery Engine (ICMPv4/v6 Echo + NDP Neighbor Discovery)
@@ -156,7 +161,8 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Complete IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
 
 **Quality Metrics:**
-- Tests: 1,216 → 1,349 (+133 = +11% growth)
+
+- Tests: 1,216 → 1,389 (+173 = +14% growth)
 - Coverage: 61.92%+ → 62.5%+ maintained
 - Clippy warnings: 0
 - Production panics: 0
@@ -337,12 +343,18 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 10. ✅ **Sprint 4.22.1 (COMPLETE):** Production Unwrap Audit (4 hours, 7 mutex unwraps replaced, 4 documented, 100% panic-free)
 11. ✅ **Sprint 4.23 (COMPLETE):** Maintenance & Release Prep v0.4.0 (8 hours, TROUBLESHOOTING.md, documentation updates, v0.4.0 release)
 
-**Phase 5 Progress (Sprint 5.1 IN PROGRESS):**
+**Phase 5 Progress (Sprint 5.1 IN PROGRESS - 90% Complete):**
 
 1. ✅ **IPv6 Scanner Integration** - COMPLETE (all 6 scanners support IPv4/IPv6, 21h actual vs 30h planned)
    - ✅ Sprint 5.1 Phase 1: TCP Connect + SYN IPv6 (6h)
    - ✅ Sprint 5.1 Phase 2: UDP + Stealth IPv6 (8h)
    - ✅ Sprint 5.1 Phase 3: Discovery + Decoy IPv6 (7h)
+   - 🔄 Sprint 5.1 Phase 4: IPv6 CLI Flags + Cross-Scanner Tests (6h) - **IN PROGRESS**
+     - ✅ Phase 4.1: IPv6 CLI flags implementation (29 tests, 452 lines)
+     - ✅ Phase 4.2: Cross-scanner IPv6 tests (11 tests, 309 lines)
+     - ⏳ Phase 4.3: IPv6 usage guide (docs/21-IPv6-GUIDE.md)
+     - ⏳ Phase 4.4: Documentation updates
+     - ⏳ Phase 4.5: Performance validation
 2. **Idle Scanning** - Zombie host anonymity technique - HIGH (Phase 5.3)
 3. **Plugin System** - Lua scripting with mlua - HIGH (Phase 5.7)
 4. **TUI/GUI** - Interactive interfaces with ratatui/iced - MEDIUM (Phase 6)
@@ -596,15 +608,25 @@ prtip -sT -p 22,80,443 fd00::/8                 # ULA address space
 
 # Mixed IPv4/IPv6 targets
 prtip -sS -p 80,443 192.168.1.1 2001:db8::1 example.com
+
+# IPv6-specific CLI flags (NEW in Sprint 5.1 Phase 4)
+prtip -sS -6 -p 80,443 example.com                    # Force IPv6 (prefer AAAA records)
+prtip -sS -4 -p 80,443 example.com                    # Force IPv4 (prefer A records)
+prtip -sS --prefer-ipv6 -p 80,443 example.com         # Prefer IPv6, fallback to IPv4
+prtip -sS --prefer-ipv4 -p 80,443 example.com         # Prefer IPv4, fallback to IPv6
+prtip -sS --ipv6-only -p 80,443 2001:db8::/64         # IPv6-only mode (reject IPv4)
+prtip -sS --ipv4-only -p 80,443 192.168.1.0/24        # IPv4-only mode (reject IPv6)
 ```
 
 **IPv6 Features:**
+
 - **Protocol Support:** ICMPv6 (Echo 128/129), NDP (135/136), TCP/UDP over IPv6
 - **Address Types:** Global unicast, link-local (fe80::), ULA (fd00::), multicast (ff00::)
 - **Decoy Generation:** Random Interface Identifiers within target's /64 subnet
 - **Reserved Filtering:** Automatic filtering of loopback, multicast, documentation prefixes
-- **Dual-Stack:** Automatic IPv4/IPv6 protocol detection for hostnames
+- **Dual-Stack:** Automatic IPv4/IPv6 protocol detection for hostnames with `-6`/`-4` preference
 - **Solicited-Node Multicast:** Efficient NDP neighbor discovery
+- **CLI Flags:** `-6` (prefer IPv6), `-4` (prefer IPv4), `--ipv6-only`, `--ipv4-only`, `--prefer-ipv6`, `--prefer-ipv4`
 
 ### Detection Features
 
@@ -1422,8 +1444,8 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 - **Validation Reports:** 4 comprehensive documents in bug_fix/ + 32 analysis files
 - **File Organization:** Professional structure with 307+ files across benchmarks/, bug_fix/, docs/
 - **Development Phases:** 8 phases over 20 weeks (Phase 1-4 complete + Phase 5 30% progress)
-- **Implementation Progress:** 4/8 phases complete (Phase 1-4 COMPLETE) + 8 enhancement cycles + CI/CD optimization + Sprints 4.1-4.23 + Sprint 5.1 (Phase 3) COMPLETE
-- **Test Suite:** 1,349 tests passing (100% success rate, +1,134 from initial 215, +527% growth)
+- **Implementation Progress:** 4/8 phases complete (Phase 1-4 COMPLETE) + 8 enhancement cycles + CI/CD optimization + Sprints 4.1-4.23 + Sprint 5.1 (Phases 1-4.2 90% COMPLETE)
+- **Test Suite:** 1,389 tests passing (100% success rate, +1,174 from initial 215, +545% growth)
 - **CI/CD Status:** 7/7 jobs passing (100% success rate)
 - **Build Targets:** 9 platforms (5 production-ready, 4 experimental)
 - **Platform Coverage:** Linux x86, Windows x86, macOS Intel/ARM, FreeBSD (95% user base)
@@ -1471,7 +1493,7 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
   - Evasion flags (`-f`, `--mtu`, `--ttl`, `-D`, `--badsum`)
 - **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam, criterion, tarpaulin, hwloc)
 - **Target Performance:** 1M+ packets/second (stateless), 72K+ pps (stateful - achieved on localhost!)
-- **Code Coverage:** 1,125 tests (100% pass rate), 62.5% line coverage (exceeds 60% target)
+- **Code Coverage:** 1,389 tests (100% pass rate), 62.5% line coverage (exceeds 60% target)
 - **Cross-Compilation:** Supported via cross-rs for ARM64 and BSD targets
 - **Release Automation:** GitHub Actions with smart release management + artifact uploads
 
@@ -1486,7 +1508,7 @@ Special thanks to the Rust community for excellent libraries (Tokio, pnet, ether
 
 ---
 
-**Current Status**: ✅ Phase 4 COMPLETE (Sprints 4.1-4.23 ALL COMPLETE) | ✅ Sprint 5.1 Phase 3 COMPLETE (100% IPv6 Scanner Coverage - Discovery + Decoy) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Testing Infrastructure Complete | 1,349 Tests Passing (100%) | 62.5% Coverage | 7/7 CI Jobs Passing | 8/8 Platforms Production-Ready | ~17,000 Lines Production Code
+**Current Status**: ✅ Phase 4 COMPLETE (Sprints 4.1-4.23 ALL COMPLETE) | 🔄 Sprint 5.1 Phases 1-4.2 COMPLETE (90% - IPv6 CLI + Cross-Scanner Tests) | ✅ Cycles 1-8 Complete | ✅ CI/CD Optimization Complete | ✅ Testing Infrastructure Complete | 1,389 Tests Passing (100%) | 62.5% Coverage | 7/7 CI Jobs Passing | 8/8 Platforms Production-Ready | ~17,000 Lines Production Code
 
 **Last Updated**: 2025-10-29
 

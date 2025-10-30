@@ -267,6 +267,10 @@ async fn run() -> Result<()> {
     let targets = parse_targets(&args.targets)?;
     info!("Parsed {} scan target(s)", targets.len());
 
+    // Validate target protocols against -4/-6/--dual-stack flags
+    args.validate_target_protocols(&targets)
+        .context("Target protocol validation failed")?;
+
     // Parse ports (use effective ports which handles -F and --top-ports)
     let port_spec = args.get_effective_ports();
     let ports = PortRange::parse(&port_spec).context(format!(

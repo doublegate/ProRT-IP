@@ -200,6 +200,7 @@ impl DiscoveryEngine {
 
         // Wait for Echo Reply (Type 0) with timeout
         let start = std::time::Instant::now();
+        #[cfg_attr(windows, allow(unused_variables, unused_mut))]
         let mut iter = icmp_packet_iter(&mut rx);
 
         while start.elapsed() < self.timeout {
@@ -280,6 +281,7 @@ impl DiscoveryEngine {
 
         // Wait for Echo Reply (Type 129) with timeout
         let start = std::time::Instant::now();
+        #[cfg_attr(windows, allow(unused_variables, unused_mut))]
         let mut iter = pnet::transport::icmpv6_packet_iter(&mut rx);
 
         while start.elapsed() < self.timeout {
@@ -402,6 +404,7 @@ impl DiscoveryEngine {
 
         // Wait for Neighbor Advertisement (Type 136)
         let start = std::time::Instant::now();
+        #[cfg_attr(windows, allow(unused_variables, unused_mut))]
         let mut iter = pnet::transport::icmpv6_packet_iter(&mut rx);
 
         while start.elapsed() < self.timeout {

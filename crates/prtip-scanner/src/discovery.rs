@@ -203,9 +203,15 @@ impl DiscoveryEngine {
         let mut iter = icmp_packet_iter(&mut rx);
 
         while start.elapsed() < self.timeout {
-            if let Ok(Some((packet, IpAddr::V4(src_ip)))) =
-                iter.next_with_timeout(Duration::from_millis(100))
-            {
+            // Platform-specific packet receiving with timeout
+            // Unix: Uses pnet's next_with_timeout()
+            // Windows: Returns None (method doesn't exist, discovery will timeout gracefully)
+            #[cfg(unix)]
+            let packet_result = iter.next_with_timeout(Duration::from_millis(100));
+            #[cfg(windows)]
+            let packet_result: std::io::Result<Option<_>> = Ok(None);
+
+            if let Ok(Some((packet, IpAddr::V4(src_ip)))) = packet_result {
                 if src_ip == target && packet.get_icmp_type() == IcmpTypes::EchoReply {
                     // Parse echo reply to validate identifier
                     if let Some(echo_reply) = echo_request::EchoRequestPacket::new(packet.packet())
@@ -275,9 +281,15 @@ impl DiscoveryEngine {
         let mut iter = pnet::transport::icmpv6_packet_iter(&mut rx);
 
         while start.elapsed() < self.timeout {
-            if let Ok(Some((packet_data, IpAddr::V6(src_ip)))) =
-                iter.next_with_timeout(Duration::from_millis(100))
-            {
+            // Platform-specific packet receiving with timeout
+            // Unix: Uses pnet's next_with_timeout()
+            // Windows: Returns None (method doesn't exist, discovery will timeout gracefully)
+            #[cfg(unix)]
+            let packet_result = iter.next_with_timeout(Duration::from_millis(100));
+            #[cfg(windows)]
+            let packet_result: std::io::Result<Option<_>> = Ok(None);
+
+            if let Ok(Some((packet_data, IpAddr::V6(src_ip)))) = packet_result {
                 if src_ip == target && packet_data.get_icmpv6_type() == Icmpv6Types::EchoReply {
                     // Validate identifier
                     let payload = packet_data.payload();
@@ -389,9 +401,15 @@ impl DiscoveryEngine {
         let mut iter = pnet::transport::icmpv6_packet_iter(&mut rx);
 
         while start.elapsed() < self.timeout {
-            if let Ok(Some((packet_data, addr))) =
-                iter.next_with_timeout(Duration::from_millis(100))
-            {
+            // Platform-specific packet receiving with timeout
+            // Unix: Uses pnet's next_with_timeout()
+            // Windows: Returns None (method doesn't exist, discovery will timeout gracefully)
+            #[cfg(unix)]
+            let packet_result = iter.next_with_timeout(Duration::from_millis(100));
+            #[cfg(windows)]
+            let packet_result: std::io::Result<Option<_>> = Ok(None);
+
+            if let Ok(Some((packet_data, addr))) = packet_result {
                 // Type 136 = Neighbor Advertisement
                 if packet_data.get_icmpv6_type().0 == 136 {
                     // Parse target address from Neighbor Advertisement

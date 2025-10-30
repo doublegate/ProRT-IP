@@ -349,6 +349,127 @@ pcap_handle.filter(&filter, true)?;
 
 ---
 
+## IPv6 Dual-Stack Architecture
+
+### Overview
+
+ProRT-IP provides full IPv6 support across all scanning modes (Sprint 5.1, 100% scanner coverage). The architecture uses runtime protocol dispatch to handle both IPv4 and IPv6 transparently.
+
+### Protocol Dispatch Pattern
+
+```rust
+pub enum IpAddr {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
+}
+
+// All scanners use this pattern
+pub async fn scan_target(addr: SocketAddr) -> Result<PortState> {
+    match addr.ip() {
+        IpAddr::V4(ipv4) => scan_ipv4(ipv4, addr.port()).await,
+        IpAddr::V6(ipv6) => scan_ipv6(ipv6, addr.port()).await,
+    }
+}
+```
+
+### IPv6 Packet Structure
+
+**IPv6 Header (40 bytes, fixed size):**
+- Version (4 bits): Always 6
+- Traffic Class (8 bits): QoS/priority
+- Flow Label (20 bits): Flow identification
+- Payload Length (16 bits): Length of payload (excluding header)
+- Next Header (8 bits): Protocol (TCP=6, UDP=17, ICMPv6=58)
+- Hop Limit (8 bits): TTL equivalent
+- Source Address (128 bits): IPv6 source
+- Destination Address (128 bits): IPv6 destination
+
+**Key Differences from IPv4:**
+- No fragmentation in router (sender-only)
+- No header checksum (delegated to link layer)
+- No options in main header (use extension headers)
+- Minimum MTU: 1280 bytes (vs 68 bytes IPv4)
+
+### ICMPv6 & NDP Support
+
+**ICMPv6 Message Types:**
+- Type 1: Destination Unreachable (UDP port closed indication)
+- Type 3: Time Exceeded (firewall drop indication)
+- Type 128: Echo Request (ping6 equivalent)
+- Type 129: Echo Reply (ping6 response)
+- Type 135: Neighbor Solicitation (ARP equivalent)
+- Type 136: Neighbor Advertisement (ARP reply equivalent)
+
+**Neighbor Discovery Protocol (NDP):**
+```
+Target: 2001:db8::1234:5678
+Solicited-Node Multicast: ff02::1:ff34:5678
+                                    ^^^^^^^^
+                                    Last 24 bits
+```
+
+NDP provides:
+- Address resolution (ARP equivalent)
+- Router discovery
+- Neighbor unreachability detection
+- Duplicate address detection
+
+### Scanner-Specific IPv6 Handling
+
+#### TCP Connect Scanner
+- Uses kernel TCP stack (AF_INET6)
+- No raw sockets required
+- Full three-way handshake
+- Automatic IPv4/IPv6 socket creation
+
+#### SYN Scanner
+- Raw socket (AF_PACKET/Npcap)
+- IPv6 pseudo-header for TCP checksum
+- 40-byte IPv6 header + 20-byte TCP header
+- Requires root/administrator privileges
+
+#### UDP Scanner
+- Raw socket for receiving ICMPv6 responses
+- ICMPv6 Type 1, Code 4: Port Unreachable (closed)
+- Protocol-specific payloads (DNS, SNMP, etc.)
+- Slower than TCP (10-100x) due to timeouts
+
+#### Stealth Scanners (FIN/NULL/Xmas/ACK)
+- Raw packet crafting with unusual flag combinations
+- IPv6 firewalls may behave differently than IPv4
+- Stateful firewalls often block these scans
+- Useful for firewall detection
+
+#### Discovery Engine
+- ICMPv6 Echo Request/Reply (Type 128/129)
+- NDP Neighbor Solicitation/Advertisement (Type 135/136)
+- Solicited-node multicast for efficient discovery
+- Link-local and global unicast support
+
+#### Decoy Scanner
+- Random IPv6 Interface Identifier (IID) generation
+- Subnet-aware /64 decoy placement
+- Avoids reserved IPv6 ranges (loopback, multicast, link-local, etc.)
+- Source address spoofing (requires privileges)
+
+### Performance Considerations
+
+**IPv6 Overhead:**
+- Header size: +100% (40 bytes vs 20 bytes)
+- Checksum calculation: -50% CPU (no IP checksum, TCP/UDP only)
+- Latency: +0-25% (depending on network)
+- Throughput: -3% at 1Gbps (negligible)
+
+**Optimization Strategies:**
+- Zero-copy packet building (reuse buffers)
+- Batched syscalls (sendmmsg/recvmmsg)
+- Parallel processing (multi-threaded runtime)
+- Adaptive concurrency (scale with scan size)
+
+For comprehensive IPv6 usage examples, CLI flags, and troubleshooting, see [docs/23-IPv6-GUIDE.md](23-IPv6-GUIDE.md).
+
+---
+
 ## Scanning Modes
 
 ### 1. Stateless Mode (Masscan-Style)

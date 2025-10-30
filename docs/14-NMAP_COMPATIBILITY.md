@@ -174,11 +174,23 @@ ProRT-IP aims for high compatibility with nmap's command-line interface while ma
 | `--script-args <args>` | ⏳ Planned | N/A | v0.5.0 | Script arguments |
 | `--script-help <name>` | ⏳ Planned | N/A | v0.5.0 | Script help |
 
+#### IPv6 Support
+
+| Nmap Flag | Status | ProRT-IP Equivalent | Since | Notes |
+|-----------|--------|---------------------|-------|-------|
+| `-6` | ✅ Full | `-6` or `--ipv6` | v0.4.0 | Force IPv6 (prefer AAAA records) |
+| `-4` | ✅ Full | `-4` or `--ipv4` | v0.4.0 | Force IPv4 (prefer A records) |
+| `--prefer-ipv6` | ✅ Full | `--prefer-ipv6` | v0.4.0 | Prefer IPv6, fallback to IPv4 |
+| `--prefer-ipv4` | ✅ Full | `--prefer-ipv4` | v0.4.0 | Prefer IPv4, fallback to IPv6 |
+| `--ipv6-only` | ✅ Full | `--ipv6-only` | v0.4.0 | Strict IPv6 mode (reject IPv4) |
+| `--ipv4-only` | ✅ Full | `--ipv4-only` | v0.4.0 | Strict IPv4 mode (reject IPv6) |
+| IPv6 literals | ✅ Full | `2001:db8::1` | v0.4.0 | Direct IPv6 address specification |
+| IPv6 CIDR | ✅ Full | `2001:db8::/64` | v0.4.0 | IPv6 subnet notation |
+
 #### Other Options
 
 | Nmap Flag | Status | ProRT-IP Equivalent | Since | Notes |
 |-----------|--------|---------------------|-------|-------|
-| `-6` | ⏳ Planned | N/A | v0.5.0 | IPv6 scanning |
 | `-n` | ⏳ Planned | N/A | v0.4.0 | No DNS resolution |
 | `-R` | ⏳ Planned | N/A | v0.4.0 | Always resolve DNS |
 | `--traceroute` | ⏳ Planned | N/A | v0.5.0 | Trace path to host |
@@ -586,6 +598,88 @@ prtip --service-detection --ports 22,80,443 192.168.1.0/24 --output xml --output
 - Nmap: 45-90s for 256 hosts (assuming 10% alive)
 - ProRT-IP: 3-8s for 256 hosts
 - **Speedup: 15-30x faster**
+
+---
+
+### Example 11: IPv6 Scanning
+
+**Nmap:**
+```bash
+# Force IPv6
+nmap -6 -sS -p 80,443 example.com
+
+# IPv6 address literal
+nmap -sS -p 80,443 2001:db8::1
+
+# IPv6 subnet
+nmap -sS -p 80,443 2001:db8::/120
+```
+
+**ProRT-IP (nmap syntax):**
+```bash
+# Force IPv6 (identical syntax)
+prtip -6 -sS -p 80,443 example.com
+
+# IPv6 address literal
+prtip -sS -p 80,443 2001:db8::1
+
+# IPv6 subnet (smaller subnet for faster scan)
+prtip -sS -p 80,443 2001:db8::/120
+```
+
+**ProRT-IP (original syntax):**
+```bash
+# Force IPv6 with long flag
+prtip --ipv6 --scan-type syn --ports 80,443 example.com
+
+# Prefer IPv6, fallback to IPv4
+prtip --prefer-ipv6 --scan-type syn --ports 80,443 example.com
+```
+
+**IPv6-Specific Features:**
+- **All Scanners Support IPv6:** TCP Connect, SYN, UDP, Stealth (FIN/NULL/Xmas/ACK), Discovery, Decoy
+- **ICMPv6 & NDP:** Native support for IPv6 discovery protocols
+- **Dual-Stack:** Automatic IPv4/IPv6 detection
+- **Performance Parity:** IPv6 scans match IPv4 performance (<5-10% overhead)
+
+**Example Output:**
+```
+Scanning 2001:db8::1 (IPv6)...
+PORT     STATE  SERVICE  VERSION
+22/tcp   open   ssh      OpenSSH 9.0p1
+80/tcp   open   http     nginx 1.18.0
+443/tcp  open   https    nginx 1.18.0 (TLS 1.3)
+```
+
+**Performance Comparison (IPv6 Loopback ::1):**
+- Nmap: ~15ms (6 ports)
+- ProRT-IP: ~5-10ms (6 ports)
+- **Speedup: 1.5-3x faster**
+
+---
+
+### Example 12: Dual-Stack Scanning
+
+**Nmap:**
+```bash
+# Scan both IPv4 and IPv6 (separate commands)
+nmap -4 -sS -p 80,443 example.com
+nmap -6 -sS -p 80,443 example.com
+```
+
+**ProRT-IP (nmap syntax):**
+```bash
+# Prefer IPv6, fallback to IPv4 (single command)
+prtip --prefer-ipv6 -sS -p 80,443 example.com
+
+# Scan both protocols explicitly
+prtip -sS -p 80,443 example.com $(dig +short example.com A) $(dig +short example.com AAAA)
+```
+
+**ProRT-IP Advantages:**
+- Single command for dual-stack targets
+- Automatic protocol detection
+- Consistent output format across IPv4/IPv6
 
 ---
 

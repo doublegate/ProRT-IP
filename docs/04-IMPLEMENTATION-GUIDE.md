@@ -892,6 +892,381 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 ---
 
+## IPv6 Implementation
+
+### Overview
+
+ProRT-IP provides full IPv6 support across all scanning modes (Sprint 5.1). All scanners use runtime dispatch to handle both IPv4 and IPv6 packets transparently.
+
+### IPv6 Packet Building
+
+**File:** `crates/prtip-net/src/ipv6_packet.rs`
+
+```rust
+use pnet::packet::ipv6::{MutableIpv6Packet, Ipv6Packet};
+use pnet::packet::ip::IpNextHeaderProtocols;
+use std::net::Ipv6Addr;
+
+pub struct Ipv6PacketBuilder {
+    src: Ipv6Addr,
+    dst: Ipv6Addr,
+    next_header: u8,
+    hop_limit: u8,
+    payload: Vec<u8>,
+}
+
+impl Ipv6PacketBuilder {
+    pub fn new() -> Self {
+        Self {
+            src: Ipv6Addr::UNSPECIFIED,
+            dst: Ipv6Addr::UNSPECIFIED,
+            next_header: IpNextHeaderProtocols::Tcp.0,
+            hop_limit: 64,
+            payload: Vec::new(),
+        }
+    }
+
+    pub fn source(mut self, addr: Ipv6Addr) -> Self {
+        self.src = addr;
+        self
+    }
+
+    pub fn destination(mut self, addr: Ipv6Addr) -> Self {
+        self.dst = addr;
+        self
+    }
+
+    pub fn next_header(mut self, protocol: u8) -> Self {
+        self.next_header = protocol;
+        self
+    }
+
+    pub fn payload(mut self, data: Vec<u8>) -> Self {
+        self.payload = data;
+        self
+    }
+
+    pub fn build(self) -> Result<Vec<u8>> {
+        let total_len = 40 + self.payload.len(); // IPv6 header is always 40 bytes
+        let mut buffer = vec![0u8; total_len];
+
+        {
+            let mut packet = MutableIpv6Packet::new(&mut buffer)
+                .ok_or(Error::PacketTooSmall)?;
+
+            packet.set_version(6);
+            packet.set_traffic_class(0);
+            packet.set_flow_label(0);
+            packet.set_payload_length(self.payload.len() as u16);
+            packet.set_next_header(self.next_header);
+            packet.set_hop_limit(self.hop_limit);
+            packet.set_source(self.src);
+            packet.set_destination(self.dst);
+            packet.set_payload(&self.payload);
+        }
+
+        Ok(buffer)
+    }
+}
+```
+
+### TCP Over IPv6
+
+**File:** `crates/prtip-net/src/packet/tcp.rs` (IPv6 additions)
+
+```rust
+use std::net::{IpAddr, Ipv6Addr};
+
+impl TcpPacketBuilder {
+    /// Build TCP packet for IPv6
+    pub fn build_ipv6(self) -> Result<Vec<u8>> {
+        let (src_ipv6, dst_ipv6) = match (self.src_ip, self.dst_ip) {
+            (IpAddr::V6(src), IpAddr::V6(dst)) => (src, dst),
+            _ => return Err(Error::InvalidAddressType),
+        };
+
+        // Build TCP segment
+        let tcp_segment = self.build_tcp_segment()?;
+
+        // Calculate IPv6 TCP checksum
+        let checksum = calculate_tcp_checksum_ipv6(
+            src_ipv6,
+            dst_ipv6,
+            &tcp_segment,
+        );
+
+        // Update checksum in TCP segment
+        let mut tcp_segment = tcp_segment;
+        tcp_segment[16] = (checksum >> 8) as u8;
+        tcp_segment[17] = checksum as u8;
+
+        // Build IPv6 packet
+        Ipv6PacketBuilder::new()
+            .source(src_ipv6)
+            .destination(dst_ipv6)
+            .next_header(IpNextHeaderProtocols::Tcp.0)
+            .payload(tcp_segment)
+            .build()
+    }
+}
+
+/// Calculate TCP checksum for IPv6
+fn calculate_tcp_checksum_ipv6(
+    src: Ipv6Addr,
+    dst: Ipv6Addr,
+    tcp_segment: &[u8],
+) -> u16 {
+    let mut sum: u32 = 0;
+
+    // Add source address (128 bits = 16 bytes = 8 words)
+    for chunk in src.octets().chunks(2) {
+        sum += u16::from_be_bytes([chunk[0], chunk[1]]) as u32;
+    }
+
+    // Add destination address (128 bits = 16 bytes = 8 words)
+    for chunk in dst.octets().chunks(2) {
+        sum += u16::from_be_bytes([chunk[0], chunk[1]]) as u32;
+    }
+
+    // Add TCP length (32 bits, split into two 16-bit words)
+    let tcp_len = tcp_segment.len() as u32;
+    sum += (tcp_len >> 16) & 0xFFFF;
+    sum += tcp_len & 0xFFFF;
+
+    // Add next header (TCP = 6, padded to 16 bits)
+    sum += 6;
+
+    // Add TCP segment (16-bit words)
+    for chunk in tcp_segment.chunks(2) {
+        let word = if chunk.len() == 2 {
+            u16::from_be_bytes([chunk[0], chunk[1]])
+        } else {
+            u16::from_be_bytes([chunk[0], 0])
+        };
+        sum += word as u32;
+    }
+
+    // Fold 32-bit sum to 16 bits
+    while (sum >> 16) > 0 {
+        sum = (sum & 0xFFFF) + (sum >> 16);
+    }
+
+    !sum as u16
+}
+```
+
+### ICMPv6 Implementation
+
+**File:** `crates/prtip-net/src/icmpv6.rs`
+
+```rust
+use pnet::packet::icmpv6::{Icmpv6Types, MutableIcmpv6Packet};
+use std::net::Ipv6Addr;
+
+/// ICMPv6 Echo Request builder
+pub struct Icmpv6EchoBuilder {
+    identifier: u16,
+    sequence: u16,
+    payload: Vec<u8>,
+}
+
+impl Icmpv6EchoBuilder {
+    pub fn new() -> Self {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+
+        Self {
+            identifier: rng.gen(),
+            sequence: 0,
+            payload: Vec::new(),
+        }
+    }
+
+    pub fn identifier(mut self, id: u16) -> Self {
+        self.identifier = id;
+        self
+    }
+
+    pub fn sequence(mut self, seq: u16) -> Self {
+        self.sequence = seq;
+        self
+    }
+
+    pub fn build(self) -> Result<Vec<u8>> {
+        let packet_len = 8 + self.payload.len(); // ICMPv6 header (8) + payload
+        let mut buffer = vec![0u8; packet_len];
+
+        {
+            let mut packet = MutableIcmpv6Packet::new(&mut buffer)
+                .ok_or(Error::PacketTooSmall)?;
+
+            packet.set_icmpv6_type(Icmpv6Types::EchoRequest);
+            packet.set_icmpv6_code(0);
+
+            // Set identifier and sequence in payload
+            buffer[4..6].copy_from_slice(&self.identifier.to_be_bytes());
+            buffer[6..8].copy_from_slice(&self.sequence.to_be_bytes());
+
+            if !self.payload.is_empty() {
+                buffer[8..].copy_from_slice(&self.payload);
+            }
+
+            // Calculate checksum
+            let checksum = calculate_icmpv6_checksum(&buffer);
+            packet.set_checksum(checksum);
+        }
+
+        Ok(buffer)
+    }
+}
+
+/// NDP Neighbor Solicitation builder
+pub struct NdpSolicitationBuilder {
+    target: Ipv6Addr,
+    src_link_layer: Option<[u8; 6]>,
+}
+
+impl NdpSolicitationBuilder {
+    pub fn new(target: Ipv6Addr) -> Self {
+        Self {
+            target,
+            src_link_layer: None,
+        }
+    }
+
+    pub fn source_link_layer(mut self, mac: [u8; 6]) -> Self {
+        self.src_link_layer = Some(mac);
+        self
+    }
+
+    /// Calculate solicited-node multicast address
+    pub fn solicited_node_multicast(&self) -> Ipv6Addr {
+        let target_octets = self.target.octets();
+
+        // ff02::1:ffXX:XXXX where XX:XXXX are last 24 bits of target
+        Ipv6Addr::new(
+            0xff02, 0, 0, 0,
+            0, 1,
+            0xff00 | (target_octets[13] as u16),
+            ((target_octets[14] as u16) << 8) | (target_octets[15] as u16),
+        )
+    }
+
+    pub fn build(self) -> Result<Vec<u8>> {
+        // NS message: Type(1) + Code(1) + Checksum(2) + Reserved(4) + Target(16) + [Options]
+        let option_len = if self.src_link_layer.is_some() { 8 } else { 0 };
+        let packet_len = 24 + option_len;
+        let mut buffer = vec![0u8; packet_len];
+
+        // ICMPv6 Type 135 (Neighbor Solicitation)
+        buffer[0] = 135;
+        buffer[1] = 0; // Code
+
+        // Reserved (4 bytes, zero)
+        // buffer[4..8] already zero
+
+        // Target address (16 bytes)
+        buffer[8..24].copy_from_slice(&self.target.octets());
+
+        // Source Link-Layer Address option (Type 1, Length 1)
+        if let Some(mac) = self.src_link_layer {
+            buffer[24] = 1; // Type: Source Link-Layer Address
+            buffer[25] = 1; // Length: 1 (in units of 8 bytes)
+            buffer[26..32].copy_from_slice(&mac);
+        }
+
+        // Calculate checksum (requires pseudo-header, done by caller)
+
+        Ok(buffer)
+    }
+}
+```
+
+### Dual-Stack Scanner Integration
+
+**File:** `crates/prtip-scanner/src/tcp_connect.rs` (example)
+
+```rust
+use std::net::{IpAddr, SocketAddr};
+
+pub async fn tcp_connect_scan(
+    target: SocketAddr,
+    port: u16,
+    timeout: Duration,
+) -> Result<PortState> {
+    // Automatic IPv4/IPv6 handling via SocketAddr
+    let addr = SocketAddr::new(target.ip(), port);
+
+    match tokio::time::timeout(timeout, TcpStream::connect(addr)).await {
+        Ok(Ok(_stream)) => Ok(PortState::Open),
+        Ok(Err(e)) if e.kind() == io::ErrorKind::ConnectionRefused => {
+            Ok(PortState::Closed)
+        }
+        Ok(Err(_)) | Err(_) => Ok(PortState::Filtered),
+    }
+}
+```
+
+**File:** `crates/prtip-scanner/src/syn_scanner.rs` (example)
+
+```rust
+pub async fn send_syn_packet(
+    socket: &RawSocket,
+    target: SocketAddr,
+) -> Result<()> {
+    match target.ip() {
+        IpAddr::V4(ipv4) => {
+            let packet = TcpPacketBuilder::new()
+                .source(get_local_ipv4()?, random_port())
+                .destination(ipv4, target.port())
+                .flags(TcpFlags::SYN)
+                .build_ipv4()?;
+            socket.send(&packet).await?;
+        }
+        IpAddr::V6(ipv6) => {
+            let packet = TcpPacketBuilder::new()
+                .source_v6(get_local_ipv6()?, random_port())
+                .destination_v6(ipv6, target.port())
+                .flags(TcpFlags::SYN)
+                .build_ipv6()?;
+            socket.send(&packet).await?;
+        }
+    }
+    Ok(())
+}
+```
+
+### Best Practices for IPv6 Implementation
+
+1. **Use `IpAddr` enum for protocol dispatch:**
+   ```rust
+   match addr {
+       IpAddr::V4(ipv4) => handle_ipv4(ipv4),
+       IpAddr::V6(ipv6) => handle_ipv6(ipv6),
+   }
+   ```
+
+2. **Always calculate checksums correctly:**
+   - IPv6 TCP/UDP checksums are mandatory (unlike IPv4 UDP)
+   - Include pseudo-header with full 128-bit addresses
+   - No IP header checksum in IPv6 (delegated to link layer)
+
+3. **Handle ICMPv6 responses:**
+   - Type 1, Code 4: Port Unreachable (UDP closed)
+   - Type 1, Code 1: Administratively Prohibited (filtered)
+   - Type 129: Echo Reply (host alive)
+   - Type 136: Neighbor Advertisement (NDP response)
+
+4. **Test on multiple platforms:**
+   - Linux: Use AF_INET6 raw sockets
+   - Windows: Requires Npcap with IPv6 support
+   - macOS: BPF device for raw packet access
+   - FreeBSD: Native IPv6 raw socket support
+
+For comprehensive IPv6 usage examples and protocol details, see [23-IPv6-GUIDE.md](23-IPv6-GUIDE.md).
+
+---
+
 ## Best Practices
 
 ### 1. Always Use Builder Pattern for Complex Types

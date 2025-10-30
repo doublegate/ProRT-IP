@@ -343,18 +343,18 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 10. ✅ **Sprint 4.22.1 (COMPLETE):** Production Unwrap Audit (4 hours, 7 mutex unwraps replaced, 4 documented, 100% panic-free)
 11. ✅ **Sprint 4.23 (COMPLETE):** Maintenance & Release Prep v0.4.0 (8 hours, TROUBLESHOOTING.md, documentation updates, v0.4.0 release)
 
-**Phase 5 Progress (Sprint 5.1 IN PROGRESS - 90% Complete):**
+**Phase 5 Progress (Sprint 5.1 COMPLETE - 100%):**
 
-1. ✅ **IPv6 Scanner Integration** - COMPLETE (all 6 scanners support IPv4/IPv6, 21h actual vs 30h planned)
+1. ✅ **IPv6 Scanner Integration** - COMPLETE (all 6 scanners support IPv4/IPv6, 30h actual vs 30h planned)
    - ✅ Sprint 5.1 Phase 1: TCP Connect + SYN IPv6 (6h)
    - ✅ Sprint 5.1 Phase 2: UDP + Stealth IPv6 (8h)
    - ✅ Sprint 5.1 Phase 3: Discovery + Decoy IPv6 (7h)
-   - 🔄 Sprint 5.1 Phase 4: IPv6 CLI Flags + Cross-Scanner Tests (6h) - **IN PROGRESS**
-     - ✅ Phase 4.1: IPv6 CLI flags implementation (29 tests, 452 lines)
-     - ✅ Phase 4.2: Cross-scanner IPv6 tests (11 tests, 309 lines)
-     - ⏳ Phase 4.3: IPv6 usage guide (docs/21-IPv6-GUIDE.md)
-     - ⏳ Phase 4.4: Documentation updates
-     - ⏳ Phase 4.5: Performance validation
+   - ✅ Sprint 5.1 Phase 4: IPv6 CLI Flags + Cross-Scanner Tests + Documentation (9h) - **COMPLETE**
+     - ✅ Phase 4.1: IPv6 CLI flags implementation (29 tests, 452 lines, 3h)
+     - ✅ Phase 4.2: Cross-scanner IPv6 tests (11 tests, 309 lines, 3h)
+     - ✅ Phase 4.3: IPv6 usage guide (docs/23-IPv6-GUIDE.md, 1,958 lines, 1h)
+     - ✅ Phase 4.4: Documentation updates (4 docs, +690 lines, 1h)
+     - ✅ Phase 4.5: Performance validation (benchmarks, 0-50% overhead avg 15%, 1h)
 2. **Idle Scanning** - Zombie host anonymity technique - HIGH (Phase 5.3)
 3. **Plugin System** - Lua scripting with mlua - HIGH (Phase 5.7)
 4. **TUI/GUI** - Interactive interfaces with ratatui/iced - MEDIUM (Phase 6)
@@ -393,6 +393,7 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | [Project Status](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
 | [Platform Support](docs/15-PLATFORM-SUPPORT.md) | Comprehensive platform compatibility guide |
 | [Database Guide](docs/DATABASE.md) | SQLite query interface and export utilities |
+| [IPv6 Guide](docs/23-IPv6-GUIDE.md) | Comprehensive IPv6 scanning guide (NEW - Sprint 5.1) |
 
 ### Custom Commands (`.claude/commands/`)
 

@@ -209,7 +209,7 @@ impl DiscoveryEngine {
             #[cfg(unix)]
             let packet_result = iter.next_with_timeout(Duration::from_millis(100));
             #[cfg(windows)]
-            let packet_result: std::io::Result<Option<_>> = Ok(None);
+            let packet_result: std::io::Result<Option<(pnet::packet::icmp::IcmpPacket<'static>, IpAddr)>> = Ok(None);
 
             if let Ok(Some((packet, IpAddr::V4(src_ip)))) = packet_result {
                 if src_ip == target && packet.get_icmp_type() == IcmpTypes::EchoReply {
@@ -287,7 +287,7 @@ impl DiscoveryEngine {
             #[cfg(unix)]
             let packet_result = iter.next_with_timeout(Duration::from_millis(100));
             #[cfg(windows)]
-            let packet_result: std::io::Result<Option<_>> = Ok(None);
+            let packet_result: std::io::Result<Option<(pnet::packet::icmpv6::Icmpv6Packet<'static>, IpAddr)>> = Ok(None);
 
             if let Ok(Some((packet_data, IpAddr::V6(src_ip)))) = packet_result {
                 if src_ip == target && packet_data.get_icmpv6_type() == Icmpv6Types::EchoReply {
@@ -407,7 +407,7 @@ impl DiscoveryEngine {
             #[cfg(unix)]
             let packet_result = iter.next_with_timeout(Duration::from_millis(100));
             #[cfg(windows)]
-            let packet_result: std::io::Result<Option<_>> = Ok(None);
+            let packet_result: std::io::Result<Option<(pnet::packet::icmpv6::Icmpv6Packet<'static>, IpAddr)>> = Ok(None);
 
             if let Ok(Some((packet_data, addr))) = packet_result {
                 // Type 136 = Neighbor Advertisement

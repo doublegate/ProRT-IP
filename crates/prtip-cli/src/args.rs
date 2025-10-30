@@ -38,6 +38,14 @@ use std::path::PathBuf;
     prtip -sS -O -p 1-1000 192.168.1.0/24\n\n\
     # UDP scan with service detection\n\
     prtip -sU -sV -p 53,161,500 192.168.1.1\n\n\
+    # IPv6-only scan (force IPv6)\n\
+    prtip -6 -p 80,443 2001:db8::1\n\n\
+    # IPv4-only scan (explicit)\n\
+    prtip -4 -p 80,443 192.168.1.1\n\n\
+    # Dual-stack scan (both IPv4 and IPv6)\n\
+    prtip --dual-stack -p 80 192.168.1.1 2001:db8::1\n\n\
+    # IPv6 link-local scan\n\
+    prtip -6 -p 22,80,443 fe80::1%eth0\n\n\
     # Multiple output formats\n\
     prtip -sS -p 80,443 -oA scan-results 10.0.0.0/24\n\n\
     # Original ProRT-IP syntax (still supported)\n\
@@ -835,9 +843,136 @@ pub struct Args {
     /// Example: prtip -n <target>
     #[arg(short = 'n', long = "no-dns", help_heading = "MISCELLANEOUS")]
     pub no_dns: bool,
+
+    // ============================================================================
+    // IPv6 PROTOCOL SELECTION FLAGS
+    // ============================================================================
+    /// Enable IPv6 scanning only (nmap -6)
+    ///
+    /// Force IPv6-only scanning mode. Rejects IPv4 targets with clear error message.
+    /// DNS resolution returns only AAAA records. All scanners use IPv6 packet building.
+    /// Mutually exclusive with -4 and --dual-stack.
+    ///
+    /// Example: prtip -6 -p 80,443 2001:db8::1
+    /// Example: prtip -6 -sS -p 1-1000 fe80::1%eth0
+    #[arg(
+        short = '6',
+        long = "ipv6",
+        help_heading = "IPv6 OPTIONS",
+        group = "ip_version"
+    )]
+    pub ipv6: bool,
+
+    /// Enable IPv4 scanning only (nmap -4)
+    ///
+    /// Force IPv4-only scanning mode (default behavior, made explicit).
+    /// Rejects IPv6 targets with clear error message.
+    /// DNS resolution returns only A records. All scanners use IPv4 packet building.
+    /// Mutually exclusive with -6 and --dual-stack.
+    ///
+    /// Example: prtip -4 -p 80,443 192.168.1.1
+    #[arg(
+        short = '4',
+        long = "ipv4",
+        help_heading = "IPv6 OPTIONS",
+        group = "ip_version"
+    )]
+    pub ipv4: bool,
+
+    /// Allow both IPv4 and IPv6 targets (dual-stack mode)
+    ///
+    /// Accept mixed IPv4/IPv6 targets. DNS resolution returns both A and AAAA records.
+    /// Scanners auto-detect protocol per target. This is the default behavior if no
+    /// protocol flags are specified. Mutually exclusive with -4 and -6.
+    ///
+    /// Example: prtip --dual-stack -p 80 192.168.1.1 2001:db8::1
+    #[arg(
+        long = "dual-stack",
+        help_heading = "IPv6 OPTIONS",
+        group = "ip_version"
+    )]
+    pub dual_stack: bool,
+}
+
+/// IP Version selection for scanning
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum IpVersion {
+    /// IPv4-only mode (-4 flag)
+    V4Only,
+    /// IPv6-only mode (-6 flag)
+    V6Only,
+    /// Dual-stack mode (--dual-stack or default)
+    #[default]
+    DualStack,
 }
 
 impl Args {
+    /// Get IP version from command-line flags
+    ///
+    /// Returns the selected IP version based on -4, -6, or --dual-stack flags.
+    /// Default is DualStack if no flags are specified.
+    pub fn get_ip_version(&self) -> IpVersion {
+        if self.ipv6 {
+            IpVersion::V6Only
+        } else if self.ipv4 {
+            IpVersion::V4Only
+        } else {
+            IpVersion::DualStack // default
+        }
+    }
+
+    /// Validate target IP addresses against the selected IP version
+    ///
+    /// Checks that all parsed targets match the protocol mode (-4, -6, or --dual-stack).
+    /// Returns an error if there's a protocol mismatch.
+    ///
+    /// # Arguments
+    ///
+    /// * `targets` - Slice of parsed ScanTarget structures
+    ///
+    /// # Errors
+    ///
+    /// Returns error if:
+    /// - IPv4 target specified with -6 (IPv6-only) flag
+    /// - IPv6 target specified with -4 (IPv4-only) flag
+    pub fn validate_target_protocols(
+        &self,
+        targets: &[prtip_core::ScanTarget],
+    ) -> anyhow::Result<()> {
+        use std::net::IpAddr;
+
+        let ip_version = self.get_ip_version();
+
+        for target in targets {
+            let ip = target.network.ip();
+
+            match (ip, ip_version) {
+                (IpAddr::V4(addr), IpVersion::V6Only) => {
+                    anyhow::bail!(
+                        "Error: IPv4 target '{}' specified with -6 (IPv6-only mode)\n\
+                        Hint: Remove -6 flag to scan IPv4 targets, or use --dual-stack for mixed scanning",
+                        addr
+                    );
+                }
+                (IpAddr::V6(addr), IpVersion::V4Only) => {
+                    anyhow::bail!(
+                        "Error: IPv6 target '{}' specified with -4 (IPv4-only mode)\n\
+                        Hint: Remove -4 flag to scan IPv6 targets, or use --dual-stack for mixed scanning",
+                        addr
+                    );
+                }
+                (_, IpVersion::DualStack) => {
+                    // Accept all targets in dual-stack mode
+                }
+                _ => {
+                    // Correct protocol for mode
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     /// Validate arguments
     ///
     /// Ensures all arguments are within valid ranges and combinations.

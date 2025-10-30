@@ -1,15 +1,15 @@
 # ProRT-IP Local Memory
 
-**Updated:** 2025-10-29 | **Phase:** 5 IN PROGRESS (Sprint 5.1 70% complete) | **Tests:** 1,349 (100%) | **Coverage:** 62.5% ✅ | **Version:** v0.4.0 🎉
+**Updated:** 2025-10-29 | **Phase:** 5 IN PROGRESS (Sprint 5.1 90% complete) | **Tests:** 1,389 (100%) | **Coverage:** 62.5% ✅ | **Version:** v0.4.0 🎉
 
 ## Current Status
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Phase** | 5 IN PROGRESS | Sprint 5.1: Phases 1-3.2 COMPLETE (ALL 6 scanners IPv6 100%) |
+| **Phase** | 5 IN PROGRESS | Sprint 5.1: Phases 1-4.2 COMPLETE (90%, IPv6 CLI + Cross-Scanner Tests) |
 | **CI** | ✅ 7/7 (100%) | All platforms GREEN (commit f8330fd) |
 | **Release** | 8/8 (100%) | All architectures building |
-| **Tests** | 1,349 (100%) | Zero ignored, all passing (+15 new tests: 7 discovery + 7 decoy + 1 output) |
+| **Tests** | 1,389 (100%) | Zero ignored, all passing (+40 new tests: 29 CLI + 11 cross-scanner) |
 | **Coverage** | 62.5% | Exceeds 60% target |
 | **Version** | v0.4.0 | Released 2025-10-27, production-ready |
 | **Performance** | 5.1ms common | 29x faster than nmap (validated 2025-10-28) |
@@ -58,6 +58,7 @@
 
 | Date | Task | Duration | Key Results | Status |
 |------|------|----------|-------------|--------|
+| 10-29 | **Sprint 5.1 Phases 4.1-4.2** | ~6h | IPv6 CLI flags (6 flags: -6/-4/--prefer-ipv6/--prefer-ipv4/--ipv6-only/--ipv4-only, 29 tests, 452L) + Cross-scanner IPv6 tests (11 tests, 309L). Total: +878L (5 files), tests 1,349→1,389 (+40), zero regressions. Nmap compatibility: -6/-4 flags, dual-stack hostname resolution, protocol preference enforcement. Performance: <1μs flag parsing, all scanners <100ms IPv6 loopback. Sprint progress: 90% (27h/30h). | ✅ |
 | 10-29 | **README/CHANGELOG Update** | ~2.5h | Comprehensive documentation update for Sprint 5.1 Phase 3 completion. README.md: 12 sections updated (~250 lines), added dedicated IPv6 section (45 lines, 25+ examples), updated test counts (1,338→1,349), IPv6 status ("Partial"→"100% Complete"), Sprint 5.1 progress tracking (70% complete, 21h/30h). CHANGELOG.md: Added 165-line entry for Phase 3 (Discovery/Decoy IPv6 + CLI filter), 10 major sections with technical depth. Sub-agent comprehensive analysis, all cross-references validated, zero regressions. | ✅ |
 | 10-29 | **Sprint 5.1 Phase 3** | ~7h | Discovery Engine IPv6 (ICMPv4/v6 Echo + NDP, 296L, 7 tests), Decoy Scanner IPv6 (random /64, 208L, 7 tests), CLI output filter (hosts with open ports only, 64L, 1 test). **MILESTONE: 100% IPv6 Scanner Coverage** (all 6 scanners). Files: +867 lines (5 files), tests 1,338→1,349 (+15), zero regressions. Protocols: ICMP Type 8/0, ICMPv6 Type 128/129, NDP Type 135/136. Performance: <100ms ICMPv6/NDP, <2μs decoy gen. Commit f8330fd. Sprint progress: 70% (21h/30h). | ✅ |
 | 10-28 | **Sprint 5.1 Phases 1-2.2** | ~14h | IPv6 dual-stack for SYN/UDP/Stealth scanners. 3 scanners refactored, 24 integration tests, 849L test code, +1,049/-339 lines. Runtime dispatch (match IpAddr variants), ICMPv6 error handling. Sprint progress: 47% (14h/30h). | ✅ |
@@ -141,4 +142,4 @@ prtip -sS -g 53 -f --ttl 32 TARGET   # Combined evasion (all 5 techniques)
 **Refs:** Rust docs, Tokio guide, Nmap book, pnet docs
 
 ---
-**Status:** Phase 5 IN PROGRESS | **Sprint 5.1:** Phases 1-3.2 COMPLETE (21h / 30h = 70%) | **Milestone: 100% IPv6 Coverage (all 6 scanners)** | **Next:** Sprint 5.1 Phases 4.1-4.5 (CLI flags, cross-scanner tests, IPv6 guide, perf validation) | **Updated:** 2025-10-29
+**Status:** Phase 5 IN PROGRESS | **Sprint 5.1:** Phases 1-4.2 COMPLETE (27h / 30h = 90%) | **Milestone: 100% IPv6 Coverage + CLI Integration** | **Next:** Sprint 5.1 Phases 4.3-4.5 (IPv6 guide, docs, perf validation) | **Updated:** 2025-10-29

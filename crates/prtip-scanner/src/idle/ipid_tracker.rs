@@ -12,9 +12,9 @@
 //! - **PerHost**: Separate counter per destination (bad zombie) - BSD, macOS
 //! - **Broken256**: Windows byte-order bug, increments by 256 (still usable)
 
-use prtip_core::{Error, Result};
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::transport::{transport_channel, TransportChannelType, TransportProtocol};
+use prtip_core::{Error, Result};
 use std::net::IpAddr;
 use std::time::{Duration, Instant};
 
@@ -36,15 +36,15 @@ pub enum IPIDPattern {
     /// Sequential +1 per packet (good zombie)
     /// Common on: Linux <4.18, Windows XP/2003, old BSD
     Sequential,
-    
+
     /// Random/unpredictable (bad zombie)
     /// Common on: Modern Linux 4.18+, Windows 10+
     Random,
-    
+
     /// Grouped by destination host (bad zombie)
     /// Common on: FreeBSD, macOS, some BSD variants
     PerHost,
-    
+
     /// Windows byte-order bug: increments by 256 instead of 1 (still usable)
     /// Due to little-endian ↔ big-endian conversion issue
     Broken256,
@@ -82,7 +82,7 @@ impl IPIDTracker {
             timeout: Duration::from_secs(5),
         })
     }
-    
+
     /// Send SYN/ACK probe to target and measure IPID from RST response
     ///
     /// This sends an unsolicited SYN/ACK packet to the target, which should
@@ -96,29 +96,28 @@ impl IPIDTracker {
     /// * I/O errors from raw socket operations
     pub async fn probe(&mut self) -> Result<IPIDMeasurement> {
         // Create transport channel for sending/receiving TCP packets
-        let protocol = TransportChannelType::Layer4(TransportProtocol::Ipv4(
-            IpNextHeaderProtocols::Tcp
-        ));
-        
+        let protocol =
+            TransportChannelType::Layer4(TransportProtocol::Ipv4(IpNextHeaderProtocols::Tcp));
+
         let (mut tx, mut rx) = transport_channel(4096, protocol)
             .map_err(|e| Error::Network(format!("Failed to create transport channel: {}", e)))?;
-        
+
         // Build and send SYN/ACK packet
         self.send_syn_ack_probe(&mut tx).await?;
-        
+
         // Wait for RST response and extract IPID
         let ipid = self.receive_rst_response(&mut rx).await?;
-        
+
         // Record measurement
         let measurement = IPIDMeasurement {
             ipid,
             timestamp: Instant::now(),
         };
         self.measurements.push(measurement.clone());
-        
+
         Ok(measurement)
     }
-    
+
     /// Perform multiple probes and classify IPID pattern
     ///
     /// Sends `num_probes` SYN/ACK packets (1 second apart) and analyzes
@@ -133,33 +132,35 @@ impl IPIDTracker {
         // Send multiple probes with 1 second intervals
         for i in 0..num_probes {
             self.probe().await?;
-            
+
             // Wait between probes (except after last one)
             if i < num_probes - 1 {
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
         }
-        
+
         // Analyze increment pattern
         let increments = self.calculate_increments();
-        
+
         if increments.is_empty() {
-            return Err(Error::Scanner("Not enough measurements for pattern classification".into()));
+            return Err(Error::Scanner(
+                "Not enough measurements for pattern classification".into(),
+            ));
         }
-        
+
         // Check for sequential pattern (+1)
         if increments.iter().all(|&inc| inc == 1) {
             return Ok(IPIDPattern::Sequential);
         }
-        
+
         // Check for Windows byte-order bug (+256)
         if increments.iter().all(|&inc| inc == 256) {
             return Ok(IPIDPattern::Broken256);
         }
-        
+
         // Calculate variance to distinguish Random from PerHost
         let variance = self.calculate_variance();
-        
+
         if variance > 10.0 {
             // High variance = random IPID
             Ok(IPIDPattern::Random)
@@ -168,7 +169,7 @@ impl IPIDTracker {
             Ok(IPIDPattern::PerHost)
         }
     }
-    
+
     /// Calculate IPID increments between consecutive measurements
     ///
     /// Uses wrapping arithmetic to handle IPID rollover (65535 → 0).
@@ -185,7 +186,7 @@ impl IPIDTracker {
             })
             .collect()
     }
-    
+
     /// Check if measurements show sequential pattern
     ///
     /// # Returns
@@ -194,7 +195,7 @@ impl IPIDTracker {
         let increments = self.calculate_increments();
         !increments.is_empty() && increments.iter().all(|&inc| inc == 1)
     }
-    
+
     /// Calculate variance of IPID increments (detect noise/randomness)
     ///
     /// Higher variance indicates either random IPID or zombie traffic noise.
@@ -206,25 +207,26 @@ impl IPIDTracker {
         if increments.len() < 2 {
             return 0.0;
         }
-        
+
         let mean: f32 = increments.iter().sum::<i32>() as f32 / increments.len() as f32;
-        
+
         let variance: f32 = increments
             .iter()
             .map(|&inc| {
                 let diff = inc as f32 - mean;
                 diff * diff
             })
-            .sum::<f32>() / increments.len() as f32;
-        
+            .sum::<f32>()
+            / increments.len() as f32;
+
         variance
     }
-    
+
     /// Get the number of measurements taken
     pub fn measurement_count(&self) -> usize {
         self.measurements.len()
     }
-    
+
     /// Clear measurement history
     pub fn clear_measurements(&mut self) {
         self.measurements.clear();
@@ -246,7 +248,10 @@ impl IPIDTracker {
     }
 
     /// Receive RST response and extract IPID
-    async fn receive_rst_response(&self, _rx: &mut pnet::transport::TransportReceiver) -> Result<u16> {
+    async fn receive_rst_response(
+        &self,
+        _rx: &mut pnet::transport::TransportReceiver,
+    ) -> Result<u16> {
         // TODO: Implement RST packet reception and IPID extraction
         // This will be implemented in Phase 3 with proper packet parsing
 
@@ -258,131 +263,191 @@ impl IPIDTracker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_ipid_measurement_creation() {
         let measurement = IPIDMeasurement {
             ipid: 12345,
             timestamp: Instant::now(),
         };
-        
+
         assert_eq!(measurement.ipid, 12345);
     }
-    
+
     #[test]
     fn test_ipid_pattern_equality() {
         assert_eq!(IPIDPattern::Sequential, IPIDPattern::Sequential);
         assert_ne!(IPIDPattern::Sequential, IPIDPattern::Random);
     }
-    
+
     #[test]
     fn test_tracker_creation() {
         let target: IpAddr = "192.168.1.100".parse().unwrap();
         let tracker = IPIDTracker::new(target);
-        
+
         assert!(tracker.is_ok());
         let tracker = tracker.unwrap();
         assert_eq!(tracker.measurement_count(), 0);
     }
-    
+
     #[test]
     fn test_calculate_increments_sequential() {
         let target: IpAddr = "192.168.1.100".parse().unwrap();
         let mut tracker = IPIDTracker::new(target).unwrap();
-        
+
         // Simulate sequential IPID measurements
         tracker.measurements = vec![
-            IPIDMeasurement { ipid: 100, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 101, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 102, timestamp: Instant::now() },
+            IPIDMeasurement {
+                ipid: 100,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 101,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 102,
+                timestamp: Instant::now(),
+            },
         ];
-        
+
         let increments = tracker.calculate_increments();
         assert_eq!(increments, vec![1, 1]);
         assert!(tracker.is_sequential());
     }
-    
+
     #[test]
     fn test_calculate_increments_rollover() {
         let target: IpAddr = "192.168.1.100".parse().unwrap();
         let mut tracker = IPIDTracker::new(target).unwrap();
-        
+
         // Simulate IPID rollover (65535 → 0)
         tracker.measurements = vec![
-            IPIDMeasurement { ipid: 65534, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 65535, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 0, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 1, timestamp: Instant::now() },
+            IPIDMeasurement {
+                ipid: 65534,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 65535,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 0,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 1,
+                timestamp: Instant::now(),
+            },
         ];
-        
+
         let increments = tracker.calculate_increments();
         // 65535 - 65534 = 1, 0 - 65535 = 1 (wrapping), 1 - 0 = 1
         assert_eq!(increments, vec![1, 1, 1]);
     }
-    
+
     #[test]
     fn test_calculate_increments_broken256() {
         let target: IpAddr = "192.168.1.100".parse().unwrap();
         let mut tracker = IPIDTracker::new(target).unwrap();
-        
+
         // Simulate Windows byte-order bug
         tracker.measurements = vec![
-            IPIDMeasurement { ipid: 256, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 512, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 768, timestamp: Instant::now() },
+            IPIDMeasurement {
+                ipid: 256,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 512,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 768,
+                timestamp: Instant::now(),
+            },
         ];
-        
+
         let increments = tracker.calculate_increments();
         assert_eq!(increments, vec![256, 256]);
         assert!(!tracker.is_sequential()); // Not +1, so not sequential
     }
-    
+
     #[test]
     fn test_calculate_variance_consistent() {
         let target: IpAddr = "192.168.1.100".parse().unwrap();
         let mut tracker = IPIDTracker::new(target).unwrap();
-        
+
         // All increments are 1 (perfect consistency)
         tracker.measurements = vec![
-            IPIDMeasurement { ipid: 100, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 101, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 102, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 103, timestamp: Instant::now() },
+            IPIDMeasurement {
+                ipid: 100,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 101,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 102,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 103,
+                timestamp: Instant::now(),
+            },
         ];
-        
+
         let variance = tracker.calculate_variance();
         assert_eq!(variance, 0.0); // Perfect consistency = zero variance
     }
-    
+
     #[test]
     fn test_calculate_variance_random() {
         let target: IpAddr = "192.168.1.100".parse().unwrap();
         let mut tracker = IPIDTracker::new(target).unwrap();
-        
+
         // Random increments
         tracker.measurements = vec![
-            IPIDMeasurement { ipid: 100, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 150, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 175, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 300, timestamp: Instant::now() },
+            IPIDMeasurement {
+                ipid: 100,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 150,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 175,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 300,
+                timestamp: Instant::now(),
+            },
         ];
-        
+
         let variance = tracker.calculate_variance();
         assert!(variance > 10.0); // High variance
     }
-    
+
     #[test]
     fn test_clear_measurements() {
         let target: IpAddr = "192.168.1.100".parse().unwrap();
         let mut tracker = IPIDTracker::new(target).unwrap();
-        
+
         tracker.measurements = vec![
-            IPIDMeasurement { ipid: 100, timestamp: Instant::now() },
-            IPIDMeasurement { ipid: 101, timestamp: Instant::now() },
+            IPIDMeasurement {
+                ipid: 100,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 101,
+                timestamp: Instant::now(),
+            },
         ];
-        
+
         assert_eq!(tracker.measurement_count(), 2);
-        
+
         tracker.clear_measurements();
         assert_eq!(tracker.measurement_count(), 0);
     }

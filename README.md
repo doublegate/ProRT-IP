@@ -161,7 +161,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 **Documentation & Testing:**
 
 - Tests: 1,389 → 1,412 (+23 protocol-specific unit tests, 100% passing)
-- Documentation: New 20-SERVICE-DETECTION.md (659 lines, 18KB comprehensive guide)
+- Documentation: New 24-SERVICE-DETECTION.md (659 lines, 18KB comprehensive guide)
 - Code quality: Zero clippy warnings, cargo fmt compliant
 - Files: +2,052 lines (6 new modules, 1 guide)
 

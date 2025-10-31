@@ -77,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Detection Pipeline**: Protocol-specific → Regex → Generic fallback
 
 - **Comprehensive Documentation (Phase 6.1)**:
-  - **docs/20-SERVICE-DETECTION.md** (659 lines, 18KB)
+  - **docs/24-SERVICE-DETECTION.md** (659 lines, 18KB)
     * Complete guide covering all 5 protocol modules
     * Architecture diagrams and detection flow
     * Per-protocol documentation with examples
@@ -110,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New: `crates/prtip-core/src/detection/mysql_detect.rs` (301 lines)
   - New: `crates/prtip-core/src/detection/postgresql_detect.rs` (331 lines)
   - Modified: `crates/prtip-core/src/lib.rs` (+10 lines)
-  - New: `docs/20-SERVICE-DETECTION.md` (659 lines)
+  - New: `docs/24-SERVICE-DETECTION.md` (659 lines)
 
 - **Module Integration**: All detection modules exposed via prtip-core public API
   ```rust

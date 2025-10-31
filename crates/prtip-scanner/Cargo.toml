@@ -25,6 +25,7 @@ pnet = { workspace = true }
 pnet_packet = { workspace = true }
 socket2 = { workspace = true }
 etherparse = { workspace = true }
+ipnetwork = { workspace = true }
 
 # TLS support
 tokio-native-tls = "0.3"

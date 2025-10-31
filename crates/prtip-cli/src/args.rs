@@ -569,6 +569,21 @@ pub struct Args {
     )]
     pub nmap_ack: bool,
 
+    /// Idle scan using zombie host (nmap -sI <zombie>) - Ultimate stealth
+    ///
+    /// Perform completely anonymous port scanning via third-party zombie host.
+    /// Preprocessed from -sI flag to --nmap-idle for internal use.
+    ///
+    /// Example: prtip -sI 192.168.1.100 -p 80,443 target.com
+    #[arg(
+        long = "nmap-idle",
+        value_name = "ZOMBIE_HOST",
+        hide = true,
+        conflicts_with = "scan_type",
+        help_heading = "NMAP-COMPATIBLE SCAN TYPES"
+    )]
+    pub nmap_idle: Option<String>,
+
     /// Normal text output (nmap -oN <file>) - Human-readable text format
     ///
     /// Writes scan results in plain text format similar to terminal output.
@@ -1192,8 +1207,8 @@ impl Args {
         };
 
         // Determine scan type (nmap aliases take precedence for explicitness)
-        let scan_type = if self.idle_scan.is_some() {
-            ScanType::Idle
+        let scan_type = if self.nmap_idle.is_some() || self.idle_scan.is_some() {
+            ScanType::Idle  // -sI flag (preprocessed to --nmap-idle) or direct -I flag
         } else if self.nmap_syn {
             ScanType::Syn
         } else if self.nmap_connect {
@@ -1219,10 +1234,10 @@ impl Args {
                 ScanTypeArg::Ack => ScanType::Ack,
                 ScanTypeArg::Udp => ScanType::Udp,
                 ScanTypeArg::Idle => {
-                    // Idle scan requires -sI flag
-                    if self.idle_scan.is_none() {
+                    // Idle scan requires zombie host
+                    if self.idle_scan.is_none() && self.nmap_idle.is_none() {
                         return Err(prtip_core::Error::Config(
-                            "Idle scan (-s idle) requires zombie host (-sI <zombie>)".into(),
+                            "Idle scan (-s idle) requires zombie host (-sI <zombie> or -I <zombie>)".into(),
                         ));
                     }
                     ScanType::Idle

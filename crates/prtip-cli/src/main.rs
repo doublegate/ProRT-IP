@@ -33,6 +33,8 @@ use tracing::{info, warn};
 ///
 /// - `-sS` → `--nmap-syn`
 /// - `-sT` → `--nmap-connect`
+/// - `-sV` → `--sV` (service version detection)
+/// - `-sI <zombie>` → `--nmap-idle <zombie>`
 /// - `-oN <file>` → `--output-normal <file>`
 /// - `-oX <file>` → `--output-xml <file>`
 /// - `-oG <file>` → `--output-greppable <file>`
@@ -55,6 +57,8 @@ fn preprocess_argv() -> Vec<String> {
                 | "-sF"
                 | "-sX"
                 | "-sA"
+                | "-sI"
+                | "-sV"
                 | "-oN"
                 | "-oX"
                 | "-oG"
@@ -83,6 +87,18 @@ fn preprocess_argv() -> Vec<String> {
             "-sF" => processed.push("--nmap-fin".to_string()),
             "-sX" => processed.push("--nmap-xmas".to_string()),
             "-sA" => processed.push("--nmap-ack".to_string()),
+
+            // Service version detection (no value)
+            "-sV" => processed.push("--sV".to_string()),
+
+            // Idle scan flag (with zombie host value)
+            "-sI" => {
+                processed.push("--nmap-idle".to_string());
+                i += 1;
+                if i < args.len() {
+                    processed.push(args[i].clone());
+                }
+            }
 
             // Output format flags (with value)
             "-oN" => {
@@ -854,6 +870,14 @@ mod tests {
                 "-sF" => processed.push("--nmap-fin".to_string()),
                 "-sX" => processed.push("--nmap-xmas".to_string()),
                 "-sA" => processed.push("--nmap-ack".to_string()),
+                "-sV" => processed.push("--sV".to_string()),
+                "-sI" => {
+                    processed.push("--nmap-idle".to_string());
+                    i += 1;
+                    if i < args_vec.len() {
+                        processed.push(args_vec[i].clone());
+                    }
+                }
                 "-oN" => {
                     processed.push("--output-normal".to_string());
                     i += 1;
@@ -945,6 +969,27 @@ mod tests {
         let args = vec!["prtip", "-Pn", "192.168.1.1"];
         let processed = preprocess_argv_from(args);
         assert_eq!(processed[1], "--skip-ping");
+    }
+
+    #[test]
+    fn test_preprocess_idle_scan() {
+        let args = vec!["prtip", "-sI", "192.168.1.100", "-p", "80,443", "target.com"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--nmap-idle");
+        assert_eq!(processed[2], "192.168.1.100");
+        assert_eq!(processed[3], "-p");
+        assert_eq!(processed[4], "80,443");
+        assert_eq!(processed[5], "target.com");
+    }
+
+    #[test]
+    fn test_preprocess_service_version() {
+        let args = vec!["prtip", "-sV", "-p", "80,443", "192.168.1.1"];
+        let processed = preprocess_argv_from(args);
+        assert_eq!(processed[1], "--sV");
+        assert_eq!(processed[2], "-p");
+        assert_eq!(processed[3], "80,443");
+        assert_eq!(processed[4], "192.168.1.1");
     }
 
     #[test]

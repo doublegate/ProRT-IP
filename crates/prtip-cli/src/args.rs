@@ -1208,7 +1208,7 @@ impl Args {
 
         // Determine scan type (nmap aliases take precedence for explicitness)
         let scan_type = if self.nmap_idle.is_some() || self.idle_scan.is_some() {
-            ScanType::Idle  // -sI flag (preprocessed to --nmap-idle) or direct -I flag
+            ScanType::Idle // -sI flag (preprocessed to --nmap-idle) or direct -I flag
         } else if self.nmap_syn {
             ScanType::Syn
         } else if self.nmap_connect {

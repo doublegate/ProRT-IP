@@ -16,9 +16,10 @@ use tracing::{info, warn};
 /// Represents the NUMA architecture of the system:
 /// - `SingleNode`: UMA system or NUMA unavailable (fallback)
 /// - `MultiNode`: Multi-socket system with NUMA nodes
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum NumaTopology {
     /// Single NUMA node (UMA system or fallback)
+    #[default]
     SingleNode,
     /// Multiple NUMA nodes with core mapping
     MultiNode {
@@ -250,12 +251,6 @@ impl NumaTopology {
                 cores_per_node.values().map(|v| v.len()).sum()
             }
         }
-    }
-}
-
-impl Default for NumaTopology {
-    fn default() -> Self {
-        Self::SingleNode
     }
 }
 

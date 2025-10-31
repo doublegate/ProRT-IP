@@ -171,8 +171,7 @@ impl IdleScanner {
         confidence_threshold: f32,
     ) -> Result<IdleScanResult> {
         for attempt in 0..=retries {
-            let result =
-                Self::scan_single_port(zombie.clone(), target, port, wait_time_ms).await?;
+            let result = Self::scan_single_port(zombie.clone(), target, port, wait_time_ms).await?;
 
             if result.confidence >= confidence_threshold {
                 return Ok(result);
@@ -301,11 +300,8 @@ async fn send_spoofed_syn(zombie_ip: IpAddr, target_ip: IpAddr, target_port: u16
     tcp_packet.set_data_offset(5); // 20 bytes / 4 = 5
 
     // 2. Calculate TCP checksum with spoofed source IP
-    let checksum = pnet::packet::tcp::ipv4_checksum(
-        &tcp_packet.to_immutable(),
-        &zombie_ipv4,
-        &target_ipv4,
-    );
+    let checksum =
+        pnet::packet::tcp::ipv4_checksum(&tcp_packet.to_immutable(), &zombie_ipv4, &target_ipv4);
     tcp_packet.set_checksum(checksum);
 
     // 3. Build IPv4 packet with spoofed source

@@ -973,7 +973,14 @@ mod tests {
 
     #[test]
     fn test_preprocess_idle_scan() {
-        let args = vec!["prtip", "-sI", "192.168.1.100", "-p", "80,443", "target.com"];
+        let args = vec![
+            "prtip",
+            "-sI",
+            "192.168.1.100",
+            "-p",
+            "80,443",
+            "target.com",
+        ];
         let processed = preprocess_argv_from(args);
         assert_eq!(processed[1], "--nmap-idle");
         assert_eq!(processed[2], "192.168.1.100");

@@ -46,6 +46,8 @@ use std::path::PathBuf;
     prtip --dual-stack -p 80 192.168.1.1 2001:db8::1\n\n\
     # IPv6 link-local scan\n\
     prtip -6 -p 22,80,443 fe80::1%eth0\n\n\
+    # Idle scan (zombie scan) - ultimate stealth\n\
+    prtip -sI 192.168.1.100 -p 80,443 target.com\n\n\
     # Multiple output formats\n\
     prtip -sS -p 80,443 -oA scan-results 10.0.0.0/24\n\n\
     # Original ProRT-IP syntax (still supported)\n\
@@ -787,6 +789,53 @@ pub struct Args {
     #[arg(long, help_heading = "FIREWALL/IDS EVASION AND SPOOFING")]
     pub badsum: bool,
 
+    /// Idle scan using zombie host (nmap -sI) - Ultimate stealth
+    ///
+    /// Perform completely anonymous port scanning by bouncing probes off a "zombie" host.
+    /// Your real IP never contacts the target directly. This is the stealthiest scan
+    /// technique available, as all probes appear to come from the zombie.
+    ///
+    /// Requirements:
+    /// - Zombie must have predictable IPID (increments by 1 per packet)
+    /// - Zombie must be idle (minimal network traffic)
+    /// - Zombie must respond to unsolicited SYN/ACK with RST
+    ///
+    /// Good zombie candidates:
+    /// - Printers and IoT devices (simple network stacks)
+    /// - Idle workstations (Windows XP/2003, Linux <4.18)
+    /// - Legacy systems with sequential IPID
+    ///
+    /// ⚠️  NOTE: Modern systems (Linux 4.18+, Windows 10+) use random IPID.
+    ///
+    /// Example: prtip -sI 192.168.1.100 -p 80,443 target.com
+    /// Example: prtip -sI zombie.local --zombie-quality 0.8 -p 1-1000 target.com
+    #[arg(
+        short = 'I',
+        long = "idle-scan",
+        value_name = "ZOMBIE_HOST",
+        help_heading = "FIREWALL/IDS EVASION AND SPOOFING"
+    )]
+    pub idle_scan: Option<String>,
+
+    /// Minimum zombie quality score for idle scan (0.0-1.0, default: 0.7)
+    ///
+    /// When using idle scan, only accept zombies with quality score above this threshold.
+    /// Higher values = more selective (better zombies, longer discovery time).
+    ///
+    /// Quality factors:
+    /// - IPID pattern (Sequential=0.5, Broken256=0.4, Random=0.0)
+    /// - Consistency (perfect=0.3, variable=0.0-0.3)
+    /// - Latency (<50ms=0.2, >1000ms=0.0)
+    ///
+    /// Example: prtip -sI zombie.local --zombie-quality 0.9 -p 80,443 target.com
+    #[arg(
+        long,
+        value_name = "0.0-1.0",
+        default_value = "0.7",
+        help_heading = "FIREWALL/IDS EVASION AND SPOOFING"
+    )]
+    pub zombie_quality: f32,
+
     // ============================================================================
     // MISCELLANEOUS FLAGS (nmap-compatible)
     // ============================================================================
@@ -1143,7 +1192,9 @@ impl Args {
         };
 
         // Determine scan type (nmap aliases take precedence for explicitness)
-        let scan_type = if self.nmap_syn {
+        let scan_type = if self.idle_scan.is_some() {
+            ScanType::Idle
+        } else if self.nmap_syn {
             ScanType::Syn
         } else if self.nmap_connect {
             ScanType::Connect
@@ -1167,6 +1218,15 @@ impl Args {
                 ScanTypeArg::Xmas => ScanType::Xmas,
                 ScanTypeArg::Ack => ScanType::Ack,
                 ScanTypeArg::Udp => ScanType::Udp,
+                ScanTypeArg::Idle => {
+                    // Idle scan requires -sI flag
+                    if self.idle_scan.is_none() {
+                        return Err(prtip_core::Error::Config(
+                            "Idle scan (-s idle) requires zombie host (-sI <zombie>)".into(),
+                        ));
+                    }
+                    ScanType::Idle
+                }
             }
         };
 
@@ -1286,6 +1346,8 @@ pub enum ScanTypeArg {
     Ack,
     /// UDP scan
     Udp,
+    /// Idle scan (zombie scan, requires zombie host with -sI)
+    Idle,
 }
 
 /// Output format argument

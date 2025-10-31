@@ -87,22 +87,11 @@ impl NumaTopology {
             }
         };
 
-        // Get NUMA nodes
-        let numa_depth = match topo.depth_or_below_for_type(ObjectType::NUMANode) {
-            Ok(depth) => depth,
-            Err(_) => {
-                warn!("Failed to query NUMA depth, falling back to single-node");
-                return Ok(Self::SingleNode);
-            }
-        };
-
-        let node_objs: Vec<_> = topo.objects_at_depth(numa_depth).collect();
+        // Get NUMA nodes (Memory objects, not in normal hierarchy)
+        let node_objs: Vec<_> = topo.objects_with_type(ObjectType::NUMANode).collect();
         let node_count = node_objs.len();
 
-        debug!(
-            "hwloc detected {} NUMA nodes at depth {}",
-            node_count, numa_depth
-        );
+        debug!("hwloc detected {} NUMA nodes", node_count);
 
         if node_count <= 1 {
             info!("Single NUMA node detected, optimization not needed");
@@ -114,7 +103,7 @@ impl NumaTopology {
 
         for node_obj in node_objs.iter() {
             let node_id = match node_obj.os_index() {
-                Some(idx) => idx as usize,
+                Some(idx) => idx,
                 None => {
                     warn!("NUMA node without os_index, skipping");
                     continue;
@@ -170,8 +159,9 @@ impl NumaTopology {
                 // Check if this PU is in the node's cpuset
                 // Use is_set() to check if any bit in the PU's cpuset is set in node's cpuset
                 let mut is_in_node = false;
-                for i in 0..pu_cpuset.weight() as usize {
-                    if cpuset.is_set(i as u32) && pu_cpuset.is_set(i as u32) {
+                let weight = pu_cpuset.weight().unwrap_or(0);
+                for i in 0..weight {
+                    if cpuset.is_set(i) && pu_cpuset.is_set(i) {
                         is_in_node = true;
                         break;
                     }
@@ -179,7 +169,7 @@ impl NumaTopology {
 
                 if is_in_node {
                     if let Some(os_idx) = pu_obj.os_index() {
-                        cores.push(os_idx as usize);
+                        cores.push(os_idx);
                     }
                 }
             }

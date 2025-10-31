@@ -14,13 +14,13 @@ use std::net::IpAddr;
 pub struct IdleScanConfig {
     /// Zombie host to use
     pub zombie: ZombieCandidate,
-    
+
     /// Wait time between spoof and measure (milliseconds)
     pub wait_time_ms: u64,
-    
+
     /// Retry count on inconsistent results
     pub retries: usize,
-    
+
     /// Minimum confidence threshold
     pub confidence_threshold: f32,
 }
@@ -30,16 +30,16 @@ pub struct IdleScanConfig {
 pub struct IdleScanResult {
     /// Target IP address
     pub target: IpAddr,
-    
+
     /// Target port
     pub port: u16,
-    
+
     /// Port state
     pub state: PortState,
-    
+
     /// Result confidence (0.0-1.0)
     pub confidence: f32,
-    
+
     /// Observed IPID delta
     pub ipid_delta: u16,
 }
@@ -55,7 +55,7 @@ impl IdleScanner {
     pub fn new(config: IdleScanConfig) -> Result<Self> {
         Ok(Self { config })
     }
-    
+
     /// Scan multiple ports on target
     pub async fn scan_ports(
         &mut self,

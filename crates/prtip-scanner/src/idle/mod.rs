@@ -9,7 +9,7 @@
 //! 1. **Find a zombie**: A host with predictable IPID (IP Identification) increments
 //! 2. **Measure baseline IPID**: Send SYN/ACK to zombie, record IPID in RST response
 //! 3. **Spoof SYN packet**: Send SYN to target with zombie's source IP
-//! 4. **Target responds to zombie**: 
+//! 4. **Target responds to zombie**:
 //!    - Open port: Target sends SYN/ACK, zombie replies RST (IPID +2)
 //!    - Closed port: Target sends RST, zombie ignores it (IPID +1)
 //!    - Filtered port: No response (IPID +0)
@@ -40,7 +40,7 @@
 //! let results = scanner.scan_ports(target, &[22, 80, 443]).await?;
 //!
 //! for result in results {
-//!     println!("Port {}: {:?} (confidence: {:.2})", 
+//!     println!("Port {}: {:?} (confidence: {:.2})",
 //!         result.port, result.state, result.confidence);
 //! }
 //! # Ok(())
@@ -54,11 +54,11 @@
 //! - RFC 791 (IP) - IPID field specification
 //! - RFC 793 (TCP) - SYN/ACK/RST handshake
 
+pub mod idle_scanner;
 pub mod ipid_tracker;
 pub mod zombie_discovery;
-pub mod idle_scanner;
 
 // Re-export main types
+pub use idle_scanner::{IdleScanConfig, IdleScanResult, IdleScanner};
 pub use ipid_tracker::{IPIDMeasurement, IPIDPattern, IPIDTracker};
-pub use zombie_discovery::{ZombieCandidate, ZombieDiscovery, DiscoveryConfig};
-pub use idle_scanner::{IdleScanner, IdleScanConfig, IdleScanResult};
+pub use zombie_discovery::{DiscoveryConfig, ZombieCandidate, ZombieDiscovery};

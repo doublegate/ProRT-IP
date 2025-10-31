@@ -73,13 +73,22 @@ impl NumaTopology {
     /// Detect NUMA topology on Linux using hwloc
     #[cfg(all(target_os = "linux", feature = "numa"))]
     fn detect_linux() -> Result<Self> {
-        use hwloc::{ObjectType, Topology};
+        use hwlocality::{object::types::ObjectType, Topology};
 
         // Initialize hwloc topology
-        let topo = Topology::new();
+        let topo = match Topology::new() {
+            Ok(t) => t,
+            Err(e) => {
+                warn!(
+                    "Failed to initialize hwloc topology: {}, falling back to single-node",
+                    e
+                );
+                return Ok(Self::SingleNode);
+            }
+        };
 
         // Get NUMA nodes
-        let numa_depth = match topo.depth_or_below_for_type(&ObjectType::NUMANode) {
+        let numa_depth = match topo.depth_or_below_for_type(ObjectType::NUMANode) {
             Ok(depth) => depth,
             Err(_) => {
                 warn!("Failed to query NUMA depth, falling back to single-node");
@@ -87,7 +96,7 @@ impl NumaTopology {
             }
         };
 
-        let node_objs = topo.objects_at_depth(numa_depth);
+        let node_objs: Vec<_> = topo.objects_at_depth(numa_depth).collect();
         let node_count = node_objs.len();
 
         debug!(
@@ -104,7 +113,13 @@ impl NumaTopology {
         let mut cores_per_node: HashMap<usize, Vec<usize>> = HashMap::new();
 
         for node_obj in node_objs.iter() {
-            let node_id = node_obj.os_index() as usize;
+            let node_id = match node_obj.os_index() {
+                Some(idx) => idx as usize,
+                None => {
+                    warn!("NUMA node without os_index, skipping");
+                    continue;
+                }
+            };
             let cores = Self::get_cores_for_node(&topo, node_obj)?;
 
             debug!("NUMA node {}: {} cores ({:?})", node_id, cores.len(), cores);
@@ -127,10 +142,10 @@ impl NumaTopology {
     /// Get list of CPU cores for a specific NUMA node
     #[cfg(all(target_os = "linux", feature = "numa"))]
     fn get_cores_for_node(
-        topo: &hwloc::Topology,
-        node_obj: &hwloc::TopologyObject,
+        topo: &hwlocality::Topology,
+        node_obj: &hwlocality::object::TopologyObject,
     ) -> Result<Vec<usize>> {
-        use hwloc::ObjectType;
+        use hwlocality::object::types::ObjectType;
 
         let mut cores = Vec::new();
 
@@ -140,14 +155,14 @@ impl NumaTopology {
             .ok_or_else(|| NumaError::Detection("NUMA node has no cpuset".to_string()))?;
 
         // Find PU (Processing Unit / logical CPU) depth
-        let pu_depth = match topo.depth_or_below_for_type(&ObjectType::PU) {
+        let pu_depth = match topo.depth_or_below_for_type(ObjectType::PU) {
             Ok(depth) => depth,
             Err(_) => {
                 return Err(NumaError::Detection("Failed to query PU depth".to_string()));
             }
         };
 
-        let pu_objs = topo.objects_at_depth(pu_depth);
+        let pu_objs: Vec<_> = topo.objects_at_depth(pu_depth).collect();
 
         // Iterate through all PUs and check if they belong to this node
         for pu_obj in pu_objs {
@@ -163,7 +178,9 @@ impl NumaTopology {
                 }
 
                 if is_in_node {
-                    cores.push(pu_obj.os_index() as usize);
+                    if let Some(os_idx) = pu_obj.os_index() {
+                        cores.push(os_idx as usize);
+                    }
                 }
             }
         }

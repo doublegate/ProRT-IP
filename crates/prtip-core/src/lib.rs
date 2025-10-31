@@ -25,6 +25,7 @@ pub mod cdn_detector;
 pub mod circuit_breaker;
 pub mod config;
 pub mod crypto;
+pub mod detection;
 pub mod error;
 pub mod errors;
 pub mod os_db;
@@ -42,6 +43,11 @@ pub use circuit_breaker::{CircuitBreaker, CircuitBreakerConfig, CircuitState, Ci
 pub use config::{
     Config, DecoyConfig, EvasionConfig, NetworkConfig, OutputConfig, OutputFormat,
     PerformanceConfig, ScanConfig, ServiceDetectionConfig,
+};
+pub use detection::{
+    http_fingerprint::HttpFingerprint, mysql_detect::MysqlDetect,
+    postgresql_detect::PostgresqlDetect, smb_detect::SmbDetect, ssh_banner::SshBanner,
+    ProtocolDetector, ServiceInfo,
 };
 pub use error::{Error, Result};
 pub use errors::{ScanError, ScanErrorKind};

@@ -202,7 +202,7 @@ fn test_mixed_results_collection() {
     use prtip_core::{PortState, ScanResult};
 
     // Create a collection of mixed IPv4/IPv6 results
-    let results = vec![
+    let results = [
         ScanResult::new("127.0.0.1".parse().unwrap(), 22, PortState::Open),
         ScanResult::new("::1".parse().unwrap(), 22, PortState::Open),
         ScanResult::new("192.168.1.1".parse().unwrap(), 80, PortState::Closed),

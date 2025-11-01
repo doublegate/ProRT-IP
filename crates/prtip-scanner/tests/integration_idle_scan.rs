@@ -256,7 +256,7 @@ async fn test_ipid_pattern_enum_variants() {
         // Create zombie with each pattern type
         let zombie = ZombieCandidate {
             ip: localhost(),
-            pattern: pattern.clone(),
+            pattern,
             quality_score: 0.5,
             latency_ms: 10,
             last_tested: Instant::now(),

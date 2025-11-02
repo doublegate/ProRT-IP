@@ -58,6 +58,8 @@ pub mod db_reader;
 pub mod decoy_scanner;
 pub mod discovery;
 pub mod error;
+pub mod hostgroup_limiter;
+pub mod icmp_monitor;
 pub mod idle;
 pub mod lockfree_aggregator;
 pub mod memory_storage;
@@ -86,6 +88,8 @@ pub use db_reader::{DbReader, HostInfo, PortInfo, ScanComparison, ScanInfo};
 pub use decoy_scanner::{DecoyPlacement, DecoyScanner, MAX_DECOYS};
 pub use discovery::{DiscoveryEngine, DiscoveryMethod};
 pub use error::{ErrorCategory, ScannerError, ScannerResult};
+pub use hostgroup_limiter::{HostgroupConfig, HostgroupLimiter, TargetPermit};
+pub use icmp_monitor::{BackoffState, IcmpError, IcmpMonitor};
 pub use idle::{
     DiscoveryConfig as ZombieDiscoveryConfig, IPIDMeasurement, IPIDPattern, IPIDTracker,
     IdleScanConfig, IdleScanResult, IdleScanner, ZombieCandidate, ZombieDiscovery,

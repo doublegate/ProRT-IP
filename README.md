@@ -271,143 +271,40 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - CI/CD: 7/7 platforms GREEN
 - Windows fixes: Suppressed unused variable warnings (discovery.rs)
 
+
 ### 🚀 v0.4.0 Release Highlights (2025-10-27)
 
-**Phase 4 Complete - Production Ready** ✨
+**Phase 4 Complete - Production Ready** ✅
 
-**Error Handling & Resilience:**
+**Major Accomplishments:**
 
-- Circuit breaker pattern with per-target tracking (Closed/Open/HalfOpen states)
-- Exponential backoff retry logic (T0-T5 timing templates, jitter ±25%)
-- Resource monitoring with adaptive degradation (memory/CPU thresholds)
-- User-friendly error messages (colored output, recovery suggestions)
-- 100% panic-free production code (defensive mutex handling)
-
-**Performance Optimization:**
-
-- Zero-copy packet building (15% improvement: 68.3ns → 58.8ns per packet)
-- NUMA-aware thread pinning (30% multi-socket improvement)
-- Lock-free architecture with crossbeam queues
-- <5% error handling overhead (4.2% measured)
-
-**Network Evasion (5/5 Nmap techniques - Full Parity):**
-
-- IP fragmentation (RFC 791 compliant, `-f`/`--mtu`)
-- TTL manipulation (`--ttl`)
-- Bad checksum generation (`--badsum`)
-- Decoy scanning (`-D RND:N`, manual IPs)
-- Source port manipulation (`-g`/`--source-port`)
-
-**Packet Capture:**
-
-- PCAPNG output format for all scan types
-- Thread-safe writer with automatic rotation
-- Forensics and debugging support (`--packet-capture`)
-
-**IPv6 Support (100% Complete):**
-
-- ✅ All 6 scanner types support IPv4 and IPv6
-- TCP Connect, SYN, UDP, Stealth (FIN/NULL/Xmas/ACK) scanners
-- Discovery Engine (ICMPv4/v6 Echo + NDP Neighbor Discovery)
-- Decoy Scanner (Random /64 subnet-aware generation)
-- Dual-stack capability with automatic protocol detection
-- Complete IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
+- ✅ **Error Handling & Resilience:** Circuit breaker (per-target tracking), exponential backoff retry (T0-T5 templates), resource monitoring (adaptive degradation), user-friendly messages (colored output + recovery suggestions), 100% panic-free (defensive mutex handling)
+- ✅ **Performance Optimization:** Zero-copy packet building (15% faster: 68.3ns → 58.8ns), NUMA-aware thread pinning (20-30% improvement on multi-socket), lock-free architecture (crossbeam queues), <5% error handling overhead
+- ✅ **Network Evasion (5 Nmap techniques):** IP fragmentation (RFC 791, -f/--mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoy scanning (-D RND:N), source port manipulation (-g/--source-port)
+- ✅ **Packet Capture:** PCAPNG output for all scan types (--packet-capture), thread-safe writer with automatic rotation, forensics and debugging support
+- ✅ **IPv6 Foundation (TCP Connect):** TCP Connect IPv6 support, dual-stack capability, complete IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs) - Full IPv6 completed in Sprint 5.1
+- ✅ **Service Detection (70-80%):** TLS handshake module (HTTPS, SMTPS, IMAPS, POP3S, FTPS, LDAPS), certificate parsing, --no-tls performance mode
+- ✅ **CLI Compatibility:** 50+ nmap-compatible flags (2.5x increase), git-style help system (9 categories), <30s feature discoverability
+- ✅ **SQLite Export:** Database query interface (prtip db list|query|export|compare), 4 formats (JSON/CSV/XML/text)
 
 **Quality Metrics:**
 
-- Tests: 1,216 → 1,389 (+173 = +14% growth)
-- Coverage: 61.92%+ → 62.5%+ maintained
+- Tests: 1,216 → 1,338 (+122 = +10% growth)
+- Coverage: 62.5%+ maintained
 - Clippy warnings: 0
 - Production panics: 0
 - CI/CD: 7/7 platforms GREEN
 - Release targets: 8/8 architectures
-- IPv6 Coverage: 100% (all 6 scanners)
 
----
+**Performance (Phase 3 → Phase 4):**
 
-### Detailed Sprint History
+| Benchmark | Phase 3 | Phase 4 (v0.4.0) | Improvement |
+|-----------|---------|------------------|-------------|
+| 6 common ports | ~25ms | 5.1ms | **80% faster** ✅ |
+| 65K ports | >180s | 259ms | **146x faster** ✅ |
+| Packet crafting | 68.3ns | 58.8ns | **15% faster** ✅ |
 
-- ✅ **Sprint 4.22 Phase 7 COMPLETE - Comprehensive Error Handling Testing** (2025-10-27)
-  - **Duration:** 6-8 hours
-  - **Status:** ✅ Complete - All 7 subtasks complete, production-ready
-  - **Tests Added:** 1,216 → 1,338 (+122 tests = +10%)
-    - Error injection framework: 22 tests
-    - Circuit breaker testing: 18 tests
-    - Retry logic testing: 14 tests
-    - Resource monitor testing: 15 tests
-    - Error message validation: 20 tests
-    - CLI integration testing: 15 tests
-    - Edge case testing: 18 tests
-  - **Features Tested:**
-    - Circuit breaker: State transitions, failure thresholds, cooldown, per-target isolation
-    - Retry logic: Exponential backoff, transient vs permanent errors, timing templates
-    - Resource monitoring: Memory/CPU thresholds, graceful degradation
-    - Error messages: User-facing clarity, recovery suggestions, no stack traces
-    - Integration: CLI scenarios, exit codes, permissions, network failures
-    - Edge cases: Port 0/65535/65536, CIDR /0//31//32, resource limits
-  - **Quality Metrics:**
-    - Success rate: 100% (all passing, zero regressions)
-    - Coverage: 61.92%+ maintained
-    - Performance: < 5% overhead
-    - Zero clippy warnings
-- ⏸️ **Sprint 4.21 PARTIAL - IPv6 Foundation** (2025-10-26)
-  - **Duration:** 7 hours (Sprint 4.21a: 4.5h infrastructure + Sprint 4.21b: 2.5h TCP Connect)
-  - **Status:** ⏸️ Partial complete - TCP Connect IPv6 + packet building, remaining scanners deferred to Phase 5
-  - **Completed:**
-    - IPv6 packet building (ipv6_packet.rs, 671 lines, RFC 8200)
-    - ICMPv6 protocol (icmpv6.rs, 556 lines, RFC 4443)
-    - packet_builder.rs IPv6 integration (+326 lines)
-    - TCP Connect scanner IPv6 support (+95 lines, 6 tests)
-    - Total: 1,554 lines code, 35 tests added
-  - **Strategic Decision:** Defer full IPv6 to v0.5.0
-    - TCP Connect covers 80% of IPv6 use cases (SSH, HTTP, HTTPS)
-    - Remaining scanners require 25-30 hours (vs 8-10h estimated)
-    - Better ROI: Focus v0.4.0 on error handling, service detection
-  - **Tests:** 1,081 → 1,125 (+44 tests, all passing, zero regressions)
-  - **Deferred to Phase 5:** SYN, UDP, Stealth, Discovery, Decoy scanners (25-30 hours)
-- ✅ **Sprint 4.20 COMPLETE - Network Evasion Techniques** (Released v0.3.9 - 2025-10-25)
-  - **Duration:** 25 hours total (9 phases over 2 days, Oct 24-25, 2025)
-  - **Status:** ✅ All 9 phases complete, production-ready (A+ quality grade, zero regressions)
-  - **Features Implemented (4/5 Nmap evasion techniques = 80% parity):**
-    - **IP Packet Fragmentation:** Split packets at IP layer (RFC 791 compliant, `-f` aggressive 28-byte MTU, `--mtu` custom)
-    - **TTL Manipulation:** Custom Time-To-Live values (`--ttl` flag, 1-255 range, bypass TTL filtering)
-    - **Bad Checksums:** Intentionally invalid checksums 0x0000 for firewall/IDS testing (`--badsum` flag)
-    - **Decoy Scanning:** RND:N random decoys + manual IP lists + ME positioning (`-D RND:5`, `-D ip1,ME,ip2`)
-  - **Code Added:** ~1,500 lines (evasion modules 500 + scanner integration 200 + packet builders 154 + tests 600 + docs 200)
-  - **Tests:** 1,081/1,091 passing (99.1%, +120 new tests: 12 TTL + 78 fragmentation + 5 bad checksum + 15 integration + 10 decoy)
-  - **Documentation:** `docs/19-EVASION-GUIDE.md` (1,050+ lines), comprehensive CHANGELOG, release notes (10,000 words)
-  - **Performance:** 0-7% overhead for all evasion techniques (negligible on loopback, production-acceptable)
-  - **Quality Metrics:**
-    - Zero clippy warnings across all 9 phases
-    - Zero regressions (1,081/1,081 tests passing)
-    - 92.6% code coverage for fragmentation module (78 tests)
-    - RFC 791/793/768 compliant (IP fragmentation, TCP, UDP)
-  - **Strategic Value:**
-    - Firewall/IDS evasion capabilities matching Nmap (80% parity)
-    - Production-ready security research tool
-    - Enterprise-grade documentation (troubleshooting, examples, performance analysis)
-- ✅ **Sprint 4.18.1 COMPLETE - SQLite Query Interface & Export Utilities:** Database operations with CLI subcommands
-  - **Duration:** ~11 hours actual (all 7 phases complete)
-  - **Features:** `prtip db list|query|export|compare` subcommands with 4 export formats (JSON/CSV/XML/text)
-  - **Code Added:** 2,314 lines (db_reader.rs 700 + export.rs 331 + db_commands.rs 533 + tests 182 + docs 568)
-  - **Tests:** 555/555 passing (254 lib + 9 integration + 292 other), zero regressions
-  - **Strategic Value:** Security monitoring, compliance tracking, historical analysis, tool integration
-- ✅ **Sprint 4.19 COMPLETE - NUMA Optimization Infrastructure:** 20-30% improvement on multi-socket systems
-  - **Duration:** 8.5 hours total (Phase 1: 6h infrastructure, Phase 2: 2.5h docs)
-  - **Features:** NUMA topology detection, thread pinning, CLI flags (--numa, --no-numa)
-  - **Integration:** Scanner threading integration (discovered already complete in Phase 1)
-  - **Code Added:** ~1,010 lines (topology.rs, affinity.rs, error.rs, mod.rs)
-  - **Tests:** 803 → 817 (+14 NUMA tests), zero regressions
-  - **Performance:** 20-30% improvement on dual/quad Xeon/EPYC systems (Linux-only, hwloc)
-- ✅ **Sprint 4.18 COMPLETE - PCAPNG Support for All Scan Types:** Full packet capture integration
-  - **Duration:** 3 hours actual (vs 8-12 hours estimated, 62.5% faster)
-  - **Features:** All scan types (TCP/UDP/SYN/FIN/NULL/Xmas/ACK) support `--packet-capture` flag
-  - **Integration:** Parameter-based approach (Option A) following proven UDP scanner pattern
-  - **Tests:** 900 → 933 (+33 PCAPNG tests), zero regressions
-  - **Strategic Value:** Forensic analysis, compliance documentation, protocol debugging
-- ✅ **Sprint 4.17 COMPLETE - Performance I/O Optimization (v0.3.8):** Zero-copy packet building (15% faster: 68.3ns → 58.8ns), 100% allocation elimination (3-7M/sec → 0), PacketBuffer infrastructure (thread-local pools), SYN scanner integration (proof-of-concept), comprehensive Criterion.rs benchmarks (9 benchmark groups, 207 lines), performance documentation (PERFORMANCE-GUIDE.md, 8,150+ lines total across 12 documents), 803 tests passing (previously 790), zero regressions, 15 hours actual vs 22-28 estimated (40% faster than planned)
-- ✅ **Sprint 4.16 COMPLETE - CLI Compatibility & Help System (v0.3.8):** Git-style categorized help (9 categories, 2,086 lines), 50+ nmap-compatible flags (2.5x increase from 20+), 23 example scenarios with detailed explanations, <30 seconds feature discoverability (user-tested), 38+ new tests (539+ total), zero regressions, <1 day completion (75% faster than 3-4 day estimate)
-- ✅ **Sprint 4.15 COMPLETE - Service Detection Enhancement (v0.3.8):** TLS handshake module (550 lines, 12 unit tests), detection rate improvement 50% → 70-80% (TLS-wrapped services now supported: HTTPS, SMTPS, IMAPS, POP3S, FTPS, LDAPS), certificate parsing (CN, SAN, issuer, expiry), --no-tls flag for performance mode, rustls integration, 1 day completion (faster than 4-5 day estimate)
+**Key Sprints:** 4.15 (Service Detection), 4.16 (CLI Compatibility), 4.17 (Performance I/O), 4.18 (PCAPNG), 4.19 (NUMA), 4.18.1 (SQLite Export), 4.20 (Network Evasion), 4.21 (IPv6 Foundation), 4.22 (Error Handling), 4.22.1 (Unwrap Audit), 4.23 (Release Prep)
 
 **Industry Comparison (Common Ports on scanme.nmap.org):**
 
@@ -420,99 +317,56 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **ProRT-IP v0.4.0 is the fastest validated network scanner tested** (benchmarked 2025-10-28).
 
-**Recent Accomplishments:**
+**For detailed Phase 4 content, see:** [Phase 4 README Archive](docs/archive/PHASE-4-README-ARCHIVE.md)
 
-- ✅ Phase 1: Core Infrastructure (weeks 1-3)
-- ✅ Phase 2: Advanced Scanning (weeks 4-6)
-- ✅ Phase 3: Detection Systems (weeks 7-10)
-- ✅ Phase 4: Performance Optimization (weeks 11-13, Sprints 4.1-4.20 Phase 2)
-- ✅ Enhancement Cycles 1-8: Reference implementation optimizations
-  - Cycle 1: Cryptographic foundation (SipHash, Blackrock)
-  - Cycle 2: Concurrent scanning patterns (FuturesUnordered)
-  - Cycle 3: Resource management (ulimit detection, interface selection)
-  - Cycle 4: CLI integration and ulimit awareness
-  - Cycle 5: Progress tracking and error categorization
-  - Cycle 6: Port filtering infrastructure
-  - Cycle 7: Advanced filtering and exclusion lists
-  - Cycle 8: Performance & stealth (sendmmsg batching, CDN detection, decoy scanning)
+---
 
-**Implementation Impact:**
+### Earlier Phases (✅ COMPLETE)
 
-- Tests: 215 → 1,349 (+1,134 tests, +527% growth) | 100% passing
-- Code Coverage: 62.5% (exceeds 60% target)
-- Lines: ~25,700+ total Rust code (production + tests)
-- Production Code: ~13,000+ lines (Phase 1-3: 6,097 + Enhancements: 4,546 + Phase 4: ~2,400)
-- Modules: 46+ total production modules
-- Platforms: 5 production-ready (Linux x86, Windows, macOS Intel/ARM, FreeBSD)
-- Build Targets: 9 total (5 working, 4 experimental)
+- ✅ **Phase 1:** Core Infrastructure (weeks 1-3) - TCP/UDP scanning, database storage, CLI foundation
+- ✅ **Phase 2:** Advanced Scanning (weeks 4-6) - SYN/Stealth scans, discovery engine, multi-protocol support
+- ✅ **Phase 3:** Detection Systems (weeks 7-10) - Service detection (187 probes), OS fingerprinting (2,600+ signatures), banner grabbing
 
-**Phase 4 Progress (Sprints 4.1-4.20 COMPLETE ✅):**
+**For complete history, see:**
+- [Roadmap](docs/01-ROADMAP.md) - Complete phase breakdown
+- [Phase 4 Archive](docs/archive/PHASE-4-README-ARCHIVE.md) - Detailed Phase 4 content
 
-- ✅ Sprint 4.1-4.14: Performance foundation (network testing, lock-free, critical bug fixes, optimization)
-- ✅ Sprint 4.15: Service Detection Enhancement (TLS handshake, 70-80% detection rate)
-- ✅ Sprint 4.16: CLI Compatibility & Help System (50+ nmap flags, git-style help)
-- ✅ Sprint 4.17: Performance I/O Optimization (zero-copy, 15% improvement)
-- ✅ Sprint 4.18: PCAPNG Support (all scan types, packet capture)
-- ✅ Sprint 4.19: NUMA Optimization (20-30% improvement on multi-socket)
-- ✅ Sprint 4.18.1: SQLite Query Interface (db list/query/export/compare)
-- ✅ Sprint 4.20: Network Evasion Techniques (v0.3.9, fragmentation, TTL, bad checksums, decoys - ALL 9 PHASES COMPLETE)
+---
 
-### Performance Achievements (Phase 3 → Phase 4)
+### Phase 5 Progress (🔄 IN PROGRESS - 40% Complete)
 
-| Benchmark | Phase 3 | Phase 4 Final (v0.4.0) | Improvement |
-|-----------|---------|------------------------|-------------|
-| 6 common ports (localhost) | ~25ms | 5.1ms | **80% faster** |
-| 1K ports (localhost) | 25ms | 9.1ms | 63% faster |
-| 10K ports (localhost) | 117ms | 65.5ms | 44% faster |
-| 65K ports (localhost) | >180s | 259ms | **146x faster** |
-| Top 100 ports (localhost) | ~50ms | 5.9ms | **88% faster** |
-| 10K --with-db (localhost) | 194.9ms | ~75ms | 61.5% faster |
-| 2.56M ports (network) | 2 hours | 15 min | **10x faster** (Sprint 4.13 fix) |
-| 10K ports (filtered) | 57 min | 3.2s | **17.5x faster** (Sprint 4.14 fix) |
-| Packet crafting | 68.3ns | 58.8ns | **15% faster** (Sprint 4.17 zero-copy) |
-| NUMA multi-socket | baseline | +20-30% | **Sprint 4.19 optimization** |
+1. ✅ **Sprint 5.1: IPv6 Scanner Integration** - **COMPLETE** (v0.4.1, released 2025-10-29)
+   - All 6 scanners support IPv4/IPv6 dual-stack (TCP Connect, SYN, UDP, Stealth, Discovery, Decoy)
+   - ICMPv6 Echo (Type 128/129) + NDP Neighbor Discovery (Type 135/136)
+   - IPv6 CLI flags: `-6`, `-4`, `--prefer-ipv6/ipv4`, `--ipv6-only/ipv4-only`
+   - 1,389 tests passing, 2,648L documentation, 15% average overhead
 
-**Note:** v0.4.0 includes comprehensive error handling infrastructure (Sprint 4.22) with <5-36% overhead for production reliability (100% panic-free, graceful degradation, retry logic). See [benchmarks/02-Phase4_Final-Bench/BENCHMARK-REPORT.md](benchmarks/02-Phase4_Final-Bench/BENCHMARK-REPORT.md) for detailed analysis.
+2. ✅ **Sprint 5.2: Service Detection Enhancement** - **COMPLETE** (v0.4.2, released 2025-10-30)
+   - 85-90% detection rate (+10-15pp improvement from 70-80%)
+   - 5 protocol-specific parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
+   - Ubuntu/Debian/RHEL version mapping from banners
+   - 1,412 tests passing (+23), <1% overhead
 
-**Sprint 4.12-4.14 Critical Fixes:**
+3. ✅ **Sprint 5.3: Idle Scanning** - **COMPLETE** (v0.4.3, released 2025-10-30)
+   - Full Nmap `-sI` parity (automated zombie discovery, quality scoring)
+   - IPID tracking (sequential vs random detection)
+   - Spoofed SYN packets (maximum anonymity: target sees zombie IP, not scanner)
+   - 1,466 tests passing (+44), 500-800ms/port, 99.5% accuracy
 
-- Progress bar real-time updates (sub-millisecond polling)
-- Large scan performance (variable shadowing bug fixed)
-- Filtered network optimization (timeout 3s→1s, parallelism tuning)
+4. 🔄 **Sprint 5.4: Advanced Rate Limiting** - **PHASE 1 COMPLETE** (Scanner Integration, 2025-11-01)
+   - ✅ Phase 1: Scanner integration (7/7 scanners integrated with rate limiting)
+   - ⏸️ Phase 2: Benchmarking (formal performance validation pending)
+   - 3-layer architecture: ICMP Type 3 Code 13 detection, Hostgroup limiting, Adaptive rate limiting
+   - Target: <5% overhead (formal benchmarking pending)
 
-### Phase 4 Completion Status
+5. 📋 **Sprint 5.5: TLS Certificate Analysis** - PLANNED
+6. 📋 **Sprint 5.6: Code Coverage Enhancement (62.5% → 80%)** - PLANNED
+7. 📋 **Sprint 5.7: Fuzz Testing Infrastructure** - PLANNED
+8. 📋 **Sprint 5.8: Plugin System Foundation (Lua scripting)** - PLANNED (ROI 9.2/10)
+9. 📋 **Sprint 5.9: Comprehensive Benchmarking** - PLANNED
+10. 📋 **Sprint 5.10: Documentation & Release Prep (v0.5.0)** - PLANNED
 
-**Phase 4 Enhancement Sprints:**
-
-1. ✅ **Sprint 4.15 (COMPLETE):** Service Detection Enhancement - SSL/TLS handshake (50% → 70-80% detection rate, 1 day)
-2. ✅ **Sprint 4.16 (COMPLETE):** CLI Compatibility & Help System (20→50+ nmap flags, git-style help, <1 day)
-3. ✅ **Sprint 4.17 (COMPLETE):** Performance I/O Optimization (15% faster, zero-copy, 0 allocations, 15 hours)
-4. ✅ **Sprint 4.18 (COMPLETE):** PCAPNG Support (all scan types, packet capture, 3 hours)
-5. ✅ **Sprint 4.19 (COMPLETE):** NUMA Optimization (20-30% multi-socket improvement, 8.5 hours)
-6. ✅ **Sprint 4.18.1 (COMPLETE):** SQLite Query Interface (db list/query/export/compare, 11 hours)
-7. ✅ **Sprint 4.20 (COMPLETE):** Network Evasion Techniques (v0.3.9, 25 hours, 9/9 phases, fragmentation/TTL/bad checksums/decoys)
-8. ⏸️ **Sprint 4.21 (PARTIAL):** IPv6 Foundation (7 hours, TCP Connect + packet building, remaining deferred to Phase 5)
-9. ✅ **Sprint 4.22 (COMPLETE):** Error Handling & Resilience (32-37 hours, circuit breaker, retry logic, resource monitoring, user-friendly errors, 122 tests)
-10. ✅ **Sprint 4.22.1 (COMPLETE):** Production Unwrap Audit (4 hours, 7 mutex unwraps replaced, 4 documented, 100% panic-free)
-11. ✅ **Sprint 4.23 (COMPLETE):** Maintenance & Release Prep v0.4.0 (8 hours, TROUBLESHOOTING.md, documentation updates, v0.4.0 release)
-
-**Phase 5 Progress:**
-
-1. ✅ **Sprint 5.1: IPv6 Scanner Integration** - **COMPLETE** (100%, 30h actual vs 30h planned)
-   - ✅ Phase 1: TCP Connect + SYN IPv6 (6h)
-   - ✅ Phase 2: UDP + Stealth IPv6 (8h)
-   - ✅ Phase 3: Discovery + Decoy IPv6 (7h)
-   - ✅ Phase 4: IPv6 CLI + Tests + Docs (9h)
-     - Phase 4.1: IPv6 CLI flags (6 flags: `-6`, `-4`, `--prefer-ipv6/ipv4`, `--ipv6-only/ipv4-only`, 29 tests, 452L)
-     - Phase 4.2: Cross-scanner IPv6 tests (11 tests, 309L)
-     - Phase 4.3: IPv6 usage guide (docs/23-IPv6-GUIDE.md, 1,958L, 49KB)
-     - Phase 4.4: Documentation updates (4 docs: ARCHITECTURE, IMPLEMENTATION-GUIDE, TESTING, NMAP_COMPATIBILITY, +690L)
-     - Phase 4.5: Performance validation (benchmarks, 15% avg overhead, production-ready)
-   - **Result:** All 6 scanners IPv4/IPv6 dual-stack, 1,389 tests passing, 2,648L docs, v0.4.1 released
-2. **Sprint 5.2: Service Detection Enhancement** - NEXT (15-18h planned, 85-90% target detection rate)
-3. **Sprint 5.3: Idle Scanning** - Zombie host anonymity technique (12-15h planned)
-4. **Sprint 5.7: Plugin System** - Lua scripting with mlua (25-30h planned, ROI 9.2/10)
-5. **Phase 6: TUI/GUI** - Interactive interfaces with ratatui/iced
+**Phase 5 Target:** v0.5.0 (Q1 2026, 6-8 weeks full-time)
 
 ---
 
@@ -832,6 +686,50 @@ prtip -sS -g 53 -f --ttl 32 -p 80,443 target.com
 ### Error Handling & Resilience (NEW in Sprint 4.22)
 
 ProRT-IP includes comprehensive error handling infrastructure tested with 122 dedicated tests:
+
+### Rate Limiting (NEW in Sprint 5.4 Phase 1)
+
+ProRT-IP implements a sophisticated three-layer rate limiting system for responsible scanning:
+
+```bash
+# Basic rate limiting (automatic ICMP Type 3 Code 13 detection)
+prtip -sS -p 1-1000 192.168.1.0/24
+
+# Hostgroup limiting (Nmap-compatible concurrent target control)
+prtip -sS --max-hostgroup 50 -p 80,443 192.168.1.0/24     # Max 50 concurrent targets
+prtip -sS --min-hostgroup 10 -p 80,443 192.168.1.0/24     # Min 10 concurrent targets
+
+# Adaptive rate limiting (Masscan-inspired bandwidth throttling)
+prtip -sS --max-rate 1000 -p 1-1000 192.168.1.0/24        # 1000 packets/second
+prtip -sS --max-rate 100 -p 80,443 192.168.1.0/24         # 100 packets/second (polite)
+```
+
+**Three-Layer Architecture:**
+
+1. ✅ **ICMP Type 3 Code 13 Detection** - Detects "communication administratively prohibited" and backs off automatically
+   - Monitors ICMP error responses from targets
+   - Automatic backoff when administrative blocks detected
+   - Per-target tracking (one blocked target doesn't affect others)
+
+2. ✅ **Hostgroup Limiting** - Nmap-compatible concurrent target control
+   - `--max-hostgroup <n>`: Maximum concurrent targets (default: 64)
+   - `--min-hostgroup <n>`: Minimum concurrent targets (default: 8)
+   - Adaptive scaling based on network performance
+   - Compatible with Nmap hostgroup semantics
+
+3. 🔄 **Adaptive Rate Limiting** - Masscan-inspired convergence algorithm for bandwidth throttling
+   - `--max-rate <n>`: Maximum packets per second
+   - Bandwidth-based throttling (not just packet count)
+   - Convergence algorithm adapts to network conditions
+   - Future: Automatic congestion detection (in development)
+
+**Integration Status:**
+- ✅ Scanner integration: 7/7 scanners (SYN, Connect, UDP, Stealth, Discovery, Decoy, Idle)
+- ⏸️ Formal benchmarking: Pending (Sprint 5.4 Phase 2)
+- Target overhead: <5% (informal testing, formal validation pending)
+
+**Documentation:** See [docs/26-RATE-LIMITING-GUIDE.md](docs/26-RATE-LIMITING-GUIDE.md) for detailed guide.
+
 
 - **Circuit breaker:** Auto-disable failing targets (5 failure threshold, 30s cooldown)
 - **Retry logic:** Exponential backoff for transient failures (3 attempts, 1s→2s→4s)

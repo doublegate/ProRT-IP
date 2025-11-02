@@ -566,6 +566,7 @@ mod tests {
                 batch_size: None,
                 requested_ulimit: None,
                 numa_enabled: false,
+                use_adaptive_v3: false,
             },
             evasion: prtip_core::EvasionConfig {
                 fragment_packets: false,

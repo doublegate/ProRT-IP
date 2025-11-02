@@ -48,6 +48,7 @@
 //! # }
 //! ```
 
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
 use prtip_network::{
@@ -65,6 +66,12 @@ use std::sync::Mutex as StdMutex;
 
 /// UDP scanner with dual-stack IPv4/IPv6 support
 /// Sprint 5.1 Phase 2.1: Enhanced for IPv6 scanning
+///
+/// # Rate Limiting (Sprint 5.4 Phase 1)
+///
+/// Supports optional hostgroup and adaptive rate limiting:
+/// - Hostgroup limiter controls concurrent targets
+/// - Adaptive limiter provides per-target ICMP backoff
 pub struct UdpScanner {
     config: Config,
     capture: Arc<Mutex<Option<Box<dyn PacketCapture>>>>,
@@ -72,6 +79,10 @@ pub struct UdpScanner {
     local_ipv4: Ipv4Addr,
     /// Local IPv6 address for IPv6 scans (if available)
     local_ipv6: Option<Ipv6Addr>,
+    /// Optional hostgroup limiter (controls concurrent targets)
+    hostgroup_limiter: Option<Arc<HostgroupLimiter>>,
+    /// Optional adaptive rate limiter (ICMP-aware throttling)
+    adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
 }
 
 impl UdpScanner {
@@ -86,7 +97,21 @@ impl UdpScanner {
             capture: Arc::new(Mutex::new(None)),
             local_ipv4,
             local_ipv6,
+            hostgroup_limiter: None,
+            adaptive_limiter: None,
         })
+    }
+
+    /// Enable hostgroup limiting (concurrent target control)
+    pub fn with_hostgroup_limiter(mut self, limiter: Arc<HostgroupLimiter>) -> Self {
+        self.hostgroup_limiter = Some(limiter);
+        self
+    }
+
+    /// Enable adaptive rate limiting (ICMP-aware throttling)
+    pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
+        self.adaptive_limiter = Some(limiter);
+        self
     }
 
     /// Initialize packet capture
@@ -136,6 +161,18 @@ impl UdpScanner {
         port: u16,
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<ScanResult> {
+        // Note: Hostgroup limiting should be handled by the caller (scheduler)
+        // since UdpScanner scans individual ports, not entire targets.
+        // Only check ICMP backoff here.
+
+        // Check ICMP backoff (if adaptive rate limiting enabled)
+        if let Some(limiter) = &self.adaptive_limiter {
+            if limiter.is_target_backed_off(target) {
+                debug!("Skipping {}:{} (ICMP backoff active)", target, port);
+                return Ok(ScanResult::new(target, port, PortState::Filtered));
+            }
+        }
+
         let start_time = Instant::now();
 
         // Use configured source port or generate random

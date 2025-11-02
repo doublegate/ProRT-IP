@@ -51,13 +51,16 @@
 //! - **Ethical Use**: Only use on authorized targets
 //! - **Network Topology**: Decoys should be topologically plausible
 
+use crate::AdaptiveRateLimiterV2;
 use prtip_core::{Config, Error, PortState, Result, ScanResult, ScanTarget};
 use prtip_network::{TcpFlags, TcpPacketBuilder};
 use rand::Rng;
 use std::collections::HashSet;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::time;
+use tracing::debug;
 
 /// Maximum number of decoys (including real source)
 pub const MAX_DECOYS: usize = 256;
@@ -78,6 +81,12 @@ pub enum DecoyPlacement {
 }
 
 /// Decoy scanner for stealth scanning with IP spoofing
+///
+/// # Rate Limiting (Sprint 5.4 Phase 1)
+///
+/// Supports optional adaptive rate limiting:
+/// - Adaptive limiter provides per-target ICMP backoff
+/// - Note: Hostgroup limiting handled by scheduler (per-port scanner)
 pub struct DecoyScanner {
     /// Scanner configuration
     config: Config,
@@ -87,6 +96,8 @@ pub struct DecoyScanner {
     real_placement: DecoyPlacement,
     /// Number of random decoys to generate
     random_decoy_count: Option<usize>,
+    /// Optional adaptive rate limiter (ICMP-aware throttling)
+    adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
 }
 
 impl DecoyScanner {
@@ -97,7 +108,14 @@ impl DecoyScanner {
             decoys: Vec::new(),
             real_placement: DecoyPlacement::Random,
             random_decoy_count: None,
+            adaptive_limiter: None,
         }
+    }
+
+    /// Enable adaptive rate limiting (ICMP-aware throttling)
+    pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
+        self.adaptive_limiter = Some(limiter);
+        self
     }
 
     /// Add a specific decoy IP address (supports both IPv4 and IPv6)
@@ -401,6 +419,33 @@ impl DecoyScanner {
     pub async fn scan_with_decoys(&mut self, target: ScanTarget, port: u16) -> Result<ScanResult> {
         // Get real source IP (from network interface)
         let real_source = self.get_source_ip(&target)?;
+
+        // Get target IP for backoff check
+        let hosts = target.expand_hosts();
+        let target_ip = if !hosts.is_empty() {
+            hosts[0]
+        } else {
+            return Err(Error::Network("No hosts in target".to_string()));
+        };
+
+        // Check ICMP backoff (if adaptive rate limiting enabled)
+        if let Some(limiter) = &self.adaptive_limiter {
+            if limiter.is_target_backed_off(target_ip) {
+                debug!("Skipping {}:{} (ICMP backoff active)", target_ip, port);
+                use chrono::Utc;
+                return Ok(ScanResult {
+                    target_ip,
+                    port,
+                    state: PortState::Filtered,
+                    response_time: Duration::from_millis(0),
+                    timestamp: Utc::now(),
+                    banner: None,
+                    service: None,
+                    version: None,
+                    raw_response: None,
+                });
+            }
+        }
 
         // Build final decoy list
         let decoy_list = self.build_decoy_list(real_source);

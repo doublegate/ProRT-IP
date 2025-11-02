@@ -37,10 +37,12 @@
 //! # }
 //! ```
 
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use futures::stream::{FuturesUnordered, StreamExt};
 use prtip_core::{Config, PortState, Result, ScanResult};
 use std::collections::HashSet;
 use std::net::{IpAddr, SocketAddr};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
@@ -53,15 +55,73 @@ use tracing::{debug, trace};
 /// - Fixed-size concurrent task pool
 /// - Automatic work stealing via futures runtime
 /// - Streaming results for memory efficiency
-#[derive(Debug, Clone)]
+///
+/// # Rate Limiting (Sprint 5.4 Phase 1)
+///
+/// Supports optional hostgroup and adaptive rate limiting:
+/// - Hostgroup limiter controls concurrent targets
+/// - Adaptive limiter provides per-target ICMP backoff
+#[derive(Clone)]
 pub struct ConcurrentScanner {
     config: Config,
+    /// Optional hostgroup limiter (controls concurrent targets)
+    hostgroup_limiter: Option<Arc<HostgroupLimiter>>,
+    /// Optional adaptive rate limiter (ICMP-aware throttling)
+    adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
 }
 
 impl ConcurrentScanner {
     /// Create a new concurrent scanner
     pub fn new(config: Config) -> Self {
-        Self { config }
+        Self {
+            config,
+            hostgroup_limiter: None,
+            adaptive_limiter: None,
+        }
+    }
+
+    /// Enable hostgroup limiting (concurrent target control)
+    ///
+    /// # Arguments
+    ///
+    /// * `limiter` - Hostgroup limiter to use
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use prtip_scanner::{ConcurrentScanner, HostgroupLimiter};
+    /// use prtip_core::Config;
+    /// use std::sync::Arc;
+    ///
+    /// let limiter = Arc::new(HostgroupLimiter::with_max(64));
+    /// let scanner = ConcurrentScanner::new(Config::default())
+    ///     .with_hostgroup_limiter(limiter);
+    /// ```
+    pub fn with_hostgroup_limiter(mut self, limiter: Arc<HostgroupLimiter>) -> Self {
+        self.hostgroup_limiter = Some(limiter);
+        self
+    }
+
+    /// Enable adaptive rate limiting (ICMP-aware throttling)
+    ///
+    /// # Arguments
+    ///
+    /// * `limiter` - Adaptive rate limiter to use
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use prtip_scanner::{ConcurrentScanner, AdaptiveRateLimiterV2};
+    /// use prtip_core::Config;
+    /// use std::sync::Arc;
+    ///
+    /// let limiter = Arc::new(AdaptiveRateLimiterV2::new(100_000.0));
+    /// let scanner = ConcurrentScanner::new(Config::default())
+    ///     .with_adaptive_limiter(limiter);
+    /// ```
+    pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
+        self.adaptive_limiter = Some(limiter);
+        self
     }
 
     /// Scan multiple targets and ports concurrently
@@ -95,6 +155,64 @@ impl ConcurrentScanner {
     /// # }
     /// ```
     pub async fn scan_targets(
+        &self,
+        targets: Vec<IpAddr>,
+        ports: Vec<u16>,
+    ) -> Result<Vec<ScanResult>> {
+        // If no rate limiting configured, use original fast path
+        if self.hostgroup_limiter.is_none() && self.adaptive_limiter.is_none() {
+            return self.scan_targets_fast_path(targets, ports).await;
+        }
+
+        // Rate-limited path: scan each target sequentially with rate limiting
+        let mut all_results = Vec::new();
+        let target_count = targets.len();
+
+        for target in targets {
+            // 1. Acquire hostgroup permit (if enabled)
+            let _permit = if let Some(limiter) = &self.hostgroup_limiter {
+                Some(limiter.acquire_target().await)
+            } else {
+                None
+            };
+
+            // 2. Check ICMP backoff (if enabled)
+            if let Some(limiter) = &self.adaptive_limiter {
+                if limiter.is_target_backed_off(target) {
+                    debug!("Skipping {} (ICMP backoff active)", target);
+                    continue;
+                }
+            }
+
+            // 3. Scan all ports on this target
+            let sockets: Vec<SocketAddr> = ports
+                .iter()
+                .map(|&port| SocketAddr::new(target, port))
+                .collect();
+
+            debug!(
+                "Scanning target {} ({} ports) with rate limiting",
+                target,
+                ports.len()
+            );
+
+            let results = self.scan_sockets(sockets).await?;
+            all_results.extend(results);
+
+            // Permit automatically released here (RAII)
+        }
+
+        debug!(
+            "Rate-limited scan complete: {} results from {} targets",
+            all_results.len(),
+            target_count
+        );
+
+        Ok(all_results)
+    }
+
+    /// Fast path for scanning without rate limiting (original implementation)
+    async fn scan_targets_fast_path(
         &self,
         targets: Vec<IpAddr>,
         ports: Vec<u16>,

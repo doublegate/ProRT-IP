@@ -1,8 +1,8 @@
 # ProRT-IP WarScan: Architecture Overview
 
-**Version:** 2.0
-**Last Updated:** 2025-10-13
-**Status:** Phase 4 Complete (Production-Ready) - v0.3.7 Testing Infrastructure
+**Version:** 3.0
+**Last Updated:** 2025-11-01
+**Status:** Phase 5 IN PROGRESS (40% Complete) - v0.4.3 Advanced Features (IPv6 100%, Idle Scan, Rate Limiting)
 
 ---
 
@@ -27,10 +27,36 @@ ProRT-IP WarScan is a modern, high-performance network reconnaissance tool writt
 
 - **Speed:** Internet-scale scanning (full IPv4 sweep in <6 minutes on appropriate hardware)
 - **Safety:** Memory-safe Rust implementation eliminating buffer overflows and use-after-free vulnerabilities
-- **Stealth:** Advanced evasion techniques including timing controls, decoys, fragmentation, and idle scanning
-- **Completeness:** Full-featured from host discovery through OS/service detection
+- **Stealth:** Six evasion techniques including timing controls, decoys, fragmentation, TTL manipulation, bad checksums, and idle (zombie) scanning
+- **Completeness:** Full-featured from host discovery through OS/service detection (85-90% detection rate, 187 Nmap probes)
+- **IPv6 Support:** 100% coverage across all 6 scanner types (TCP SYN, TCP Connect, UDP, Stealth, Discovery, Decoy)
+- **Rate Limiting:** Three-layer system (ICMP monitoring, hostgroup control, adaptive rate limiting) prevents network disruption
 - **Extensibility:** Plugin architecture and scripting engine for custom workflows
 - **Accessibility:** Progressive interfaces from CLI → TUI → Web → GUI
+
+### Current Capabilities (v0.4.3)
+
+**Scan Types:** 8 total
+- TCP SYN (default, requires privileges)
+- TCP Connect (fallback, no privileges)
+- UDP (protocol-specific payloads)
+- Stealth (FIN/NULL/Xmas/ACK) (firewall detection)
+- Discovery (ICMP/ICMPv6/NDP, host enumeration)
+- Decoy (source address spoofing for anonymity)
+- Idle/Zombie (maximum anonymity via third-party relay)
+
+**Detection:** 85-90% accuracy
+- Service detection (187 Nmap probes embedded)
+- Protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
+- Ubuntu/Debian/RHEL version mapping from banners
+- OS fingerprinting (16 probes, 2,600+ signatures)
+
+**Performance:** Production-Ready
+- Common ports: 5.15ms (29x faster than Nmap)
+- Full 65K ports: 259ms (146x faster than Phase 3 baseline)
+- Idle scan: 500-800ms/port (stealth tradeoff, 300x slower)
+- Zero-copy packet building (<1% overhead)
+- NUMA optimization support (enterprise-ready)
 
 ### Architecture Goals
 
@@ -215,52 +241,145 @@ impl ScannerScheduler {
 }
 ```
 
-### 2. Rate Controller
+### 2. Three-Layer Rate Limiting System (Sprint 5.4)
 
-**Purpose:** Adaptive rate limiting to prevent network saturation and detection
+**Purpose:** Responsible scanning with precise control over network load, target concurrency, and DoS prevention
+
+ProRT-IP implements a sophisticated three-layer rate limiting architecture combining Nmap-compatible hostgroup control, Masscan-inspired adaptive rate limiting, and ICMP-based automatic backoff:
+
+#### Layer 1: ICMP Type 3 Code 13 Detection (Automatic Backoff)
+
+**Purpose:** Detect and respond to administrative prohibitions from firewalls/routers
 
 **Key Responsibilities:**
+- Monitor for ICMP Type 3, Code 13 ("Communication Administratively Prohibited")
+- Trigger automatic cooldown (exponential backoff: 1s, 2s, 4s, 8s, 16s max)
+- Per-target tracking (one target's prohibition doesn't block others)
+- Graceful recovery when network conditions improve
 
-- Track packet transmission rates and response rates
-- Monitor timeouts and packet loss as congestion indicators
-- Implement TCP-inspired congestion control (additive increase, multiplicative decrease)
-- Apply user-specified rate caps (`--max-rate`, `--min-rate`)
-- Dynamic adjustment based on network feedback
-
-**Congestion Control Algorithm:**
-
+**Implementation:**
 ```rust
-pub struct RateController {
-    current_rate: AtomicU64,      // packets per second
-    max_rate: u64,
-    min_rate: u64,
-    cwnd: AtomicUsize,            // congestion window
-    ssthresh: AtomicUsize,        // slow start threshold
-    rtt_estimator: RttEstimator,
+pub struct IcmpMonitor {
+    prohibited_targets: DashMap<IpAddr, ProhibitionState>,
 }
 
-impl RateController {
-    fn on_ack(&self) {
-        let cwnd = self.cwnd.load(Ordering::Relaxed);
-        let ssthresh = self.ssthresh.load(Ordering::Relaxed);
-
-        if cwnd < ssthresh {
-            // Slow start: exponential increase
-            self.cwnd.fetch_add(1, Ordering::Relaxed);
-        } else {
-            // Congestion avoidance: linear increase
-            self.cwnd.fetch_add(1 / cwnd, Ordering::Relaxed);
-        }
-    }
-
-    fn on_loss(&self) {
-        // Multiplicative decrease
-        let cwnd = self.cwnd.load(Ordering::Relaxed);
-        self.ssthresh.store(cwnd / 2, Ordering::Relaxed);
-        self.cwnd.store(cwnd / 2, Ordering::Relaxed);
-    }
+struct ProhibitionState {
+    cooldown_until: Instant,
+    backoff_level: u8,  // 0-4 (1s, 2s, 4s, 8s, 16s)
 }
 ```
+
+**Benefits:**
+- Prevents network administrator complaints
+- Automatic compliance with rate-limiting routers
+- Graceful degradation (continues scanning other targets)
+
+#### Layer 2: Hostgroup Limiting (Nmap-Compatible)
+
+**Purpose:** Control concurrent target-level parallelism (Nmap `--max-hostgroup` / `--min-hostgroup` compatibility)
+
+**Key Responsibilities:**
+- Semaphore-based concurrent target limiting
+- Applies to "multi-port" scanners (TCP SYN, TCP Connect, Concurrent)
+- Separate from packet-per-second rate limiting
+- Dynamic adjustment based on scan size
+
+**Implementation:**
+```rust
+pub struct HostgroupLimiter {
+    semaphore: Arc<Semaphore>,
+    max_hostgroup: usize,
+    min_hostgroup: usize,
+}
+```
+
+**CLI Flags:**
+- `--max-hostgroup N` - Maximum concurrent targets (default: 100)
+- `--min-hostgroup N` - Minimum concurrent targets (default: 1)
+
+**Scanner Categories:**
+
+**Multi-Port Scanners** (3): Hostgroup limiting applied
+- ConcurrentScanner (adaptive parallelism)
+- TcpConnectScanner (kernel stack)
+- SynScanner (raw sockets)
+
+**Per-Port Scanners** (4): No hostgroup limiting (per-port iteration)
+- UdpScanner
+- StealthScanner (FIN/NULL/Xmas/ACK)
+- IdleScanner (zombie relay)
+- DecoyScanner (source spoofing)
+
+**Benefits:**
+- Prevents overwhelming single targets
+- Reduces memory usage (bounded concurrency)
+- Nmap workflow compatibility
+
+#### Layer 3: Adaptive Rate Limiting (Masscan-Inspired)
+
+**Purpose:** Packet-per-second throttling with dynamic batch sizing (Masscan throttler algorithm)
+
+**Key Responsibilities:**
+- 256-bucket circular buffer tracks recent packet rates
+- Convergence algorithm: `batch_size *= (target_rate / observed_rate)^0.5`
+- Batch size range: 1.0 → 10,000.0 packets
+- Handles system suspend/resume (reset on >1s gap)
+
+**Implementation:**
+```rust
+pub struct AdaptiveRateLimiter {
+    buckets: [AtomicU32; 256],
+    bucket_index: AtomicU8,
+    last_time: AtomicU64,
+    batch_size: AtomicU64,  // f64 as u64 bits
+    max_rate: u64,          // packets per second
+}
+```
+
+**Performance Characteristics:**
+- Low rates (<1K pps): Batch ~1, per-packet throttling
+- Medium rates (1K-100K pps): Batch 2-100, reduced syscall overhead
+- High rates (>100K pps): Batch 100-10,000, minimal overhead
+
+**CLI Flags:**
+- `--max-rate N` - Maximum packets per second
+
+**Benefits:**
+- Better high-rate performance than token bucket (batching)
+- Self-tuning (no manual batch size configuration)
+- Graceful system suspend handling
+
+#### Integration Pattern
+
+**Multi-Port Scanners:**
+```rust
+// Acquire hostgroup slot
+let _permit = hostgroup_limiter.acquire().await;
+
+// Scan all ports for this target
+for port in ports {
+    adaptive_limiter.wait().await;
+    if icmp_monitor.is_prohibited(target_ip).await {
+        backoff().await;
+        continue;
+    }
+    send_packet(target_ip, port).await;
+}
+```
+
+**Per-Port Scanners:**
+```rust
+// No hostgroup limiting (per-port iteration)
+for (target_ip, port) in targets_x_ports {
+    if icmp_monitor.is_prohibited(target_ip).await {
+        backoff().await;
+        continue;
+    }
+    send_packet(target_ip, port).await;
+}
+```
+
+**For comprehensive usage examples and troubleshooting, see [docs/26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md).**
 
 ### 3. Result Aggregator
 
@@ -550,6 +669,121 @@ enum ConnectionState {
 - 90%+ time reduction vs. full stateful scan
 - Maintains accuracy for service detection
 - Automatic fallback to stateful if response rate is low
+
+### 4. Idle Scan Mode (Sprint 5.3, Zombie Scan)
+
+**Use Case:** Maximum anonymity - scan target without revealing scanner's IP address
+
+**Architecture:** Three-party relay system using "zombie" host as intermediary
+
+**Key Components:**
+
+1. **IP ID Tracking** - Monitor zombie's IP ID sequence (must be sequential)
+2. **Spoofed SYN/ACK** - Send spoofed packets appearing to come from zombie
+3. **Port State Inference** - Deduce target port state from IP ID increments
+
+**How It Works:**
+
+```
+Scanner (Hidden)    Zombie (Relay)        Target
+     │                   │                   │
+     │  1. Probe         │                   │
+     ├──────SYN/ACK───────>│                   │
+     │                   │<──RST (IP ID=100)─┤
+     │                   │                   │
+     │  2. Spoof (src=Zombie, dst=Target:80)  │
+     │───────────────────────────SYN────────────>│
+     │                   │                   │
+     │                   │<──SYN/ACK (open)──┤  If port open
+     │                   ├──RST──────────────>│  (zombie responds)
+     │                   │   (IP ID inc by 2) │
+     │                   │                   │
+     │  3. Probe again   │                   │
+     ├──────SYN/ACK───────>│                   │
+     │                   │<──RST (IP ID=102)─┤
+     │                   │                   │
+     │  Port OPEN (IP ID increased by 2)      │
+```
+
+**IP ID Pattern Analysis:**
+
+- **+0:** Port filtered (no response from target)
+- **+1:** Port closed (target sent RST to zombie, zombie ignored)
+- **+2:** Port open (target sent SYN/ACK, zombie sent RST back)
+
+**Zombie Requirements:**
+
+1. **Sequential IP ID:** Must use incrementing IP ID (not random)
+2. **Low Traffic:** Minimal background traffic (stable IP ID)
+3. **Connectivity:** Reachable from scanner and target
+4. **OS Compatibility:** Most Linux/BSD (not Windows/modern macOS)
+
+**Implementation:**
+
+```rust
+pub struct IdleScanner {
+    zombie_addr: IpAddr,
+    target_addr: IpAddr,
+    ipid_tracker: IpIdTracker,
+    spoof_engine: SpoofEngine,
+}
+
+pub enum IpIdPattern {
+    Sequential,      // +1 per packet (good zombie)
+    Random,          // Unpredictable (bad zombie)
+    Global,          // Shared counter (acceptable)
+    PerDestination,  // Per-target counter (poor)
+}
+
+impl IdleScanner {
+    pub async fn scan_port(&mut self, port: u16) -> Result<PortState> {
+        // 1. Probe zombie (baseline IP ID)
+        let ipid_before = self.probe_zombie().await?;
+
+        // 2. Spoof SYN from zombie to target
+        self.send_spoofed_syn(self.target_addr, port).await?;
+        sleep(Duration::from_millis(500)).await;
+
+        // 3. Probe zombie again (measure IP ID change)
+        let ipid_after = self.probe_zombie().await?;
+
+        // 4. Infer port state from IP ID delta
+        match ipid_after.wrapping_sub(ipid_before) {
+            0 => Ok(PortState::Filtered),
+            1 => Ok(PortState::Closed),
+            2 => Ok(PortState::Open),
+            _ => Err(Error::ZombieUnstable),
+        }
+    }
+}
+```
+
+**Performance Characteristics:**
+
+- **Speed:** 500-800ms per port (300x slower than direct SYN scan)
+- **Accuracy:** 99.5% (when zombie requirements met)
+- **Anonymity:** Maximum (target logs only zombie IP, not scanner)
+- **Detection:** Extremely difficult (no direct connection to target)
+
+**Nmap Compatibility:**
+
+ProRT-IP provides full Nmap `-sI` flag parity:
+
+- Automatic zombie discovery (`-sI RND` equivalent)
+- Manual zombie specification (`-sI <zombie_ip>`)
+- Timing control (`-T0` to `-T5`)
+- Port range support (single, ranges, lists)
+- Verbose progress reporting
+- Zombie suitability testing
+
+**Limitations:**
+
+- **IPv6:** Not yet implemented (planned for future sprint)
+- **Firewalls:** Stateful firewalls may block spoofed packets
+- **Speed:** 300x slower than direct scans (patience required)
+- **Zombie Finding:** Requires sequential IP ID hosts (increasingly rare)
+
+**For comprehensive usage examples, zombie discovery, troubleshooting, and security considerations, see [docs/25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md).**
 
 ---
 

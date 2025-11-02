@@ -37,6 +37,7 @@
 //! # }
 //! ```
 
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
@@ -78,6 +79,12 @@ type ConnectionTable = Arc<DashMap<(IpAddr, u16, u16), ConnectionState>>;
 
 /// SYN scanner with raw packet support
 /// Sprint 5.1: Enhanced with dual-stack IPv4/IPv6 support
+///
+/// # Rate Limiting (Sprint 5.4 Phase 1)
+///
+/// Supports optional hostgroup and adaptive rate limiting:
+/// - Hostgroup limiter controls concurrent targets
+/// - Adaptive limiter provides per-target ICMP backoff
 pub struct SynScanner {
     config: Config,
     capture: Arc<Mutex<Option<Box<dyn PacketCapture>>>>,
@@ -86,6 +93,10 @@ pub struct SynScanner {
     local_ipv4: Ipv4Addr,
     /// Local IPv6 address for IPv6 scans (if available)
     local_ipv6: Option<Ipv6Addr>,
+    /// Optional hostgroup limiter (controls concurrent targets)
+    hostgroup_limiter: Option<Arc<HostgroupLimiter>>,
+    /// Optional adaptive rate limiter (ICMP-aware throttling)
+    adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
 }
 
 impl SynScanner {
@@ -102,7 +113,21 @@ impl SynScanner {
             connections: Arc::new(DashMap::new()),
             local_ipv4,
             local_ipv6,
+            hostgroup_limiter: None,
+            adaptive_limiter: None,
         })
+    }
+
+    /// Enable hostgroup limiting (concurrent target control)
+    pub fn with_hostgroup_limiter(mut self, limiter: Arc<HostgroupLimiter>) -> Self {
+        self.hostgroup_limiter = Some(limiter);
+        self
+    }
+
+    /// Enable adaptive rate limiting (ICMP-aware throttling)
+    pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
+        self.adaptive_limiter = Some(limiter);
+        self
     }
 
     /// Initialize packet capture
@@ -749,6 +774,21 @@ impl SynScanner {
     /// Scan multiple ports in parallel
     /// Sprint 5.1: Updated for dual-stack IPv4/IPv6 support
     pub async fn scan_ports(&self, target: IpAddr, ports: Vec<u16>) -> Result<Vec<ScanResult>> {
+        // 1. Acquire hostgroup permit (if rate limiting enabled)
+        let _permit = if let Some(limiter) = &self.hostgroup_limiter {
+            Some(limiter.acquire_target().await)
+        } else {
+            None
+        };
+
+        // 2. Check ICMP backoff (if adaptive rate limiting enabled)
+        if let Some(limiter) = &self.adaptive_limiter {
+            if limiter.is_target_backed_off(target) {
+                debug!("Skipping {} (ICMP backoff active)", target);
+                return Ok(Vec::new());
+            }
+        }
+
         let (tx, mut rx) = mpsc::channel(1000);
         let mut tasks = Vec::new();
 
@@ -797,6 +837,8 @@ impl SynScanner {
             connections: Arc::clone(&self.connections),
             local_ipv4: self.local_ipv4,
             local_ipv6: self.local_ipv6,
+            hostgroup_limiter: self.hostgroup_limiter.clone(),
+            adaptive_limiter: self.adaptive_limiter.clone(),
         }
     }
 }

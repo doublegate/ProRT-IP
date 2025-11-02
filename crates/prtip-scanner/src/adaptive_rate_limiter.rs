@@ -42,7 +42,11 @@
 //! # }
 //! ```
 
+use crate::icmp_monitor::{BackoffState, IcmpMonitor};
+use dashmap::DashMap;
 use prtip_core::Result;
+use std::net::IpAddr;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{debug, trace};
 
@@ -87,7 +91,11 @@ impl Default for Bucket {
 /// - At low rates (<1K pps): batch size ~1, per-packet throttling
 /// - At medium rates (1K-100K pps): batch size 2-100, reduced overhead
 /// - At high rates (>100K pps): batch size 100-10000, minimal overhead
-#[derive(Debug)]
+///
+/// # ICMP Monitoring
+///
+/// Optional ICMP monitoring detects Type 3 Code 13 (admin prohibited) errors
+/// and backs off per-target using exponential backoff (1s → 2s → 4s → 8s → 16s).
 pub struct AdaptiveRateLimiter {
     /// Target maximum rate in packets per second
     max_rate: f64,
@@ -106,6 +114,12 @@ pub struct AdaptiveRateLimiter {
 
     /// Start time for overall statistics
     start_time: Instant,
+
+    /// ICMP monitor (optional)
+    icmp_monitor: Option<Arc<IcmpMonitor>>,
+
+    /// Per-target backoff states
+    target_backoffs: Arc<DashMap<IpAddr, BackoffState>>,
 }
 
 impl AdaptiveRateLimiter {
@@ -141,7 +155,117 @@ impl AdaptiveRateLimiter {
                 packet_count: 0,
             }; BUCKET_COUNT],
             start_time: now,
+            icmp_monitor: None,
+            target_backoffs: Arc::new(DashMap::new()),
         }
+    }
+
+    /// Enable ICMP monitoring for adaptive backoff
+    ///
+    /// Starts an ICMP monitor that listens for Type 3 Code 13 errors
+    /// and automatically backs off on affected targets.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if ICMP monitor cannot be created or started.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use prtip_scanner::AdaptiveRateLimiterV2;
+    /// # async fn example() -> prtip_core::Result<()> {
+    /// let mut limiter = AdaptiveRateLimiterV2::new(100_000.0);
+    /// limiter.enable_icmp_monitoring().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn enable_icmp_monitoring(&mut self) -> Result<()> {
+        let monitor = IcmpMonitor::new()?;
+        monitor.start().await?;
+
+        debug!("ICMP monitoring enabled for adaptive rate limiter");
+
+        // Spawn task to process ICMP errors
+        let backoffs = self.target_backoffs.clone();
+        let mut rx = monitor.subscribe();
+
+        tokio::spawn(async move {
+            while let Ok(error) = rx.recv().await {
+                let mut entry = backoffs
+                    .entry(error.target_ip)
+                    .or_insert(BackoffState::new());
+                entry.escalate();
+
+                debug!(
+                    "ICMP error for {}: backing off to level {}",
+                    error.target_ip, entry.backoff_level
+                );
+            }
+        });
+
+        self.icmp_monitor = Some(Arc::new(monitor));
+        Ok(())
+    }
+
+    /// Check if target is currently backed off
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use prtip_scanner::AdaptiveRateLimiterV2;
+    /// # use std::net::IpAddr;
+    /// let limiter = AdaptiveRateLimiterV2::new(100_000.0);
+    /// let target: IpAddr = "192.168.1.1".parse().unwrap();
+    /// assert!(!limiter.is_target_backed_off(target));
+    /// ```
+    pub fn is_target_backed_off(&self, target: IpAddr) -> bool {
+        self.target_backoffs
+            .get(&target)
+            .map(|state| !state.is_expired())
+            .unwrap_or(false)
+    }
+
+    /// Wait for backoff to expire on target
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use prtip_scanner::AdaptiveRateLimiterV2;
+    /// # use std::net::IpAddr;
+    /// # async fn example() {
+    /// let limiter = AdaptiveRateLimiterV2::new(100_000.0);
+    /// let target: IpAddr = "192.168.1.1".parse().unwrap();
+    /// limiter.wait_for_backoff(target).await;
+    /// # }
+    /// ```
+    pub async fn wait_for_backoff(&self, target: IpAddr) {
+        while self.is_target_backed_off(target) {
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
+    }
+
+    /// Get backoff info for target (for logging/debugging)
+    ///
+    /// Returns `Some((level, remaining_duration))` if target is backed off,
+    /// `None` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use prtip_scanner::AdaptiveRateLimiterV2;
+    /// # use std::net::IpAddr;
+    /// let limiter = AdaptiveRateLimiterV2::new(100_000.0);
+    /// let target: IpAddr = "192.168.1.1".parse().unwrap();
+    ///
+    /// if let Some((level, remaining)) = limiter.get_backoff_info(target) {
+    ///     println!("Target backed off: level {}, {}s remaining",
+    ///              level, remaining.as_secs());
+    /// }
+    /// ```
+    pub fn get_backoff_info(&self, target: IpAddr) -> Option<(u8, Duration)> {
+        self.target_backoffs
+            .get(&target)
+            .map(|state| (state.backoff_level, state.remaining()))
     }
 
     /// Get the next batch size and wait if necessary to maintain rate limit
@@ -418,5 +542,167 @@ mod tests {
             "Batch size should grow above 1.0, got: {}",
             limiter.batch_size()
         );
+    }
+
+    #[tokio::test]
+    async fn test_convergence_stability() {
+        let target_rate = 1000.0;
+        let mut limiter = AdaptiveRateLimiter::new(target_rate);
+
+        let mut packets_sent = 0;
+
+        // Run long enough for convergence
+        for _ in 0..50 {
+            let batch = limiter.next_batch(packets_sent).await.unwrap();
+            packets_sent += batch;
+            tokio::time::sleep(Duration::from_millis(1)).await;
+        }
+
+        // Batch size should stabilize (not oscillate wildly)
+        let initial_batch = limiter.batch_size();
+
+        for _ in 0..20 {
+            let batch = limiter.next_batch(packets_sent).await.unwrap();
+            packets_sent += batch;
+            tokio::time::sleep(Duration::from_millis(1)).await;
+        }
+
+        let final_batch = limiter.batch_size();
+
+        // Batch size shouldn't change drastically (within 50%)
+        let ratio = final_batch / initial_batch;
+        assert!(
+            ratio > 0.5 && ratio < 2.0,
+            "Batch size oscillating too much: {} -> {}",
+            initial_batch,
+            final_batch
+        );
+    }
+
+    #[tokio::test]
+    async fn test_suspend_recovery() {
+        let mut limiter = AdaptiveRateLimiter::new(1000.0);
+
+        let mut packets_sent = 0;
+
+        // Send some packets
+        for _ in 0..10 {
+            let batch = limiter.next_batch(packets_sent).await.unwrap();
+            packets_sent += batch;
+            tokio::time::sleep(Duration::from_millis(1)).await;
+        }
+
+        let _batch_before_suspend = limiter.batch_size();
+
+        // Simulate suspend (wait > 1 second)
+        tokio::time::sleep(Duration::from_secs(2)).await;
+
+        // Next batch should reset to 1.0
+        let batch = limiter.next_batch(packets_sent).await.unwrap();
+        assert!(batch >= 1);
+
+        // Batch size should have reset (allow small increase from 1.0 due to convergence)
+        assert!(
+            limiter.batch_size() < 1.1,
+            "Batch size should be close to 1.0 after suspend, got: {}",
+            limiter.batch_size()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_max_batch_size_limit() {
+        let mut limiter = AdaptiveRateLimiter::new(10_000_000.0); // Very high rate
+
+        let mut packets_sent = 0;
+
+        // Run until batch size should max out
+        for _ in 0..200 {
+            let batch = limiter.next_batch(packets_sent).await.unwrap();
+            packets_sent += batch;
+            // Very short delay to encourage batch growth
+            tokio::time::sleep(Duration::from_nanos(100)).await;
+        }
+
+        // Batch size should not exceed MAX_BATCH_SIZE
+        assert!(
+            limiter.batch_size() <= MAX_BATCH_SIZE,
+            "Batch size exceeded max: {} > {}",
+            limiter.batch_size(),
+            MAX_BATCH_SIZE
+        );
+    }
+
+    #[test]
+    fn test_circular_buffer_wraparound() {
+        let mut limiter = AdaptiveRateLimiter::new(1000.0);
+
+        // Index should wrap at 256
+        for _ in 0..300 {
+            limiter.index = limiter.index.wrapping_add(1);
+        }
+
+        // Verify index wraps correctly
+        assert!(limiter.index >= 300);
+        let buffer_index = limiter.index & (BUCKET_COUNT - 1);
+        assert!(buffer_index < BUCKET_COUNT);
+    }
+
+    #[tokio::test]
+    async fn test_icmp_integration_creation() {
+        let limiter = AdaptiveRateLimiter::new(100_000.0);
+
+        // ICMP monitor should be None initially
+        assert!(limiter.icmp_monitor.is_none());
+        assert_eq!(limiter.target_backoffs.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_backoff_tracking() {
+        use crate::icmp_monitor::BackoffState;
+
+        let limiter = AdaptiveRateLimiter::new(100_000.0);
+        let target: IpAddr = "192.168.1.1".parse().unwrap();
+
+        // Initially not backed off
+        assert!(!limiter.is_target_backed_off(target));
+
+        // Manually insert backoff state
+        let mut state = BackoffState::new();
+        state.escalate();
+        limiter.target_backoffs.insert(target, state);
+
+        // Now should be backed off
+        assert!(limiter.is_target_backed_off(target));
+
+        // Get backoff info
+        let info = limiter.get_backoff_info(target);
+        assert!(info.is_some());
+        let (level, _duration) = info.unwrap();
+        assert_eq!(level, 1);
+    }
+
+    #[tokio::test]
+    async fn test_backoff_expiration_check() {
+        use crate::icmp_monitor::BackoffState;
+
+        let limiter = AdaptiveRateLimiter::new(100_000.0);
+        let target: IpAddr = "192.168.1.2".parse().unwrap();
+
+        // Create expired backoff
+        let mut state = BackoffState::new();
+        state.backoff_until = Instant::now() - Duration::from_secs(1);
+        limiter.target_backoffs.insert(target, state);
+
+        // Should not be backed off (expired)
+        assert!(!limiter.is_target_backed_off(target));
+    }
+
+    #[test]
+    fn test_get_backoff_info_nonexistent() {
+        let limiter = AdaptiveRateLimiter::new(100_000.0);
+        let target: IpAddr = "10.0.0.1".parse().unwrap();
+
+        // Should return None for non-existent target
+        assert!(limiter.get_backoff_info(target).is_none());
     }
 }

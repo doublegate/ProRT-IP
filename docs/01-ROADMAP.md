@@ -1,8 +1,8 @@
 # ProRT-IP WarScan: Development Roadmap
 
-**Version:** 1.5
-**Last Updated:** 2025-10-13
-**Project Status:** Phase 4 COMPLETE ✅ + Cycles 1-8 COMPLETE ✅ + Testing Infrastructure ✅ | **50% Overall Progress** (4/8 phases) | Phase 5 Ready
+**Version:** 2.0
+**Last Updated:** 2025-11-01
+**Project Status:** Phase 5 IN PROGRESS (40% Complete) ✅ | **56% Overall Progress** (4.5/8 phases) | v0.4.3 Advanced Features
 
 ---
 
@@ -30,11 +30,11 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 | Phase 2 | Weeks 4-6 | Advanced Scanning | SYN/UDP/stealth scans, timing templates | ✅ COMPLETE |
 | **Enhancement Cycles 1-8** | **Ongoing** | **Reference Optimizations** | **Crypto, concurrency, resources, CLI, progress, filtering, exclusions, perf/stealth** | **✅ COMPLETE** |
 | Phase 3 | Weeks 7-10 | Detection Systems | OS fingerprinting, service detection, banner grabbing | ✅ COMPLETE |
-| Phase 4 | Weeks 11-13 | Performance | Lock-free structures, adaptive parallelism, sendmmsg batching | ✅ COMPLETE (803 tests, 61.92% coverage) |
-| Phase 5 | Weeks 14-16 | Advanced Features | Idle scan, decoys, fragmentation, plugins | Planned |
-| Phase 6 | Weeks 17-18 | TUI Interface | Interactive terminal dashboard | Planned |
-| Phase 7 | Weeks 19-20 | Polish & Release | Documentation, packaging, v1.0 release | Planned |
-| Phase 8 | Post-v1.0 | Future Enhancements | Web UI, desktop GUI, distributed scanning | Planned |
+| Phase 4 | Weeks 11-13 | Performance & Evasion | Zero-copy, NUMA, PCAPNG, evasion techniques, error handling | ✅ COMPLETE (1,166 tests, v0.3.9-v0.4.0) |
+| **Phase 5** | **Weeks 14-20** | **Advanced Features** | **IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting, TLS Analysis** | **🔄 IN PROGRESS (40% - 4/10 sprints, v0.4.1-v0.4.3)** |
+| Phase 6 | Weeks 21-22 | TUI Interface | Interactive terminal dashboard | 📋 PLANNED |
+| Phase 7 | Weeks 23-24 | Polish & Release | Documentation, packaging, v1.0 release | 📋 PLANNED |
+| Phase 8 | Post-v1.0 | Future Enhancements | Web UI, desktop GUI, distributed scanning | 📋 PLANNED |
 
 ### Development Methodology
 
@@ -358,87 +358,295 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 ---
 
-### Phase 5: Advanced Features (Weeks 14-16)
+### Phase 5: Advanced Features (Weeks 14-20) 🔄 IN PROGRESS
 
-**Goal:** Implement sophisticated stealth and extensibility features
+**Goal:** Deliver production-ready advanced features including complete IPv6 support, enhanced service detection, idle scanning, rate limiting, and TLS analysis
 
-#### Backlog: IPv6 Scanner Integration (Deferred from Sprint 4.21)
+**Status:** 40% Complete (4/10 sprints) | **Current Sprint:** 5.4 Phase 1 ✅ COMPLETE, Phase 2 ⏸️ PENDING
+**Duration:** 6-8 weeks (168-215 hours estimated)
+**Target:** v0.5.0 (Q1 2026)
 
-**Sprint 5.X**
+**Progress Summary:**
+- Tests: 1,338 → 1,466 (+128, +9.6%) | 100% passing
+- Coverage: 61.92% → 62.5% (target: 80%+)
+- Releases: v0.4.1 (IPv6), v0.4.2 (Service Detection), v0.4.3 (Idle Scan)
+- Documentation: 2,648 lines (4 comprehensive guides created)
 
-**Status:** Deferred from Phase 4 Sprint 4.21
-**Priority:** MEDIUM
+---
+
+#### Sprint 5.1: IPv6 Completion ✅ COMPLETE (v0.4.1, Oct 28-29, 30h)
+
+**Status:** ✅ 100% COMPLETE (Milestone: 100% IPv6 Coverage Achieved)
+**Completed:** 2025-10-29
+**Effort:** 30 hours / 30 hours estimated (on budget)
+
+**Objectives Achieved:**
+- [x] IPv6 dual-stack for SYN, UDP, Stealth scanners (runtime dispatch)
+- [x] Discovery Engine IPv6 (ICMPv6 Echo + NDP Neighbor Solicitation)
+- [x] Decoy Scanner IPv6 (random /64 Interface Identifier generation)
+- [x] CLI flags: -6, -4, --prefer-ipv6, --prefer-ipv4, --ipv6-only, --ipv4-only
+- [x] Cross-scanner IPv6 integration tests (11 tests)
+- [x] CLI output filter (hosts with open ports only)
+- [x] Comprehensive IPv6 Guide (docs/23-IPv6-GUIDE.md, 1,958 lines, 49KB)
+
+**Deliverables:**
+- 100% scanner coverage (6/6 scanners: TCP SYN, TCP Connect, UDP, Stealth, Discovery, Decoy)
+- 40 new tests (1,349 → 1,389)
+- Performance: <15% overhead (production-ready)
+- 2,648 lines permanent documentation
+
+**Technical Achievement:**
+- ICMPv6 Type 128/129 (Echo Request/Reply)
+- NDP Type 135/136 (Neighbor Solicitation/Advertisement)
+- Solicited-node multicast addressing
+- IPv6 pseudo-header checksum calculation
+- Dual-stack hostname resolution with preference control
+
+---
+
+#### Sprint 5.2: Service Detection Enhancement ✅ COMPLETE (v0.4.2, Oct 30, 12h)
+
+**Status:** ✅ 100% COMPLETE (Milestone: 85-90% Detection Rate Achieved)
+**Completed:** 2025-10-30
+**Effort:** 12 hours / 15-18 hours estimated (under budget, 33% better)
+
+**Objectives Achieved:**
+- [x] HTTP Server Fingerprinting (Server header parsing, Ubuntu version mapping)
+- [x] SSH Banner Parsing (SSH-2.0 protocol, distro detection from build strings)
+- [x] SMB Dialect Negotiation (SMB1/2/3, Windows version mapping)
+- [x] MySQL Detection (handshake parsing, MariaDB differentiation, Ubuntu version)
+- [x] PostgreSQL Detection (ParameterStatus parsing, version extraction)
+- [x] Protocol priority system (1-5 execution order)
+- [x] Integration testing (23 new tests)
+- [x] Service Detection Guide (docs/24-SERVICE-DETECTION.md, 659 lines)
+
+**Deliverables:**
+- Detection rate improvement: 70-80% → 85-90% (+10-15 percentage points)
+- 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
+- 23 new tests (1,389 → 1,412)
+- <1% performance overhead (0.05ms per target)
+- ProtocolDetector trait architecture
+
+**Technical Achievement:**
+- Ubuntu version mapping: "4ubuntu0.3" → 20.04, "0ubuntu0.20.04.1" → 20.04
+- Debian/RHEL detection from package suffixes
+- SMB dialect → Windows version correlation
+- MariaDB vs MySQL differentiation via version prefixes
+- PostgreSQL server_version ParameterStatus extraction
+
+---
+
+#### Sprint 5.3: Idle Scan Implementation ✅ COMPLETE (v0.4.3, Oct 30, 18h)
+
+**Status:** ✅ 100% COMPLETE (Milestone: Full Nmap -sI Parity Achieved)
+**Completed:** 2025-10-30
+**Effort:** 18 hours / 20-25 hours estimated (under budget, 28% better)
+
+**Objectives Achieved:**
+- [x] IP ID tracking system (IpIdTracker, sequential/random/global/per-dest patterns)
+- [x] Zombie discovery algorithm (scan subnet, test 65535, validate patterns)
+- [x] Spoofed packet engine (SYN packets with zombie source address)
+- [x] Three-step idle scan process (probe → spoof → probe → infer)
+- [x] Timing control integration (T0-T5, 500-800ms per port)
+- [x] Nmap -sI flag compatibility (manual + RND auto-discovery)
+- [x] 44 new tests (1,422 → 1,466, 100% passing)
+- [x] Idle Scan Guide (docs/25-IDLE-SCAN-GUIDE.md, 650 lines, 42KB)
+
+**Deliverables:**
+- Full Nmap parity (7/8 features, IPv6 future)
+- Maximum anonymity scanning (target logs only zombie IP)
+- 44 new tests across 6 test files
+- 99.5% accuracy (when zombie requirements met)
+- Comprehensive zombie suitability testing
+
+**Technical Achievement:**
+- IP ID delta interpretation: +0 (filtered), +1 (closed), +2 (open)
+- Four IP ID pattern detection algorithms
+- Source address spoofing with privilege checks
+- Exponential backoff for zombie instability
+- Ethical warnings and legal documentation
+
+**Performance:**
+- 500-800ms per port (vs 5.15ms direct SYN = 300x slower)
+- Stealth tradeoff: Maximum anonymity at cost of speed
+- Acceptable for targeted penetration testing scenarios
+
+---
+
+#### Sprint 5.4: Advanced Rate Limiting 🔄 IN PROGRESS (v0.4.4, Nov 1, Phase 1 ✅)
+
+**Status:** Phase 1 ✅ COMPLETE (Scanner Integration), Phase 2 ⏸️ PENDING (Formal Benchmarking)
+**Started:** 2025-11-01
+**Effort So Far:** ~8 hours (Phase 1)
+**Estimated Remaining:** 8-10 hours (Phase 2)
+
+**Phase 1 Objectives Achieved:**
+- [x] Three-layer rate limiting architecture
+  - Layer 1: ICMP Type 3 Code 13 detection (automatic backoff)
+  - Layer 2: Hostgroup limiting (Nmap-compatible, --max-hostgroup/--min-hostgroup)
+  - Layer 3: Adaptive rate limiting (Masscan-inspired, --max-rate)
+- [x] IcmpMonitor module (icmp_monitor.rs, DashMap-based prohibition tracking)
+- [x] HostgroupLimiter module (hostgroup_limiter.rs, Semaphore-based concurrency)
+- [x] AdaptiveRateLimiter module (adaptive_rate_limiter.rs, circular buffer throttler)
+- [x] Scanner integration (7/7 scanners: two-category pattern identified)
+- [x] Rate Limiting Guide (docs/26-RATE-LIMITING-GUIDE.md, ~1,000 lines)
+
+**Two-Category Scanner Pattern Discovery:**
+- **Multi-Port Scanners (3):** ConcurrentScanner, TcpConnectScanner, SynScanner
+  - Hostgroup permit acquired at `scan_ports` level
+  - ICMP backoff checked per packet within target scan
+- **Per-Port Scanners (4):** UdpScanner, StealthScanner, IdleScanner, DecoyScanner
+  - No hostgroup limiting (iterate target × port combinations)
+  - ICMP backoff checked at `scan_port` level only
+
+**Phase 2 Objectives (PENDING):**
+- [ ] Formal hyperfine benchmarking (baseline vs 3 layers vs combined)
+- [ ] Performance overhead validation (<5% target)
+- [ ] Documentation update with benchmark results
+- [ ] CHANGELOG entry for Phase 2 completion
+
+**Current Status:**
+- Scanner integration: ✅ COMPLETE (all 7 scanners updated)
+- Documentation: ✅ COMPLETE (comprehensive guide created)
+- Benchmarking: ⏸️ DEFERRED (formal validation pending)
+
+---
+
+#### Sprint 5.5: TLS Certificate Analysis 📋 PLANNED (Q1 2026)
+
+**Status:** 📋 PLANNED
+**Estimated Duration:** 15-20 hours
+**ROI Score:** 7.5/10
+
+**Objectives:**
+- [ ] TLS handshake module enhancement (certificate parsing)
+- [ ] Subject/Issuer extraction
+- [ ] Certificate chain validation
+- [ ] Expiration date checking
+- [ ] Common name / SAN extraction
+- [ ] Self-signed certificate detection
+
+**Deliverables:**
+- Enhanced TLS detection (beyond current handshake-only)
+- Certificate chain validation
+- 15+ new tests
+- TLS Analysis Guide
+
+---
+
+#### Sprint 5.6: Code Coverage Enhancement 📋 PLANNED (Q1 2026)
+
+**Status:** 📋 PLANNED
+**Estimated Duration:** 20-25 hours
+**ROI Score:** 8.0/10
+
+**Objectives:**
+- [ ] Coverage analysis (identify gaps: 62.5% → 80% target)
+- [ ] Unit tests for uncovered modules
+- [ ] Integration tests for complex workflows
+- [ ] Edge case testing (malformed packets, network errors)
+
+**Deliverables:**
+- 80%+ code coverage (vs current 62.5%)
+- 100+ new tests
+- Coverage report automation (CI integration)
+
+---
+
+#### Sprint 5.7: Fuzz Testing Infrastructure 📋 PLANNED (Q1 2026)
+
+**Status:** 📋 PLANNED
+**Estimated Duration:** 15-20 hours
+**ROI Score:** 9.0/10
+
+**Objectives:**
+- [ ] cargo-fuzz integration
+- [ ] Fuzz targets for packet parsers (TCP, UDP, ICMP, ICMPv6)
+- [ ] Fuzz targets for input validation (IP/CIDR parsing)
+- [ ] CI integration (continuous fuzzing)
+
+**Deliverables:**
+- 5+ fuzz targets
+- 24-hour continuous fuzzing (CI)
+- Security hardening via crash discovery
+
+---
+
+#### Sprint 5.8: Plugin System Foundation 📋 PLANNED (Q1 2026)
+
+**Status:** 📋 PLANNED
 **Estimated Duration:** 25-30 hours
-**ROI Score:** 6.8/10
+**ROI Score:** 9.2/10 (Highest)
 
-- [ ] Phase 1: SYN Scanner IPv6 (5 hours) - Refactor to IpAddr, IPv6 response parsing, dual-stack
-- [ ] Phase 2: UDP + Stealth Scanners IPv6 (8 hours) - ICMPv6 handling, dual-stack tracking
-- [ ] Phase 3: Discovery + Decoy Scanners IPv6 (7 hours) - ICMPv6 Echo, NDP, random IPv6
-- [ ] Phase 4: Integration + Documentation (5 hours) - CLI flags, IPv6 guide
-
-**Deliverables:**
-
-- IPv6 support for all 6 scanner types
-- CLI flags: -6, -4, --dual-stack
-- Comprehensive IPv6 documentation
-- 50+ new tests
-
-**Current Status (v0.4.0):**
-
-- ✅ IPv6 packet building infrastructure (ipv6_packet.rs, icmpv6.rs)
-- ✅ TCP Connect scanner IPv6 support
-- ⏸️ Remaining scanners: SYN, UDP, Stealth, Discovery, Decoy
-
-#### Week 14: Idle Scanning and Decoys
-
-**Sprint 5.1**
-
-- [ ] Implement zombie host discovery
-- [ ] Create IPID increment detection
-- [ ] Build idle scan port prober
-- [ ] Add binary search for multiple open ports
-- [ ] Implement decoy list parsing and generation
-- [ ] Create source port spoofing
+**Objectives:**
+- [ ] mlua integration for Lua scripting
+- [ ] Plugin API design (init, scan, report lifecycle)
+- [ ] Sandboxing (restricted filesystem/network access)
+- [ ] Example plugins (HTTP enumeration, SSL checker, etc.)
+- [ ] Plugin discovery and loading
 
 **Deliverables:**
-
-- Working idle scan (-sI flag)
-- Decoy scanning (-D flag)
-- Source port manipulation (-g flag)
-
-#### Week 15: Fragmentation and Packet Manipulation
-
-**Sprint 5.2**
-
-- [ ] Implement IP fragmentation (-f, -ff, --mtu)
-- [ ] Add fragment reassembly evasion
-- [ ] Create TTL manipulation
-- [ ] Build IP options insertion
-- [ ] Add MAC address spoofing (--spoof-mac)
-- [ ] Implement bad checksum generation
-
-**Deliverables:**
-
-- Fragmentation support
-- Advanced packet manipulation
-- Evasion technique documentation
-
-#### Week 16: Plugin System
-
-**Sprint 5.3**
-
-- [ ] Design plugin API
-- [ ] Integrate `mlua` for Lua scripting
-- [ ] Create plugin lifecycle (init, scan, report)
-- [ ] Build example plugins (HTTP enum, SSL checker, etc.)
-- [ ] Add plugin discovery and loading
-- [ ] Implement sandboxing for untrusted scripts
-
-**Deliverables:**
-
-- Lua plugin system
+- Lua plugin system (NSE-like capability)
 - 5+ example plugins
-- Plugin developer guide
+- Plugin Developer Guide
+- Security sandboxing
+
+---
+
+#### Sprint 5.9: Benchmarking Suite 📋 PLANNED (Q1 2026)
+
+**Status:** 📋 PLANNED
+**Estimated Duration:** 12-15 hours
+**ROI Score:** 6.5/10
+
+**Objectives:**
+- [ ] Criterion benchmark suite expansion
+- [ ] Scanner performance baselines
+- [ ] Regression detection automation
+- [ ] Performance tracking over releases
+
+**Deliverables:**
+- 20+ Criterion benchmarks
+- Performance regression CI checks
+- Benchmark report automation
+
+---
+
+#### Sprint 5.10: Documentation Consolidation 📋 PLANNED (Q1 2026)
+
+**Status:** 📋 PLANNED
+**Estimated Duration:** 10-12 hours
+**ROI Score:** 7.0/10
+
+**Objectives:**
+- [ ] User manual creation (beginner → advanced workflows)
+- [ ] API documentation (cargo doc enhancements)
+- [ ] Tutorial series (common scanning scenarios)
+- [ ] Troubleshooting guide updates
+
+**Deliverables:**
+- Comprehensive user manual
+- Tutorial series (5+ guides)
+- Updated API documentation
+- Improved onboarding experience
+
+---
+
+**Phase 5 Summary:**
+
+**Completed (40%):**
+- ✅ Sprint 5.1: IPv6 Completion (100% coverage)
+- ✅ Sprint 5.2: Service Detection (85-90% rate)
+- ✅ Sprint 5.3: Idle Scan (Nmap parity)
+- ✅ Sprint 5.4 Phase 1: Rate Limiting (scanner integration)
+
+**In Progress:**
+- 🔄 Sprint 5.4 Phase 2: Rate Limiting (benchmarking)
+
+**Remaining (60%):**
+- 📋 Sprint 5.5-5.10 (TLS, Coverage, Fuzz, Plugins, Benchmarks, Docs)
+
+**Target Completion:** Q1 2026 (v0.5.0 release)
 
 ---
 

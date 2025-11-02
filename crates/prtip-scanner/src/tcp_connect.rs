@@ -16,6 +16,7 @@
 //! but they work without elevated privileges and are compatible with all target systems.
 
 use crate::lockfree_aggregator::LockFreeAggregator;
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use prtip_core::{Error, PortState, Result, ScanProgress, ScanResult};
 use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
@@ -50,10 +51,20 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 /// # Ok(())
 /// # }
 /// ```
+///
+/// # Rate Limiting (Sprint 5.4 Phase 1)
+///
+/// Supports optional hostgroup and adaptive rate limiting:
+/// - Hostgroup limiter controls concurrent targets
+/// - Adaptive limiter provides per-target ICMP backoff
 #[derive(Clone)]
 pub struct TcpConnectScanner {
     timeout: Duration,
     retries: u32,
+    /// Optional hostgroup limiter (controls concurrent targets)
+    hostgroup_limiter: Option<Arc<HostgroupLimiter>>,
+    /// Optional adaptive rate limiter (ICMP-aware throttling)
+    adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
 }
 
 impl TcpConnectScanner {
@@ -64,7 +75,32 @@ impl TcpConnectScanner {
     /// * `timeout` - Maximum time to wait for a connection response
     /// * `retries` - Number of retry attempts for failed connections
     pub fn new(timeout: Duration, retries: u32) -> Self {
-        Self { timeout, retries }
+        Self {
+            timeout,
+            retries,
+            hostgroup_limiter: None,
+            adaptive_limiter: None,
+        }
+    }
+
+    /// Enable hostgroup limiting (concurrent target control)
+    ///
+    /// # Arguments
+    ///
+    /// * `limiter` - Hostgroup limiter to use
+    pub fn with_hostgroup_limiter(mut self, limiter: Arc<HostgroupLimiter>) -> Self {
+        self.hostgroup_limiter = Some(limiter);
+        self
+    }
+
+    /// Enable adaptive rate limiting (ICMP-aware throttling)
+    ///
+    /// # Arguments
+    ///
+    /// * `limiter` - Adaptive rate limiter to use
+    pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
+        self.adaptive_limiter = Some(limiter);
+        self
     }
 
     /// Scan a single port on a target host
@@ -235,6 +271,21 @@ impl TcpConnectScanner {
         #[cfg(feature = "numa")] numa_manager: Option<&Arc<NumaManager>>,
         #[cfg(not(feature = "numa"))] _numa_manager: Option<&()>,
     ) -> Result<Vec<ScanResult>> {
+        // 1. Acquire hostgroup permit (if rate limiting enabled)
+        let _permit = if let Some(limiter) = &self.hostgroup_limiter {
+            Some(limiter.acquire_target().await)
+        } else {
+            None
+        };
+
+        // 2. Check ICMP backoff (if adaptive rate limiting enabled)
+        if let Some(limiter) = &self.adaptive_limiter {
+            if limiter.is_target_backed_off(target) {
+                debug!("Skipping {} (ICMP backoff active)", target);
+                return Ok(Vec::new());
+            }
+        }
+
         let semaphore = Arc::new(Semaphore::new(max_concurrent));
         let scanner = self.clone();
 

@@ -164,6 +164,68 @@ pub struct Args {
     #[arg(long, help_heading = "TIMING AND PERFORMANCE")]
     pub no_numa: bool,
 
+    // ============================================================================
+    // ADVANCED RATE LIMITING (Sprint 5.4)
+    // ============================================================================
+    /// Enable adaptive rate limiting with ICMP error monitoring
+    ///
+    /// Dynamically adjusts scan rate based on ICMP Type 3 Code 13 (admin prohibited)
+    /// error messages from target hosts. Implements per-target exponential backoff
+    /// (1s → 2s → 4s → 8s → 16s max) when errors are detected.
+    ///
+    /// This prevents triggering rate-limiting on target networks and reduces
+    /// detection risk by adapting to network conditions in real-time.
+    ///
+    /// Example: prtip --adaptive-rate -sS -p 1-1000 192.168.1.0/24
+    #[arg(long = "adaptive-rate", help_heading = "TIMING AND PERFORMANCE")]
+    pub adaptive_rate: bool,
+
+    /// Maximum number of concurrent target hosts (Nmap --max-hostgroup)
+    ///
+    /// Limits how many hosts are scanned simultaneously. Smaller values reduce
+    /// network load and memory usage, larger values increase scan speed.
+    ///
+    /// Recommended values:
+    /// - 16: Conservative (low bandwidth, high latency networks)
+    /// - 64: Balanced (default, works well for most networks)
+    /// - 256: Aggressive (fast networks, high bandwidth)
+    ///
+    /// Example: prtip --max-hostgroup 32 -sS -p 80,443 192.168.1.0/24
+    #[arg(
+        long = "max-hostgroup",
+        value_name = "N",
+        default_value = "64",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
+    pub max_hostgroup: usize,
+
+    /// Minimum number of concurrent target hosts (Nmap --min-hostgroup)
+    ///
+    /// Ensures at least this many hosts are scanned concurrently, even if
+    /// adaptive algorithms suggest fewer. Prevents excessive slowdown.
+    ///
+    /// Example: prtip --min-hostgroup 8 --max-hostgroup 64 -sS 192.168.1.0/24
+    #[arg(
+        long = "min-hostgroup",
+        value_name = "N",
+        default_value = "1",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
+    pub min_hostgroup: usize,
+
+    /// Alias for --max-hostgroup (Nmap --max-parallelism)
+    ///
+    /// Nmap compatibility alias. Sets the same limit as --max-hostgroup.
+    /// If both are specified, --max-parallelism takes precedence.
+    ///
+    /// Example: prtip --max-parallelism 128 -sS 10.0.0.0/24
+    #[arg(
+        long = "max-parallelism",
+        value_name = "N",
+        help_heading = "TIMING AND PERFORMANCE"
+    )]
+    pub max_parallelism: Option<usize>,
+
     /// List available network interfaces and exit
     #[arg(long, help_heading = "NETWORK")]
     pub interface_list: bool,
@@ -1160,6 +1222,32 @@ impl Args {
             }
         }
 
+        // Validate hostgroup limits (Sprint 5.4)
+        if self.max_hostgroup == 0 {
+            anyhow::bail!("Max hostgroup must be greater than 0");
+        }
+        if self.max_hostgroup > 10_000 {
+            anyhow::bail!("Max hostgroup cannot exceed 10,000");
+        }
+        if self.min_hostgroup == 0 {
+            anyhow::bail!("Min hostgroup must be greater than 0");
+        }
+        if self.min_hostgroup > self.max_hostgroup {
+            anyhow::bail!(
+                "Min hostgroup ({}) cannot exceed max hostgroup ({})",
+                self.min_hostgroup,
+                self.max_hostgroup
+            );
+        }
+        if let Some(parallelism) = self.max_parallelism {
+            if parallelism == 0 {
+                anyhow::bail!("Max parallelism must be greater than 0");
+            }
+            if parallelism > 10_000 {
+                anyhow::bail!("Max parallelism cannot exceed 10,000");
+            }
+        }
+
         Ok(())
     }
 
@@ -1181,6 +1269,8 @@ impl Args {
         }
     }
 
+    /// Get effective maximum hostgroup (handles --max-parallelism alias)
+    ///
     /// Convert arguments to Config structure
     ///
     /// Transforms CLI arguments into the internal configuration format

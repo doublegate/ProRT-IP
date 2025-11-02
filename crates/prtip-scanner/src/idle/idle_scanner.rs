@@ -19,6 +19,7 @@
 
 use crate::idle::ipid_tracker::IPIDTracker;
 use crate::idle::zombie_discovery::ZombieCandidate;
+use crate::AdaptiveRateLimiterV2;
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::MutableIpv4Packet;
 use pnet::packet::tcp::{MutableTcpPacket, TcpFlags};
@@ -29,6 +30,7 @@ use std::net::IpAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
+use tracing::debug;
 
 /// Idle scan configuration
 #[derive(Debug, Clone)]
@@ -83,14 +85,31 @@ pub struct IdleScanResult {
 }
 
 /// Idle scanner
+///
+/// # Rate Limiting (Sprint 5.4 Phase 1)
+///
+/// Supports optional adaptive rate limiting:
+/// - Adaptive limiter provides per-target ICMP backoff
+/// - Note: Hostgroup limiting handled by scheduler (per-port scanner)
 pub struct IdleScanner {
     config: IdleScanConfig,
+    /// Optional adaptive rate limiter (ICMP-aware throttling)
+    adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
 }
 
 impl IdleScanner {
     /// Create new idle scanner
     pub fn new(config: IdleScanConfig) -> Result<Self> {
-        Ok(Self { config })
+        Ok(Self {
+            config,
+            adaptive_limiter: None,
+        })
+    }
+
+    /// Enable adaptive rate limiting (ICMP-aware throttling)
+    pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
+        self.adaptive_limiter = Some(limiter);
+        self
     }
 
     /// Scan multiple ports on target using idle scan technique
@@ -123,6 +142,7 @@ impl IdleScanner {
             let wait_time_ms = self.config.wait_time_ms;
             let retries = self.config.retries;
             let confidence_threshold = self.config.confidence_threshold;
+            let adaptive_limiter = self.adaptive_limiter.clone();
             let sem = semaphore.clone();
 
             let task = tokio::spawn(async move {
@@ -134,6 +154,7 @@ impl IdleScanner {
                     wait_time_ms,
                     retries,
                     confidence_threshold,
+                    adaptive_limiter,
                 )
                 .await
             });
@@ -169,9 +190,17 @@ impl IdleScanner {
         wait_time_ms: u64,
         retries: usize,
         confidence_threshold: f32,
+        adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
     ) -> Result<IdleScanResult> {
         for attempt in 0..=retries {
-            let result = Self::scan_single_port(zombie.clone(), target, port, wait_time_ms).await?;
+            let result = Self::scan_single_port(
+                zombie.clone(),
+                target,
+                port,
+                wait_time_ms,
+                adaptive_limiter.clone(),
+            )
+            .await?;
 
             if result.confidence >= confidence_threshold {
                 return Ok(result);
@@ -191,7 +220,7 @@ impl IdleScanner {
         }
 
         // Return last attempt even if low confidence
-        Self::scan_single_port(zombie, target, port, wait_time_ms).await
+        Self::scan_single_port(zombie, target, port, wait_time_ms, adaptive_limiter).await
     }
 
     /// Scan single port via zombie host (3-step idle scan process)
@@ -206,7 +235,22 @@ impl IdleScanner {
         target: IpAddr,
         port: u16,
         wait_time_ms: u64,
+        adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
     ) -> Result<IdleScanResult> {
+        // Check ICMP backoff (if adaptive rate limiting enabled)
+        if let Some(limiter) = &adaptive_limiter {
+            if limiter.is_target_backed_off(target) {
+                debug!("Skipping {}:{} (ICMP backoff active)", target, port);
+                return Ok(IdleScanResult {
+                    target,
+                    port,
+                    state: PortState::Filtered,
+                    confidence: 1.0,
+                    ipid_delta: 0,
+                });
+            }
+        }
+
         // Step 1: Baseline IPID measurement
         let baseline = baseline_ipid(&zombie).await?;
 

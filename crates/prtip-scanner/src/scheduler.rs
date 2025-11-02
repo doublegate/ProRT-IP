@@ -11,8 +11,8 @@
 use crate::adaptive_parallelism::calculate_parallelism;
 use crate::storage_backend::StorageBackend;
 use crate::{
-    BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator, RateLimiter,
-    ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
+    AdaptiveRateLimiterV3, BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator,
+    RateLimiter, ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
 };
 use prtip_core::{
     Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb,
@@ -54,6 +54,7 @@ pub struct ScanScheduler {
     tcp_scanner: Arc<TcpConnectScanner>,
     discovery: Arc<DiscoveryEngine>,
     rate_limiter: Arc<RateLimiter>,
+    adaptive_v3: Option<Arc<AdaptiveRateLimiterV3>>,
     storage_backend: Arc<StorageBackend>,
     #[cfg(feature = "numa")]
     numa_manager: Option<Arc<NumaManager>>,
@@ -83,8 +84,15 @@ impl ScanScheduler {
         // For Phase 1, we only support TCP SYN ping
         let discovery = Arc::new(DiscoveryEngine::new(timeout, DiscoveryMethod::TcpSyn));
 
-        // Create rate limiter
+        // Create rate limiter (V3 if enabled, otherwise standard RateLimiter)
         let rate_limiter = Arc::new(RateLimiter::new(config.performance.max_rate));
+        let adaptive_v3 = if config.performance.use_adaptive_v3 {
+            // Convert Option<u32> to Option<u64> for V3
+            let rate_u64 = config.performance.max_rate.map(|r| r as u64);
+            Some(AdaptiveRateLimiterV3::new(rate_u64))
+        } else {
+            None
+        };
 
         // Initialize NUMA manager if enabled
         #[cfg(feature = "numa")]
@@ -144,6 +152,7 @@ impl ScanScheduler {
             tcp_scanner,
             discovery,
             rate_limiter,
+            adaptive_v3,
             storage_backend,
             #[cfg(feature = "numa")]
             numa_manager,
@@ -249,8 +258,12 @@ impl ScanScheduler {
         );
 
         for host in hosts {
-            // Rate limiting
-            self.rate_limiter.acquire().await?;
+            // Rate limiting (use V3 if enabled, otherwise standard limiter)
+            if let Some(ref v3) = self.adaptive_v3 {
+                v3.acquire().await?;
+            } else {
+                self.rate_limiter.acquire().await?;
+            }
 
             // Perform scan based on configured scan type
             let scan_result = match self.config.scan.scan_type {
@@ -808,6 +821,7 @@ mod tests {
                 batch_size: None,
                 requested_ulimit: None,
                 numa_enabled: false,
+                use_adaptive_v3: false,
             },
             evasion: Default::default(),
         }

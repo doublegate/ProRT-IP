@@ -50,6 +50,7 @@
 
 pub mod adaptive_parallelism;
 pub mod adaptive_rate_limiter;
+pub mod adaptive_rate_limiter_v3;
 pub mod async_storage;
 pub mod banner_grabber;
 pub mod concurrent_scanner;
@@ -80,6 +81,7 @@ pub mod tls_handshake;
 pub mod udp_scanner;
 
 pub use adaptive_rate_limiter::{AdaptiveRateLimiter as AdaptiveRateLimiterV2, RateLimiterStats};
+pub use adaptive_rate_limiter_v3::AdaptiveRateLimiterV3;
 pub use async_storage::async_storage_worker;
 pub use banner_grabber::{BannerGrabber, BannerParser};
 pub use concurrent_scanner::ConcurrentScanner;

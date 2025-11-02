@@ -37,7 +37,7 @@
 //! # }
 //! ```
 
-use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
+use crate::{AdaptiveRateLimiterV2, AdaptiveRateLimiterV3, HostgroupLimiter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
@@ -85,6 +85,7 @@ type ConnectionTable = Arc<DashMap<(IpAddr, u16, u16), ConnectionState>>;
 /// Supports optional hostgroup and adaptive rate limiting:
 /// - Hostgroup limiter controls concurrent targets
 /// - Adaptive limiter provides per-target ICMP backoff
+/// - AdaptiveV3 provides <5% overhead two-tier architecture (experimental)
 pub struct SynScanner {
     config: Config,
     capture: Arc<Mutex<Option<Box<dyn PacketCapture>>>>,
@@ -97,6 +98,8 @@ pub struct SynScanner {
     hostgroup_limiter: Option<Arc<HostgroupLimiter>>,
     /// Optional adaptive rate limiter (ICMP-aware throttling)
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
+    /// Optional AdaptiveV3 rate limiter (<5% overhead target, experimental)
+    adaptive_v3: Option<Arc<AdaptiveRateLimiterV3>>,
 }
 
 impl SynScanner {
@@ -115,6 +118,7 @@ impl SynScanner {
             local_ipv6,
             hostgroup_limiter: None,
             adaptive_limiter: None,
+            adaptive_v3: None,
         })
     }
 
@@ -127,6 +131,12 @@ impl SynScanner {
     /// Enable adaptive rate limiting (ICMP-aware throttling)
     pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
         self.adaptive_limiter = Some(limiter);
+        self
+    }
+
+    /// Enable AdaptiveV3 rate limiting (<5% overhead, experimental)
+    pub fn with_adaptive_v3(mut self, limiter: Arc<AdaptiveRateLimiterV3>) -> Self {
+        self.adaptive_v3 = Some(limiter);
         self
     }
 
@@ -839,6 +849,7 @@ impl SynScanner {
             local_ipv6: self.local_ipv6,
             hostgroup_limiter: self.hostgroup_limiter.clone(),
             adaptive_limiter: self.adaptive_limiter.clone(),
+            adaptive_v3: self.adaptive_v3.clone(),
         }
     }
 }

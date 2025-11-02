@@ -180,6 +180,20 @@ pub struct Args {
     #[arg(long = "adaptive-rate", help_heading = "TIMING AND PERFORMANCE")]
     pub adaptive_rate: bool,
 
+    /// Enable AdaptiveRateLimiterV3 (experimental, <5% overhead target)
+    ///
+    /// Two-tier architecture rate limiter optimized for minimal overhead (<5%).
+    /// Uses hot path with 3 atomic operations + conditional sleep, plus background
+    /// monitoring task for rate measurement and convergence.
+    ///
+    /// Phase 4 implementation targeting significant improvement over existing limiters:
+    /// - Governor: 15.0% overhead → V3: <5% (target)
+    /// - Adaptive P3: 6-7% overhead → V3: <5% (target)
+    ///
+    /// Example: prtip --adaptive-v3 --max-rate 100000 -sS -p 1-1000 192.168.1.0/24
+    #[arg(long = "adaptive-v3", help_heading = "TIMING AND PERFORMANCE")]
+    pub adaptive_v3: bool,
+
     /// Maximum number of concurrent target hosts (Nmap --max-hostgroup)
     ///
     /// Limits how many hosts are scanned simultaneously. Smaller values reduce
@@ -1401,6 +1415,7 @@ impl Args {
                 batch_size: self.batch_size,
                 requested_ulimit: self.ulimit,
                 numa_enabled: self.numa && !self.no_numa, // Enabled only if --numa and not --no-numa
+                use_adaptive_v3: self.adaptive_v3,
             },
             evasion: EvasionConfig {
                 fragment_packets: self.fragment,

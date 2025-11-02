@@ -57,13 +57,19 @@ async fn test_storage_integration() {
 async fn test_rate_limiter_integration() {
     let limiter = RateLimiter::new(Some(50)); // 50 packets per second
 
+    // First exhaust burst (burst=100)
+    for _ in 0..100 {
+        limiter.acquire().await.unwrap();
+    }
+
+    // Now measure rate limiting on next batch (burst exhausted)
     let start = std::time::Instant::now();
     for _ in 0..10 {
         limiter.acquire().await.unwrap();
     }
     let elapsed = start.elapsed();
 
-    // 10 packets at 50 pps = ~200ms
+    // 10 packets at 50 pps = ~200ms (after burst exhausted)
     // Platform-specific timeouts (CI environments need wider margins):
     // - Linux: 600ms (3x baseline)
     // - macOS: 1200ms (6x baseline, CI runners can be slow)

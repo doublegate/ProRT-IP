@@ -224,9 +224,7 @@ impl AdaptiveRateLimiter {
 
         tokio::spawn(async move {
             while let Ok(error) = rx.recv().await {
-                let mut entry = backoffs
-                    .entry(error.target_ip)
-                    .or_default();
+                let mut entry = backoffs.entry(error.target_ip).or_default();
                 entry.escalate();
 
                 debug!(

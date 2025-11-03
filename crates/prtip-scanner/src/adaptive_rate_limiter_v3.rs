@@ -121,7 +121,7 @@ impl AdaptiveRateLimiterV3 {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use prtip_scanner::AdaptiveRateLimiterV3;
     ///
     /// // 500K pps

@@ -37,7 +37,7 @@
 //! # }
 //! ```
 
-use crate::{AdaptiveRateLimiterV2, AdaptiveRateLimiterV3, HostgroupLimiter};
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, PortState, Result, ScanResult};
@@ -99,7 +99,7 @@ pub struct SynScanner {
     /// Optional adaptive rate limiter (ICMP-aware throttling)
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
     /// Optional AdaptiveV3 rate limiter (<5% overhead target, experimental)
-    adaptive_v3: Option<Arc<AdaptiveRateLimiterV3>>,
+    adaptive_v3: Option<Arc<AdaptiveRateLimiterV2>>,
 }
 
 impl SynScanner {
@@ -135,7 +135,7 @@ impl SynScanner {
     }
 
     /// Enable AdaptiveV3 rate limiting (<5% overhead, experimental)
-    pub fn with_adaptive_v3(mut self, limiter: Arc<AdaptiveRateLimiterV3>) -> Self {
+    pub fn with_adaptive_v3(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
         self.adaptive_v3 = Some(limiter);
         self
     }

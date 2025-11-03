@@ -12,7 +12,7 @@ use crate::adaptive_parallelism::calculate_parallelism;
 use crate::storage_backend::StorageBackend;
 use crate::{
     AdaptiveRateLimiterV3, BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator,
-    RateLimiter, ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
+    ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
 };
 use prtip_core::{
     Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb,
@@ -53,8 +53,7 @@ pub struct ScanScheduler {
     config: Config,
     tcp_scanner: Arc<TcpConnectScanner>,
     discovery: Arc<DiscoveryEngine>,
-    rate_limiter: Arc<RateLimiter>,
-    adaptive_v3: Option<Arc<AdaptiveRateLimiterV3>>,
+    rate_limiter: Option<Arc<AdaptiveRateLimiterV3>>,
     storage_backend: Arc<StorageBackend>,
     #[cfg(feature = "numa")]
     numa_manager: Option<Arc<NumaManager>>,
@@ -84,15 +83,12 @@ impl ScanScheduler {
         // For Phase 1, we only support TCP SYN ping
         let discovery = Arc::new(DiscoveryEngine::new(timeout, DiscoveryMethod::TcpSyn));
 
-        // Create rate limiter (V3 if enabled, otherwise standard RateLimiter)
-        let rate_limiter = Arc::new(RateLimiter::new(config.performance.max_rate));
-        let adaptive_v3 = if config.performance.use_adaptive_v3 {
-            // Convert Option<u32> to Option<u64> for V3
-            let rate_u64 = config.performance.max_rate.map(|r| r as u64);
-            Some(AdaptiveRateLimiterV3::new(rate_u64))
-        } else {
-            None
-        };
+        // Create rate limiter (V3 is now the default and only rate limiter)
+        let rate_limiter = config.performance.max_rate.map(|rate| {
+            // Convert u32 to Option<u64> for V3
+            let rate_u64 = Some(rate as u64);
+            AdaptiveRateLimiterV3::new(rate_u64)
+        });
 
         // Initialize NUMA manager if enabled
         #[cfg(feature = "numa")]
@@ -152,7 +148,6 @@ impl ScanScheduler {
             tcp_scanner,
             discovery,
             rate_limiter,
-            adaptive_v3,
             storage_backend,
             #[cfg(feature = "numa")]
             numa_manager,
@@ -258,11 +253,9 @@ impl ScanScheduler {
         );
 
         for host in hosts {
-            // Rate limiting (use V3 if enabled, otherwise standard limiter)
-            if let Some(ref v3) = self.adaptive_v3 {
-                v3.acquire().await?;
-            } else {
-                self.rate_limiter.acquire().await?;
+            // Rate limiting (V3 is now the default and only rate limiter)
+            if let Some(ref limiter) = self.rate_limiter {
+                limiter.acquire().await?;
             }
 
             // Perform scan based on configured scan type
@@ -544,7 +537,9 @@ impl ScanScheduler {
 
             for (host_idx, host) in hosts.iter().enumerate() {
                 // Rate limiter
-                self.rate_limiter.acquire().await?;
+                if let Some(ref limiter) = self.rate_limiter {
+                    limiter.acquire().await?;
+                }
 
                 // Create a progress tracker for this host's ports
                 let host_progress = Arc::new(prtip_core::ScanProgress::new(ports_vec.len()));
@@ -821,7 +816,6 @@ mod tests {
                 batch_size: None,
                 requested_ulimit: None,
                 numa_enabled: false,
-                use_adaptive_v3: false,
             },
             evasion: Default::default(),
         }

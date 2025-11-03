@@ -226,7 +226,7 @@ impl AdaptiveRateLimiter {
             while let Ok(error) = rx.recv().await {
                 let mut entry = backoffs
                     .entry(error.target_ip)
-                    .or_default();
+                    .or_insert(BackoffState::new());
                 entry.escalate();
 
                 debug!(
@@ -337,8 +337,8 @@ impl AdaptiveRateLimiter {
 
         loop {
             // Phase 3: Only recalculate rate if cache expired (100ms)
-            let should_recalculate_rate = now.duration_since(self.last_rate_update)
-                >= Duration::from_millis(RATE_CACHE_DURATION_MS);
+            let should_recalculate_rate =
+                now.duration_since(self.last_rate_update) >= Duration::from_millis(RATE_CACHE_DURATION_MS);
 
             if should_recalculate_rate {
                 // Store current measurement in circular buffer
@@ -509,7 +509,6 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore] // Flaky timing test, archived rate limiter not used in production
     async fn test_adaptive_limiter_rate_enforcement() {
         let target_rate = 100.0;
         let mut limiter = AdaptiveRateLimiter::new(target_rate);

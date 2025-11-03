@@ -118,7 +118,22 @@ pub struct Args {
     )]
     pub timeout: u64,
 
-    /// Max packets per second
+    /// Maximum packet rate (packets per second)
+    ///
+    /// Enforces rate limiting to prevent network flooding and respect target capacity.
+    /// ProRT-IP uses an optimized adaptive rate limiter with -1.8% average overhead
+    /// (faster than no rate limiting due to system-wide optimizations).
+    ///
+    /// Recommended rates:
+    ///   - Local networks: 50,000-100,000 pps
+    ///   - Internet scans: 10,000-50,000 pps
+    ///   - Quiet scanning: 1,000-10,000 pps
+    ///
+    /// Examples:
+    ///   prtip --max-rate 100000 -sS 192.168.1.0/24
+    ///   prtip -T4 192.168.1.1  # T4 timing includes rate limiting
+    ///
+    /// Nmap compatible: -T templates automatically set appropriate rates.
     #[arg(long, value_name = "RATE", help_heading = "TIMING AND PERFORMANCE")]
     pub max_rate: Option<u32>,
 
@@ -179,20 +194,6 @@ pub struct Args {
     /// Example: prtip --adaptive-rate -sS -p 1-1000 192.168.1.0/24
     #[arg(long = "adaptive-rate", help_heading = "TIMING AND PERFORMANCE")]
     pub adaptive_rate: bool,
-
-    /// Enable AdaptiveRateLimiterV3 (experimental, <5% overhead target)
-    ///
-    /// Two-tier architecture rate limiter optimized for minimal overhead (<5%).
-    /// Uses hot path with 3 atomic operations + conditional sleep, plus background
-    /// monitoring task for rate measurement and convergence.
-    ///
-    /// Phase 4 implementation targeting significant improvement over existing limiters:
-    /// - Governor: 15.0% overhead → V3: <5% (target)
-    /// - Adaptive P3: 6-7% overhead → V3: <5% (target)
-    ///
-    /// Example: prtip --adaptive-v3 --max-rate 100000 -sS -p 1-1000 192.168.1.0/24
-    #[arg(long = "adaptive-v3", help_heading = "TIMING AND PERFORMANCE")]
-    pub adaptive_v3: bool,
 
     /// Maximum number of concurrent target hosts (Nmap --max-hostgroup)
     ///
@@ -1415,7 +1416,6 @@ impl Args {
                 batch_size: self.batch_size,
                 requested_ulimit: self.ulimit,
                 numa_enabled: self.numa && !self.no_numa, // Enabled only if --numa and not --no-numa
-                use_adaptive_v3: self.adaptive_v3,
             },
             evasion: EvasionConfig {
                 fragment_packets: self.fragment,

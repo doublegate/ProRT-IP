@@ -237,9 +237,6 @@ pub struct PerformanceConfig {
     /// Enable NUMA optimization for multi-socket systems (Linux only)
     #[serde(default)]
     pub numa_enabled: bool,
-    /// Use AdaptiveRateLimiterV3 (experimental, <5% overhead target)
-    #[serde(default)]
-    pub use_adaptive_v3: bool,
 }
 
 impl Default for PerformanceConfig {
@@ -255,7 +252,6 @@ impl Default for PerformanceConfig {
             batch_size: None,
             requested_ulimit: None,
             numa_enabled: false, // Disabled by default for compatibility
-            use_adaptive_v3: false, // Disabled by default (experimental)
         }
     }
 }

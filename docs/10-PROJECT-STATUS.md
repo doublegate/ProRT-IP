@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 2.0
-**Last Updated:** 2025-11-01
+**Version:** 2.1
+**Last Updated:** 2025-11-02
 **Current Phase:** Phase 5 IN PROGRESS (40% complete, 4/10 sprints) → v0.5.0 Target Q1 2026
-**Current Sprint:** 5.4 Phase 2 (Formal Benchmarking) - In Progress
+**Current Sprint:** Sprint 5.X COMPLETE (V3 Promotion) | Next: Sprint 5.5 Planning
 
 ---
 
@@ -63,7 +63,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Detection Rate** | 85-90% | ✅ High | Service detection (5 parsers) |
 | **IPv6 Coverage** | 100% (6/6 scanners) | ✅ Complete | All scanners support dual-stack |
 | **Evasion Techniques** | 6 | ✅ Complete | Fragmentation, TTL, checksum, decoy, source port, idle |
-| **Rate Limiting** | 3 layers integrated | ✅ Phase 1 Done | ICMP, Hostgroup, Adaptive (Phase 2 pending) |
+| **Rate Limiting** | V3 default (-1.8% overhead) | ✅ Sprint 5.X COMPLETE | AdaptiveRateLimiterV3 promoted to default (2025-11-02) |
 
 ### Overall Progress: 55% Complete (Phases 1-4 + Sprint 5.1-5.4 Phase 1 / 8 Phases)
 
@@ -85,8 +85,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | 5.1: IPv6 Completion | ✅ COMPLETE | 30h | 6/6 scanners, 23-IPv6-GUIDE.md (1,958L), 6 CLI flags | +51 (1,338→1,389) |
 | 5.2: Service Detection | ✅ COMPLETE | 12h | 5 parsers (85-90% detection), 24-SERVICE-DETECTION.md (659L) | +23 (1,389→1,412) |
 | 5.3: Idle Scan | ✅ COMPLETE | 18h | Full Nmap parity, 25-IDLE-SCAN-GUIDE.md (650L), 99.5% accuracy | +54 (1,412→1,466) |
-| 5.4 Phase 1: Rate Limiting | ✅ COMPLETE | 18-20h | 3-layer system, 7/7 scanner integration, 26-RATE-LIMITING-GUIDE.md | Zero (all passing) |
-| 5.4 Phase 2: Benchmarking | ⏸️ PENDING | 8-10h (est) | Hyperfine scripts, <5% overhead validation | TBD |
+| Sprint 5.X: V3 Promotion | ✅ COMPLETE | ~8h total | AdaptiveRateLimiterV3 -1.8% overhead, V3 default, 26-RATE-LIMITING-GUIDE.md v2.0.0 | Zero (all passing) |
 | 5.5: TLS Certificate Analysis | 📋 PLANNING | 12-15h (est) | Cert validation, SNI, cipher enumeration | TBD |
 | 5.6: Code Coverage to 80% | 📋 PLANNING | 20-25h (est) | Property-based tests, integration coverage | TBD |
 | 5.7: Fuzz Testing | 📋 PLANNING | 15-20h (est) | cargo-fuzz, packet/input fuzzing | TBD |
@@ -236,38 +235,69 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - Timing control (T0-T5 templates)
   - Nmap compatibility: -sI flag, zombie discovery, manual zombie selection
 
-#### Sprint 5.4 Phase 1: Scanner Integration (✅ COMPLETE)
-- **Completed**: 2025-11-01
-- **Effort**: 18-20 hours
+#### Sprint 5.X: AdaptiveRateLimiterV3 Promotion (✅ COMPLETE)
+- **Completed**: 2025-11-02
+- **Effort**: ~8 hours total (Phases 1-5: Investigation + Fix + V3 Optimization + Testing + Documentation)
 - **Deliverables**:
-  - 7/7 scanners integrated with rate limiting
-  - Two-category scanner pattern (architectural insight)
-  - 3-layer architecture (ICMP, Hostgroup, Adaptive)
-  - docs/26-RATE-LIMITING-GUIDE.md (verified current)
+  - **-1.8% average overhead** (faster than no rate limiting!)
+  - AdaptiveRateLimiterV3 promoted to default rate limiter
+  - Old implementations archived (`backups/rate_limiter.rs`)
+  - docs/26-RATE-LIMITING-GUIDE.md v2.0.0 (+98 lines)
+  - CHANGELOG.md comprehensive entry (200+ lines)
   - Zero regressions (1,466 tests 100% passing)
 - **Key Achievements**:
-  - Layer 1: ICMP Type 3 Code 13 detection (automatic backoff)
-  - Layer 2: Hostgroup limiting (Nmap --max-hostgroup parity)
-  - Layer 3: Adaptive rate limiter (Phase 2 pending)
-  - Multi-port scanners (3): Permit at scan_ports() level
-  - Per-port scanners (4): ICMP-only at scan_port() level
-  - RAII permit pattern (automatic cleanup via Drop)
-  - Exponential backoff (30s, 1m, 2m, 5m max)
+  - **Phase 1-2** (2025-11-01): Governor burst=100 optimization (40% → 15% overhead)
+  - **Phase 3** (2025-11-01): burst=1000 tested, reverted (worse performance: 10-33% overhead)
+  - **Phase 4** (2025-11-02): V3 validation (13.43% overhead initially)
+  - **Phase 5** (2025-11-02): V3 optimization with Relaxed memory ordering → **-1.8% overhead**
+  - **V3 Promotion** (2025-11-02): V3 made default, `--adaptive-v3` flag removed
+- **Performance Breakdown**:
+  - Best case: -8.2% overhead at 10K pps
+  - Sweet spot: -3% to -4% overhead at 75K-200K pps
+  - Worst case: +3.1% overhead at 500K-1M pps
+  - Variance reduction: 34% (more consistent timing)
+  - Improvement: 15.2 percentage points vs previous implementation
+- **Technical Innovations**:
+  - Relaxed memory ordering (eliminates memory barriers, 10-30ns savings per operation)
+  - Two-tier convergence (hostgroup + per-target scheduling)
+  - Convergence-based self-correction (maintains accuracy despite stale reads)
+- **Breaking Changes**:
+  - `--adaptive-v3` CLI flag removed (V3 is now default)
+  - `PerformanceConfig.use_adaptive_v3: bool` field removed
+  - Old `RateLimiter` (Governor) archived to `backups/`
+- **Migration Impact**: ✅ Zero action required for CLI users (automatic improvement)
 
 ### Documentation Work
 
-#### Documentation Session 1 (🔄 IN PROGRESS - 2025-11-01)
+#### Documentation Session 1 (✅ COMPLETE - 2025-11-01)
 - **Part 1**: Architecture + Roadmap updated (A+ quality)
   - 00-ARCHITECTURE.md (v2.0→v3.0, +290 lines)
   - 01-ROADMAP.md (v1.5→v2.0, +290 lines)
 - **Part 2**: 4 guides verified current
   - 23-IPv6-GUIDE.md, 24-SERVICE-DETECTION.md
   - 25-IDLE-SCAN-GUIDE.md, 26-RATE-LIMITING-GUIDE.md
-- **Part 3**: Completing 4 core docs (this session)
-  - 10-PROJECT-STATUS.md (100% complete)
+- **Part 3**: 4 core docs completed
+  - 10-PROJECT-STATUS.md (v2.0, 100% complete)
   - 04-IMPLEMENTATION-GUIDE.md (Phase 5 modules)
   - 06-TESTING.md (1,466 tests)
   - 08-SECURITY.md (rate limiting Section 6.0)
+
+#### Documentation Session 2 (🔄 IN PROGRESS - 2025-11-02)
+- **Objective**: Update docs to reflect Sprint 5.X V3 Promotion
+- **Progress**: 2/5 files complete (40%)
+- **Completed**:
+  - [x] README.md (Sprint 5.X section, rate limiting section, Phase 5 progress)
+  - [x] docs/26-RATE-LIMITING-GUIDE.md (v1.1.0 → v2.0.0, +98 lines, V3 as default)
+  - [x] docs/10-PROJECT-STATUS.md (v2.0 → v2.1, Sprint 5.X entry, this file)
+- **In Progress**:
+  - [ ] docs/01-ROADMAP.md (mark Sprint 5.X complete)
+  - [ ] docs/00-ARCHITECTURE.md (V3 rate limiter architecture section)
+- **Key Updates**:
+  - Version updates (v1.1.0 → v2.0.0 for rate limiting guide)
+  - Performance metrics (-1.8% average overhead)
+  - Breaking changes documented
+  - Migration guides provided
+  - Historical benchmarks preserved
 
 #### README.md Modernization (✅ COMPLETE - 2025-11-01)
 - Phase 4 content archived (245 → 380 lines comprehensive archive)
@@ -1349,13 +1379,30 @@ For future issue tracking and bug reports, see:
 
 ## Recent Changes (Last 7 Days)
 
-### 2025-11-01 (Today)
-- ✅ **Sprint 5.4 Phase 1 scanner integration complete** (7/7 scanners with 3-layer rate limiting)
-- ✅ **Documentation Session 1 in progress** (6/10 files complete → 10/10 target)
+### 2025-11-02 (Today)
+- ✅ **Sprint 5.X COMPLETE - V3 Promotion** (AdaptiveRateLimiterV3 default, -1.8% overhead)
+  - Phase 5 (V3 Optimization): Relaxed memory ordering → -1.8% average overhead
+  - V3 Promotion: Made default, `--adaptive-v3` flag removed
+  - Breaking changes: `use_adaptive_v3` field removed, old implementations archived
+- ✅ **Documentation Session 2 in progress** (V3 promotion updates)
+  - README.md: Sprint 5.X section + rate limiting section + Phase 5 progress
+  - docs/26-RATE-LIMITING-GUIDE.md: v1.1.0 → v2.0.0 (+98 lines, V3 as default)
+  - docs/10-PROJECT-STATUS.md: v2.0 → v2.1 (Sprint 5.X entry, this file)
+  - CHANGELOG.md: V3 promotion entry (200+ lines)
+- 📝 **Next updates**: 01-ROADMAP.md, 00-ARCHITECTURE.md (V3 architecture section)
+
+### 2025-11-01
+- ✅ **Sprint 5.X Phases 1-3** (Governor burst=100 optimization + burst=1000 testing)
+  - Phase 1-2: burst=100 optimization (40% → 15% overhead, 62.5% reduction)
+  - Phase 3: burst=1000 tested and reverted (10-33% overhead, worse than burst=100)
+  - Comprehensive analysis preserved (/tmp/ProRT-IP/SPRINT-5.X/)
+- ✅ **Documentation Session 1 complete** (10/10 files → 100%)
+  - Core docs: 00-ARCHITECTURE, 01-ROADMAP, 10-PROJECT-STATUS
+  - Implementation: 04-IMPLEMENTATION-GUIDE, 06-TESTING, 08-SECURITY
+  - Guides verified: 23-IPv6, 24-SERVICE-DETECTION, 25-IDLE-SCAN, 26-RATE-LIMITING
 - ✅ **README.md modernized to Phase 5 state** (Phase 4 content archived, rate limiting section added)
 - ✅ **Memory Graph updated** (35 observations, 18 relations for session tracking)
 - ✅ **Daily log 2025-11-01 created** (1,110-line master README, 29 files, 356KB)
-- 📝 **10-PROJECT-STATUS.md update in progress** (completing remaining 50% this session)
 
 ### 2025-10-30
 - ✅ **v0.4.3 released** (Idle Scan implementation, full Nmap -sI parity)

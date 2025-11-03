@@ -48,7 +48,8 @@ async fn run_bench(rate: u64, packets: u64, label: &str) {
     }
     let elapsed = start.elapsed();
 
-    println!("BENCH_RESULT: {},{},{:.3}",
+    println!(
+        "BENCH_RESULT: {},{},{:.3}",
         label,
         rate,
         elapsed.as_secs_f64() * 1000.0

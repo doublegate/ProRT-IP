@@ -217,17 +217,17 @@ impl AdaptiveRateLimiterV3 {
         self.packet_count.fetch_add(1, Ordering::Relaxed);
 
         // 2. Atomic load: Get current batch size (cached by background task)
-        //    Acquire ordering ensures we see background's Release write
-        let batch_size = self.current_batch_size.load(Ordering::Acquire);
+        //    Relaxed ordering sufficient (stale reads self-correct via batch_counter)
+        let batch_size = self.current_batch_size.load(Ordering::Relaxed);
 
         // 3. Atomic decrement: Consume from current batch
-        //    AcqRel ordering synchronizes between concurrent acquire() calls
-        let remaining = self.batch_counter.fetch_sub(1, Ordering::AcqRel);
+        //    Relaxed ordering sufficient (each thread only cares about exhaustion, not order)
+        let remaining = self.batch_counter.fetch_sub(1, Ordering::Relaxed);
 
         // 4. Conditional sleep: Only when batch exhausted (rare, ~1 in batch_size calls)
         if remaining == 0 {
             // Reset batch counter for next batch
-            self.batch_counter.store(batch_size, Ordering::Release);
+            self.batch_counter.store(batch_size, Ordering::Relaxed);
 
             // Calculate sleep duration to enforce rate
             // Formula: sleep_micros = (batch_size * 1_000_000) / target_rate
@@ -288,7 +288,10 @@ impl AdaptiveRateLimiterV3 {
 
             // Skip if elapsed time is too short (avoid division by zero)
             if elapsed < 0.01 {
-                trace!("Monitor: elapsed time too short ({:.6}s), skipping", elapsed);
+                trace!(
+                    "Monitor: elapsed time too short ({:.6}s), skipping",
+                    elapsed
+                );
                 continue;
             }
 
@@ -302,7 +305,7 @@ impl AdaptiveRateLimiterV3 {
             let upper_bound = target_rate_f64 * (1.0 + HYSTERESIS_FACTOR);
 
             // Get current batch size
-            let current_batch = current_batch_size.load(Ordering::Acquire);
+            let current_batch = current_batch_size.load(Ordering::Relaxed);
 
             // Adjust batch size based on actual vs target rate
             let new_batch = if actual_rate > upper_bound {
@@ -346,14 +349,14 @@ impl AdaptiveRateLimiterV3 {
             };
 
             // Update cached batch size (hot path will read this)
-            // Release ordering ensures visibility to hot path's Acquire
+            // Relaxed ordering sufficient (eventual visibility is acceptable)
             if new_batch != current_batch {
-                current_batch_size.store(new_batch, Ordering::Release);
+                current_batch_size.store(new_batch, Ordering::Relaxed);
 
                 // Also update batch_counter to avoid immediate exhaustion
                 // (Only if increasing - decreasing will naturally converge)
                 if new_batch > current_batch {
-                    batch_counter.store(new_batch, Ordering::Release);
+                    batch_counter.store(new_batch, Ordering::Relaxed);
                 }
             }
 
@@ -372,7 +375,7 @@ impl AdaptiveRateLimiterV3 {
 
     /// Get current batch size (cached value)
     pub fn batch_size(&self) -> u64 {
-        self.current_batch_size.load(Ordering::Acquire)
+        self.current_batch_size.load(Ordering::Relaxed)
     }
 
     /// Get total packets processed
@@ -519,7 +522,7 @@ mod tests {
         // Batch size should still be reasonable
         let current_batch = limiter.batch_size();
         assert!(
-            current_batch >= MIN_BATCH_SIZE && current_batch <= MAX_BATCH_SIZE,
+            (MIN_BATCH_SIZE..=MAX_BATCH_SIZE).contains(&current_batch),
             "Batch size out of range: {}",
             current_batch
         );
@@ -720,7 +723,7 @@ mod tests {
 
         // Verify batch stays within valid bounds
         assert!(
-            adjusted_batch >= MIN_BATCH_SIZE && adjusted_batch <= MAX_BATCH_SIZE,
+            (MIN_BATCH_SIZE..=MAX_BATCH_SIZE).contains(&adjusted_batch),
             "Batch size out of bounds: {}",
             adjusted_batch
         );
@@ -731,14 +734,14 @@ mod tests {
         // This test verifies atomic ordering is correct (compiles without warnings)
         let limiter = AdaptiveRateLimiterV3::new(Some(1000));
 
-        // Acquire ordering on read
-        let _batch = limiter.current_batch_size.load(Ordering::Acquire);
+        // Relaxed ordering on all operations (optimized for performance)
+        let _batch = limiter.current_batch_size.load(Ordering::Relaxed);
 
-        // AcqRel on fetch_sub
-        let _remaining = limiter.batch_counter.fetch_sub(1, Ordering::AcqRel);
+        // Relaxed on fetch_sub (each thread only cares about exhaustion)
+        let _remaining = limiter.batch_counter.fetch_sub(1, Ordering::Relaxed);
 
-        // Release on write
-        limiter.current_batch_size.store(100, Ordering::Release);
+        // Relaxed on write (eventual visibility is acceptable)
+        limiter.current_batch_size.store(100, Ordering::Relaxed);
 
         // Relaxed for counter
         let _count = limiter.packet_count.load(Ordering::Relaxed);

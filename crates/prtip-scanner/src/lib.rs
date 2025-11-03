@@ -49,7 +49,7 @@
 //! ```
 
 pub mod adaptive_parallelism;
-pub mod adaptive_rate_limiter;
+pub mod adaptive_rate_limiter; // Keep for ICMP backoff functionality (Sprint 5.4)
 pub mod adaptive_rate_limiter_v3;
 pub mod async_storage;
 pub mod banner_grabber;
@@ -68,7 +68,6 @@ pub mod os_fingerprinter;
 pub mod os_probe;
 pub mod pcapng;
 pub mod progress_bar;
-pub mod rate_limiter;
 pub mod scheduler;
 pub mod service_detector;
 pub mod stealth_scanner;
@@ -80,8 +79,10 @@ pub mod timing;
 pub mod tls_handshake;
 pub mod udp_scanner;
 
-pub use adaptive_rate_limiter::{AdaptiveRateLimiter as AdaptiveRateLimiterV2, RateLimiterStats};
+pub use adaptive_rate_limiter::{AdaptiveRateLimiter as AdaptiveRateLimiterV2, RateLimiterStats}; // ICMP backoff
 pub use adaptive_rate_limiter_v3::AdaptiveRateLimiterV3;
+// Type alias for backward compatibility - V3 is now the default rate limiter
+pub type RateLimiter = AdaptiveRateLimiterV3;
 pub use async_storage::async_storage_worker;
 pub use banner_grabber::{BannerGrabber, BannerParser};
 pub use concurrent_scanner::ConcurrentScanner;
@@ -102,7 +103,6 @@ pub use os_fingerprinter::{OsDetectionResult, OsFingerprinter};
 pub use os_probe::OsProbeEngine;
 pub use pcapng::{Direction, PcapngWriter};
 pub use progress_bar::ScanProgressBar;
-pub use rate_limiter::RateLimiter;
 pub use scheduler::ScanScheduler;
 pub use service_detector::{ServiceDetector, ServiceInfo};
 pub use stealth_scanner::{StealthScanType, StealthScanner};

@@ -214,6 +214,7 @@ impl IcmpMonitor {
 
         // Run blocking socket operations in dedicated thread
         tokio::task::spawn_blocking(move || {
+            #[cfg(unix)]
             let mut iter = icmp_packet_iter(&mut receiver);
             #[cfg(test)]
             let start = Instant::now();

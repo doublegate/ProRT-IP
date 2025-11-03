@@ -21,6 +21,37 @@ This directory contains legacy rate limiter implementations that were replaced b
 - 15.2 percentage points improvement over Governor
 - 34% variance reduction (more consistent timing)
 
+## Test Modules
+
+**IMPORTANT:** Test modules have been removed from archived rate limiters to prevent:
+- Slow test execution (some tests took 60+ seconds causing CI timeouts)
+- Unnecessary testing of archived code (V3 is the tested/supported version)
+- 30+ minute cargo test runs that blocked development
+
+**What was removed:**
+- `adaptive_rate_limiter.rs`: 14 tests, 279 lines (including slow convergence tests)
+- `rate_limiter.rs`: All test modules (if any)
+
+**The implementation code is fully preserved** for reference and restoration. Tests can be restored from git history if needed.
+
+### Restoring Tests
+
+To restore tests for an archived rate limiter:
+
+1. Find the commit before tests were removed:
+   ```bash
+   git log --all --full-history -- crates/prtip-scanner/src/backups/adaptive_rate_limiter.rs
+   ```
+
+2. Extract the test module from that commit:
+   ```bash
+   git show COMMIT_SHA:crates/prtip-scanner/src/adaptive_rate_limiter.rs | tail -n +491 > tests.rs
+   ```
+
+3. Copy the `#[cfg(test)]` module back into the file
+
+**Note:** If you restore an archived rate limiter to active use, you should also restore the test modules to ensure proper test coverage.
+
 ## Archived Files
 
 ### 1. rate_limiter.rs - Governor Token Bucket Implementation

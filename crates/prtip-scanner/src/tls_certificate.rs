@@ -3470,7 +3470,7 @@ mod tests {
 
         let result = validate_chain_comprehensive(&chain).unwrap();
         assert!(!result.is_valid);
-        assert!(result.errors.len() > 0);
+        assert!(!result.errors.is_empty());
         assert!(result.errors[0].contains("Broken certificate chain"));
     }
 
@@ -3511,7 +3511,7 @@ mod tests {
 
         let result = validate_chain_comprehensive(&chain).unwrap();
         assert!(!result.is_valid);
-        assert!(result.errors.len() > 0);
+        assert!(!result.errors.is_empty());
         assert!(result.errors[0].contains("MD5"));
     }
 
@@ -3554,7 +3554,7 @@ mod tests {
         // SHA1 generates warning but is still valid (no errors)
         assert!(result.is_valid);
         assert_eq!(result.errors.len(), 0);
-        assert!(result.warnings.len() > 0);
+        assert!(!result.warnings.is_empty());
         assert!(result.warnings[0].contains("SHA1"));
     }
 
@@ -3619,12 +3619,14 @@ mod tests {
 
     #[test]
     fn test_san_extraction_dns_names() {
-        let mut san = SubjectAlternativeName::default();
-        san.dns_names = vec![
-            "example.com".to_string(),
-            "www.example.com".to_string(),
-            "*.example.com".to_string(),
-        ];
+        let san = SubjectAlternativeName {
+            dns_names: vec![
+                "example.com".to_string(),
+                "www.example.com".to_string(),
+                "*.example.com".to_string(),
+            ],
+            ..Default::default()
+        };
 
         assert_eq!(san.dns_names.len(), 3);
         assert!(san.dns_names.contains(&"example.com".to_string()));
@@ -3633,8 +3635,10 @@ mod tests {
 
     #[test]
     fn test_san_extraction_ip_addresses() {
-        let mut san = SubjectAlternativeName::default();
-        san.ip_addresses = vec!["192.168.1.1".to_string(), "2001:db8::1".to_string()];
+        let san = SubjectAlternativeName {
+            ip_addresses: vec!["192.168.1.1".to_string(), "2001:db8::1".to_string()],
+            ..Default::default()
+        };
 
         assert_eq!(san.ip_addresses.len(), 2);
         assert!(san.ip_addresses.contains(&"192.168.1.1".to_string()));
@@ -3643,12 +3647,13 @@ mod tests {
 
     #[test]
     fn test_san_categorization() {
-        let mut san = SubjectAlternativeName::default();
-        san.dns_names = vec!["example.com".to_string()];
-        san.ip_addresses = vec!["192.168.1.1".to_string()];
-        san.email_addresses = vec!["admin@example.com".to_string()];
-        san.uris = vec!["https://example.com".to_string()];
-        san.other_names = vec!["UPN:user@example.com".to_string()];
+        let san = SubjectAlternativeName {
+            dns_names: vec!["example.com".to_string()],
+            ip_addresses: vec!["192.168.1.1".to_string()],
+            email_addresses: vec!["admin@example.com".to_string()],
+            uris: vec!["https://example.com".to_string()],
+            other_names: vec!["UPN:user@example.com".to_string()],
+        };
 
         // Verify all categories are properly separated
         assert_eq!(san.dns_names.len(), 1);
@@ -3664,12 +3669,14 @@ mod tests {
 
     #[test]
     fn test_san_wildcard_matching() {
-        let mut san = SubjectAlternativeName::default();
-        san.dns_names = vec![
-            "example.com".to_string(),
-            "*.example.com".to_string(),
-            "*.sub.example.com".to_string(),
-        ];
+        let san = SubjectAlternativeName {
+            dns_names: vec![
+                "example.com".to_string(),
+                "*.example.com".to_string(),
+                "*.sub.example.com".to_string(),
+            ],
+            ..Default::default()
+        };
 
         // Exact match
         assert!(san.matches_dns("example.com"));
@@ -3687,8 +3694,10 @@ mod tests {
         assert!(!san.matches_dns("example.org"));
 
         // Test wildcard does NOT match base domain
-        let mut san2 = SubjectAlternativeName::default();
-        san2.dns_names = vec!["*.sub.example.com".to_string()];
+        let san2 = SubjectAlternativeName {
+            dns_names: vec!["*.sub.example.com".to_string()],
+            ..Default::default()
+        };
         assert!(!san2.matches_dns("sub.example.com")); // *.sub.example.com doesn't match sub.example.com
         assert!(san2.matches_dns("www.sub.example.com")); // but does match www.sub.example.com
     }
@@ -4141,7 +4150,6 @@ mod tests {
         }
     }
 
-    #[test]
     #[test]
     fn test_server_hello_parsing() {
         // Simplified ServerHello without extensions to ensure correct length

@@ -251,7 +251,10 @@ impl TlsHandshake {
 
         debug!(
             "TLS handshake successful: {} (TLS {}, issuer: {}, chain_len: {})",
-            common_name, tls_version, issuer, raw_cert_chain.len()
+            common_name,
+            tls_version,
+            issuer,
+            raw_cert_chain.len()
         );
 
         Ok(ServerInfo {

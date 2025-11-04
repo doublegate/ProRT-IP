@@ -60,6 +60,12 @@ This project ships offensive security tooling; only run scans against systems yo
 - `docs/07-PERFORMANCE.md` and `benchmarks/` for Phase 4 profiling output and harnesses.
 - `scripts/` and `benchmarks/` for profiling helpers and reproducible performance experiments.
 
+## Notion Knowledge Map Maintenance
+
+- Keep the “ProRT-IP Knowledge Map” (Section 13 metrics, Section 16 Phase Timeline, Section 17 Future Development Breakdown) in sync with this document after every status change.
+- Ensure Section 16 retains the single consolidated Phase Timeline table (Phase/Status/Focus/Timeline/Key Notes). Archive any duplicate tables if they reappear.
+- Update Section 17’s Future Development Breakdown table when sprint scopes shift, mirroring active sprint objectives and dependencies.
+
 ## Metrics Snapshot
 
 | Metric | Current Value | Source |

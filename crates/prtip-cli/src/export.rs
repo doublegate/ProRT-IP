@@ -83,7 +83,10 @@ pub fn export_xml(results: &[ScanResult]) -> Result<String, Box<dyn std::error::
     xml.push_str("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     xml.push_str("<!DOCTYPE nmaprun>\n");
     xml.push_str("<?xml-stylesheet href=\"file:///usr/share/nmap/nmap.xsl\" type=\"text/xsl\"?>\n");
-    xml.push_str(&format!("<nmaprun scanner=\"prtip\" version=\"{}\" xmloutputversion=\"1.05\">\n", env!("CARGO_PKG_VERSION")));
+    xml.push_str(&format!(
+        "<nmaprun scanner=\"prtip\" version=\"{}\" xmloutputversion=\"1.05\">\n",
+        env!("CARGO_PKG_VERSION")
+    ));
 
     // Group results by host
     let mut hosts: HashMap<String, Vec<&ScanResult>> = HashMap::new();

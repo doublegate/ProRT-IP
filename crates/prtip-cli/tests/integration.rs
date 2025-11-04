@@ -9,7 +9,7 @@ use tempfile::TempDir;
 
 #[test]
 fn test_cli_help() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--help");
     cmd.assert()
         .success()
@@ -20,7 +20,7 @@ fn test_cli_help() {
 
 #[test]
 fn test_cli_version() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--version");
     cmd.assert()
         .success()
@@ -29,7 +29,7 @@ fn test_cli_version() {
 
 #[test]
 fn test_cli_no_targets() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("required"));
@@ -37,7 +37,7 @@ fn test_cli_no_targets() {
 
 #[test]
 fn test_cli_invalid_ports() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "invalid", "192.168.1.1"]);
     cmd.assert()
         .failure()
@@ -46,14 +46,14 @@ fn test_cli_invalid_ports() {
 
 #[test]
 fn test_cli_invalid_timing() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-T", "10", "192.168.1.1"]);
     cmd.assert().failure();
 }
 
 #[test]
 fn test_cli_zero_timeout() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--timeout", "0", "192.168.1.1"]);
     cmd.assert()
         .failure()
@@ -62,7 +62,7 @@ fn test_cli_zero_timeout() {
 
 #[test]
 fn test_cli_zero_max_rate() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--max-rate", "0", "192.168.1.1"]);
     cmd.assert()
         .failure()
@@ -71,7 +71,7 @@ fn test_cli_zero_max_rate() {
 
 #[test]
 fn test_cli_multiple_targets() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "9999", "127.0.0.1", "127.0.0.2", "127.0.0.3"]);
 
     // May need privileges, but should at least parse correctly
@@ -92,7 +92,7 @@ fn test_cli_json_output() {
     let tmp_dir = TempDir::new().unwrap();
     let output_file = tmp_dir.path().join("results.json");
 
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args([
         "-o",
         "json",
@@ -123,7 +123,7 @@ fn test_cli_xml_output() {
     let tmp_dir = TempDir::new().unwrap();
     let output_file = tmp_dir.path().join("results.xml");
 
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args([
         "-o",
         "xml",
@@ -151,17 +151,17 @@ fn test_cli_xml_output() {
 #[test]
 fn test_cli_verbose_levels() {
     // Test -v
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-v", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output(); // Just check it doesn't crash
 
     // Test -vv
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-vv", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output();
 
     // Test -vvv
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-vvv", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output();
 }
@@ -169,12 +169,12 @@ fn test_cli_verbose_levels() {
 #[test]
 fn test_cli_scan_types() {
     // Test connect scan (default)
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-s", "connect", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output();
 
     // Test syn scan (will likely fail without privileges, but should parse)
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-s", "syn", "-p", "9999", "127.0.0.1"]);
     let output = cmd.output().unwrap();
     // Either works or fails with privilege error
@@ -191,7 +191,7 @@ fn test_cli_scan_types() {
 #[test]
 fn test_cli_timing_templates() {
     for timing in 0..=5 {
-        let mut cmd = Command::cargo_bin("prtip").unwrap();
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
         cmd.args(["-T", &timing.to_string(), "-p", "9999", "127.0.0.1"]);
         let _ = cmd.output(); // Should at least parse
     }
@@ -202,7 +202,7 @@ fn test_cli_custom_database() {
     let tmp_dir = TempDir::new().unwrap();
     let db_file = tmp_dir.path().join("custom.db");
 
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args([
         "--with-db",
         "--database",
@@ -223,42 +223,42 @@ fn test_cli_custom_database() {
 
 #[test]
 fn test_cli_host_discovery_flag() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-P", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output(); // Should parse correctly
 }
 
 #[test]
 fn test_cli_interface_option() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--interface", "lo", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output(); // Should parse correctly
 }
 
 #[test]
 fn test_cli_max_concurrent() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--max-concurrent", "50", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output(); // Should parse correctly
 }
 
 #[test]
 fn test_cli_scan_delay() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--scan-delay", "100", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output(); // Should parse correctly
 }
 
 #[test]
 fn test_cli_retries() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--retries", "3", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output(); // Should parse correctly
 }
 
 #[test]
 fn test_cli_excessive_retries() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--retries", "20", "-p", "9999", "127.0.0.1"]);
     cmd.assert()
         .failure()
@@ -267,35 +267,35 @@ fn test_cli_excessive_retries() {
 
 #[test]
 fn test_cli_cidr_notation() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "9999", "127.0.0.0/30"]);
     let _ = cmd.output(); // Should parse CIDR correctly
 }
 
 #[test]
 fn test_cli_port_range() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "9998-10000", "127.0.0.1"]);
     let _ = cmd.output();
 }
 
 #[test]
 fn test_cli_port_list() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "80,443,8080,8443", "127.0.0.1"]);
     let _ = cmd.output();
 }
 
 #[test]
 fn test_cli_mixed_port_spec() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "80,443,8000-8010", "127.0.0.1"]);
     let _ = cmd.output();
 }
 
 #[test]
 fn test_cli_invalid_port_range() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "100-50", "127.0.0.1"]);
     cmd.assert()
         .failure()
@@ -304,7 +304,7 @@ fn test_cli_invalid_port_range() {
 
 #[test]
 fn test_cli_port_zero() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["-p", "0", "127.0.0.1"]);
     cmd.assert()
         .failure()
@@ -313,7 +313,7 @@ fn test_cli_port_zero() {
 
 #[test]
 fn test_cli_excessive_timeout() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--timeout", "4000000", "127.0.0.1"]);
     cmd.assert()
         .failure()
@@ -322,7 +322,7 @@ fn test_cli_excessive_timeout() {
 
 #[test]
 fn test_cli_excessive_max_concurrent() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(["--max-concurrent", "200000", "127.0.0.1"]);
     cmd.assert()
         .failure()
@@ -334,7 +334,7 @@ fn test_cli_output_to_file() {
     let tmp_dir = TempDir::new().unwrap();
     let output_file = tmp_dir.path().join("scan.txt");
 
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args([
         "--output-file",
         output_file.to_str().unwrap(),
@@ -367,7 +367,7 @@ fn create_test_db_with_scan(temp_dir: &TempDir) -> (String, String) {
     let target = "127.0.0.1";
 
     // Run a scan with database storage
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&["-p", "80,443", target, "--with-db", "--database", &db_path]);
 
     let output = cmd.output().unwrap();
@@ -388,7 +388,7 @@ fn test_db_list() {
     let (db_path, _target) = create_test_db_with_scan(&temp_dir);
 
     // Test `prtip db list`
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&["db", "list", &db_path]);
 
     cmd.assert()
@@ -402,7 +402,7 @@ fn test_db_query_scan_id() {
     let (db_path, _target) = create_test_db_with_scan(&temp_dir);
 
     // Query scan ID 1 (first scan)
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&["db", "query", &db_path, "--scan-id", "1"]);
 
     cmd.assert().success().stdout(
@@ -416,7 +416,7 @@ fn test_db_query_target() {
     let (db_path, target) = create_test_db_with_scan(&temp_dir);
 
     // Query by target IP
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&["db", "query", &db_path, "--target", &target]);
 
     cmd.assert()
@@ -430,7 +430,7 @@ fn test_db_query_port() {
     let (db_path, _target) = create_test_db_with_scan(&temp_dir);
 
     // Query by port
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&["db", "query", &db_path, "--port", "80"]);
 
     cmd.assert().success(); // May or may not find port 80, but should not error
@@ -448,7 +448,7 @@ fn test_db_export_json() {
         .to_string();
 
     // Export to JSON
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&[
         "db",
         "export",
@@ -483,7 +483,7 @@ fn test_db_export_csv() {
         .to_string();
 
     // Export to CSV
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&[
         "db",
         "export",
@@ -517,12 +517,12 @@ fn test_db_compare_scans() {
         .to_str()
         .unwrap()
         .to_string();
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&["-p", "80", "127.0.0.1", "--with-db", "--database", &db_path]);
     cmd.output().unwrap();
 
     // Create second scan (different ports)
-    let mut cmd2 = Command::cargo_bin("prtip").unwrap();
+    let mut cmd2 = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd2.args(&[
         "-p",
         "443",
@@ -534,7 +534,7 @@ fn test_db_compare_scans() {
     cmd2.output().unwrap();
 
     // Compare scans
-    let mut cmd3 = Command::cargo_bin("prtip").unwrap();
+    let mut cmd3 = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd3.args(&["db", "compare", &db_path, "1", "2"]);
 
     cmd3.assert()
@@ -548,7 +548,7 @@ fn test_db_query_no_filter_error() {
     let (db_path, _target) = create_test_db_with_scan(&temp_dir);
 
     // Query without any filter should error
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.args(&["db", "query", &db_path]);
 
     cmd.assert().failure().stderr(

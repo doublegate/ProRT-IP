@@ -7,7 +7,7 @@ use assert_cmd::Command;
 
 #[test]
 fn test_max_hostgroup_flag() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--max-hostgroup")
         .arg("32")
         .arg("-sT") // TCP Connect (works without raw sockets)
@@ -29,7 +29,7 @@ fn test_max_hostgroup_flag() {
 
 #[test]
 fn test_min_hostgroup_flag() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--min-hostgroup")
         .arg("1")
         .arg("-sT")
@@ -49,7 +49,7 @@ fn test_min_hostgroup_flag() {
 
 #[test]
 fn test_max_parallelism_alias() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--max-parallelism")
         .arg("16")
         .arg("-sT")
@@ -69,7 +69,7 @@ fn test_max_parallelism_alias() {
 
 #[test]
 fn test_adaptive_rate_flag() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--adaptive-rate")
         .arg("-sT")
         .arg("-p")
@@ -89,7 +89,7 @@ fn test_adaptive_rate_flag() {
 
 #[test]
 fn test_combined_rate_limiting_flags() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--adaptive-rate")
         .arg("--max-hostgroup")
         .arg("32")
@@ -113,7 +113,7 @@ fn test_combined_rate_limiting_flags() {
 
 #[test]
 fn test_max_hostgroup_validation_zero() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--max-hostgroup")
         .arg("0")
         .arg("-sT")
@@ -134,7 +134,7 @@ fn test_max_hostgroup_validation_zero() {
 
 #[test]
 fn test_min_hostgroup_exceeds_max() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--min-hostgroup")
         .arg("100")
         .arg("--max-hostgroup")
@@ -157,7 +157,7 @@ fn test_min_hostgroup_exceeds_max() {
 
 #[test]
 fn test_max_hostgroup_excessive() {
-    let mut cmd = Command::cargo_bin("prtip").unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
     cmd.arg("--max-hostgroup")
         .arg("20000") // Exceeds 10,000 limit
         .arg("-sT")

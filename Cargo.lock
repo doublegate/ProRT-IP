@@ -2075,6 +2075,7 @@ version = "0.4.4"
 dependencies = [
  "anyhow",
  "chrono",
+ "criterion",
  "crossbeam",
  "dashmap 6.1.0",
  "etherparse",

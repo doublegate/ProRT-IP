@@ -31,9 +31,15 @@ match ssl m|^\x16\x03| p/SSL/
 
 /// Helper function to scan an HTTPS port and extract service info
 async fn scan_https_port(host: &str, port: u16) -> Result<ServiceInfo, prtip_core::Error> {
-    let addr: SocketAddr = format!("{}:{}", host, port)
-        .parse()
-        .map_err(|e| prtip_core::Error::Parse(format!("Invalid address: {}", e)))?;
+    // Resolve hostname to IP address (handles both hostnames and IPs)
+    let addrs: Vec<SocketAddr> = tokio::net::lookup_host(format!("{}:{}", host, port))
+        .await
+        .map_err(|e| prtip_core::Error::Network(format!("DNS resolution failed: {}", e)))?
+        .collect();
+
+    let addr = *addrs
+        .first()
+        .ok_or_else(|| prtip_core::Error::Network("No addresses resolved".to_string()))?;
 
     let detector = ServiceDetector::new(create_test_probe_db(), 7);
 
@@ -304,7 +310,13 @@ async fn test_service_detector_tls_integration() {
     // Test that ServiceDetector properly integrates TLS analysis
     let detector = ServiceDetector::new(create_test_probe_db(), 7);
 
-    let addr: SocketAddr = "example.com:443".parse().unwrap();
+    // Resolve hostname to IP address
+    let addrs: Vec<SocketAddr> = tokio::net::lookup_host("example.com:443")
+        .await
+        .expect("DNS resolution failed")
+        .collect();
+    let addr = *addrs.first().expect("No addresses resolved");
+
     let result = tokio::time::timeout(Duration::from_secs(10), detector.detect_service(addr))
         .await
         .expect("Timeout")

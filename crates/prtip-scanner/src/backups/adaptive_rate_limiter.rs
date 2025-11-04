@@ -494,6 +494,6 @@ impl std::fmt::Display for RateLimiterStats {
 // NOTE: Test module removed to prevent slow test execution (30+ minutes).
 // This is the archived Phase 3 AdaptiveRateLimiter (V2), preserved for
 // reference only. V3 (AdaptiveRateLimiterV3) is the default rate limiter
-// as of v0.4.4.
+// as of v0.4.5.
 //
 // Tests removed (14 tests, 278 lines) - see git history to restore

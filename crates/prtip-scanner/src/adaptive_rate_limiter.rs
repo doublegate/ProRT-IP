@@ -491,7 +491,7 @@ impl std::fmt::Display for RateLimiterStats {
 // NOTE: Test module removed to prevent slow test execution (30+ minutes).
 // This is the Phase 3 AdaptiveRateLimiter (V2), kept for API compatibility
 // and ICMP backoff functionality. However, V3 (AdaptiveRateLimiterV3) is
-// the default rate limiter as of v0.4.4.
+// the default rate limiter as of v0.4.5.
 //
 // The implementation is preserved for backwards compatibility (scanner fields,
 // RateLimiterStats export), but the 14 tests (including slow convergence tests)

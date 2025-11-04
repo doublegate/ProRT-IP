@@ -6,11 +6,11 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 
 **ProRT-IP WarScan**: Modern network scanner combining Masscan/ZMap speed with Nmap detection depth.
 
-**Status**: Phase 5 IN PROGRESS (Sprint 5.X Phase 1-2 COMPLETE) + **v0.4.3 Rate Limiting & Idle Scan**. 1,466 tests (100%), 62.5% coverage, 67 integration tests, OS fingerprinting, service detection, 50+ nmap-compatible flags, 8 scan types, greppable output, 6 evasion techniques, adaptive rate limiting. CI/CD 7/7 passing, 8/8 release targets (100%).
+**Status**: Phase 5 IN PROGRESS (Sprint 5.X COMPLETE) + **v0.4.4 Released**. 839 tests (100%), 62.5% coverage, 67 integration tests, OS fingerprinting, service detection, 50+ nmap-compatible flags, 8 scan types, greppable output, 6 evasion techniques, industry-leading -1.8% overhead rate limiting. CI/CD 7/7 passing, 8/8 release targets (100%).
 
 **Repository**: <https://github.com/doublegate/ProRT-IP>
 **License**: GPL-3.0
-**Updated**: 2025-11-02
+**Updated**: 2025-11-03
 
 ## Architecture
 
@@ -39,7 +39,7 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 |-------|--------|-------|--------------|
 | 1-3 | ✅ COMPLETE | 391 | Core scanning, protocols, detection |
 | **4: Performance** | **✅ COMPLETE** | **1,166** | **Testing infra, zero-copy, NUMA, PCAPNG, evasion, IPv6 foundation** |
-| **5: Advanced** | **🔄 IN PROGRESS** | **1,466** | **Full IPv6 (100%), Idle scan, Service detection 85-90%, Adaptive rate limiting** |
+| **5: Advanced** | **🔄 IN PROGRESS** | **839** | **Full IPv6 (100%), Idle scan, Service detection 85-90%, Rate limiting -1.8% overhead** |
 
 **Custom Commands** (15): /rust-check, /bench-compare, /sprint-*, /perf-profile, /module-create, /doc-update, /test-quick, /ci-status, /bug-report, /inspire-me, /daily-log, /next-sprint, /mem-reduce
 
@@ -129,7 +129,7 @@ prtip -A -p 80,443 target.com             # Aggressive
 
 **Process**: Read /tmp/ProRT-IP/RELEASE-NOTES-v*.md → Read SPRINT-*-COMPLETE.md → Review commits → Create tag (100-150 lines) → Create GitHub release (150-200 lines) → Verify vs quality standard → Push
 
-**Reference**: v0.3.7, v0.3.8, v0.3.9 (extensive, technically detailed)
+**Reference**: v0.3.7, v0.3.8, v0.3.9, v0.4.0-v0.4.3, **v0.4.4** (extensive, technically detailed)
 
 ## Input Validation
 

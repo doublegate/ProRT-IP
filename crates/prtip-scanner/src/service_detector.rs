@@ -109,8 +109,8 @@ impl ServiceDetector {
         Self {
             db: Arc::new(db),
             intensity: intensity.min(9),
-            timeout: Duration::from_secs(5),
-            tls_handler: TlsHandshake::with_timeout(Duration::from_secs(5)),
+            timeout: Duration::from_secs(5), // Default for general probes
+            tls_handler: TlsHandshake::with_timeout(Duration::from_millis(2000)), // Faster for TLS
             enable_tls,
             capture_raw,
         }
@@ -119,6 +119,25 @@ impl ServiceDetector {
     /// Enable or disable TLS detection
     pub fn set_tls_enabled(&mut self, enabled: bool) {
         self.enable_tls = enabled;
+    }
+
+    /// Get adaptive timeout based on port and service characteristics
+    ///
+    /// Uses shorter timeouts for well-known fast services to reduce scan time.
+    /// HTTPS services (443, 8443) get 500ms timeout since TLS handshake is typically fast.
+    /// Other common TLS ports get 1s timeout.
+    /// Unknown ports use the default 5s timeout for compatibility.
+    fn get_adaptive_timeout(&self, port: u16) -> Duration {
+        match port {
+            // HTTPS ports: TLS handshake is fast, use aggressive timeout
+            443 | 8443 => Duration::from_millis(500),
+            // Other common TLS ports: slightly more conservative
+            465 | 587 | 993 | 995 | 636 | 990 => Duration::from_secs(1),
+            // SSH, FTP, HTTP: known fast protocols
+            22 | 21 | 80 | 8080 => Duration::from_secs(1),
+            // Unknown ports: use default conservative timeout
+            _ => self.timeout,
+        }
     }
 
     /// Detect service on target
@@ -422,9 +441,11 @@ impl ServiceDetector {
 
         probe: &ServiceProbe,
     ) -> Result<(ServiceInfo, Vec<u8>), Error> {
-        // Connect to target
+        // Use adaptive timeout based on port
+        let probe_timeout = self.get_adaptive_timeout(target.port());
 
-        let mut stream = timeout(self.timeout, TcpStream::connect(target))
+        // Connect to target
+        let mut stream = timeout(probe_timeout, TcpStream::connect(target))
             .await
             .map_err(|_| Error::Network("Connection timeout".to_string()))?
             .map_err(|e| Error::Network(format!("Connection failed: {}", e)))?;
@@ -444,7 +465,7 @@ impl ServiceDetector {
 
         let mut buf = [0u8; 4096];
 
-        match timeout(self.timeout, stream.read(&mut buf)).await {
+        match timeout(probe_timeout, stream.read(&mut buf)).await {
             Ok(Ok(n)) if n > 0 => {
                 response.extend_from_slice(&buf[..n]);
             }

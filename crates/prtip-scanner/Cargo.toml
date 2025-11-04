@@ -12,6 +12,8 @@ repository.workspace = true
 vendored-openssl = ["native-tls/vendored"]
 # NUMA optimization for multi-socket systems
 numa = ["prtip-network/numa"]
+# Enable network-dependent integration tests (requires internet access)
+network-tests = []
 
 [dependencies]
 prtip-core = { path = "../prtip-core" }

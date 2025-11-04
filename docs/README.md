@@ -1,9 +1,9 @@
 # ProRT-IP WarScan Documentation
 
-**Version:** 2.0
-**Last Updated:** 2025-10-08
-**Project Version:** v0.3.0 (Production Ready)
-**Status:** Phases 1-3 COMPLETE + Enhancement Cycles 1-8 COMPLETE
+**Version:** 3.0
+**Last Updated:** 2025-11-04
+**Project Version:** v0.4.5 (Production Ready)
+**Status:** Phases 1-4 COMPLETE + Phase 5 IN PROGRESS (Sprint 5.5 COMPLETE)
 
 ---
 
@@ -26,14 +26,29 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 | **[08-SECURITY.md](08-SECURITY.md)** | Security implementation, privilege management, and best practices | Security engineers, all developers |
 | **[09-FAQ.md](09-FAQ.md)** | Frequently asked questions and troubleshooting guide | End users, developers |
 | **[10-PROJECT-STATUS.md](10-PROJECT-STATUS.md)** | Current status, task tracking, and milestones | Project managers, stakeholders |
-| **[12-IMPLEMENTATIONS_ADDED.md](12-IMPLEMENTATIONS_ADDED.md)** | Detailed implementation log for all phases and enhancement cycles | Developers, maintainers |
-| **[13-GITHUB-RELEASE.md](13-GITHUB-RELEASE.md)** | Official v0.3.0 release notes and distribution guide | End users, stakeholders |
-| **[14-BENCHMARKS.md](14-BENCHMARKS.md)** | Performance benchmarking methodology and optimization targets | Performance engineers, developers |
-| **[../benchmarks/](../benchmarks/)** | **Benchmark results directory** (moved from docs/) | Performance engineers, developers |
-| **[../benchmarks/README.md](../benchmarks/README.md)** | Benchmark organization and quick reference guide | Performance engineers, stakeholders |
-| **[14-DOCUMENTATION_AUDIT.md](14-DOCUMENTATION_AUDIT.md)** | Documentation audit history and consistency tracking | Documentation maintainers |
-| **[15-PLATFORM-SUPPORT.md](15-PLATFORM-SUPPORT.md)** | Comprehensive platform support guide with installation instructions | End users, system administrators |
-| **[16-TEST-ENVIRONMENT.md](16-TEST-ENVIRONMENT.md)** | Docker test environment setup and network benchmarking guide | Developers, performance engineers |
+| **[11-RELEASE-PROCESS.md](11-RELEASE-PROCESS.md)** | Guide to the automated release process | Maintainers |
+| **[12-BENCHMARKING-GUIDE.md](12-BENCHMARKING-GUIDE.md)** | How to run and interpret performance benchmarks | Performance engineers, developers |
+| **[13-PLATFORM-SUPPORT.md](13-PLATFORM-SUPPORT.md)** | Comprehensive platform support guide with installation instructions | End users, system administrators |
+| **[14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md)** | Nmap command-line flag compatibility guide | Nmap users |
+| **[15-PHASE4-COMPLIANCE.md](15-PHASE4-COMPLIANCE.md)** | Documentation of compliance with Phase 4 requirements | Project managers, stakeholders |
+| **[16-REGRESSION-FIX-STRATEGY.md](16-REGRESSION-FIX-STRATEGY.md)** | Strategy for fixing performance regressions | Developers |
+| **[17-TESTING-INFRASTRUCTURE.md](17-TESTING-INFRASTRUCTURE.md)** | Overview of the testing infrastructure | Developers, QA engineers |
+| **[18-EFFICIENCY_REPORT.md](18-EFFICIENCY_REPORT.md)** | Report on the efficiency of the scanner | Performance engineers, stakeholders |
+| **[19-EVASION-GUIDE.md](19-EVASION-GUIDE.md)** | Guide to network evasion techniques | Security engineers, penetration testers |
+| **[20-PHASE4-ENHANCEMENTS.md](20-PHASE4-ENHANCEMENTS.md)** | Documentation of enhancements made in Phase 4 | Developers, project managers |
+| **[21-PERFORMANCE-GUIDE.md](21-PERFORMANCE-GUIDE.md)** | Guide to performance tuning and optimization | Performance engineers, developers |
+| **[22.1-CLAUDE-POST-PHASE4_1of2.md](22.1-CLAUDE-POST-PHASE4_1of2.md)** | Claude's notes and observations after Phase 4 (Part 1) | AI developers, project managers |
+| **[22.2-CLAUDE-POST-PHASE4_2of2.md](22.2-CLAUDE-POST-PHASE4_2of2.md)** | Claude's notes and observations after Phase 4 (Part 2) | AI developers, project managers |
+| **[23-IPv6-GUIDE.md](23-IPv6-GUIDE.md)** | Comprehensive guide to IPv6 scanning | All users |
+| **[24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md)** | Guide to service detection and fingerprinting | All users |
+| **[25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md)** | Guide to performing idle (zombie) scans | Security engineers, penetration testers |
+| **[26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md)** | Guide to the advanced rate limiting features | All users |
+| **[DATABASE.md](DATABASE.md)** | Guide to the SQLite database schema and query interface | Developers, analysts |
+| **[MEMORY-BANK-OPTIMIZATION-PHASE-1.md](MEMORY-BANK-OPTIMIZATION-PHASE-1.md)** | Documentation of Phase 1 of memory bank optimization | Developers |
+| **[MEMORY-BANK-OPTIMIZATION-SUMMARY.md](MEMORY-BANK-OPTIMIZATION-SUMMARY.md)** | Summary of memory bank optimization efforts | Developers, project managers |
+| **[PHASE-5-BACKLOG.md](PHASE-5-BACKLOG.md)** | Backlog of tasks for Phase 5 | Developers, project managers |
+| **[SPRINT-4.22-PHASE-6-PART-1-COMPLETE.md](SPRINT-4.22-PHASE-6-PART-1-COMPLETE.md)** | Documentation of the completion of Part 1 of Phase 6 of Sprint 4.22 | Developers, project managers |
+| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Troubleshooting guide for common issues | All users |
 
 ---
 
@@ -45,7 +60,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 2. **Setup environment:** Follow [03-DEV-SETUP.md](03-DEV-SETUP.md) to configure your development environment
 3. **Learn structure:** Review [04-IMPLEMENTATION-GUIDE.md](04-IMPLEMENTATION-GUIDE.md) for code organization
 4. **API reference:** Consult [05-API-REFERENCE.md](05-API-REFERENCE.md) for API documentation
-5. **Check status:** Review [10-PROJECT-STATUS.md](10-PROJECT-STATUS.md) to see current state (Phases 1-3 COMPLETE)
+5. **Check status:** Review [10-PROJECT-STATUS.md](10-PROJECT-STATUS.md) to see current state (Phase 5 in progress)
 6. **Review implementations:** See [12-IMPLEMENTATIONS_ADDED.md](12-IMPLEMENTATIONS_ADDED.md) for completed features
 7. **Implement with tests:** Follow [06-TESTING.md](06-TESTING.md) for TDD approach (551 tests currently)
 8. **Ensure security:** Review relevant sections in [08-SECURITY.md](08-SECURITY.md)
@@ -318,210 +333,387 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 
 ---
 
-### 12-IMPLEMENTATIONS_ADDED.md
+### 11-RELEASE-PROCESS.md
 
-**Purpose:** Comprehensive implementation log for all development work
+**Purpose:** Guide to the automated release process
 
 **Key Sections:**
 
-- Phase 1-3 implementations with code examples
-- Enhancement Cycles 1-8 detailed breakdowns
-- TODO implementations and fixes
-- Code quality improvements
-- Performance enhancements
-- Testing additions
+- Release workflow
+- Versioning strategy
+- Changelog generation
+- Release artifacts
 
 **When to Read:**
 
-- When understanding what has been implemented
-- During code review to see implementation patterns
-- When debugging to understand feature history
-- For reference on similar implementations
+- When preparing a new release
+- To understand the release automation
 
 ---
 
-### 13-GITHUB-RELEASE.md
+### 12-BENCHMARKING-GUIDE.md
 
-**Purpose:** Official v0.3.0 release documentation
+**Purpose:** How to run and interpret performance benchmarks
 
 **Key Sections:**
 
-- Complete feature list (7 scan types, detection systems, performance)
-- What's new in v0.3.0 (Enhancement Cycle 8)
-- Installation instructions for all platforms
-- Usage examples and best practices
-- Full changelog and statistics
-- Contributing and support information
+- Benchmarking methodology
+- Benchmark suites
+- Running benchmarks
+- Interpreting results
 
 **When to Read:**
 
-- Before downloading/installing the scanner
-- When sharing release information
-- For feature reference and capabilities
-- When writing release announcements
+- When evaluating performance
+- Before and after making performance-sensitive changes
 
 ---
 
-### 14-DOCUMENTATION_AUDIT.md
+### 13-PLATFORM-SUPPORT.md
 
-**Purpose:** Documentation audit history and quality tracking
+**Purpose:** Comprehensive platform support guide with installation instructions
 
 **Key Sections:**
 
-- Audit summary and scope
-- Files updated with change details
-- Content updates applied
-- Formatting fixes and consistency
+- Supported platforms
+- Platform-specific installation instructions
+- Known issues
+
+**When to Read:**
+
+- When installing the scanner on a new platform
+- When troubleshooting platform-specific issues
+
+---
+
+### 14-NMAP_COMPATIBILITY.md
+
+**Purpose:** Nmap command-line flag compatibility guide
+
+**Key Sections:**
+
+- Supported Nmap flags
+- Behavioral differences
+- Migration guide
+
+**When to Read:**
+
+- When using Nmap-style commands
+- To understand the differences between ProRT-IP and Nmap
+
+---
+
+### 15-PHASE4-COMPLIANCE.md
+
+**Purpose:** Documentation of compliance with Phase 4 requirements
+
+**Key Sections:**
+
+- Phase 4 requirements
+- Compliance matrix
 - Verification results
-- Cross-reference validation
 
 **When to Read:**
 
-- When conducting documentation audits
-- Before making doc updates (check consistency)
-- To understand documentation standards
-- When verifying doc accuracy
-
-**Update Frequency:** After major releases or significant doc updates
+- To verify that Phase 4 requirements have been met
 
 ---
 
-## Documentation Standards
+### 16-REGRESSION-FIX-STRATEGY.md
 
-### Writing Style
+**Purpose:** Strategy for fixing performance regressions
 
-- **Clarity:** Use simple, direct language
-- **Completeness:** Include all necessary details
-- **Conciseness:** Avoid unnecessary verbosity
-- **Code Examples:** Provide working code snippets
-- **Cross-references:** Link to related sections
+**Key Sections:**
 
-### Code Examples
+- Identifying regressions
+- Debugging regressions
+- Fixing regressions
+- Preventing regressions
 
-All code examples should:
+**When to Read:**
 
-- Be syntactically correct and compile
-- Include necessary imports
-- Show both wrong (❌) and correct (✅) approaches when illustrating pitfalls
-- Use realistic variable names
-- Include comments for complex logic
-
-### Maintenance
-
-- **Update with changes:** Keep docs synchronized with code
-- **Version control:** Track doc changes in git
-- **Review process:** Docs reviewed alongside code
-- **Deprecation:** Mark outdated content clearly
-- **Feedback:** Incorporate user feedback
+- When a performance regression is detected
 
 ---
 
-## Contributing to Documentation
+### 17-TESTING-INFRASTRUCTURE.md
 
-### How to Improve Docs
+**Purpose:** Overview of the testing infrastructure
 
-1. **Identify gaps:** Note missing or unclear information
-2. **Create issue:** Open GitHub issue with label `documentation`
-3. **Propose changes:** Submit PR with improvements
-4. **Get review:** At least one maintainer must approve
-5. **Merge:** Update version history at bottom of doc
+**Key Sections:**
 
-### Documentation Issues
+- CI/CD pipeline
+- Test environments
+- Mock services
 
-When filing doc issues, include:
+**When to Read:**
 
-- **Document:** Which file needs improvement
-- **Section:** Specific section if applicable
-- **Issue:** What's missing, wrong, or unclear
-- **Suggestion:** Proposed improvement (optional)
+- To understand the testing infrastructure
+- When adding new tests
 
 ---
 
-## Reference Documentation
+### 18-EFFICIENCY_REPORT.md
 
-The `ref-docs/` directory contains original project specifications:
+**Purpose:** Report on the efficiency of the scanner
 
-- **ProRT-IP_Overview.md** - High-level project vision and goals
-- **ProRT-IP_WarScan_Technical_Specification.md** - Complete technical implementation details (6,000+ lines)
-- **ProRT-IP_WarScan_Technical_Specification-v2.md** - Condensed technical guide
+**Key Sections:**
 
-These documents were used to generate the structured documentation in this directory.
+- Performance metrics
+- Resource usage
+- Comparison with other scanners
 
----
+**When to Read:**
 
-## Documentation Workflow
-
-### For Feature Development
-
-```
-1. Read 00-ARCHITECTURE.md → Understand system design
-2. Check 10-PROJECT-STATUS.md → Find task to work on
-3. Review 08-SECURITY.md → Security requirements
-4. Consult 06-TESTING.md → Write tests first
-5. Implement feature
-6. Check 07-PERFORMANCE.md → Optimize if needed
-7. Update 10-PROJECT-STATUS.md → Mark task complete
-```
-
-### For Debugging
-
-```
-1. Check 09-FAQ.md → See if known issue
-2. Review 03-DEV-SETUP.md → Verify environment correct
-3. Consult 06-TESTING.md → Run relevant tests
-4. Check 00-ARCHITECTURE.md → Understand affected components
-5. Use 07-PERFORMANCE.md → Profile if performance issue
-```
-
-### For Release
-
-```
-1. Review 01-ROADMAP.md → Verify all phase tasks complete
-2. Check 10-PROJECT-STATUS.md → All milestones achieved
-3. Run 06-TESTING.md → Full test suite passes
-4. Execute 08-SECURITY.md → Security audit checklist
-5. Verify 07-PERFORMANCE.md → Benchmarks meet targets
-6. Update 09-FAQ.md → Add new common issues
-7. Tag release
-```
+- To understand the efficiency of the scanner
 
 ---
 
-## Additional Resources
+### 19-EVASION-GUIDE.md
 
-### Validation & Bug Reports
+**Purpose:** Guide to network evasion techniques
 
-The **`../bug_fix/`** directory contains comprehensive validation reports:
+**Key Sections:**
 
-- **VALIDATION-REPORT.md** - Complete validation against nmap, rustscan, naabu (100% accuracy)
-- **SERVICE-DETECTION-FIX.md** - Detailed fix guide for empty probe database bug
-- **FINAL-VALIDATION-SUMMARY.md** - Executive summary of validation findings
-- **analysis/** - Raw test outputs and debug logs (32 files)
+- Evasion techniques
+- Detection risk matrix
+- Practical examples
 
-### External References
+**When to Read:**
 
-- **Rust Documentation:** <https://doc.rust-lang.org/>
-- **Tokio Guide:** <https://tokio.rs/tokio/tutorial>
-- **Nmap Reference:** <https://nmap.org/book/>
-- **Masscan GitHub:** <https://github.com/robertdavidgraham/masscan>
-- **pnet Documentation:** <https://docs.rs/pnet/>
-
-### Related Projects
-
-- **Nmap:** <https://nmap.org/> - Network Mapper (inspiration)
-- **Masscan:** <https://github.com/robertdavidgraham/masscan> - Fast port scanner
-- **ZMap:** <https://zmap.io/> - Internet-wide scanner
-- **RustScan:** <https://github.com/RustScan/RustScan> - Modern port scanner in Rust
+- When performing penetration testing
+- To understand how to evade detection
 
 ---
 
-## Getting Help
+### 20-PHASE4-ENHANCEMENTS.md
 
-- **Questions:** Open GitHub Discussion
-- **Bugs:** File GitHub Issue with `bug` label
-- **Features:** File GitHub Issue with `enhancement` label
-- **Security:** Email <security@example.com> (use PGP)
-- **Chat:** Join project Discord/Matrix (TBD)
+**Purpose:** Documentation of enhancements made in Phase 4
+
+**Key Sections:**
+
+- Error handling
+- Performance optimization
+- Network evasion
+- Packet capture
+- IPv6 foundation
+- Service detection
+- CLI compatibility
+- SQLite export
+
+**When to Read:**
+
+- To understand the enhancements made in Phase 4
+
+---
+
+### 21-PERFORMANCE-GUIDE.md
+
+**Purpose:** Guide to performance tuning and optimization
+
+**Key Sections:**
+
+- Performance tuning
+- Optimization techniques
+- Profiling
+
+**When to Read:**
+
+- When tuning the performance of the scanner
+
+---
+
+### 22.1-CLAUDE-POST-PHASE4_1of2.md
+
+**Purpose:** Claude's notes and observations after Phase 4 (Part 1)
+
+**Key Sections:**
+
+- Observations
+- Suggestions
+- Action items
+
+**When to Read:**
+
+- To understand Claude's feedback on Phase 4
+
+---
+
+### 22.2-CLAUDE-POST-PHASE4_2of2.md
+
+**Purpose:** Claude's notes and observations after Phase 4 (Part 2)
+
+**Key Sections:**
+
+- Observations
+- Suggestions
+- Action items
+
+**When to Read:**
+
+- To understand Claude's feedback on Phase 4
+
+---
+
+### 23-IPv6-GUIDE.md
+
+**Purpose:** Comprehensive guide to IPv6 scanning
+
+**Key Sections:**
+
+- IPv6 addressing
+- IPv6 scanning techniques
+- Common use cases
+
+**When to Read:**
+
+- When scanning IPv6 networks
+
+---
+
+### 24-SERVICE-DETECTION.md
+
+**Purpose:** Guide to service detection and fingerprinting
+
+**Key Sections:**
+
+- Protocol-specific detection
+- Detection architecture
+- Performance impact
+
+**When to Read:**
+
+- To understand how service detection works
+
+---
+
+### 25-IDLE-SCAN-GUIDE.md
+
+**Purpose:** Guide to performing idle (zombie) scans
+
+**Key Sections:**
+
+- Idle scan theory
+- Zombie discovery
+- Performing an idle scan
+
+**When to Read:**
+
+- When performing idle scans
+
+---
+
+### 26-RATE-LIMITING-GUIDE.md
+
+**Purpose:** Guide to the advanced rate limiting features
+
+**Key Sections:**
+
+- AdaptiveRateLimiterV3
+- Hostgroup control
+- Performance overhead
+
+**When to Read:**
+
+- To understand and configure the rate limiting features
+
+---
+
+### DATABASE.md
+
+**Purpose:** Guide to the SQLite database schema and query interface
+
+**Key Sections:**
+
+- Database schema
+- Query interface
+- Export utilities
+
+**When to Read:**
+
+- When working with the SQLite database
+
+---
+
+### MEMORY-BANK-OPTIMIZATION-PHASE-1.md
+
+**Purpose:** Documentation of Phase 1 of memory bank optimization
+
+**Key Sections:**
+
+- Problem statement
+- Proposed solution
+- Implementation details
+
+**When to Read:**
+
+- To understand the memory bank optimization efforts
+
+---
+
+### MEMORY-BANK-OPTIMIZATION-SUMMARY.md
+
+**Purpose:** Summary of memory bank optimization efforts
+
+**Key Sections:**
+
+- Goals
+- Results
+- Future work
+
+**When to Read:**
+
+- To get a high-level overview of the memory bank optimization efforts
+
+---
+
+### PHASE-5-BACKLOG.md
+
+**Purpose:** Backlog of tasks for Phase 5
+
+**Key Sections:**
+
+- Sprint 5.5: TLS Certificate Analysis
+- Sprint 5.6: Code Coverage Enhancement
+- Sprint 5.7: Fuzz Testing Infrastructure
+- Sprint 5.8: Plugin System Foundation
+- Sprint 5.9: Comprehensive Benchmarking
+- Sprint 5.10: Documentation & Release Prep
+
+**When to Read:**
+
+- To see what is planned for Phase 5
+
+---
+
+### SPRINT-4.22-PHASE-6-PART-1-COMPLETE.md
+
+**Purpose:** Documentation of the completion of Part 1 of Phase 6 of Sprint 4.22
+
+**Key Sections:**
+
+- Panic elimination
+- User-friendly error messages
+
+**When to Read:**
+
+- To understand the work that was done in this sprint
+
+---
+
+### TROUBLESHOOTING.md
+
+**Purpose:** Troubleshooting guide for common issues
+
+**Key Sections:**
+
+- Build issues
+- Runtime issues
+- Platform-specific issues
+
+**When to Read:**
+
+- When encountering an issue with the scanner
 
 ---
 
@@ -529,6 +721,7 @@ The **`../bug_fix/`** directory contains comprehensive validation reports:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.0 | 2025-11-02 | Updated for v0.4.4; Added new documents and removed obsolete ones |
 | 2.0 | 2025-10-08 | Added docs 12-14 (Implementations, Release, Audit); Updated for v0.3.0; Phases 1-3 + Cycles 1-8 complete |
 | 1.0 | 2025-10-07 | Initial documentation creation |
 

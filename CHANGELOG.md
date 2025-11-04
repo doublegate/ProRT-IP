@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added - Sprint 5.5: TLS Certificate Analysis (2025-11-04)
+## [0.4.5] - 2025-11-04
+
+### Added - Sprint 5.5: TLS Certificate Analysis
 
 **Major Feature:** Comprehensive TLS/SSL certificate analysis with automatic HTTPS detection
 

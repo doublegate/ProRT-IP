@@ -48,7 +48,7 @@ async fn scan_https_port(host: &str, port: u16) -> Result<ServiceInfo, prtip_cor
 // =============================================================================
 
 #[tokio::test]
-#[ignore] // Requires network access - run with `cargo test -- --ignored`
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_https_certificate_extraction_real_server() {
     // Test certificate extraction from a well-known HTTPS server
     let result = scan_https_port("example.com", 443).await;
@@ -70,14 +70,8 @@ async fn test_https_certificate_extraction_real_server() {
     let cert = service_info.tls_certificate.unwrap();
 
     // Verify basic certificate fields are populated
-    assert!(
-        !cert.subject.is_empty(),
-        "Certificate subject is empty"
-    );
-    assert!(
-        !cert.issuer.is_empty(),
-        "Certificate issuer is empty"
-    );
+    assert!(!cert.subject.is_empty(), "Certificate subject is empty");
+    assert!(!cert.issuer.is_empty(), "Certificate issuer is empty");
     assert!(
         cert.subject.contains("example.com") || cert.subject.contains("CN="),
         "Subject doesn't contain expected domain or CN: {}",
@@ -85,10 +79,7 @@ async fn test_https_certificate_extraction_real_server() {
     );
 
     // Verify public key information
-    assert!(
-        cert.public_key_info.key_size > 0,
-        "Public key size is 0"
-    );
+    assert!(cert.public_key_info.key_size > 0, "Public key size is 0");
     assert!(
         !cert.public_key_info.algorithm.is_empty(),
         "Public key algorithm is empty"
@@ -96,7 +87,7 @@ async fn test_https_certificate_extraction_real_server() {
 }
 
 #[tokio::test]
-#[ignore] // Requires network access
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_https_fingerprint_creation() {
     // Verify TLS fingerprint is created with version and cipher information
     let result = scan_https_port("example.com", 443).await;
@@ -127,7 +118,7 @@ async fn test_https_fingerprint_creation() {
 }
 
 #[tokio::test]
-#[ignore] // Requires network access
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_certificate_chain_validation() {
     // Test certificate chain validation for a real server
     let result = scan_https_port("google.com", 443).await;
@@ -144,16 +135,10 @@ async fn test_certificate_chain_validation() {
     let chain = service_info.tls_chain.unwrap();
 
     // Google should have a multi-certificate chain
-    assert!(
-        !chain.certificates.is_empty(),
-        "Certificate chain is empty"
-    );
+    assert!(!chain.certificates.is_empty(), "Certificate chain is empty");
 
     // Chain should be valid (not self-signed, properly linked)
-    assert!(
-        chain.is_valid,
-        "Certificate chain validation failed"
-    );
+    assert!(chain.is_valid, "Certificate chain validation failed");
 
     // Should not be self-signed (Google uses a real CA)
     assert!(
@@ -163,7 +148,7 @@ async fn test_certificate_chain_validation() {
 }
 
 #[tokio::test]
-#[ignore] // Requires network access
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_san_extraction() {
     // Test Subject Alternative Name extraction
     let result = scan_https_port("example.com", 443).await;
@@ -190,7 +175,7 @@ async fn test_san_extraction() {
 }
 
 #[tokio::test]
-#[ignore] // Requires network access
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_multiple_sans() {
     // Test certificate with multiple Subject Alternative Names
     // Google's certificate typically has multiple SANs (*.google.com, google.com, etc.)
@@ -220,7 +205,7 @@ async fn test_multiple_sans() {
 // =============================================================================
 
 #[tokio::test]
-#[ignore] // Requires network access to badssl.com
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access to badssl.com
 async fn test_self_signed_certificate() {
     // Test handling of self-signed certificate using badssl.com
     let result = scan_https_port("self-signed.badssl.com", 443).await;
@@ -248,7 +233,7 @@ async fn test_self_signed_certificate() {
 }
 
 #[tokio::test]
-#[ignore] // Requires network access to badssl.com
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access to badssl.com
 async fn test_expired_certificate() {
     // Test handling of expired certificate using badssl.com
     let result = scan_https_port("expired.badssl.com", 443).await;
@@ -281,11 +266,8 @@ async fn test_expired_certificate() {
 #[tokio::test]
 async fn test_tls_timeout_handling() {
     // Test timeout on unresponsive server using TEST-NET-1 (reserved, won't respond)
-    let result = tokio::time::timeout(
-        Duration::from_secs(2),
-        scan_https_port("192.0.2.1", 443),
-    )
-    .await;
+    let result =
+        tokio::time::timeout(Duration::from_secs(2), scan_https_port("192.0.2.1", 443)).await;
 
     // Should timeout or return error gracefully (not panic)
     assert!(
@@ -295,7 +277,7 @@ async fn test_tls_timeout_handling() {
 }
 
 #[tokio::test]
-#[ignore] // Requires network access to badssl.com
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access to badssl.com
 async fn test_wrong_host_certificate() {
     // Test certificate with wrong hostname
     let result = scan_https_port("wrong.host.badssl.com", 443).await;
@@ -317,7 +299,7 @@ async fn test_wrong_host_certificate() {
 // =============================================================================
 
 #[tokio::test]
-#[ignore] // Requires network access
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_service_detector_tls_integration() {
     // Test that ServiceDetector properly integrates TLS analysis
     let detector = ServiceDetector::new(create_test_probe_db(), 7);
@@ -344,7 +326,7 @@ async fn test_service_detector_tls_integration() {
 }
 
 #[tokio::test]
-#[ignore] // Requires network access
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_output_format_json() {
     // Test that TLS information is included in service detection output
     let result = scan_https_port("example.com", 443)
@@ -369,7 +351,10 @@ async fn test_output_format_json() {
 #[test]
 fn test_tls_certificate_display() {
     // Test text output formatting for TLS certificate
-    use prtip_scanner::tls_certificate::{CertificateInfo, PublicKeyInfo, SecurityStrength, SignatureAlgorithm, SubjectAlternativeName};
+    use prtip_scanner::tls_certificate::{
+        CertificateInfo, PublicKeyInfo, SecurityStrength, SignatureAlgorithm,
+        SubjectAlternativeName,
+    };
 
     let cert = CertificateInfo {
         subject: "CN=example.com".to_string(),
@@ -408,7 +393,10 @@ fn test_tls_certificate_display() {
 
     assert!(output.contains("subject="), "Output should contain subject");
     assert!(output.contains("issuer="), "Output should contain issuer");
-    assert!(output.contains("example.com"), "Output should contain domain");
+    assert!(
+        output.contains("example.com"),
+        "Output should contain domain"
+    );
 }
 
 // =============================================================================
@@ -416,7 +404,7 @@ fn test_tls_certificate_display() {
 // =============================================================================
 
 #[tokio::test]
-#[ignore] // Requires network access
+#[cfg_attr(not(feature = "network-tests"), ignore)] // Requires network access
 async fn test_tls_overhead_measurement() {
     // Measure TLS analysis overhead
     use std::time::Instant;

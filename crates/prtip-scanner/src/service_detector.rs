@@ -30,6 +30,7 @@
 //! # }
 //! ```
 
+use crate::tls_certificate::{CertificateChain, CertificateInfo, TlsFingerprint};
 use crate::tls_handshake::TlsHandshake;
 use prtip_core::{Error, Protocol, ServiceMatch, ServiceProbe, ServiceProbeDb};
 use std::net::SocketAddr;
@@ -79,6 +80,12 @@ pub struct ServiceInfo {
     pub method: String,
     /// Raw response
     pub raw_response: Option<Vec<u8>>,
+    /// TLS certificate information (for HTTPS services)
+    pub tls_certificate: Option<CertificateInfo>,
+    /// TLS fingerprint (version, cipher, extensions)
+    pub tls_fingerprint: Option<TlsFingerprint>,
+    /// TLS certificate chain
+    pub tls_chain: Option<CertificateChain>,
 }
 
 impl ServiceDetector {
@@ -214,6 +221,12 @@ impl ServiceDetector {
             method: "no match".to_string(),
 
             raw_response: None,
+
+            tls_certificate: None,
+
+            tls_fingerprint: None,
+
+            tls_chain: None,
         })
     }
 
@@ -279,6 +292,11 @@ impl ServiceDetector {
             service = "ftps".to_string();
         }
 
+        // NEW: Extract comprehensive certificate information
+        // Parse certificate using advanced tls_certificate module
+        let (tls_certificate, tls_fingerprint, tls_chain) =
+            self.extract_certificate_details(&server_info).await;
+
         Ok(ServiceInfo {
             service,
 
@@ -307,7 +325,93 @@ impl ServiceDetector {
             method: "tls_handshake".to_string(),
 
             raw_response,
+
+            tls_certificate,
+
+            tls_fingerprint,
+
+            tls_chain,
         })
+    }
+
+    /// Extract comprehensive certificate details from TLS handshake
+    ///
+    /// This method enhances the basic TLS handshake with full certificate parsing,
+    /// chain validation, and TLS fingerprinting capabilities from the tls_certificate module.
+    async fn extract_certificate_details(
+        &self,
+        server_info: &crate::tls_handshake::ServerInfo,
+    ) -> (
+        Option<CertificateInfo>,
+        Option<TlsFingerprint>,
+        Option<CertificateChain>,
+    ) {
+        use crate::tls_certificate::{parse_certificate, parse_certificate_chain};
+
+        if server_info.raw_cert_chain.is_empty() {
+            debug!("No raw certificate chain available for analysis");
+            return (None, None, None);
+        }
+
+        // Parse leaf certificate (server's certificate)
+        let tls_certificate = match parse_certificate(&server_info.raw_cert_chain[0]) {
+            Ok(cert) => {
+                debug!(
+                    "Parsed certificate: subject={}, issuer={}, SAN count={}",
+                    cert.subject,
+                    cert.issuer,
+                    cert.san.len()
+                );
+                Some(cert)
+            }
+            Err(e) => {
+                debug!("Failed to parse certificate: {}", e);
+                None
+            }
+        };
+
+        // Parse full certificate chain
+        let tls_chain = {
+            let cert_refs: Vec<&[u8]> = server_info
+                .raw_cert_chain
+                .iter()
+                .map(|c| c.as_slice())
+                .collect();
+
+            match parse_certificate_chain(cert_refs) {
+                Ok(chain) => {
+                    debug!(
+                        "Parsed certificate chain: depth={}, self-signed={}, valid={}",
+                        chain.certificates.len(),
+                        chain.is_self_signed,
+                        chain.is_valid
+                    );
+                    Some(chain)
+                }
+                Err(e) => {
+                    debug!("Failed to parse certificate chain: {}", e);
+                    None
+                }
+            }
+        };
+
+        // Create TLS fingerprint
+        // Note: We don't have access to the raw ServerHello message here,
+        // so we create a basic fingerprint from available information
+        let tls_fingerprint = Some(TlsFingerprint {
+            tls_version: server_info.tls_version.clone(),
+            cipher_suites: vec![], // Would need ServerHello to populate
+            extensions: vec![],    // Would need ServerHello to populate
+        });
+
+        debug!(
+            "Certificate extraction complete: cert={}, chain={}, fingerprint={}",
+            tls_certificate.is_some(),
+            tls_chain.is_some(),
+            tls_fingerprint.is_some()
+        );
+
+        (tls_certificate, tls_fingerprint, tls_chain)
     }
 
     /// Try a specific probe
@@ -414,6 +518,9 @@ impl ServiceDetector {
                 cpe: service_match.cpe.clone(),
                 method: "pattern match".to_string(),
                 raw_response: None,
+                tls_certificate: None,
+                tls_fingerprint: None,
+                tls_chain: None,
             });
         }
 
@@ -580,6 +687,9 @@ mod tests {
             cpe: vec!["cpe:/a:nginx:nginx:1.18.0".to_string()],
             method: "pattern match".to_string(),
             raw_response: None,
+            tls_certificate: None,
+            tls_fingerprint: None,
+            tls_chain: None,
         };
 
         assert_eq!(info.service, "http");
@@ -601,6 +711,9 @@ mod tests {
             cpe: Vec::new(),
             method: "no match".to_string(),
             raw_response: None,
+            tls_certificate: None,
+            tls_fingerprint: None,
+            tls_chain: None,
         };
 
         assert_eq!(info.service, "unknown");
@@ -623,6 +736,9 @@ mod tests {
             cpe: Vec::new(),
             method: "banner".to_string(),
             raw_response: None,
+            tls_certificate: None,
+            tls_fingerprint: None,
+            tls_chain: None,
         };
 
         let cloned = info.clone();
@@ -644,6 +760,9 @@ mod tests {
             cpe: Vec::new(),
             method: "test".to_string(),
             raw_response: None,
+            tls_certificate: None,
+            tls_fingerprint: None,
+            tls_chain: None,
         };
 
         let debug_str = format!("{:?}", info);
@@ -676,6 +795,9 @@ mod tests {
             ],
             method: "pattern".to_string(),
             raw_response: None,
+            tls_certificate: None,
+            tls_fingerprint: None,
+            tls_chain: None,
         };
 
         assert_eq!(info.cpe.len(), 2);

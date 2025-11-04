@@ -76,6 +76,7 @@ pub mod storage_backend;
 pub mod syn_scanner;
 pub mod tcp_connect;
 pub mod timing;
+pub mod tls_certificate;
 pub mod tls_handshake;
 pub mod udp_scanner;
 
@@ -111,5 +112,12 @@ pub use storage_backend::StorageBackend;
 pub use syn_scanner::SynScanner;
 pub use tcp_connect::TcpConnectScanner;
 pub use timing::{AdaptiveRateLimiter, TimingConfig};
+pub use tls_certificate::{
+    categorize_chain, parse_certificate, parse_certificate_chain, validate_chain,
+    validate_chain_comprehensive, CertificateChain, CertificateExtension, CertificateInfo,
+    ChainCategories, CipherStrength, CipherSuite, ExtendedKeyUsage, KeyUsage, PublicKeyInfo,
+    SecurityStrength, ServerHello, SignatureAlgorithm, SubjectAlternativeName, TlsAnalysisResult,
+    TlsExtension, TlsExtensionData, TlsFingerprint, TlsVersion, ValidationResult,
+};
 pub use tls_handshake::{ServerInfo as TlsServerInfo, TlsHandshake};
 pub use udp_scanner::UdpScanner;

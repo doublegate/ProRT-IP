@@ -75,6 +75,13 @@ pub struct ServerInfo {
     pub serial_number: String,
     /// Whether certificate is self-signed
     pub is_self_signed: bool,
+    /// Raw certificate chain (DER-encoded) for advanced analysis
+    ///
+    /// Contains all certificates from the TLS handshake in order:
+    /// \[0\] = leaf certificate (server's certificate)
+    /// \[1..n\] = intermediate certificates
+    /// \[n\] = root certificate (if provided)
+    pub raw_cert_chain: Vec<Vec<u8>>,
 }
 
 impl TlsHandshake {
@@ -239,9 +246,12 @@ impl TlsHandshake {
         // Extract serial number
         let serial_number = format!("{:X}", cert.serial);
 
+        // Extract raw certificate chain for advanced analysis
+        let raw_cert_chain: Vec<Vec<u8>> = certs.iter().map(|cert| cert.0.clone()).collect();
+
         debug!(
-            "TLS handshake successful: {} (TLS {}, issuer: {})",
-            common_name, tls_version, issuer
+            "TLS handshake successful: {} (TLS {}, issuer: {}, chain_len: {})",
+            common_name, tls_version, issuer, raw_cert_chain.len()
         );
 
         Ok(ServerInfo {
@@ -252,6 +262,7 @@ impl TlsHandshake {
             tls_version,
             serial_number,
             is_self_signed,
+            raw_cert_chain,
         })
     }
 
@@ -381,6 +392,7 @@ mod tests {
             tls_version: "TLSv1.3".to_string(),
             serial_number: "ABC123".to_string(),
             is_self_signed: false,
+            raw_cert_chain: vec![],
         };
 
         let info2 = info1.clone();
@@ -397,6 +409,7 @@ mod tests {
             tls_version: "TLSv1.2".to_string(),
             serial_number: "123".to_string(),
             is_self_signed: true,
+            raw_cert_chain: vec![vec![1, 2, 3]],
         };
 
         let debug_str = format!("{:?}", info);

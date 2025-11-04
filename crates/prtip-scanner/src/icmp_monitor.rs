@@ -37,9 +37,9 @@
 
 use pnet::packet::icmp::{IcmpPacket, IcmpTypes};
 use pnet::packet::ip::IpNextHeaderProtocols;
-use pnet::transport::{
-    icmp_packet_iter, transport_channel, TransportChannelType, TransportProtocol,
-};
+use pnet::transport::{transport_channel, TransportChannelType, TransportProtocol};
+#[cfg(unix)]
+use pnet::transport::icmp_packet_iter;
 use prtip_core::{Error, Result};
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -207,6 +207,7 @@ impl IcmpMonitor {
         let protocol =
             TransportChannelType::Layer4(TransportProtocol::Ipv4(IpNextHeaderProtocols::Icmp));
 
+        #[cfg_attr(windows, allow(unused_variables, unused_mut))]
         let (_sender, mut receiver) = transport_channel(4096, protocol)
             .map_err(|e| Error::Network(format!("Failed to create ICMP socket: {}", e)))?;
 

@@ -174,6 +174,6 @@ impl std::fmt::Debug for RateLimiter {
 // NOTE: Test module removed to prevent unnecessary test execution.
 // This is the archived Governor-based RateLimiter (Phase 3), preserved for
 // reference only. V3 (AdaptiveRateLimiterV3) is the default rate limiter
-// as of v0.4.4.
+// as of v0.4.5.
 //
 // Tests removed - see git history to restore

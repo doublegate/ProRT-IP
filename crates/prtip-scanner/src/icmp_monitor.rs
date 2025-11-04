@@ -37,9 +37,9 @@
 
 use pnet::packet::icmp::{IcmpPacket, IcmpTypes};
 use pnet::packet::ip::IpNextHeaderProtocols;
-use pnet::transport::{transport_channel, TransportChannelType, TransportProtocol};
 #[cfg(unix)]
 use pnet::transport::icmp_packet_iter;
+use pnet::transport::{transport_channel, TransportChannelType, TransportProtocol};
 use prtip_core::{Error, Result};
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicBool, Ordering};

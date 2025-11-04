@@ -55,36 +55,45 @@ async fn test_storage_integration() {
 
 #[tokio::test]
 async fn test_rate_limiter_integration() {
-    let limiter = RateLimiter::new(Some(50)); // 50 packets per second
+    // V3 uses batch-based rate limiting (not token bucket)
+    // Use higher rate so MIN_BATCH_SIZE (10) doesn't dominate behavior
+    let limiter = RateLimiter::new(Some(1000)); // 1000 packets per second
 
-    // First exhaust burst (burst=100)
-    for _ in 0..100 {
+    // For 1000 pps: batch_size = 1000/100 = 10
+    // Each batch: 10 instant acquires + 10ms sleep
+    // 10 packets at 1000 pps should take ~10ms per batch cycle
+
+    // First, warm up the rate limiter and let background task stabilize
+    // Do 2 complete batch cycles (22 acquires = 2 sleeps)
+    for _ in 0..22 {
         limiter.acquire().await.unwrap();
     }
 
-    // Now measure rate limiting on next batch (burst exhausted)
+    // Small delay to ensure we're starting fresh after the last sleep
+    tokio::time::sleep(Duration::from_millis(20)).await;
+
+    // Now measure: do enough acquires to span at least 2 complete batch cycles
+    // This ensures we measure actual rate limiting (including sleeps)
+    // 25 acquires = 2 full batches (20 acquires) + 5 into third batch
+    // Expected time: 2 batch cycles * 10ms = ~20ms minimum
     let start = std::time::Instant::now();
-    for _ in 0..10 {
+    for _ in 0..25 {
         limiter.acquire().await.unwrap();
     }
     let elapsed = start.elapsed();
 
-    // 10 packets at 50 pps = ~200ms (after burst exhausted)
-    // Platform-specific timeouts (CI environments need wider margins):
-    // - Linux: 600ms (3x baseline)
-    // - macOS: 1200ms (6x baseline, CI runners can be slow)
-    // - Windows: 1800ms (9x baseline, see CLAUDE.md CI/CD best practices)
+    // Platform-specific timeouts account for CI variability:
+    // - Base expectation: 20ms (2 complete batch cycles)
+    // - Minimum: 15ms (allowing for faster-than-expected batch completion)
+    // - Maximum: Linux 100ms (5x), macOS 200ms (10x), Windows 300ms (15x)
+    let min_duration = Duration::from_millis(15);
     let max_duration = if cfg!(target_os = "macos") {
-        Duration::from_millis(1200)
+        Duration::from_millis(200)
     } else if cfg!(target_os = "windows") {
-        Duration::from_millis(1800)
+        Duration::from_millis(300)
     } else {
-        Duration::from_millis(600) // Linux and others
+        Duration::from_millis(100) // Linux and others
     };
-
-    // Minimum duration check: Allow 50% margin for timing variance in CI
-    // (especially on macOS where rate limiter optimization can complete faster)
-    let min_duration = Duration::from_millis(100);
 
     assert!(
         elapsed >= min_duration,

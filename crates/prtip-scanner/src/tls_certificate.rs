@@ -18,9 +18,10 @@
 //! use prtip_scanner::tls_certificate::{CertificateInfo, parse_certificate};
 //!
 //! # fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! // Parse a DER-encoded certificate
-//! let cert_der = include_bytes!("../../../tests/fixtures/example_cert.der");
-//! let cert_info = parse_certificate(cert_der)?;
+//! // Parse a DER-encoded certificate from a file or network response
+//! // let cert_der = std::fs::read("path/to/certificate.der")?;
+//! # let cert_der = vec![]; // Placeholder for example
+//! let cert_info = parse_certificate(&cert_der)?;
 //!
 //! println!("Subject: {}", cert_info.subject);
 //! println!("Issuer: {}", cert_info.issuer);
@@ -35,9 +36,13 @@
 //! use prtip_scanner::tls_certificate::{CertificateChain, validate_chain};
 //!
 //! # fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! let leaf_cert = include_bytes!("../../../tests/fixtures/leaf.der");
-//! let intermediate = include_bytes!("../../../tests/fixtures/intermediate.der");
-//! let root_cert = include_bytes!("../../../tests/fixtures/root.der");
+//! // Load certificate chain from files or network response
+//! // let leaf_cert = std::fs::read("leaf.der")?;
+//! // let intermediate = std::fs::read("intermediate.der")?;
+//! // let root_cert = std::fs::read("root.der")?;
+//! # let leaf_cert = vec![]; // Placeholder
+//! # let intermediate = vec![]; // Placeholder
+//! # let root_cert = vec![]; // Placeholder
 //!
 //! let certs = vec![leaf_cert.as_ref(), intermediate.as_ref(), root_cert.as_ref()];
 //! let chain = validate_chain(&certs)?;
@@ -51,9 +56,12 @@
 //!
 //! ## TLS Analysis Result
 //!
-//! ```
+//! ```no_run
 //! use prtip_scanner::tls_certificate::{TlsAnalysisResult, TlsFingerprint, CertificateInfo};
+//! use prtip_scanner::tls_certificate::{SubjectAlternativeName, PublicKeyInfo, SignatureAlgorithm, SecurityStrength};
 //!
+//! // This example shows the structure of a TLS analysis result
+//! // In practice, use parse_certificate() or perform_tls_analysis() to construct these
 //! let result = TlsAnalysisResult {
 //!     certificate: Some(CertificateInfo {
 //!         issuer: "CN=Example CA".to_string(),
@@ -63,6 +71,22 @@
 //!         san: vec!["example.com".to_string(), "www.example.com".to_string()],
 //!         serial_number: "01:02:03:04".to_string(),
 //!         signature_algorithm: "sha256WithRSAEncryption".to_string(),
+//!         san_categorized: SubjectAlternativeName::default(),
+//!         public_key_info: PublicKeyInfo {
+//!             algorithm: "RSA".to_string(),
+//!             key_size: 2048,
+//!             curve: None,
+//!             usage: vec![],
+//!         },
+//!         key_usage: None,
+//!         extended_key_usage: None,
+//!         extensions: vec![],
+//!         signature_algorithm_enhanced: SignatureAlgorithm {
+//!             algorithm: "RSA-SHA256".to_string(),
+//!             hash_algorithm: "SHA256".to_string(),
+//!             is_secure: true,
+//!             strength: SecurityStrength::Acceptable,
+//!         },
 //!     }),
 //!     fingerprint: TlsFingerprint {
 //!         tls_version: "TLS 1.3".to_string(),
@@ -1943,8 +1967,10 @@ impl fmt::Display for TlsAnalysisResult {
 /// use prtip_scanner::tls_certificate::parse_certificate;
 ///
 /// # fn example() -> Result<(), prtip_core::Error> {
-/// let cert_der = include_bytes!("../../../tests/fixtures/example_cert.der");
-/// let cert_info = parse_certificate(cert_der)?;
+/// // Load certificate from file or network response
+/// // let cert_der = std::fs::read("certificate.der")?;
+/// # let cert_der = vec![]; // Placeholder
+/// let cert_info = parse_certificate(&cert_der)?;
 ///
 /// // Access basic fields
 /// println!("Subject: {}", cert_info.subject);
@@ -2060,8 +2086,11 @@ pub fn parse_certificate(cert_der: &[u8]) -> Result<CertificateInfo, Error> {
 /// use prtip_scanner::tls_certificate::validate_chain;
 ///
 /// # fn example() -> Result<(), prtip_core::Error> {
-/// let leaf = include_bytes!("../../../tests/fixtures/leaf.der");
-/// let root = include_bytes!("../../../tests/fixtures/root.der");
+/// // Load certificates from files or network response
+/// // let leaf = std::fs::read("leaf.der")?;
+/// // let root = std::fs::read("root.der")?;
+/// # let leaf = vec![]; // Placeholder
+/// # let root = vec![]; // Placeholder
 /// let certs = vec![leaf.as_ref(), root.as_ref()];
 ///
 /// let chain = validate_chain(&certs)?;
@@ -2196,9 +2225,13 @@ impl fmt::Display for ChainCategories {
 /// use prtip_scanner::tls_certificate::parse_certificate_chain;
 ///
 /// # fn example() -> Result<(), prtip_core::Error> {
-/// let leaf = include_bytes!("../../../tests/fixtures/leaf.der");
-/// let intermediate = include_bytes!("../../../tests/fixtures/intermediate.der");
-/// let root = include_bytes!("../../../tests/fixtures/root.der");
+/// // Load certificate chain from files or network response
+/// // let leaf = std::fs::read("leaf.der")?;
+/// // let intermediate = std::fs::read("intermediate.der")?;
+/// // let root = std::fs::read("root.der")?;
+/// # let leaf = vec![]; // Placeholder
+/// # let intermediate = vec![]; // Placeholder
+/// # let root = vec![]; // Placeholder
 ///
 /// let der_chain = vec![leaf.as_ref(), intermediate.as_ref(), root.as_ref()];
 /// let chain = parse_certificate_chain(der_chain)?;

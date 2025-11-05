@@ -172,8 +172,8 @@ impl TlsHandshake {
 
         // Get TLS version
         let tls_version = match connection.protocol_version() {
-            Some(rustls::ProtocolVersion::TLSv1_2) => "TLSv1.2",
-            Some(rustls::ProtocolVersion::TLSv1_3) => "TLSv1.3",
+            Some(rustls::ProtocolVersion::TLSv1_2) => "TLS 1.2",
+            Some(rustls::ProtocolVersion::TLSv1_3) => "TLS 1.3",
             Some(v) => {
                 debug!("Unknown TLS version: {:?}", v);
                 "TLS"

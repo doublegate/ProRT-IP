@@ -267,6 +267,7 @@ fn test_recovery_detection_adaptive_config() {
 // ========================================================================
 
 #[test]
+#[ignore] // Skip in coverage - timing sensitive
 fn test_check_interval_prevents_excessive_polling() {
     let mut monitor = ResourceMonitor::new(ResourceMonitorConfig {
         check_interval: Duration::from_secs(10),

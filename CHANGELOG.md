@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **CI/CD:** Fixed coverage report generation in GitHub Actions workflow
+  - Root cause: `/dev/tty` device not available in GitHub Actions environment
+  - Error: `tee: /dev/tty: No such device or address` causing workflow failure
+  - Solution: Removed `| tee /dev/tty` from tarpaulin command, display output with `echo "$OUTPUT"`
+  - Impact: Coverage workflow now completes successfully in CI/CD environment
+  - Related: v0.4.6 workflow failures resolved
+
 - **CI/CD:** Fixed coverage percentage extraction in GitHub Actions workflow
   - Root cause: Workflow was parsing non-existent `.files` array in tarpaulin JSON output
   - Solution: Extract coverage directly from tarpaulin stdout using regex (`XX.XX% coverage`)

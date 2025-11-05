@@ -54,12 +54,15 @@ jobs:
       - name: Generate coverage report
         id: tarpaulin
         run: |
-          # Capture tarpaulin output to both display and parse
+          # Run tarpaulin and capture output
           OUTPUT=$(cargo tarpaulin --workspace \
             --timeout 600 \
             --out Lcov --out Html --out Json \
             --output-dir coverage \
-            --exclude-files "crates/prtip-cli/src/main.rs" 2>&1 | tee /dev/tty)
+            --exclude-files "crates/prtip-cli/src/main.rs" 2>&1)
+
+          # Display the output
+          echo "$OUTPUT"
 
           # Extract coverage percentage from output (format: "XX.XX% coverage, N/M lines covered")
           COVERAGE=$(echo "$OUTPUT" | grep -oP '\d+\.\d+(?=% coverage)' | tail -1)

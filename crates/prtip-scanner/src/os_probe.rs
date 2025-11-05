@@ -968,6 +968,33 @@ impl OsProbeEngine {
             "RI".to_string() // Random incremental
         }
     }
+
+    /// Test-only methods for verifying internal configuration
+    /// These are public in debug builds (including tests) but not in release builds
+    #[cfg(debug_assertions)]
+    pub fn target(&self) -> Ipv4Addr {
+        self.target
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn open_port(&self) -> u16 {
+        self.open_port
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn closed_port(&self) -> u16 {
+        self.closed_port
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn source_ip(&self) -> Ipv4Addr {
+        self.source_ip
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn timeout(&self) -> Duration {
+        self.timeout
+    }
 }
 
 #[cfg(test)]

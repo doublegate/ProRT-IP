@@ -606,6 +606,28 @@ impl ServiceDetector {
     pub fn set_timeout(&mut self, timeout: Duration) {
         self.timeout = timeout;
     }
+
+    /// Test-only methods for verifying internal configuration
+    /// These are public in debug builds (including tests) but not in release builds
+    #[cfg(debug_assertions)]
+    pub fn intensity(&self) -> u8 {
+        self.intensity
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn timeout(&self) -> Duration {
+        self.timeout
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn is_tls_enabled(&self) -> bool {
+        self.enable_tls
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn is_raw_capture_enabled(&self) -> bool {
+        self.capture_raw
+    }
 }
 
 #[cfg(test)]

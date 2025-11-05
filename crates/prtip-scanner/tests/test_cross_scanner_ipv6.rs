@@ -102,18 +102,20 @@ async fn test_scheduler_with_ipv6_config() -> anyhow::Result<()> {
     let config = Config::default();
     let storage = Arc::new(StorageBackend::memory(1000));
 
-    let _scheduler = ScanScheduler::new(config.clone(), storage).await?;
+    let scheduler = ScanScheduler::new(config.clone(), storage).await?;
 
-    // Scheduler created successfully (no panic means success)
+    // Verify scheduler created successfully (creation itself is the test)
+    drop(scheduler); // Explicit drop to show we're testing creation
     Ok(())
 }
 
 #[tokio::test]
 async fn test_storage_backend_ipv6_targets() -> anyhow::Result<()> {
     // Test that storage backend accepts IPv6 scan descriptions
-    let _storage = StorageBackend::memory(1000);
+    let storage = StorageBackend::memory(1000);
 
-    // Storage backend created successfully (can handle IPv6 targets)
+    // Verify storage backend created successfully (creation itself is the test)
+    drop(storage); // Explicit drop to show we're testing creation
     Ok(())
 }
 

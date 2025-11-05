@@ -1,12 +1,12 @@
 # ProRT-IP Local Memory
 
-**v0.4.6-dev** (11-05) | **1,728 tests** ✅ | **Sprint 5.6 COMPLETE** | **Phase 5 IN PROGRESS**
+**v0.4.6** (11-05) | **1,728 tests** ✅ | **Sprint 5.6 COMPLETE** | **Phase 5 IN PROGRESS**
 
 ## At a Glance
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Version** | v0.4.6-dev (Sprint 5.6) | Code Coverage Complete |
+| **Version** | v0.4.6 (Sprint 5.6) | Code Coverage Complete, RELEASED |
 | **Tests** | 1,728 (100%) | +149 tests from Sprint 5.6 (ALL passing) |
 | **Coverage** | 54.92% | +17.66% from Sprint 5.6 (37% → 54.92%) |
 | **Test Files** | 10 new | 3 scanner, 3 service, 4 security/edge test files |

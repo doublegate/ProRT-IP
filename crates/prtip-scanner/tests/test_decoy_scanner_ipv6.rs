@@ -22,7 +22,7 @@ fn test_decoy_scanner_ipv6_creation() {
 
     // Scanner creation should succeed
     assert_eq!(scanner.decoy_count(), 6); // 5 random + real IP
-    // Verify target is valid IPv6
+                                          // Verify target is valid IPv6
     assert!(target.is_ipv6());
 }
 
@@ -80,7 +80,7 @@ fn test_ipv6_decoy_loopback() {
 fn test_ipv6_decoy_uniqueness() {
     let config = Config::default();
     let target = Ipv6Addr::new(0xfe80, 0, 0, 0, 0, 0, 0, 1); // Link-local
-    // Verify it's a link-local address (fe80::/10)
+                                                             // Verify it's a link-local address (fe80::/10)
     assert_eq!(target.segments()[0] & 0xffc0, 0xfe80);
 
     let mut scanner = DecoyScanner::new(config);

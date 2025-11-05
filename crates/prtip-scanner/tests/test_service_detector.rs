@@ -366,7 +366,10 @@ async fn test_detect_service_https() {
     assert!(!info.service.is_empty(), "Should detect some service");
     // TLS info may be present if handshake succeeded
     if info.tls_certificate.is_some() {
-        assert_eq!(info.method, "tls_handshake", "Should use TLS handshake method");
+        assert_eq!(
+            info.method, "tls_handshake",
+            "Should use TLS handshake method"
+        );
     }
 }
 

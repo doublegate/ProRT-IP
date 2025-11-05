@@ -52,12 +52,25 @@ jobs:
           key: ${{ runner.os }}-cargo-build-coverage-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Generate coverage report
+        id: tarpaulin
         run: |
-          cargo tarpaulin --workspace \
+          # Capture tarpaulin output to both display and parse
+          OUTPUT=$(cargo tarpaulin --workspace \
             --timeout 600 \
             --out Lcov --out Html --out Json \
             --output-dir coverage \
-            --exclude-files "crates/prtip-cli/src/main.rs"
+            --exclude-files "crates/prtip-cli/src/main.rs" 2>&1 | tee /dev/tty)
+
+          # Extract coverage percentage from output (format: "XX.XX% coverage, N/M lines covered")
+          COVERAGE=$(echo "$OUTPUT" | grep -oP '\d+\.\d+(?=% coverage)' | tail -1)
+
+          if [ -z "$COVERAGE" ]; then
+            echo "Error: Could not extract coverage percentage from tarpaulin output"
+            exit 1
+          fi
+
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Extracted coverage: $COVERAGE%"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -78,7 +91,8 @@ jobs:
       - name: Extract coverage percentage
         id: coverage
         run: |
-          COVERAGE=$(jq -r '.files | map(.covered / .coverable * 100) | add / length' coverage/tarpaulin-report.json)
+          # Get coverage from tarpaulin step output
+          COVERAGE=${{ steps.tarpaulin.outputs.coverage }}
           echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "Current coverage: $COVERAGE%"
 

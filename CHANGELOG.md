@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **CI/CD:** Fixed coverage percentage extraction in GitHub Actions workflow
+  - Root cause: Workflow was parsing non-existent `.files` array in tarpaulin JSON output
+  - Solution: Extract coverage directly from tarpaulin stdout using regex (`XX.XX% coverage`)
+  - Impact: Coverage reporting now works correctly, enabling automated threshold checks
+  - Related: v0.4.6 release workflow failures resolved
+
 ## [0.4.6] - 2025-11-05
 
 ### Added - Sprint 5.6: Code Coverage Enhancement Complete

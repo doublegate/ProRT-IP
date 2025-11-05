@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Sprint 5.5b: TLS Network Testing & SNI Support
+
+**Note:** Originally labeled Sprint 5.6, renamed to 5.5b to preserve Sprint 5.6 designation for the planned Code Coverage Sprint per Phase 5 development plan.
+
+**Major Enhancement:** Server Name Indication (SNI) support for accurate virtual host certificate extraction
+
+#### Service Detector Enhancements
+- Added `detect_service_with_hostname()` method for TLS SNI support
+- Proper hostname passing enables correct certificate extraction from virtual hosts
+- Backward compatible: existing `detect_service()` method delegates to new method
+- Fixes Google "No SNI provided; please fix your client" fallback certificate issue
+
+#### TLS Improvements
+- Fixed TLS version string format: "TLS 1.2" / "TLS 1.3" (industry standard notation)
+- Network TLS tests: 13/13 passing (was 6/13 before Sprint 5.5b)
+- Enhanced test robustness for real-world scenarios (CDN certificates, external service availability)
+
+#### Testing Improvements
+- Updated integration tests to handle Akamai CDN certificates for example.com
+- Graceful handling of badssl.com unavailability (no false failures)
+- Realistic certificate chain validation expectations (missing root CAs acceptable)
+- Documentation of known limitations (cipher suites require ServerHello capture)
+
+### Changed
+- TLS version strings now use space separator: "TLSv1.3" → "TLS 1.3"
+- Certificate chain validation focuses on self-signed detection (key security indicator)
+- Test expectations updated for real-world CDN and virtual host configurations
+
+### Fixed
+- **SNI Support:** HTTPS scanning now sends correct hostname for virtual host resolution
+- **Certificate Extraction:** Google, example.com, and all virtual hosts now return correct certificates
+- **Test Stability:** badssl.com tests no longer fail due to external service issues
+- **Chain Validation:** Properly handles incomplete chains (missing root CA is common)
+
 ## [0.4.5] - 2025-11-04
 
 ### Added - Sprint 5.5: TLS Certificate Analysis

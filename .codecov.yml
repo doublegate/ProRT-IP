@@ -1,0 +1,72 @@
+# Codecov Configuration for ProRT-IP
+# Documentation: https://docs.codecov.com/docs/codecov-yaml
+
+coverage:
+  # Precision of coverage percentage (2 decimal places)
+  precision: 2
+  # Round coverage to nearest value
+  round: down
+
+  # Coverage status checks
+  status:
+    # Project-wide coverage requirements
+    project:
+      default:
+        # Target coverage percentage
+        target: 50%
+        # Allow coverage to drop by at most 2% before failing
+        threshold: 2%
+        # Fail the status check if requirements not met
+        informational: false
+        # Only report if coverage changes
+        only_pulls: false
+
+    # Patch coverage (new code added in PR)
+    patch:
+      default:
+        # New code should have 60% coverage
+        target: 60%
+        # Allow 5% variance for patches
+        threshold: 5%
+        # Fail if patch coverage insufficient
+        informational: false
+        # Only run on pull requests
+        only_pulls: true
+
+# Comment configuration for pull requests
+comment:
+  # Layout of the comment
+  layout: "reach,diff,flags,tree,footer"
+  # Commenting behavior
+  behavior: default
+  # Require changes to comment
+  require_changes: false
+  # Show coverage after N builds
+  after_n_builds: 1
+
+# Files/directories to ignore in coverage reports
+ignore:
+  # CLI entrypoint (tested via integration)
+  - "crates/prtip-cli/src/main.rs"
+  # Test files
+  - "**/*_test.rs"
+  - "**/tests/**"
+  # Build scripts
+  - "**/build.rs"
+  # Benchmarks
+  - "**/benches/**"
+  # Examples
+  - "**/examples/**"
+  # Generated code
+  - "**/target/**"
+
+# Flag configuration for different test types
+flags:
+  rust:
+    paths:
+      - crates/
+    carryforward: true
+
+# GitHub Checks integration
+github_checks:
+  annotations: true

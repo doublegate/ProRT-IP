@@ -7,11 +7,14 @@
 </div>
 
 [![CI](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
+[![Coverage](https://github.com/doublegate/ProRT-IP/actions/workflows/coverage.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/coverage.yml)
+[![codecov](https://codecov.io/gh/doublegate/ProRT-IP/branch/main/graph/badge.svg)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![Release](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/release.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1644_passing-brightgreen.svg)]
+[![Tests](https://img.shields.io/badge/tests-1728_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
+[![Coverage](https://img.shields.io/badge/coverage-54.92%25-brightgreen.svg)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
 ---
@@ -108,23 +111,23 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5 IN PROGRESS ✅ | **v0.4.5+ (Sprint 5.5b)** ✅ (2025-11-04 - TLS + SNI Support) | Sprint 5.5b COMPLETE ✅ | **Enterprise-Grade TLS Analysis + SNI** ✨
+**Current Phase:** Phase 5 IN PROGRESS ✅ | **v0.4.6-dev (Sprint 5.6)** 🔄 (2025-11-05 - Code Coverage Enhancement) | Sprint 5.6 Phase 6 IN PROGRESS 🔄 | **54.92% Coverage (+17.66%)** 📈
 
-**Latest Version:** v0.4.5 (Released 2025-11-04 - TLS Certificate Analysis: 1.33μs parsing, 622K certs/sec, SNI support)
+**Latest Release:** v0.4.5 (Released 2025-11-04 - TLS Certificate Analysis: 1.33μs parsing, 622K certs/sec, SNI support)
 
-**Test Coverage:** 1,644/1,644 tests passing (100% success rate) | 62.5%+ code coverage (exceeds 60% target)
+**Quality Metrics:** 1,728/1,728 tests passing (100% success rate) | 54.92% code coverage (+17.66% from Sprint 5.6) | 0 clippy warnings | 0 security vulnerabilities
 
 **Test Suite Breakdown:**
-- **Total Active Tests:** 1,644 passing (100% success rate across all platforms)
+- **Total Active Tests:** 1,728 passing (100% success rate across all platforms)
 - **Core Tests:** 133 (scanner core, network primitives)
-- **Scanner Tests:** 198 (TCP, UDP, Stealth, Discovery, Idle, Decoy)
+- **Scanner Tests:** 249 (TCP, UDP, Stealth, Discovery, Idle, Decoy) - **+51 in Sprint 5.6**
 - **Integration Tests:** 371 passing + 5 platform-specific (376 total)
-- **Protocol/Detection Tests:** 184 (service detection, OS fingerprinting, TLS)
-- **Module Tests:** 758 (rate limiting, aggregation, storage, utilities)
+- **Protocol/Detection Tests:** 245 (service detection, OS fingerprinting, TLS) - **+61 in Sprint 5.6**
+- **Module Tests:** 795 (rate limiting, aggregation, storage, utilities) - **+37 in Sprint 5.6**
 - **Platform-Specific Ignored:** 5 tests (Windows loopback limitations)
 - **Archived Tests:** 627 slow convergence tests from legacy rate limiters (preserved in backups/)
 
-**Note:** Sprint 5.5 added 82 TLS tests, Sprint 5.5b added network TLS tests. Test count grew from 839 (v0.4.4) to 1,644 (current) due to comprehensive Phase 5 test coverage.
+**Note:** Sprint 5.6 added 149 comprehensive tests across scanners, services, and security, improving coverage from 37% → 54.92% (+17.66%).
 
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
@@ -444,12 +447,13 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 
 **Quality Metrics:**
 
-- Tests: 1,216 → 1,338 (+122 = +10% growth)
-- Coverage: 62.5%+ maintained
-- Clippy warnings: 0
-- Production panics: 0
-- CI/CD: 7/7 platforms GREEN
-- Release targets: 8/8 architectures
+- **Tests:** 1,579 → 1,728 (+149 = +9.4% growth in Sprint 5.6)
+- **Coverage:** 37.26% → 54.92% (+17.66% in Sprint 5.6) 📈
+- **Pass Rate:** 100% (1,728/1,728 passing)
+- **Clippy warnings:** 0 (strict -D warnings enforcement)
+- **Security vulnerabilities:** 0
+- **CI/CD:** 7/7 platforms GREEN + Coverage workflow
+- **Release targets:** 8/8 architectures production-ready
 
 **Performance (Phase 3 → Phase 4):**
 

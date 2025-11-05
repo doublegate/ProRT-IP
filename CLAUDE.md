@@ -6,11 +6,11 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 
 **ProRT-IP WarScan**: Modern network scanner combining Masscan/ZMap speed with Nmap detection depth.
 
-**Status**: Phase 5 IN PROGRESS (Sprint 5.X COMPLETE) + **v0.4.4 Released**. 839 tests (100%), 62.5% coverage, 67 integration tests, OS fingerprinting, service detection, 50+ nmap-compatible flags, 8 scan types, greppable output, 6 evasion techniques, industry-leading -1.8% overhead rate limiting. CI/CD 7/7 passing, 8/8 release targets (100%).
+**Status**: Phase 5 IN PROGRESS (Sprint 5.5 COMPLETE). 868 tests (100%), 62.5% coverage, TLS certificate analysis, OS fingerprinting, service detection 85-90%, 8 scan types, 6 evasion techniques, industry-leading -1.8% overhead rate limiting. CI/CD 7/7 passing, 8/8 release targets.
 
 **Repository**: <https://github.com/doublegate/ProRT-IP>
 **License**: GPL-3.0
-**Updated**: 2025-11-03
+**Updated**: 2025-11-04
 
 ## Architecture
 
@@ -38,8 +38,8 @@ Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
 | Phase | Status | Tests | Key Features |
 |-------|--------|-------|--------------|
 | 1-3 | ✅ COMPLETE | 391 | Core scanning, protocols, detection |
-| **4: Performance** | **✅ COMPLETE** | **1,166** | **Testing infra, zero-copy, NUMA, PCAPNG, evasion, IPv6 foundation** |
-| **5: Advanced** | **🔄 IN PROGRESS** | **839** | **Full IPv6 (100%), Idle scan, Service detection 85-90%, Rate limiting -1.8% overhead** |
+| 4: Performance | ✅ COMPLETE | 1,166 | Testing infra, zero-copy, NUMA, PCAPNG, evasion, IPv6 foundation |
+| **5: Advanced** | **🔄 IN PROGRESS** | **868** | **IPv6 100%, Idle scan, Service detection 85-90%, Rate limiting -1.8%, TLS cert analysis** |
 
 **Custom Commands** (15): /rust-check, /bench-compare, /sprint-*, /perf-profile, /module-create, /doc-update, /test-quick, /ci-status, /bug-report, /inspire-me, /daily-log, /next-sprint, /mem-reduce
 
@@ -129,7 +129,7 @@ prtip -A -p 80,443 target.com             # Aggressive
 
 **Process**: Read /tmp/ProRT-IP/RELEASE-NOTES-v*.md → Read SPRINT-*-COMPLETE.md → Review commits → Create tag (100-150 lines) → Create GitHub release (150-200 lines) → Verify vs quality standard → Push
 
-**Reference**: v0.3.7, v0.3.8, v0.3.9, v0.4.0-v0.4.3, **v0.4.4** (extensive, technically detailed)
+**Reference**: v0.3.7-v0.3.9, v0.4.0-v0.4.5 (extensive, technically detailed)
 
 ## Input Validation
 
@@ -140,3 +140,16 @@ prtip -A -p 80,443 target.com             # Aggressive
 - Update CLAUDE.local.md after sessions | Sync 10-PROJECT-STATUS.md | Update CHANGELOG per release
 - cargo fmt + clippy before commits | Maintain >60% coverage (>90% core) | Document public APIs
 - Review 08-SECURITY.md before releases | Weekly cargo audit | Fuzz input validation
+
+## Historical Decisions
+
+Architectural decisions before Oct 2025. See CLAUDE.local.md "Recent Decisions" for last 30 days.
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 10-23 | Raw response capture opt-in | Memory safety by default (--capture-raw-responses flag) |
+| 10-14 | Extensive release notes | Quality standard: 100-200 lines, technical depth |
+| 10-13 | Document Windows loopback failures | 4 SYN discovery tests (expected behavior) |
+| 10-07 | Rate limiter burst=10 | Balance responsiveness + courtesy |
+| 10-07 | Test timeouts 5s | CI variability, prevent false failures |
+| 10-07 | License GPL-3.0 | Derivative works open, security community |

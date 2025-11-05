@@ -142,6 +142,40 @@ impl ServiceDetector {
 
     /// Detect service on target
     pub async fn detect_service(&self, target: SocketAddr) -> Result<ServiceInfo, Error> {
+        self.detect_service_with_hostname(target, None).await
+    }
+
+    /// Detect service on target with optional hostname for TLS SNI
+    ///
+    /// When scanning HTTPS services, providing the hostname enables proper Server Name
+    /// Indication (SNI), which allows the server to return the correct certificate
+    /// for virtual hosts.
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Socket address (IP + port) to scan
+    /// * `hostname` - Optional hostname for TLS SNI (e.g., "example.com")
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use prtip_scanner::service_detector::ServiceDetector;
+    /// # use prtip_core::ServiceProbeDb;
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let db = ServiceProbeDb::parse("...")?;
+    /// let detector = ServiceDetector::new(db, 7);
+    ///
+    /// // Scan with hostname for proper SNI
+    /// let addr = "93.184.216.34:443".parse()?;
+    /// let result = detector.detect_service_with_hostname(addr, Some("example.com")).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn detect_service_with_hostname(
+        &self,
+        target: SocketAddr,
+        hostname: Option<&str>,
+    ) -> Result<ServiceInfo, Error> {
         let protocol = Protocol::Tcp; // Start with TCP
         let port = target.port();
 
@@ -210,7 +244,7 @@ impl ServiceDetector {
         // Try TLS detection if enabled and on common TLS port
         if self.enable_tls && TlsHandshake::is_tls_port(port) {
             debug!("Port {}: Attempting TLS handshake", port);
-            if let Ok(tls_info) = self.try_tls_detection(target).await {
+            if let Ok(tls_info) = self.try_tls_detection(target, hostname).await {
                 debug!("Port {}: TLS handshake successful", port);
                 return Ok(tls_info);
             } else {
@@ -250,14 +284,20 @@ impl ServiceDetector {
     }
 
     /// Try TLS detection and extract service info from certificate
-    async fn try_tls_detection(&self, target: SocketAddr) -> Result<ServiceInfo, Error> {
-        let host = target.ip().to_string();
+    async fn try_tls_detection(
+        &self,
+        target: SocketAddr,
+        hostname: Option<&str>,
+    ) -> Result<ServiceInfo, Error> {
+        // Use hostname if provided (for SNI), otherwise fall back to IP
+        let ip_string = target.ip().to_string();
+        let host = hostname.unwrap_or(&ip_string);
 
         let port = target.port();
 
         // Attempt TLS handshake
 
-        let server_info = self.tls_handler.connect(&host, port).await?;
+        let server_info = self.tls_handler.connect(host, port).await?;
 
         // Try to get HTTP response over TLS for better detection
 
@@ -272,7 +312,7 @@ impl ServiceDetector {
         // If port 443 or 8443, try HTTP GET to identify web server
 
         if port == 443 || port == 8443 {
-            if let Ok(response) = self.tls_handler.https_get(&host, port, "/").await {
+            if let Ok(response) = self.tls_handler.https_get(host, port, "/").await {
                 // Capture raw response if enabled
                 if self.capture_raw {
                     raw_response = Some(response.as_bytes().to_vec());

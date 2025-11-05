@@ -15,13 +15,15 @@ use std::net::{IpAddr, Ipv6Addr};
 #[test]
 fn test_decoy_scanner_ipv6_creation() {
     let config = Config::default();
-    let _target = IpAddr::V6(Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 1));
+    let target = IpAddr::V6(Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 1));
 
     let mut scanner = DecoyScanner::new(config);
     scanner.set_random_decoys(5);
 
     // Scanner creation should succeed
     assert_eq!(scanner.decoy_count(), 6); // 5 random + real IP
+    // Verify target is valid IPv6
+    assert!(target.is_ipv6());
 }
 
 /// Test 2: Random /64 decoy generation (same subnet validation)
@@ -53,7 +55,8 @@ fn test_ipv6_decoy_loopback() {
     let mut config = Config::default();
     config.scan.timeout_ms = 2000;
 
-    let _target = IpAddr::V6(Ipv6Addr::LOCALHOST); // ::1
+    let target = IpAddr::V6(Ipv6Addr::LOCALHOST); // ::1
+    assert!(target.is_ipv6());
 
     let mut scanner = DecoyScanner::new(config);
     scanner.set_random_decoys(3);
@@ -76,7 +79,9 @@ fn test_ipv6_decoy_loopback() {
 #[test]
 fn test_ipv6_decoy_uniqueness() {
     let config = Config::default();
-    let _target = Ipv6Addr::new(0xfe80, 0, 0, 0, 0, 0, 0, 1); // Link-local
+    let target = Ipv6Addr::new(0xfe80, 0, 0, 0, 0, 0, 0, 1); // Link-local
+    // Verify it's a link-local address (fe80::/10)
+    assert_eq!(target.segments()[0] & 0xffc0, 0xfe80);
 
     let mut scanner = DecoyScanner::new(config);
     scanner.set_random_decoys(20); // Request many decoys
@@ -132,7 +137,10 @@ fn test_decoy_dual_stack_ipv4_compat() {
 #[test]
 fn test_ipv6_decoy_count_limits() {
     let config = Config::default();
-    let _target = Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 1);
+    let target = Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 1);
+    // Verify it's a documentation address (2001:db8::/32)
+    assert_eq!(target.segments()[0], 0x2001);
+    assert_eq!(target.segments()[1], 0xdb8);
 
     // Request large number of decoys
     let mut scanner = DecoyScanner::new(config);

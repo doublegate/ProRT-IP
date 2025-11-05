@@ -1,0 +1,129 @@
+name: Coverage
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Cancel outdated workflow runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config
+
+      - name: Install cargo-tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-coverage-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Generate coverage report
+        run: |
+          cargo tarpaulin --workspace \
+            --timeout 600 \
+            --out Lcov --out Html --out Json \
+            --output-dir coverage \
+            --exclude-files "crates/prtip-cli/src/main.rs"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage/lcov.info
+          flags: rust
+          name: codecov-prtip
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(jq -r '.files | map(.covered / .coverable * 100) | add / length' coverage/tarpaulin-report.json)
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Current coverage: $COVERAGE%"
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=${{ steps.coverage.outputs.percentage }}
+          THRESHOLD=50.0
+          echo "Current coverage: $COVERAGE%"
+          echo "Required threshold: $THRESHOLD%"
+
+          # Use awk for floating point comparison (bc not always available)
+          if awk -v cov="$COVERAGE" -v thr="$THRESHOLD" 'BEGIN {exit !(cov < thr)}'; then
+            echo "❌ Coverage $COVERAGE% is below threshold $THRESHOLD%"
+            echo "::error::Coverage regression detected. Current: $COVERAGE%, Required: $THRESHOLD%"
+            exit 1
+          fi
+
+          echo "✅ Coverage $COVERAGE% meets threshold $THRESHOLD%"
+          echo "::notice::Coverage check passed: $COVERAGE% >= $THRESHOLD%"
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const coverage = '${{ steps.coverage.outputs.percentage }}';
+            const threshold = '50.0';
+            const passed = parseFloat(coverage) >= parseFloat(threshold);
+            const emoji = passed ? '✅' : '❌';
+
+            const comment = `## ${emoji} Coverage Report
+
+            **Current Coverage:** ${coverage}%
+            **Threshold:** ${threshold}%
+            **Status:** ${passed ? 'PASSED' : 'FAILED'}
+
+            ${passed ?
+              '✅ Coverage meets the minimum threshold.' :
+              '❌ Coverage is below the minimum threshold. Please add more tests.'}
+
+            📊 [View detailed coverage report in artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

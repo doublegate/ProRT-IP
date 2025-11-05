@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Sprint 5.6 Phase 6: CI/CD Integration & Documentation
+
+**Sprint Status:** Phase 6 of 7 COMPLETE (Coverage automation established)
+
+**CI/CD Coverage Integration:**
+- Created comprehensive coverage workflow (`.github/workflows/coverage.yml`)
+- Automated coverage reporting on every push and pull request
+- Codecov integration with project and patch thresholds
+- Coverage badges added to README (workflow status + codecov)
+- Coverage artifacts uploaded for 30-day retention
+
+#### Coverage Workflow Features
+- Automated test coverage generation using cargo-tarpaulin
+- Multi-format output: LCOV (codecov), HTML (artifacts), JSON (threshold checking)
+- 50% minimum coverage threshold enforced in CI
+- Automatic PR comments with coverage reports
+- Platform caching for faster CI execution (registry, index, build cache)
+- Coverage percentage extraction and threshold validation
+
+#### Codecov Configuration
+- Project coverage target: 50% (2% threshold tolerance)
+- Patch coverage target: 60% (5% threshold tolerance)
+- Automatic exclusions: CLI entrypoint, test files, build scripts, benchmarks
+- GitHub Checks integration for PR status
+- Comment layout: reach, diff, flags, tree, footer
+
+#### Documentation Updates
+- README badges updated (coverage workflow + codecov + metrics)
+- Test count badge updated: 1,644 → 1,728
+- Coverage badge added: 54.92%
+- Quality metrics section enhanced with Sprint 5.6 achievements
+- Project status updated to reflect v0.4.6-dev (Sprint 5.6)
+
+#### CI/CD Documentation Created
+- Comprehensive CI/CD guide (`docs/28-CI-CD-COVERAGE.md`)
+- Workflow descriptions (CI, Coverage)
+- Coverage threshold documentation
+- Local coverage generation instructions
+- Troubleshooting guide for common issues
+- Platform-specific considerations (Linux, macOS, Windows)
+
+### Changed
+- README Project Status section updated with Sprint 5.6 progress
+- Test suite breakdown reflects +149 tests from Sprint 5.6
+- Quality metrics section shows coverage improvement: 37% → 54.92%
+- Coverage tracking now automated via GitHub Actions
+
 ### Added - Sprint 5.6 Phase 2: Code Coverage - Critical Scanner Tests
 
 **Sprint Status:** Phase 2 of 7 COMPLETE (Coverage infrastructure established)

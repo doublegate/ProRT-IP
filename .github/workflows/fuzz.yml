@@ -1,0 +1,178 @@
+name: Fuzz Testing
+
+on:
+  schedule:
+    # Run nightly at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: 'Fuzzing duration per target (seconds)'
+        required: false
+        default: '600'
+        type: string
+      targets:
+        description: 'Targets to fuzz (comma-separated, or "all")'
+        required: false
+        default: 'all'
+        type: string
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fuzz:
+    name: Fuzz ${{ matrix.target }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false  # Continue fuzzing other targets even if one crashes
+      matrix:
+        target:
+          - fuzz_tcp_parser
+          - fuzz_udp_parser
+          - fuzz_ipv6_parser
+          - fuzz_icmpv6_parser
+          - fuzz_tls_parser
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry/index
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo git
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache target directory
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-fuzz-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-fuzz-target-${{ matrix.target }}-
+            ${{ runner.os }}-fuzz-target-
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --version 0.13.1
+
+      - name: Build fuzz target
+        run: cargo +nightly fuzz build ${{ matrix.target }}
+
+      - name: Run fuzzer
+        id: fuzz_run
+        run: |
+          DURATION="${{ github.event.inputs.duration || '600' }}"
+          echo "Running ${{ matrix.target }} for ${DURATION} seconds..."
+
+          # Run fuzzer and capture output
+          set +e  # Don't fail on fuzzer crashes (we want to capture them)
+          timeout ${DURATION}s cargo +nightly fuzz run ${{ matrix.target }} -- \
+            -max_total_time=${DURATION} \
+            -print_final_stats=1 \
+            -print_corpus_stats=1 \
+            -artifact_prefix=/tmp/fuzzing-artifacts/ \
+            -verbosity=1 \
+            2>&1 | tee /tmp/fuzz_output.txt
+          EXIT_CODE=$?
+          set -e
+
+          # Parse fuzzing statistics
+          echo "## Fuzzing Statistics for ${{ matrix.target }}" > /tmp/fuzz_stats.txt
+          echo "" >> /tmp/fuzz_stats.txt
+
+          # Extract key metrics
+          if grep -q "stat::number_of_executed_units" /tmp/fuzz_output.txt; then
+            EXECUTIONS=$(grep "stat::number_of_executed_units" /tmp/fuzz_output.txt | tail -1 | awk '{print $2}')
+            echo "- Executions: $EXECUTIONS" >> /tmp/fuzz_stats.txt
+          fi
+
+          if grep -q "stat::average_exec_per_sec" /tmp/fuzz_output.txt; then
+            EXEC_PER_SEC=$(grep "stat::average_exec_per_sec" /tmp/fuzz_output.txt | tail -1 | awk '{print $2}')
+            echo "- Average exec/sec: $EXEC_PER_SEC" >> /tmp/fuzz_stats.txt
+          fi
+
+          if grep -q "stat::new_units_added" /tmp/fuzz_output.txt; then
+            NEW_UNITS=$(grep "stat::new_units_added" /tmp/fuzz_output.txt | tail -1 | awk '{print $2}')
+            echo "- New corpus entries: $NEW_UNITS" >> /tmp/fuzz_stats.txt
+          fi
+
+          if grep -q "stat::corpus_size" /tmp/fuzz_output.txt; then
+            CORPUS_SIZE=$(grep "stat::corpus_size" /tmp/fuzz_output.txt | tail -1 | awk '{print $2}')
+            echo "- Corpus size: $CORPUS_SIZE" >> /tmp/fuzz_stats.txt
+          fi
+
+          # Check for crashes
+          if [ -d "/tmp/fuzzing-artifacts" ] && [ "$(ls -A /tmp/fuzzing-artifacts 2>/dev/null)" ]; then
+            echo "- **Crashes found:** Yes" >> /tmp/fuzz_stats.txt
+            CRASH_COUNT=$(find /tmp/fuzzing-artifacts -type f | wc -l)
+            echo "- Crash artifacts: $CRASH_COUNT" >> /tmp/fuzz_stats.txt
+            echo "crash_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "- **Crashes found:** No" >> /tmp/fuzz_stats.txt
+            echo "crash_found=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Store statistics as output
+          cat /tmp/fuzz_stats.txt >> $GITHUB_STEP_SUMMARY
+
+          # Exit with fuzzer's exit code
+          exit $EXIT_CODE
+        continue-on-error: true
+
+      - name: Upload crash artifacts
+        if: steps.fuzz_run.outputs.crash_found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-crashes-${{ matrix.target }}-${{ github.run_number }}
+          path: /tmp/fuzzing-artifacts/
+          retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Upload corpus updates
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-corpus-${{ matrix.target }}-${{ github.run_number }}
+          path: fuzz/corpus/${{ matrix.target }}/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Fail job if crashes found
+        if: steps.fuzz_run.outputs.crash_found == 'true'
+        run: |
+          echo "::error::Fuzzing discovered crashes in ${{ matrix.target }}"
+          exit 1
+
+  summary:
+    name: Fuzzing Summary
+    runs-on: ubuntu-latest
+    needs: fuzz
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Fuzzing Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**Duration:** ${{ github.event.inputs.duration || '600' }} seconds per target" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All fuzz targets executed. Check individual job outputs for statistics." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- Review crash artifacts (if any)" >> $GITHUB_STEP_SUMMARY
+          echo "- Investigate failures and add regression tests" >> $GITHUB_STEP_SUMMARY
+          echo "- Update corpus with newly discovered inputs" >> $GITHUB_STEP_SUMMARY

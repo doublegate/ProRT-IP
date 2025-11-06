@@ -403,6 +403,8 @@ jobs:
     needs: [check-release, build-release]
     runs-on: ubuntu-latest
     if: always() && !cancelled() && !failure()
+    outputs:
+      upload_complete: ${{ steps.upload.outputs.complete }}
 
     steps:
       - uses: actions/checkout@v4
@@ -417,6 +419,7 @@ jobs:
           ls -R artifacts/
 
       - name: Upload to existing or new release
+        id: upload
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -455,3 +458,34 @@ jobs:
           fi
 
           echo "Artifact upload complete"
+          echo "complete=true" >> $GITHUB_OUTPUT
+
+  trigger-coverage:
+    name: Trigger Coverage Workflow
+    needs: [check-release, upload-artifacts]
+    runs-on: ubuntu-latest
+    if: success() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Trigger coverage workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ needs.check-release.outputs.version }}';
+            console.log(`Triggering coverage workflow for ${version}`);
+
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'coverage.yml',
+                ref: 'main',
+                inputs: {
+                  version: version
+                }
+              });
+              console.log('✅ Coverage workflow triggered successfully');
+            } catch (error) {
+              console.error('❌ Failed to trigger coverage workflow:', error.message);
+              // Don't fail the release if coverage trigger fails
+            }

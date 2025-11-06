@@ -13,7 +13,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1754_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-1728_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
 [![Coverage](https://img.shields.io/badge/coverage-54.92%25-brightgreen.svg)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
@@ -111,24 +111,24 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5 IN PROGRESS ✅ | **v0.4.7 (Sprint 5.7)** ✅ (2025-01-06 - Fuzz Testing Infrastructure Complete) | **1,754 Tests (100%)** | **54.92% Coverage** 📈
+**Current Phase:** Phase 5 IN PROGRESS ✅ | **v0.4.6 (Sprint 5.6)** ✅ (2025-11-05 - Code Coverage Enhancement Complete) | **1,728 Tests (100%)** | **54.92% Coverage (+17.66%)** 📈
 
-**Latest Release:** v0.4.7 (Released 2025-01-06 - Fuzz Testing Infrastructure: 5 fuzzers, 807 corpus seeds, 230M+ executions, zero crashes)
+**Latest Release:** v0.4.6 (Released 2025-11-05 - Code Coverage Enhancement: 149 tests, +17.66%, CI/CD automation, zero bugs)
 
-**Quality Metrics:** 1,754/1,754 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
+**Quality Metrics:** 1,728/1,728 tests passing (100% success rate) | 54.92% code coverage (+17.66% from Sprint 5.6) | 0 clippy warnings | 0 security vulnerabilities
 
 **Test Suite Breakdown:**
 
-- **Total Active Tests:** 1,754 passing (100% success rate across all platforms)
+- **Total Active Tests:** 1,728 passing (100% success rate across all platforms)
 - **Core Tests:** 133 (scanner core, network primitives)
-- **Scanner Tests:** 249 (TCP, UDP, Stealth, Discovery, Idle, Decoy)
+- **Scanner Tests:** 249 (TCP, UDP, Stealth, Discovery, Idle, Decoy) - **+51 in Sprint 5.6**
 - **Integration Tests:** 371 passing + 5 platform-specific (376 total)
-- **Protocol/Detection Tests:** 245 (service detection, OS fingerprinting, TLS)
-- **Module Tests:** 821 (rate limiting, aggregation, storage, utilities) - **+26 in Sprint 5.7**
+- **Protocol/Detection Tests:** 245 (service detection, OS fingerprinting, TLS) - **+61 in Sprint 5.6**
+- **Module Tests:** 795 (rate limiting, aggregation, storage, utilities) - **+37 in Sprint 5.6**
 - **Platform-Specific Ignored:** 5 tests (Windows loopback limitations)
 - **Archived Tests:** 627 slow convergence tests from legacy rate limiters (preserved in backups/)
 
-**Note:** Fuzzing infrastructure (Sprint 5.7) adds 230M+ additional validation beyond unit/integration tests.
+**Note:** Sprint 5.6 added 149 comprehensive tests across scanners, services, and security, improving coverage from 37% → 54.92% (+17.66%).
 
 **Fuzz Testing (Sprint 5.7):**
 
@@ -142,65 +142,6 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
 
 **Latest Achievements:**
-
-### 🚀 v0.4.7 Release Highlights (2025-01-06)
-
-**Production-Ready Fuzz Testing Infrastructure** ✨
-
-Sprint 5.7 "Fuzz Testing Infrastructure" delivers comprehensive security hardening validated through 230M+ executions with exceptional results.
-
-**Security Validation Excellence:**
-
-- ✅ **230,876,740 total fuzz executions** across 5 critical parsers
-- ✅ **Zero crashes discovered** (100% robustness validated)
-- ✅ **807 corpus seeds** with structure-aware generation (75% above target)
-- ✅ **177 new corpus entries** discovered during fuzzing (+21.9% growth)
-- ✅ **Average 128K exec/sec** throughput (65-228K range across targets)
-
-**Fuzzing Infrastructure:**
-
-- **5 Production Targets:** TCP, UDP, IPv6, ICMPv6, TLS certificate parsers
-- **CI/CD Automation:** Nightly fuzzing runs (02:00 UTC, 10 min/target)
-- **Coverage:** 1,681 branches, 3,242 features across all targets
-- **Memory Safety:** Peak RSS 442-525 MB, zero leaks detected
-- **Documentation:** Comprehensive guide ([docs/29-FUZZING-GUIDE.md](docs/29-FUZZING-GUIDE.md), 784 lines)
-
-**Security Hardening Validated:**
-
-- ✅ **Buffer Overflow Protection:** No crashes on 1500+ byte oversized packets
-- ✅ **DoS Prevention:** No hangs or infinite loops in 230M+ executions
-- ✅ **Input Validation:** Malformed packets gracefully rejected without panics
-- ✅ **Memory Safety:** Zero memory leaks confirmed across all targets
-
-**Quick Start - Fuzzing:**
-
-```bash
-# Install cargo-fuzz (requires nightly)
-cargo install cargo-fuzz
-
-# Run TCP parser fuzzer for 5 minutes
-cargo +nightly fuzz run fuzz_tcp_parser -- -max_total_time=300
-
-# Generate complete corpus (807 seeds)
-./fuzz/scripts/generate_corpus.sh
-
-# Run all targets in parallel (recommended)
-for target in $(cargo +nightly fuzz list); do
-  cargo +nightly fuzz run $target -- -max_total_time=600 &
-done
-wait
-```
-
-**Strategic Value:**
-
-- Validates robustness for production deployments
-- Matches security practices of major Rust projects (rustls, quinn)
-- Provides audit-ready security validation
-- Establishes continuous validation through CI/CD
-
-**Documentation:** See [docs/29-FUZZING-GUIDE.md](docs/29-FUZZING-GUIDE.md) for complete guide.
-
----
 
 ### 🚀 v0.4.6 Release Highlights (2025-11-05)
 
@@ -639,7 +580,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
    - Bug fixes discovered during coverage improvement
    - **Target:** ≥80% overall coverage, ≥90% critical modules
 
-8. 📋 **Sprint 5.7: Fuzz Testing Infrastructure** - ✅ COMPLETE
+8. 📋 **Sprint 5.7: Fuzz Testing Infrastructure** - PLANNED
 9. 📋 **Sprint 5.8: Plugin System Foundation (Lua scripting)** - PLANNED (ROI 9.2/10)
 10. 📋 **Sprint 5.9: Comprehensive Benchmarking** - PLANNED
 11. 📋 **Sprint 5.10: Documentation & Release Prep (v0.5.0)** - PLANNED
@@ -648,9 +589,9 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 
 **Progress Summary:**
 
-- **Core Sprints Completed:** 7 of 10 (70%)
-- **Total Sprints Including Refinements:** 8 completed (5.1, 5.2, 5.3, 5.X, 5.5, 5.5b, 5.6, 5.7)
-- **Tests:** 1,338 (Phase 4) → 1,728 (current) = +390 tests (+29% growth)
+- **Core Sprints Completed:** 5.5 of 10 (55%)
+- **Total Sprints Including Refinements:** 6 completed (5.1, 5.2, 5.3, 5.X, 5.5, 5.5b)
+- **Tests:** 1,338 (Phase 4) → 1,644 (current) = +306 tests (+23% growth)
 - **Documentation:** 6,060 lines across 4 comprehensive Phase 5 guides
 - **Performance Achievements:** -1.8% rate limiting overhead, 1.33μs TLS parsing, 99.5% idle scan accuracy
 

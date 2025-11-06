@@ -139,7 +139,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - **Throughput:** 128K avg exec/sec (65-228K range)
 - **CI/CD:** Nightly fuzzing runs (GitHub Actions)
 
-**CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready
+**CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready | **Optimized:** 30-50% faster execution (smart caching, path filtering, release-only coverage)
 
 **Latest Achievements:**
 

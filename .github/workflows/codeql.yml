@@ -3,10 +3,22 @@ name: CodeQL
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'crates/**'
+      - 'fuzz/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/codeql.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'crates/**'
+      - 'fuzz/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/codeql.yml'
   schedule:
-    - cron: '0 0 * * 1'  # Weekly on Monday
+    - cron: '0 3 * * 1'  # Weekly on Monday at 03:00 UTC
 
 jobs:
   analyze:
@@ -28,6 +40,15 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "codeql"
+          cache-targets: "true"
 
       - name: Build
         run: cargo build --workspace

@@ -1,11 +1,17 @@
 name: Coverage
 
 on:
+  # Only run coverage on release tags to reduce CI/CD load
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+  # Manual trigger for testing
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v0.4.6)'
+        required: false
+        type: string
 
 # Cancel outdated workflow runs
 concurrency:
@@ -30,26 +36,22 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config
 
+      # Use Swatinem/rust-cache for optimal Rust caching (same as CI workflow)
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "coverage"
+          cache-targets: "true"
+          cache-on-failure: "true"
+
       - name: Install cargo-tarpaulin
-        run: cargo install cargo-tarpaulin
-
-      - name: Cache cargo registry
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo index
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo build
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-coverage-${{ hashFiles('**/Cargo.lock') }}
+        run: |
+          # Check if already installed to save time
+          if ! command -v cargo-tarpaulin &> /dev/null; then
+            cargo install cargo-tarpaulin
+          else
+            echo "cargo-tarpaulin already installed"
+          fi
 
       - name: Generate coverage report
         id: tarpaulin

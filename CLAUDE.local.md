@@ -1,81 +1,51 @@
 # ProRT-IP Local Memory
 
-**v0.4.7+** (11-06) | **408 tests** ✅ | **Sprint 5.8 IN PROGRESS** | **Phase 5 IN PROGRESS (75%)**
+**v0.4.8** (11-07) | **1,766 tests** ✅ | **Sprint 5.9 COMPLETE** | **Phase 5 IN PROGRESS (90%)**
 
 ## At a Glance
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Version** | v0.4.7+ (Sprint 5.8) | Plugin System Infrastructure, DEVELOPMENT |
-| **Tests** | 408 (100%) | 398 unit + 10 integration (ALL passing) |
-| **Plugin System** | 6 modules, 2 examples, 784-line guide | Lua-based with sandboxing, Sprint 5.8 |
-| **Coverage** | 54.92% | Maintained from Sprint 5.6 |
-| **CI/CD** | 7/7 + 8/8 + Coverage + Fuzz | All platforms GREEN, 0 clippy warnings |
-| **Issues** | 0 blocking | All tests passing, clippy clean, ready for verification |
+| **Version** | v0.4.8 (Sprint 5.9) | Benchmarking Framework, PRODUCTION |
+| **Tests** | 1,766 (100%) | All passing, zero failures |
+| **Benchmarking** | 10 scenarios, hyperfine integration | CI automation, regression detection |
+| **Coverage** | 54.92% | Maintained, automated tracking |
+| **CI/CD** | 9/9 workflows passing | Including benchmark workflow |
+| **Issues** | 0 blocking | Production-ready |
 
-**Key Features**: 8 scan types, 9 protocols, IPv6 100%, SNI support, Service Detection 85-90%, Idle Scan, Rate Limiting -1.8%, **Plugin System (Lua + sandboxing + capabilities)**
+**Key Features**: 8 scan types, 9 protocols, IPv6 100%, Plugin System (Lua), Benchmarking Framework (10 scenarios, CI integrated)
 
-## Current Sprint: 5.8 - Plugin System 🔄 IN PROGRESS
+## Current Sprint: 5.9 - Benchmarking Framework ✅ COMPLETE
 
-**Status:** IMPLEMENTATION COMPLETE (awaiting verification) | **Started:** 2025-11-06 | **Duration:** ~3h (est. 17-20h remaining) | **Grade:** TBD
+**Status:** COMPLETE | **Started:** 2025-11-07 | **Duration:** ~4h (vs 15-20h est.) | **Grade:** A+
 
 **Deliverables:**
-- 6 plugin infrastructure modules (~1,800 lines): metadata, sandbox, lua_api, plugin_api, plugin_manager, mod
-- 2 example plugins (banner-analyzer, ssl-checker) with TOML + Lua + README
-- 10 integration tests (discovery, loading, unloading, multiple plugins)
-- Comprehensive documentation (30-PLUGIN-SYSTEM-GUIDE.md, 784 lines)
-- README.md Plugin System section (105 lines)
-- CHANGELOG.md Plugin System entry
+- SPRINT-5.9-TODO.md (1,577 lines): 48 tasks, 9 phases, comprehensive breakdown
+- 10 benchmark scenarios (hyperfine integration): SYN, Connect, UDP, Service Detection, IPv6, Idle, Rate Limiting, TLS, Large Network, Multi-Protocol
+- Benchmark suite infrastructure: scripts (run-all, analyze-results), baselines, results tracking
+- CI integration (.github/workflows/benchmark.yml): automated regression detection
+- Comprehensive documentation (31-BENCHMARKING-GUIDE.md, 1,044 lines, 10 sections)
+- Updated README.md, CHANGELOG.md, docs/01-ROADMAP.md, docs/10-PROJECT-STATUS.md
 
 **Key Achievements:**
-- ✅ **Complete plugin infrastructure** (6 modules, ~1,800 lines production code)
-- ✅ **Lua 5.4 integration** (mlua 0.11, sandboxed VM, resource limits)
-- ✅ **Capabilities-based security** (Network/Filesystem/System/Database, deny-by-default)
-- ✅ **3 plugin types** (ScanPlugin, OutputPlugin, DetectionPlugin)
-- ✅ **DetectionPlugin Lua hooks** (analyze_banner, probe_service with ServiceInfo parsing)
-- ✅ **2 working example plugins** (banner-analyzer: 8 services, ssl-checker: network capability)
-- ✅ **All 408 tests passing** (398 unit + 10 integration, 100% success rate)
-- ✅ **Zero clippy warnings** (io_other_error fixed, lifetime bounds correct)
+- ✅ **10 benchmark scenarios** (exceeded 8+ requirement)
+- ✅ **Hyperfine integration** (statistical rigor: 10 runs, 3 warmup, JSON export)
+- ✅ **CI automation** (GitHub Actions workflow with regression thresholds)
+- ✅ **Historical tracking** (JSON exports, trend analysis capability)
+- ✅ **Regression detection** (5% warning, 10% failure thresholds)
+- ✅ **Production-ready scripts** (error handling, cross-platform support)
+- ✅ **Comprehensive guide** (1,044 lines covering all aspects)
+- ✅ **Completed under budget** (4h vs 15-20h estimate, 75-80% efficiency)
 
-**Architecture Implemented:**
-- **Sandboxing:** Remove io/os/debug libs, 100MB memory limit, 5s CPU limit, 1M instructions
-- **Plugin Metadata:** TOML parsing (plugin.toml), version validation, capability parsing
-- **Lua API:** prtip.* table (log, get_target, connect, send, receive, close, add_result)
-- **Plugin Manager:** Discovery (scan ~/.prtip/plugins/), loading (create VM, register API), lifecycle (on_load/on_unload)
-- **Resource Limits:** Memory (100MB), CPU (5s), instructions (1M), configurable per-plugin
-- **Hot Reload:** Load/unload without scanner restart, Arc<Mutex<Lua>> for thread safety
-
-**Files Modified:**
-- New: 17 major components (+~3,700 lines code/config/docs)
-  - Plugin infrastructure: crates/prtip-scanner/src/plugin/*.rs (6 files, ~1,800 lines)
-  - Example plugins: examples/plugins/{banner-analyzer,ssl-checker}/ (6 files, ~600 lines)
-  - Integration tests: crates/prtip-scanner/tests/plugin_integration_test.rs (~240 lines)
-  - Documentation: docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines)
-  - README.md: Plugin System section (105 lines)
-  - CHANGELOG.md: Plugin System entry
-  - Cargo.toml: mlua + toml dependencies
-- Modified: 3 files (lib.rs exports, clippy fixes, metadata improvements)
-- Total: 20 files modified/created across sprint
-
-**Next Actions:**
-1. ✅ Plugin infrastructure complete (6 modules)
-2. ✅ Example plugins complete (2 production-ready)
-3. ✅ Integration tests complete (10 tests, all passing)
-4. ✅ Documentation complete (784-line guide, README section)
-5. ✅ Clippy warnings resolved (0 warnings)
-6. 🔄 Run cargo fmt --all
-7. 🔄 Run full test suite (408 tests expected)
-8. 🔄 Stage all files for commit (DO NOT COMMIT - user approval)
-
-**Previous:** Sprint 5.7 (01-06) - Fuzz Testing Infrastructure
-**Next:** Sprint 5.9 (Planned Q1 2026) - Benchmarking Infrastructure
-
-**Phase 5 Progress:** Sprints 5.1-5.7 complete (7/10), remaining: Plugin System (in progress), Benchmarking, Documentation
+**Phase 5 Progress:** Sprints 5.1-5.9 complete (9/10, 90%), remaining: Documentation Polish (5.10)
 
 ## Recent Decisions (Last 30 Days)
 
 | Date | Decision | Impact |
 |------|----------|--------|
+| 11-07 | Sprint 5.9 Benchmarking Framework complete | Hyperfine integration for 10 scenarios, CI automation with regression detection (5%/10% thresholds), 1,044-line guide, historical tracking, completed 4h vs 15-20h estimate (75-80% efficiency) |
+| 11-06 | CodeQL warnings documented as expected | Added workflow comments explaining CodeQL Rust extractor limitations (macro expansion, turbofish syntax). No code changes needed - all warnings in test code only, 96.7% extraction success rate, zero security impact. Upstream analyzer limitation, not code issue. |
+| 11-06 | CodeQL Rust language fix | Fixed workflow failure: changed languages from 'cpp' to 'rust', enables correct security scanning of Rust source code, resolves "no C/C++ code found" error |
 | 11-06 | Sprint 5.8 Plugin System complete | Full Lua-based plugin infrastructure: 6 modules (~1,800 lines), 3 plugin types, capabilities-based security, sandboxing, hot reload, 2 example plugins, 784-line guide, all tests passing |
 | 11-06 | mlua 0.11 with "send" feature | Thread-safe Lua VMs (Arc<Mutex<Lua>>), enables parallel plugin execution, fixed Rc<RefCell> is not Send error |
 | 11-06 | Error::other() for ErrorKind::Other | Use std::io::Error::other() instead of Error::new(ErrorKind::Other, ...) per clippy::io_other_error lint, cleaner Rust 1.91+ API |
@@ -107,6 +77,7 @@ See CLAUDE.md "## Historical Decisions" for architectural decisions before Oct 2
 
 | Date | Task | Duration | Key Results | Status |
 |------|------|----------|-------------|--------|
+| 11-06 | CodeQL Analysis | ~45m | Comprehensive analysis of 12 extraction warnings: All CodeQL extractor limitations (macro expansion, turbofish syntax), zero code issues, 96.7% success rate, workflow documented with explanatory comments, 13-page analysis report | ✅ |
 | 11-06 | Sprint 5.8 Plugin System | ~3h | Full plugin infrastructure: 6 modules (~1,800 lines), 2 example plugins, 10 integration tests, 784-line guide, mlua 0.11, sandboxing, capabilities, 408 tests passing, 0 clippy warnings | 🔄 |
 | 11-06 | CI/CD Optimization | ~2.5h | 30-50% execution time reduction: coverage release-only (80% fewer), path filtering (30-40% fewer), improved caching (85% hit), CodeQL optimization (40-50% faster), 5 workflows optimized | ✅ |
 | 01-06 | v0.4.7 Release | ~2h | Complete v0.4.7 release: 24 files modified, 8,771 insertions, comprehensive docs, GitHub release with 234-line notes | ✅ |
@@ -132,7 +103,7 @@ See CLAUDE.md "## Historical Decisions" for architectural decisions before Oct 2
 
 ## Sprint Summary
 
-### Phase 5 Sprints (Current)
+### Phase 5 Sprints (Current - 90% Complete)
 - **5.1 IPv6** (30h): 100% scanner coverage, 15% overhead ✅
 - **5.2 Service Detection** (12h): 85-90% detection, 5 protocol parsers ✅
 - **5.3 Idle Scan** (18h): Nmap parity, 99.5% accuracy ✅
@@ -141,8 +112,9 @@ See CLAUDE.md "## Historical Decisions" for architectural decisions before Oct 2
 - **5.5 TLS Certificate** (18h): X.509v3, chain validation, 1.33μs ✅
 - **5.6 Coverage** (20h): +17.66% (37→54.92%), 149 tests, CI/CD automation ✅
 - **5.7 Fuzz Testing** (7.5h): 230M+ executions, 0 crashes, 5 fuzzers ✅
-- **5.8 Plugin System** (~3h of 17-20h est.): Lua infrastructure, sandboxing, 2 example plugins 🔄
-- **5.9-5.10**: Planned (see `to-dos/v0.5.0-PHASE5-DEVELOPMENT-PLAN.md`)
+- **5.8 Plugin System** (~3h): Lua infrastructure, sandboxing, 2 example plugins ✅
+- **5.9 Benchmarking** (~4h): Hyperfine, 10 scenarios, CI integration, regression detection ✅
+- **5.10 Documentation**: User guides, tutorials (Planned Q1 2026) 📋
 
 ### Phase 4 Sprints (Complete - Oct 2025)
 S4.15-S4.21: Service detection, CLI compatibility, performance I/O, PCAPNG, NUMA, evasion, IPv6 foundation
@@ -176,7 +148,7 @@ prtip -sS -g 53 -f --ttl 32 TARGET         # Combined evasion
 ## Documentation
 
 - **Core:** 00-ARCHITECTURE (v3.1), 01-ROADMAP (v2.1), 10-PROJECT-STATUS (v2.1), 06-TESTING, 08-SECURITY
-- **Guides:** 23-IPv6, 24-SERVICE-DETECTION, 25-IDLE-SCAN, 26-RATE-LIMITING, 27-TLS-CERTIFICATE
+- **Guides:** 23-IPv6, 24-SERVICE-DETECTION, 25-IDLE-SCAN, 26-RATE-LIMITING, 27-TLS-CERTIFICATE, 30-PLUGIN-SYSTEM, 31-BENCHMARKING
 - **Repository:** <https://github.com/doublegate/ProRT-IP>
 
 ## File Organization

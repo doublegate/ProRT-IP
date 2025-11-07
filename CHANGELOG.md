@@ -9,7 +9,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- None yet
+**Benchmarking Framework (Sprint 5.9 - 2025-11-06):**
+
+Comprehensive performance validation infrastructure enabling continuous regression detection, competitive validation, and baseline tracking.
+
+**Core Features:**
+
+1. **8 Benchmark Scenarios:**
+   - SYN Scan (1,000 ports): Validates throughput ("10M+ pps" claim) - Target <100ms
+   - Connect Scan (3 common ports): Real-world baseline - Target <50ms
+   - UDP Scan (3 UDP services): Slow protocol validation - Target <500ms
+   - Service Detection: Overhead validation - Target <10%
+   - IPv6 Overhead: IPv4 vs IPv6 comparison - Target <15%
+   - Idle Scan: Timing validation - Target 500-800ms/port
+   - Rate Limiting: AdaptiveRateLimiterV3 overhead - Target <5% (claimed -1.8%)
+   - TLS Parsing: Certificate parsing performance - Target ~1.33μs
+
+2. **hyperfine Integration:**
+   - Statistical rigor (mean, stddev, outlier detection with IQR method)
+   - JSON export for machine-readable results
+   - Warmup runs (--warmup 3) to stabilize caches
+   - Minimum 10 measurement runs per scenario
+
+3. **Regression Detection:**
+   - Automated comparison: baseline vs current results
+   - Thresholds: PASS (<5%), WARN (5-10%), FAIL (>10%), IMPROVED (faster)
+   - Statistical significance testing (t-test with p<0.05)
+   - Exit codes for CI integration (0=pass, 1=warn, 2=fail)
+
+4. **CI/CD Integration:**
+   - GitHub Actions workflow (`.github/workflows/benchmark.yml`)
+   - Triggers: Push to main, PRs, weekly schedule (Monday 00:00 UTC), manual
+   - Automated PR comments with performance summary
+   - Artifact retention (7 days) for historical comparison
+
+5. **Baseline Management:**
+   - Versioned baselines (baseline-v0.4.8.json, etc.)
+   - Metadata tracking (date, platform, hardware, hyperfine version)
+   - Update on major releases (v0.5.0, v0.6.0, etc.)
+
+**Files Added (22 new files):**
+- `benchmarks/05-Sprint5.9-Benchmarking-Framework/README.md` (framework overview, ~200 lines)
+- `benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts/*.sh` (15 scripts, ~1,500 lines)
+  - 8 scenario scripts (01-syn-scan through 08-tls-cert-parsing)
+  - run-all-benchmarks.sh (orchestrator, ~150 lines)
+  - analyze-results.sh (regression detection, ~200 lines)
+  - comparison-report.sh (markdown reports, ~120 lines)
+- `docs/31-BENCHMARKING-GUIDE.md` (comprehensive guide, 900+ lines)
+- `baselines/baseline-v0.4.8.json` + metadata.md
+- Internal docs: HYPERFINE-RESEARCH.md, BENCHMARK-SCENARIOS.md, etc.
+
+**Files Modified (2):**
+- `README.md`: Added Performance Benchmarks section with framework overview (+40 lines)
+- `CHANGELOG.md`: This entry
+
+**Documentation:**
+- Comprehensive guide: `docs/31-BENCHMARKING-GUIDE.md` (900+ lines)
+  - 10 sections: Overview, Architecture, Running Locally, Scenarios, CI, Interpreting Results, Adding New, Troubleshooting, Optimization Tips, Historical Analysis
+- Research: `/tmp/ProRT-IP/HYPERFINE-RESEARCH.md` (150 lines technical details)
+- Sprint TODO: `to-dos/SPRINT-5.9-TODO.md` (1,577 lines task breakdown)
+
+**Strategic Value:**
+- **Regression Detection:** Catch performance degradation before shipping
+- **Competitive Validation:** Prove claims with reproducible data (vs Nmap, Masscan, RustScan)
+- **Baseline Establishment:** Foundation for future optimizations
+- **Performance Culture:** Demonstrates engineering rigor
+
+**Next Steps:**
+- Establish v0.4.8 baseline (run-all-benchmarks.sh --baseline)
+- Enable CI workflow (currently manual)
+- Future (v0.6.0+): Performance dashboard (GitHub Pages), multi-platform baselines, Criterion.rs micro-benchmarks
 
 ### Changed
 

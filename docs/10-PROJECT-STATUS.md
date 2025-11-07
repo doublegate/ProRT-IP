@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 2.3
+**Version:** 2.4
 **Last Updated:** 2025-11-06
-**Current Phase:** Phase 5 IN PROGRESS (80% complete, 8/10 sprints) → v0.5.0 Target Q1 2026
-**Current Sprint:** Sprint 5.8 COMPLETE (Plugin System) | Next: Sprint 5.9 Planning (Benchmarking)
+**Current Phase:** Phase 5 IN PROGRESS (90% complete, 9/10 sprints) → v0.5.0 Target Q1 2026
+**Current Sprint:** Sprint 5.9 COMPLETE (Benchmarking Framework) | Next: Sprint 5.10 Planning (Documentation Polish)
 
 ---
 
@@ -50,11 +50,11 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 ## Current Status
 
-### Project Metrics (v0.4.8)
+### Project Metrics (v0.4.9)
 
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
-| **Version** | v0.4.8 | ✅ Current | Released 2025-11-06 |
+| **Version** | v0.4.9 | ✅ Current | Released 2025-11-06 |
 | **Tests** | 1,766 (100% passing) | ✅ Excellent | +12 from v0.4.7 (1,754→1,766) |
 | **Coverage** | 54.92% | ✅ Good | Maintained from Sprint 5.6 |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |
@@ -76,7 +76,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Enhancement Cycles 1-8** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 8/8 cycles |
 | **Phase 3: Detection Systems** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 24/24 tasks |
 | **Phase 4: Performance** | ✅ COMPLETE | 2025-10-09 | 2025-10-26 | 22/22 sprints (4.1-4.22) |
-| **Phase 5: Advanced Features** | 🔄 IN PROGRESS | 2025-10-28 | Q1 2026 | 8/10 sprints (80%) |
+| **Phase 5: Advanced Features** | 🔄 IN PROGRESS | 2025-10-28 | Q1 2026 | 9/10 sprints (90%) |
 | **Phase 6: TUI** | 📋 Planned | Q2 2026 | TBD | 0/12 tasks |
 | **Phase 7: Release** | 📋 Planned | Q3 2026 | TBD | 0/13 tasks |
 
@@ -93,10 +93,10 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | 5.6: Code Coverage Enhancement | ✅ COMPLETE | 20h | 149 tests, 54.92% coverage (+17.66%), CI/CD automation, 28-CI-CD-COVERAGE.md (866L) | +149 (1,618→1,728†) |
 | 5.7: Fuzz Testing | ✅ COMPLETE | 7.5h | 5 fuzzers, 807 seeds, 230M+ exec (0 crashes), 29-FUZZING-GUIDE.md (784L) | +26 (1,728†→1,754) |
 | 5.8: Plugin System Foundation | ✅ COMPLETE | ~3h | 6 modules, Lua 5.4, sandbox, 2 examples, 784-line guide | +12 (1,754→1,766) |
-| 5.9: Comprehensive Benchmarking | 📋 PLANNING | 15-20h (est) | Criterion integration, regression detection | TBD |
+| 5.9: Benchmarking Framework | ✅ COMPLETE | ~4h | 8 scenarios, hyperfine, regression detection, 31-BENCHMARKING-GUIDE.md (900+L) | +0 (1,766) |
 | 5.10: Documentation Overhaul | 📋 PLANNING | 10-15h (est) | Final Phase 5 docs, API reference | TBD |
 
-**Phase 5 Cumulative**: +428 tests (31.9% increase, 1,338→1,766), Phase 5 complete: 8/10 sprints (80%), 8 major releases (v0.4.1-v0.4.8)
+**Phase 5 Cumulative**: +428 tests (31.9% increase, 1,338→1,766), Phase 5 complete: 9/10 sprints (90%), 9 major releases (v0.4.1-v0.4.9)
 
 **Note:** † Sprint 5.6 added 149 tests but actual test count remained 1,728 until Sprint 5.7 due to test reorganization
 

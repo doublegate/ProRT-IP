@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- None yet
+
+### Changed
+
+- None yet
+
+### Fixed
+
+- None yet
+
+## [0.4.9] - 2025-11-06
+
+### Added
+
 **Benchmarking Framework (Sprint 5.9 - 2025-11-06):**
 
 Comprehensive performance validation infrastructure enabling continuous regression detection, competitive validation, and baseline tracking.
@@ -44,7 +58,7 @@ Comprehensive performance validation infrastructure enabling continuous regressi
    - Artifact retention (7 days) for historical comparison
 
 5. **Baseline Management:**
-   - Versioned baselines (baseline-v0.4.8.json, etc.)
+   - Versioned baselines (baseline-v0.4.9.json, etc.)
    - Metadata tracking (date, platform, hardware, hyperfine version)
    - Update on major releases (v0.5.0, v0.6.0, etc.)
 
@@ -56,7 +70,7 @@ Comprehensive performance validation infrastructure enabling continuous regressi
   - analyze-results.sh (regression detection, ~200 lines)
   - comparison-report.sh (markdown reports, ~120 lines)
 - `docs/31-BENCHMARKING-GUIDE.md` (comprehensive guide, 900+ lines)
-- `baselines/baseline-v0.4.8.json` + metadata.md
+- `baselines/baseline-v0.4.9.json` + metadata.md
 - Internal docs: HYPERFINE-RESEARCH.md, BENCHMARK-SCENARIOS.md, etc.
 
 **Files Modified (2):**
@@ -76,17 +90,17 @@ Comprehensive performance validation infrastructure enabling continuous regressi
 - **Performance Culture:** Demonstrates engineering rigor
 
 **Next Steps:**
-- Establish v0.4.8 baseline (run-all-benchmarks.sh --baseline)
+- Establish v0.4.9 baseline (run-all-benchmarks.sh --baseline)
 - Enable CI workflow (currently manual)
 - Future (v0.6.0+): Performance dashboard (GitHub Pages), multi-platform baselines, Criterion.rs micro-benchmarks
 
 ### Changed
 
-- None yet
+- None
 
 ### Fixed
 
-- None yet
+- None
 
 ## [0.4.8] - 2025-11-06
 

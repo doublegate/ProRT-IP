@@ -95,6 +95,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - [Quick Start](#quick-start)
 - [Help System](#help-system)
 - [Usage Examples](#usage-examples)
+- [Plugin System](#plugin-system-)
 - [Nmap Compatibility](#nmap-compatibility-)
 - [Development Roadmap](#development-roadmap)
 - [Technical Specifications](#technical-specifications)
@@ -1121,6 +1122,113 @@ $ time prtip --scan-type connect -p 1-65535 127.0.0.1     # ~190ms
 # With database storage
 $ time prtip --scan-type connect -p 1-10000 --with-db scan.db 127.0.0.1  # ~75ms
 ```
+
+---
+
+## Plugin System 🔌
+
+**ProRT-IP v0.5.0+** includes a powerful Lua-based plugin system for extending scanner functionality with custom detection logic, output formats, and scan lifecycle hooks.
+
+### Plugin Types
+
+1. **Detection Plugins** - Enhanced service detection and banner analysis
+   - Custom service fingerprinting logic
+   - Protocol-specific analysis (HTTP, FTP, SSH, etc.)
+   - Banner pattern matching and extraction
+   - Example: `banner-analyzer`, `ssl-checker`
+
+2. **Output Plugins** - Custom result formatting and export
+   - Generate custom report formats
+   - Export to external systems (SIEM, ticketing, etc.)
+   - Transform and filter scan results
+
+3. **Scan Plugins** - Lifecycle hooks for scan coordination
+   - Pre-scan target modification
+   - Per-target custom actions
+   - Post-scan aggregation and analysis
+
+### Plugin Features
+
+- **Sandboxed Execution:** Lua VM with resource limits (100MB memory, 5s CPU, 1M instructions)
+- **Capabilities-Based Security:** Explicit Network/Filesystem/System/Database permissions (deny-by-default)
+- **Hot Reload:** Load/unload plugins without restarting scanner
+- **Plugin API:** `prtip.*` table with logging, network, and result manipulation functions
+- **Example Plugins:** 2 production-ready detection plugins included
+
+### Quick Examples
+
+```bash
+# List available plugins
+prtip plugin list
+
+# Load a specific plugin
+prtip plugin load banner-analyzer
+
+# Run scan with plugins loaded
+prtip -sS -p 80,443 --plugin banner-analyzer,ssl-checker 192.168.1.0/24
+
+# Plugin directory: ~/.prtip/plugins/
+# Each plugin: plugin.toml + main.lua
+```
+
+### Example Plugins
+
+**1. banner-analyzer** (Detection Plugin)
+- Detects: HTTP, SSH, FTP, SMTP, MySQL, PostgreSQL, Redis, MongoDB
+- No capabilities required (passive analysis)
+- 85-90% detection accuracy
+
+**2. ssl-checker** (Detection Plugin)
+- SSL/TLS protocol detection
+- Certificate validation (future integration)
+- Requires: `network` capability
+
+### Creating Plugins
+
+```lua
+-- ~/.prtip/plugins/my-plugin/main.lua
+
+function on_load(config)
+    prtip.log("info", "My plugin loaded")
+    return true
+end
+
+function analyze_banner(banner)
+    if banner:match("MyService/") then
+        return {
+            service = "myservice",
+            product = "MyService",
+            version = banner:match("MyService/(%d+%.%d+)"),
+            confidence = 0.9
+        }
+    end
+    return nil
+end
+
+function on_unload()
+    prtip.log("info", "My plugin unloaded")
+end
+```
+
+```toml
+# ~/.prtip/plugins/my-plugin/plugin.toml
+
+[plugin]
+name = "my-plugin"
+version = "1.0.0"
+author = "Your Name"
+description = "Custom service detection"
+plugin_type = "detection"
+capabilities = []  # No special permissions needed
+```
+
+### Documentation
+
+- **Full Guide:** [docs/30-PLUGIN-SYSTEM-GUIDE.md](docs/30-PLUGIN-SYSTEM-GUIDE.md) (784 lines)
+- **Plugin API Reference:** Complete prtip.* API documentation
+- **Security Model:** Sandboxing, capabilities, resource limits
+- **Development Guide:** Testing, debugging, best practices
+- **Example Plugins:** Source code in `examples/plugins/`
 
 ---
 

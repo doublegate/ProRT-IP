@@ -59,6 +59,7 @@ tracing = { workspace = true }
 # Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }
+toml = "0.8"
 
 # Time
 chrono = { workspace = true }
@@ -70,6 +71,9 @@ indicatif = "0.17"
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 regex = { workspace = true }
+
+# Plugin system
+mlua = { workspace = true }
 
 # PCAPNG packet capture
 pcap-file = "2.0"

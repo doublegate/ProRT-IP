@@ -67,6 +67,7 @@ pub mod memory_storage;
 pub mod os_fingerprinter;
 pub mod os_probe;
 pub mod pcapng;
+pub mod plugin;
 pub mod progress_bar;
 pub mod scheduler;
 pub mod service_detector;
@@ -103,6 +104,10 @@ pub use memory_storage::MemoryStorage;
 pub use os_fingerprinter::{OsDetectionResult, OsFingerprinter};
 pub use os_probe::OsProbeEngine;
 pub use pcapng::{Direction, PcapngWriter};
+pub use plugin::{
+    Capability, DetectionPlugin, LuaContext, OutputPlugin, Plugin, PluginCapabilities,
+    PluginManager, PluginType, ResourceLimits, ScanPlugin, SecurityError,
+};
 pub use progress_bar::ScanProgressBar;
 pub use scheduler::ScanScheduler;
 pub use service_detector::{ServiceDetector, ServiceInfo};

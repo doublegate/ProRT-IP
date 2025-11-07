@@ -6,6 +6,10 @@ rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Core types, error handling, and configuration for ProRT-IP WarScan"
+keywords.workspace = true
+categories.workspace = true
+documentation.workspace = true
 
 [dependencies]
 serde = { workspace = true }

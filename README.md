@@ -112,9 +112,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5 IN PROGRESS ✅ | **v0.4.9 (Sprint 5.9)** ✅ (2025-11-06 - Benchmarking Framework Complete) | **1,766 Tests (100%)** | **54.92% Coverage** 📈
+**Current Phase:** Phase 5 COMPLETE ✅ | **v0.5.0 (Phase 5 Milestone)** ✅ (2025-11-07 - All 10 Sprints Complete) | **1,766 Tests (100%)** | **54.92% Coverage** 📈
 
-**Latest Release:** v0.4.9 (Released 2025-11-06 - Benchmarking Framework: 8 scenarios, hyperfine integration, regression detection, CI/CD automation, performance validation)
+**Latest Release:** v0.5.0 (Released 2025-11-07 - Phase 5 Complete: IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting V3 -1.8%, TLS Analysis, Plugin System, Fuzz Testing 230M+ executions, Benchmarking Framework, Documentation Polish)
 
 **Quality Metrics:** 1,766/1,766 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
 
@@ -665,7 +665,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 
 ---
 
-### Phase 5 Progress (🔄 IN PROGRESS - 90% Complete)
+### Phase 5 Progress (✅ COMPLETE - 100%)
 
 **Status:** 9 of 10 core sprints complete (Sprint 5.5b is refinement sprint, not counted in 10 core sprints)
 
@@ -728,13 +728,13 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 8. ✅ **Sprint 5.7: Fuzz Testing Infrastructure** - **COMPLETE** (v0.4.7, released 2025-01-06)
 9. ✅ **Sprint 5.8: Plugin System Foundation (Lua scripting)** - **COMPLETE** (v0.4.8, released 2025-11-06)
 10. ✅ **Sprint 5.9: Comprehensive Benchmarking** - **COMPLETE** (v0.4.9, released 2025-11-06)
-11. 📋 **Sprint 5.10: Documentation & Release Prep (v0.5.0)** - PLANNED
+11. ✅ **Sprint 5.10: Documentation Polish** - **COMPLETE** (v0.5.0, released 2025-11-07)
 
-**Phase 5 Target:** v0.5.0 (Q1 2026)
+**Phase 5 Complete:** v0.5.0 (Released 2025-11-07)
 
 **Progress Summary:**
 
-- **Core Sprints Completed:** 9 of 10 (90%)
+- **Core Sprints Completed:** 10 of 10 (100%)
 - **Total Sprints Including Refinements:** 10 completed (5.1, 5.2, 5.3, 5.X, 5.5, 5.5b, 5.6, 5.7, 5.8, 5.9)
 - **Tests:** 1,338 (Phase 4) → 1,766 (current) = +428 tests (+32% growth)
 - **Documentation:** 6,060 lines across 4 comprehensive Phase 5 guides
@@ -759,6 +759,8 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 
 Complete technical documentation is available in the [`docs/`](docs/) directory:
 
+#### Core Documentation
+
 | Document | Description |
 |----------|-------------|
 | [Architecture](docs/00-ARCHITECTURE.md) | System architecture and design patterns |
@@ -766,16 +768,47 @@ Complete technical documentation is available in the [`docs/`](docs/) directory:
 | [Technical Specs](docs/02-TECHNICAL-SPECS.md) | Protocol specifications and data formats |
 | [Dev Setup](docs/03-DEV-SETUP.md) | Development environment setup |
 | [Implementation Guide](docs/04-IMPLEMENTATION-GUIDE.md) | Code structure and patterns |
-| [API Reference](docs/05-API-REFERENCE.md) | Complete API documentation |
 | [Testing](docs/06-TESTING.md) | Testing strategy and coverage |
 | [Performance](docs/07-PERFORMANCE.md) | Benchmarks and optimization |
 | [Security](docs/08-SECURITY.md) | Security implementation guide |
 | [FAQ](docs/09-FAQ.md) | Frequently asked questions |
 | [Project Status](docs/10-PROJECT-STATUS.md) | Current status and task tracking |
+
+#### User Documentation (NEW - Sprint 5.10)
+
+| Document | Description |
+|----------|-------------|
+| [**User Guide**](docs/32-USER-GUIDE.md) | **Complete user guide from installation to advanced usage (1,180 lines)** |
+| [**Tutorials**](docs/33-TUTORIALS.md) | **7+ interactive tutorials with step-by-step walkthroughs (760 lines)** |
+| [**Examples Gallery**](docs/34-EXAMPLES.md) | **39 real-world examples organized by category (680 lines)** |
+| [**mdBook Reference**](docs/SUMMARY.md) | **Searchable documentation with mdBook integration** |
+
+#### API Reference
+
+| Document | Description |
+|----------|-------------|
+| [API Reference](docs/05-API-REFERENCE.md) | Complete API documentation |
+| [Rustdoc (prtip-core)](https://docs.rs/prtip-core) | Core types and configuration API |
+| [Rustdoc (prtip-scanner)](https://docs.rs/prtip-scanner) | Scanner engine API with 150+ line examples |
+| [Rustdoc (prtip-network)](https://docs.rs/prtip-network) | Low-level packet crafting API |
+| [Rustdoc (prtip-cli)](https://docs.rs/prtip-cli) | Command-line interface API |
+
+#### Feature Guides
+
+| Document | Description |
+|----------|-------------|
 | [Platform Support](docs/15-PLATFORM-SUPPORT.md) | Comprehensive platform compatibility guide |
 | [Database Guide](docs/DATABASE.md) | SQLite query interface and export utilities |
-| [IPv6 Guide](docs/23-IPv6-GUIDE.md) | **Comprehensive IPv6 scanning guide (NEW - Sprint 5.1, 1,958 lines)** |
 | [Evasion Guide](docs/19-EVASION-GUIDE.md) | Network evasion techniques (fragmentation, TTL, decoys, source port) |
+| [IPv6 Guide](docs/23-IPv6-GUIDE.md) | Comprehensive IPv6 scanning guide (Sprint 5.1, 1,958 lines) |
+| [Service Detection Guide](docs/24-SERVICE-DETECTION-GUIDE.md) | Service fingerprinting guide (Sprint 5.2) |
+| [Idle Scan Guide](docs/25-IDLE-SCAN-GUIDE.md) | Idle/Zombie scan implementation (Sprint 5.3) |
+| [Rate Limiting Guide](docs/26-RATE-LIMITING-GUIDE.md) | V3 rate limiter with -1.8% overhead (Sprint 5.X) |
+| [TLS Certificate Guide](docs/27-TLS-CERTIFICATE-GUIDE.md) | X.509v3 certificate analysis (Sprint 5.5) |
+| [CI/CD Guide](docs/28-CI-CD-GUIDE.md) | Continuous integration and deployment |
+| [Fuzz Testing Guide](docs/29-FUZZ-TESTING-GUIDE.md) | Structure-aware fuzzing (Sprint 5.7) |
+| [Plugin System Guide](docs/30-PLUGIN-SYSTEM-GUIDE.md) | Lua plugin development (Sprint 5.8) |
+| [Benchmarking Guide](docs/31-BENCHMARKING-GUIDE.md) | Performance benchmarking framework (Sprint 5.9) |
 
 ### Custom Commands (`.claude/commands/`)
 

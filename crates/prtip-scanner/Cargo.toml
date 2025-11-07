@@ -6,6 +6,10 @@ rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Scanner engine with TCP, UDP, stealth scans, service detection, and TLS analysis"
+keywords.workspace = true
+categories.workspace = true
+documentation.workspace = true
 
 [features]
 # Vendor OpenSSL for static linking (required for musl builds)

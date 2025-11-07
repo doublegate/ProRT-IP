@@ -6,6 +6,10 @@ rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Command-line interface for ProRT-IP WarScan network scanner"
+keywords.workspace = true
+categories.workspace = true
+documentation.workspace = true
 
 [[bin]]
 name = "prtip"

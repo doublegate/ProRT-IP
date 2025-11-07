@@ -157,7 +157,7 @@ pub struct Args {
     /// Typical values: 16 (low rate), 64 (balanced, default), 128 (high rate).
     /// Auto-detected based on --max-rate if not specified.
     ///
-    /// Example: prtip --mmsg-batch-size 128 --max-rate 1000000 <target>
+    /// Example: prtip --mmsg-batch-size 128 --max-rate 1000000 \<target\>
     #[arg(long, value_name = "SIZE", value_parser = clap::value_parser!(u16).range(16..=1024), help_heading = "TIMING AND PERFORMANCE")]
     pub mmsg_batch_size: Option<u16>,
 
@@ -357,12 +357,12 @@ pub struct Args {
     // ============================================================================
     // TIMING FLAGS (nmap-compatible)
     // ============================================================================
-    /// Maximum probe retransmissions (nmap --max-retries <N>)
+    /// Maximum probe retransmissions (nmap --max-retries \<N\>)
     ///
     /// Cap on number of retransmissions for unresponsive probes.
     /// Lower values speed up scans but may miss hosts on lossy networks.
     ///
-    /// Example: prtip --max-retries 5 <target>
+    /// Example: prtip --max-retries 5 \<target\>
     #[arg(
         long = "max-retries",
         value_name = "N",
@@ -370,12 +370,12 @@ pub struct Args {
     )]
     pub max_retries: Option<u32>,
 
-    /// Give up on host after this time (nmap --host-timeout <time>)
+    /// Give up on host after this time (nmap --host-timeout \<time\>)
     ///
     /// Timeout for individual hosts. Prevents wasting time on unresponsive targets.
     /// Accepts time units: 100ms, 5s, 10m, 1h
     ///
-    /// Example: prtip --host-timeout 30m <target>
+    /// Example: prtip --host-timeout 30m \<target\>
     #[arg(
         long = "host-timeout",
         value_name = "time",
@@ -383,12 +383,12 @@ pub struct Args {
     )]
     pub host_timeout: Option<String>,
 
-    /// Maximum delay between probes (nmap --max-scan-delay <time>)
+    /// Maximum delay between probes (nmap --max-scan-delay \<time\>)
     ///
     /// Cap on probe delay to prevent excessive slowdown.
     /// Accepts time units: 100ms, 1s, etc.
     ///
-    /// Example: prtip --max-scan-delay 500ms <target>
+    /// Example: prtip --max-scan-delay 500ms \<target\>
     #[arg(
         long = "max-scan-delay",
         value_name = "time",
@@ -396,12 +396,12 @@ pub struct Args {
     )]
     pub max_scan_delay: Option<String>,
 
-    /// Minimum packets per second (nmap --min-rate <N>)
+    /// Minimum packets per second (nmap --min-rate \<N\>)
     ///
     /// Ensure minimum scan rate regardless of network conditions.
     /// Useful for maintaining scan speed on slow networks.
     ///
-    /// Example: prtip --min-rate 100 <target>
+    /// Example: prtip --min-rate 100 \<target\>
     #[arg(
         long = "min-rate",
         value_name = "N",
@@ -512,7 +512,7 @@ pub struct Args {
     /// Filter output to display only interesting results. Dramatically reduces
     /// output size for large scans by hiding closed and filtered ports.
     ///
-    /// Example: prtip --open -p- <target>
+    /// Example: prtip --open -p- \<target\>
     #[arg(long, help_heading = "OUTPUT")]
     pub open: bool,
 
@@ -521,7 +521,7 @@ pub struct Args {
     /// Very verbose packet-level tracing. Useful for debugging and understanding
     /// scan behavior. Shows every packet transmitted and received.
     ///
-    /// Example: prtip --packet-trace <target>
+    /// Example: prtip --packet-trace \<target\>
     #[arg(long, help_heading = "OUTPUT")]
     pub packet_trace: bool,
 
@@ -530,16 +530,16 @@ pub struct Args {
     /// Show why each port is in its current state (syn-ack, rst, timeout, etc.).
     /// Useful for understanding firewall behavior and troubleshooting.
     ///
-    /// Example: prtip --reason <target>
+    /// Example: prtip --reason \<target\>
     #[arg(long, help_heading = "OUTPUT")]
     pub reason: bool,
 
-    /// Print scan statistics every N seconds (nmap --stats-every <time>)
+    /// Print scan statistics every N seconds (nmap --stats-every \<time\>)
     ///
     /// Display periodic statistics during long-running scans.
     /// Accepts time units: 1s, 30s, 5m, etc.
     ///
-    /// Example: prtip --stats-every 5s <target>
+    /// Example: prtip --stats-every 5s \<target\>
     #[arg(long, value_name = "time", help_heading = "OUTPUT")]
     pub stats_every: Option<String>,
 
@@ -646,7 +646,7 @@ pub struct Args {
     )]
     pub nmap_ack: bool,
 
-    /// Idle scan using zombie host (nmap -sI <zombie>) - Ultimate stealth
+    /// Idle scan using zombie host (nmap -sI \<zombie\>) - Ultimate stealth
     ///
     /// Perform completely anonymous port scanning via third-party zombie host.
     /// Preprocessed from -sI flag to --nmap-idle for internal use.
@@ -661,7 +661,7 @@ pub struct Args {
     )]
     pub nmap_idle: Option<String>,
 
-    /// Normal text output (nmap -oN <file>) - Human-readable text format
+    /// Normal text output (nmap -oN \<file\>) - Human-readable text format
     ///
     /// Writes scan results in plain text format similar to terminal output.
     /// Includes all scan details, banners, and service information.
@@ -672,7 +672,7 @@ pub struct Args {
           help_heading = "NMAP-COMPATIBLE OUTPUT")]
     pub output_normal: Option<PathBuf>,
 
-    /// XML output (nmap -oX <file>) - Machine-parseable XML format
+    /// XML output (nmap -oX \<file\>) - Machine-parseable XML format
     ///
     /// Generates nmap-compatible XML output for integration with tools like
     /// Metasploit, Nessus, or custom parsers. Preserves all scan metadata.
@@ -683,10 +683,10 @@ pub struct Args {
           help_heading = "NMAP-COMPATIBLE OUTPUT")]
     pub output_xml: Option<PathBuf>,
 
-    /// Greppable output (nmap -oG <file>) - Greppable line-based format
+    /// Greppable output (nmap -oG \<file\>) - Greppable line-based format
     ///
     /// Each host occupies one line, making it easy to grep, awk, or sed.
-    /// Format: Host: <ip> (<hostname>) Ports: <port>/<state>/<protocol>/<service>
+    /// Format: Host: \<ip\> (\<hostname\>) Ports: \<port\>/\<state\>/\<protocol\>/\<service\>
     ///
     /// Example: prtip -sS -p 1-1000 -oG scan.gnmap 10.0.0.0/24
     #[arg(long = "output-greppable", value_name = "FILE", hide = true,
@@ -694,10 +694,10 @@ pub struct Args {
           help_heading = "NMAP-COMPATIBLE OUTPUT")]
     pub output_greppable: Option<PathBuf>,
 
-    /// All output formats (nmap -oA <basename>) - Creates .txt, .xml, .gnmap files
+    /// All output formats (nmap -oA \<basename\>) - Creates .txt, .xml, .gnmap files
     ///
     /// Generates all three output formats (normal, XML, greppable) with the given
-    /// basename. Creates: <basename>.txt, <basename>.xml, <basename>.gnmap
+    /// basename. Creates: \<basename\>.txt, \<basename\>.xml, \<basename\>.gnmap
     ///
     /// Example: prtip -sS -p 80,443 -oA scan-results 192.168.1.0/24
     #[arg(long = "output-all-formats", value_name = "BASENAME", hide = true,
@@ -720,7 +720,7 @@ pub struct Args {
     )]
     pub fast_scan: bool,
 
-    /// Scan top N most common ports (nmap --top-ports <N>)
+    /// Scan top N most common ports (nmap --top-ports \<N\>)
     ///
     /// Scans the N most common ports based on nmap-services frequency database.
     /// Useful for quick scans: --top-ports 10 for quickest, --top-ports 1000 for thorough.
@@ -739,7 +739,7 @@ pub struct Args {
     /// Scan ports in sequential order (1, 2, 3...) instead of random order.
     /// Slightly faster but more detectable by IDS/IPS systems.
     ///
-    /// Example: prtip -r <target>
+    /// Example: prtip -r \<target\>
     #[arg(
         short = 'r',
         long = "no-randomize",
@@ -747,12 +747,12 @@ pub struct Args {
     )]
     pub no_randomize: bool,
 
-    /// Scan ports more common than specified ratio (nmap --port-ratio <ratio>)
+    /// Scan ports more common than specified ratio (nmap --port-ratio \<ratio\>)
     ///
     /// Scan ports more common than the given ratio (0.0-1.0).
     /// Advanced option for fine-grained port selection based on frequency.
     ///
-    /// Example: prtip --port-ratio 0.5 <target>
+    /// Example: prtip --port-ratio 0.5 \<target\>
     #[arg(
         long = "port-ratio",
         value_name = "ratio",
@@ -945,7 +945,7 @@ pub struct Args {
     /// Force use of raw ethernet frames instead of IP packets.
     /// Advanced option for low-level packet crafting.
     ///
-    /// Example: prtip --send-eth <target>
+    /// Example: prtip --send-eth \<target\>
     #[arg(long, help_heading = "MISCELLANEOUS", group = "send_method")]
     pub send_eth: bool,
 
@@ -954,7 +954,7 @@ pub struct Args {
     /// Force use of IP packets instead of raw ethernet frames.
     /// Default behavior for most scans.
     ///
-    /// Example: prtip --send-ip <target>
+    /// Example: prtip --send-ip \<target\>
     #[arg(long, help_heading = "MISCELLANEOUS", group = "send_method")]
     pub send_ip: bool,
 
@@ -963,7 +963,7 @@ pub struct Args {
     /// Skip privilege checks and assume raw socket access.
     /// Use when running as root/Administrator.
     ///
-    /// Example: prtip --privileged <target>
+    /// Example: prtip --privileged \<target\>
     #[arg(long, help_heading = "MISCELLANEOUS", group = "privilege")]
     pub privileged: bool,
 
@@ -972,7 +972,7 @@ pub struct Args {
     /// Force TCP connect scan mode without privilege checks.
     /// Mutually exclusive with --privileged.
     ///
-    /// Example: prtip --unprivileged <target>
+    /// Example: prtip --unprivileged \<target\>
     #[arg(long, help_heading = "MISCELLANEOUS", group = "privilege")]
     pub unprivileged: bool,
 
@@ -981,7 +981,7 @@ pub struct Args {
     /// Disable DNS lookups for faster scanning. Only IP addresses in output.
     /// Reduces scan time but loses hostname information.
     ///
-    /// Example: prtip -n <target>
+    /// Example: prtip -n \<target\>
     #[arg(short = 'n', long = "no-dns", help_heading = "MISCELLANEOUS")]
     pub no_dns: bool,
 

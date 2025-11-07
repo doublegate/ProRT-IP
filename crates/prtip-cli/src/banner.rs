@@ -59,7 +59,7 @@ impl Banner {
             self.version.bright_green(),
             "│".bright_black(),
             "Phase:".bright_white().bold(),
-            "4 COMPLETE".bright_green().bold()
+            "5 COMPLETE".bright_green().bold()
         );
         println!(
             "  {} {} {} {} {} {}",
@@ -70,7 +70,7 @@ impl Banner {
                 .underline(),
             "│".bright_black(),
             "Tests:".bright_white().bold(),
-            "1,338 passing".bright_green()
+            "1,766 passing".bright_green()
         );
         println!(
             "  {} {} {}",

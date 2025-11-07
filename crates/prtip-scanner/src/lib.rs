@@ -1,52 +1,219 @@
 //! ProRT-IP Scanner Engine
 //!
 //! This crate provides the core scanning functionality for ProRT-IP WarScan,
-//! including TCP connect scanning, host discovery, rate limiting, and result storage.
+//! including TCP, UDP, stealth scanning, service detection, and TLS analysis.
+//!
+//! # Overview
+//!
+//! The scanner engine combines the speed of Masscan with the depth of Nmap,
+//! providing:
+//!
+//! - **8 Scan Types**: SYN, Connect, UDP, FIN/NULL/Xmas, ACK, Idle/Zombie
+//! - **Service Detection**: 85-90% accuracy with 187+ protocol probes
+//! - **TLS Analysis**: X.509v3 certificate parsing, chain validation, cipher detection
+//! - **Stealth Techniques**: Fragmentation, decoys, timing control, TTL manipulation
+//! - **Rate Limiting**: Industry-leading -1.8% overhead with V3 algorithm
+//! - **IPv6 Support**: Dual-stack with <15% performance overhead
+//! - **Plugin System**: Lua-based extensibility with sandboxing
 //!
 //! # Architecture
 //!
-//! The scanner engine is organized into several specialized modules:
+//! The scanner engine is organized into specialized modules:
 //!
-//! - [`tcp_connect`]: TCP connect scan implementation using OS sockets
-//! - [`syn_scanner`]: TCP SYN scan (half-open) using raw packets
-//! - [`udp_scanner`]: UDP scan with protocol-specific payloads
-//! - [`stealth_scanner`]: Stealth scans (FIN, NULL, Xmas, ACK)
-//! - [`discovery`]: Host discovery via ICMP, ARP, and TCP SYN pings
-//! - [`rate_limiter`]: Token bucket rate limiting to control scan speed
-//! - [`timing`]: Advanced timing templates and adaptive rate control
-//! - [`storage`]: Async SQLite storage for scan results
+//! ## Core Scanners
+//!
+//! - [`tcp_connect`]: TCP connect scan using OS sockets (portable, no privileges)
+//! - [`syn_scanner`]: TCP SYN scan (half-open) using raw packets (requires root)
+//! - [`udp_scanner`]: UDP scan with protocol-specific payloads (DNS, SNMP, etc.)
+//! - [`stealth_scanner`]: Stealth scans (FIN, NULL, Xmas, ACK) for firewall detection
+//! - [`idle`]: Idle/Zombie scan for IP spoofing and anonymity
+//!
+//! ## Discovery & Detection
+//!
+//! - [`discovery`]: Host discovery via ICMP, ARP, TCP SYN pings, and NDP
+//! - [`service_detector`]: Service fingerprinting with nmap-service-probes
+//! - [`os_fingerprinter`]: OS detection with 2,600+ fingerprints
+//! - [`tls_certificate`]: X.509v3 certificate parsing and chain validation
+//! - [`banner_grabber`]: Application banner collection and analysis
+//!
+//! ## Performance & Control
+//!
+//! - [`adaptive_rate_limiter_v3`]: V3 rate limiter with -1.8% overhead
+//! - [`timing`]: Timing templates (T0-T5) and adaptive rate control
 //! - [`scheduler`]: High-level scan orchestration and coordination
+//! - [`concurrent_scanner`]: Parallel scanning with bounded concurrency
 //!
-//! # Example
+//! ## Storage & Output
+//!
+//! - [`storage`]: Async SQLite storage for scan results
+//! - [`pcapng`]: PCAPNG packet capture format for Wireshark analysis
+//! - [`memory_storage`]: In-memory storage for performance testing
+//!
+//! ## Advanced Features
+//!
+//! - [`decoy_scanner`]: Decoy scanning to obscure scan source
+//! - [`plugin`]: Lua plugin system with sandboxing and capabilities
+//! - [`icmp_monitor`]: ICMP monitoring for rate limit detection
+//!
+//! # Quick Start
+//!
+//! ## TCP Connect Scan (No Root Required)
 //!
 //! ```no_run
-//! use prtip_scanner::{TcpConnectScanner, ScanStorage, ScanScheduler, StorageBackend};
-//! use prtip_core::{Config, ScanTarget, ScanType};
+//! use prtip_scanner::{TcpConnectScanner, MemoryStorage, StorageBackend};
+//! use prtip_core::{Config, ScanTarget, PortRange};
 //! use std::sync::Arc;
 //!
 //! # async fn example() -> prtip_core::Result<()> {
-//! // Create storage backend
-//! let storage = Arc::new(ScanStorage::new("scan_results.db").await?);
+//! // Create in-memory storage
+//! let storage = Arc::new(MemoryStorage::new());
 //! let storage_backend = Arc::new(
-//!     StorageBackend::async_database(storage, ScanType::Connect, "192.168.1.1").await?
+//!     StorageBackend::async_memory(storage, "192.168.1.1".parse()?)
 //! );
 //!
-//! // Create configuration
-//! let config = Config::default();
+//! // Create scanner
+//! let scanner = TcpConnectScanner::new(Config::default(), storage_backend);
 //!
-//! // Create scheduler
-//! let scheduler = ScanScheduler::new(config, storage_backend).await?;
+//! // Scan common ports
+//! let target = ScanTarget::parse("192.168.1.1")?;
+//! let ports = PortRange::parse("80,443")?;
 //!
-//! // Define targets
-//! let targets = vec![ScanTarget::parse("192.168.1.1")?];
-//!
-//! // Execute scan
-//! let results = scheduler.execute_scan(targets, None).await?;
-//!
-//! println!("Scan complete: {} results", results.len());
+//! scanner.scan(&target, &ports).await?;
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! ## SYN Scan with Service Detection (Requires Root)
+//!
+//! ```no_run
+//! use prtip_scanner::{SynScanner, ServiceDetector, ScanStorage, StorageBackend};
+//! use prtip_core::{Config, ScanTarget, PortRange, ScanType};
+//! use std::sync::Arc;
+//!
+//! # async fn example() -> prtip_core::Result<()> {
+//! // Create storage
+//! let storage = Arc::new(ScanStorage::new("scan.db").await?);
+//! let storage_backend = Arc::new(
+//!     StorageBackend::async_database(storage.clone(), ScanType::Syn, "192.168.1.1").await?
+//! );
+//!
+//! // Create scanners
+//! let syn_scanner = SynScanner::new(Config::default(), storage_backend.clone()).await?;
+//! let service_detector = ServiceDetector::new(
+//!     "/usr/share/nmap/nmap-service-probes",
+//!     storage.clone()
+//! ).await?;
+//!
+//! // Scan and detect services
+//! let target = ScanTarget::parse("192.168.1.1")?;
+//! let ports = PortRange::parse("1-1000")?;
+//!
+//! syn_scanner.scan(&target, &ports).await?;
+//!
+//! // Detect services on open ports
+//! let open_ports = vec![80, 443, 22];
+//! for port in open_ports {
+//!     let service = service_detector.detect_service(&target.to_ip()?, port).await?;
+//!     println!("Port {}: {:?}", port, service);
+//! }
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Stealth Scan with Decoys
+//!
+//! ```no_run
+//! use prtip_scanner::{DecoyScanner, MemoryStorage, StorageBackend};
+//! use prtip_core::{Config, ScanTarget, PortRange, DecoyConfig};
+//! use std::sync::Arc;
+//!
+//! # async fn example() -> prtip_core::Result<()> {
+//! let mut config = Config::default();
+//! config.evasion_config.decoy_config = DecoyConfig {
+//!     enabled: true,
+//!     count: 5,
+//!     placement: prtip_scanner::DecoyPlacement::Random,
+//! };
+//!
+//! let storage = Arc::new(MemoryStorage::new());
+//! let storage_backend = Arc::new(
+//!     StorageBackend::async_memory(storage, "192.168.1.1".parse()?)
+//! );
+//!
+//! let scanner = DecoyScanner::new(config, storage_backend).await?;
+//!
+//! let target = ScanTarget::parse("192.168.1.1")?;
+//! let ports = PortRange::parse("80,443")?;
+//!
+//! scanner.scan(&target, &ports).await?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## TLS Certificate Analysis
+//!
+//! ```no_run
+//! use prtip_scanner::tls_certificate::{parse_certificate, validate_chain};
+//! use std::net::IpAddr;
+//!
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! // Analyze TLS certificate
+//! let target_ip: IpAddr = "8.8.8.8".parse()?;
+//! let cert_chain = parse_certificate(target_ip, 443, None).await?;
+//!
+//! println!("Subject: {}", cert_chain.subject);
+//! println!("Issuer: {}", cert_chain.issuer);
+//! println!("Valid from: {:?}", cert_chain.not_before);
+//! println!("Valid to: {:?}", cert_chain.not_after);
+//!
+//! // Validate certificate chain
+//! let validation = validate_chain(&cert_chain, "google.com");
+//! println!("Validation: {:?}", validation);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Plugin System
+//!
+//! ```no_run
+//! use prtip_scanner::{PluginManager, Capability};
+//!
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let mut plugin_manager = PluginManager::new();
+//!
+//! // Load plugin with specific capabilities
+//! plugin_manager.load_plugin(
+//!     "banner-analyzer",
+//!     "/path/to/plugin",
+//!     vec![Capability::Network]
+//! ).await?;
+//!
+//! // Plugins can hook into scan lifecycle
+//! println!("Loaded {} plugins", plugin_manager.plugin_count());
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! # Features
+//!
+//! - `vendored-openssl`: Statically link OpenSSL (required for musl builds)
+//! - `numa`: Enable NUMA optimizations for multi-socket systems
+//! - `network-tests`: Enable integration tests that require internet access
+//!
+//! # Performance
+//!
+//! - **SYN Scan**: 10M+ packets/second (stateless)
+//! - **Service Detection**: 85-90% accuracy, ~500ms per service
+//! - **Rate Limiting**: -1.8% overhead (V3 algorithm)
+//! - **IPv6**: <15% overhead vs IPv4
+//! - **TLS Parsing**: 1.33μs average per certificate
+//!
+//! # Platform Support
+//!
+//! - **Linux**: Full support (raw sockets, NUMA, all features)
+//! - **macOS**: Full support (requires root for raw sockets)
+//! - **Windows**: Full support (requires Npcap for raw sockets)
+//! - **BSD**: Partial support (tested on FreeBSD 13+)
 
 pub mod adaptive_parallelism;
 pub mod adaptive_rate_limiter; // Keep for ICMP backoff functionality (Sprint 5.4)

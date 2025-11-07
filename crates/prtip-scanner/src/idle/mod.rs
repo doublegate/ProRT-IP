@@ -49,7 +49,7 @@
 //!
 //! # References
 //!
-//! - Nmap Idle Scan: https://nmap.org/book/idlescan.html
+//! - Nmap Idle Scan: <https://nmap.org/book/idlescan.html>
 //! - Original technique by Salvatore Sanfilippo (antirez)
 //! - RFC 791 (IP) - IPID field specification
 //! - RFC 793 (TCP) - SYN/ACK/RST handshake

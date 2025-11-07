@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 2.2
-**Last Updated:** 2025-01-06
-**Current Phase:** Phase 5 IN PROGRESS (70% complete, 7/10 sprints) → v0.5.0 Target Q1 2026
-**Current Sprint:** Sprint 5.7 COMPLETE (Fuzz Testing) | Next: Sprint 5.8 Planning (Plugin System)
+**Version:** 2.3
+**Last Updated:** 2025-11-06
+**Current Phase:** Phase 5 IN PROGRESS (80% complete, 8/10 sprints) → v0.5.0 Target Q1 2026
+**Current Sprint:** Sprint 5.8 COMPLETE (Plugin System) | Next: Sprint 5.9 Planning (Benchmarking)
 
 ---
 
@@ -50,12 +50,12 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 ## Current Status
 
-### Project Metrics (v0.4.7)
+### Project Metrics (v0.4.8)
 
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
-| **Version** | v0.4.7 | ✅ Current | Released 2025-01-06 |
-| **Tests** | 1,754 (100% passing) | ✅ Excellent | +288 from v0.4.3 (1,466→1,754) |
+| **Version** | v0.4.8 | ✅ Current | Released 2025-11-06 |
+| **Tests** | 1,766 (100% passing) | ✅ Excellent | +12 from v0.4.7 (1,754→1,766) |
 | **Coverage** | 54.92% | ✅ Good | Maintained from Sprint 5.6 |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |
 | **CI Platforms** | 7/7 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
@@ -65,6 +65,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **IPv6 Coverage** | 100% (6/6 scanners) | ✅ Complete | All scanners support dual-stack |
 | **Evasion Techniques** | 6 | ✅ Complete | Fragmentation, TTL, checksum, decoy, source port, idle |
 | **Rate Limiting** | V3 default (-1.8% overhead) | ✅ Sprint 5.X COMPLETE | AdaptiveRateLimiterV3 promoted to default (2025-11-02) |
+| **Plugin System** | Lua 5.4, 6 modules, 2 examples | ✅ Sprint 5.8 COMPLETE | Sandboxed, capabilities-based (2025-11-06) |
 
 ### Overall Progress: 55% Complete (Phases 1-4 + Sprint 5.1-5.4 Phase 1 / 8 Phases)
 
@@ -75,7 +76,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Enhancement Cycles 1-8** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 8/8 cycles |
 | **Phase 3: Detection Systems** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 24/24 tasks |
 | **Phase 4: Performance** | ✅ COMPLETE | 2025-10-09 | 2025-10-26 | 22/22 sprints (4.1-4.22) |
-| **Phase 5: Advanced Features** | 🔄 IN PROGRESS | 2025-10-28 | Q1 2026 | 7/10 sprints (70%) |
+| **Phase 5: Advanced Features** | 🔄 IN PROGRESS | 2025-10-28 | Q1 2026 | 8/10 sprints (80%) |
 | **Phase 6: TUI** | 📋 Planned | Q2 2026 | TBD | 0/12 tasks |
 | **Phase 7: Release** | 📋 Planned | Q3 2026 | TBD | 0/13 tasks |
 
@@ -91,11 +92,11 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | 5.5b: TLS Network + SNI | ✅ COMPLETE | 6h | SNI support, network test fixes, TLS version format | +2 (1,516→1,618) |
 | 5.6: Code Coverage Enhancement | ✅ COMPLETE | 20h | 149 tests, 54.92% coverage (+17.66%), CI/CD automation, 28-CI-CD-COVERAGE.md (866L) | +149 (1,618→1,728†) |
 | 5.7: Fuzz Testing | ✅ COMPLETE | 7.5h | 5 fuzzers, 807 seeds, 230M+ exec (0 crashes), 29-FUZZING-GUIDE.md (784L) | +26 (1,728†→1,754) |
-| 5.8: Lua Plugin System | 📋 PLANNING | 25-30h (est) | Plugin API, sandbox, examples | TBD |
+| 5.8: Plugin System Foundation | ✅ COMPLETE | ~3h | 6 modules, Lua 5.4, sandbox, 2 examples, 784-line guide | +12 (1,754→1,766) |
 | 5.9: Comprehensive Benchmarking | 📋 PLANNING | 15-20h (est) | Criterion integration, regression detection | TBD |
 | 5.10: Documentation Overhaul | 📋 PLANNING | 10-15h (est) | Final Phase 5 docs, API reference | TBD |
 
-**Phase 5 Cumulative**: +416 tests (31.0% increase, 1,338→1,754), Phase 5 complete: 7/10 sprints (70%), 7 major releases (v0.4.1-v0.4.7)
+**Phase 5 Cumulative**: +428 tests (31.9% increase, 1,338→1,766), Phase 5 complete: 8/10 sprints (80%), 8 major releases (v0.4.1-v0.4.8)
 
 **Note:** † Sprint 5.6 added 149 tests but actual test count remained 1,728 until Sprint 5.7 due to test reorganization
 

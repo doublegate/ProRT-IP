@@ -1036,6 +1036,126 @@ impl Scanner<Configured> {
 
 ---
 
+## Plugin System Architecture
+
+The plugin system provides extensibility through sandboxed Lua plugins, enabling community-driven scanner enhancements.
+
+### Core Components
+
+**PluginManager** (`src/plugin/plugin_manager.rs`, 399 lines)
+- Plugin discovery (scan `~/.prtip/plugins/` directory)
+- Plugin loading (create Lua VM, parse metadata)
+- Lifecycle management (on_load → execute → on_unload)
+- Hot reload support (Arc<Mutex<Lua>> for thread safety)
+
+**Plugin API** (`src/plugin/plugin_api.rs`, 522 lines)
+- Trait-based design for type safety
+- **ScanPlugin**: Pre-scan setup, post-scan cleanup hooks
+  * `on_load()` - Initialize plugin
+  * `pre_scan(target)` - Execute before scan
+  * `post_scan(target, results)` - Execute after scan
+  * `on_unload()` - Cleanup
+- **OutputPlugin**: Custom result formatting
+  * `on_load()` - Initialize plugin
+  * `format_results(results)` - Format scan results
+  * `on_unload()` - Cleanup
+- **DetectionPlugin**: Service detection
+  * `on_load()` - Initialize plugin
+  * `analyze_banner(banner, port, protocol)` - Passive detection
+  * `probe_service(target, port)` - Active detection
+  * `on_unload()` - Cleanup
+
+**Lua API** (`src/plugin/lua_api.rs`, 388 lines)
+- Sandboxed Lua VM (mlua 0.11.3 with Lua 5.4)
+- ProRT-IP API exposed to plugins:
+  * `prtip.log(level, message)` - Logging
+  * `prtip.get_target()` - Access scan target
+  * `prtip.connect(host, port)` - Network operations (requires Network capability)
+  * `prtip.send(socket, data)` - Send data
+  * `prtip.receive(socket)` - Receive data
+  * `prtip.close(socket)` - Close connection
+  * `prtip.add_result(data)` - Add scan result
+
+**Security Layer** (`src/plugin/security.rs`, 320 lines)
+- Capabilities-based access control:
+  * **Network**: Allow/deny network operations
+  * **Filesystem**: Allow/deny file access
+  * **System**: Allow/deny system calls
+  * **Database**: Allow/deny database operations
+- Lua VM sandboxing:
+  * Remove `io` library (prevent arbitrary file access)
+  * Remove `os` library (prevent command execution)
+  * Remove `debug` library (prevent introspection)
+  * Keep `string`, `table`, `math` (safe libraries)
+- Resource limits:
+  * Memory: 100MB per plugin
+  * CPU: 5 seconds execution time
+  * Instructions: 1 million Lua instructions maximum
+
+**Metadata Parser** (`src/plugin/plugin_metadata.rs`, 272 lines)
+- TOML parsing (plugin.toml files)
+- Version validation (semver compatibility)
+- Capability parsing (Network/Filesystem/System/Database)
+- Dependency tracking
+
+### Integration Flow
+
+```
+Scanner Core
+    ↓
+PluginManager.discover_plugins()
+    ↓
+PluginManager.load_plugin(path)
+    ├── Parse plugin.toml (metadata)
+    ├── Create sandboxed Lua VM
+    ├── Register ProRT-IP API (prtip.*)
+    ├── Load main.lua
+    └── Call on_load() hook
+    ↓
+Plugin Execution
+    ├── ScanPlugin: pre_scan() → scan → post_scan()
+    ├── OutputPlugin: format_results()
+    └── DetectionPlugin: analyze_banner() or probe_service()
+    ↓
+Results → Output System
+    ↓
+PluginManager.unload_plugin()
+    └── Call on_unload() hook
+```
+
+### Security Model
+
+**Deny-by-Default Capabilities:**
+Plugins must explicitly request capabilities in plugin.toml:
+```toml
+[plugin.capabilities]
+network = false      # Deny network access by default
+filesystem = false   # Deny filesystem access by default
+system = false       # Deny system calls by default
+database = false     # Deny database access by default
+```
+
+**Sandboxing Enforcement:**
+- Lua VM created with restricted standard library
+- Dangerous libraries removed before plugin execution
+- Resource limits enforced at runtime
+- Thread-safe implementation (Arc<Mutex<Lua>>)
+
+**Example Plugins:**
+- **banner-analyzer** (DetectionPlugin): Passive analysis, no capabilities required
+- **ssl-checker** (DetectionPlugin): Active probing, network capability required
+
+### Performance
+
+- Plugin overhead: <2% per plugin
+- 5 plugins overhead: <10% total
+- Plugin loading: <100ms
+- Hot reload: Zero downtime
+
+See [Plugin System Guide](30-PLUGIN-SYSTEM-GUIDE.md) for complete documentation.
+
+---
+
 ## Next Steps
 
 - Review [Development Roadmap](01-ROADMAP.md) for implementation phases

@@ -3,23 +3,93 @@
 //! This crate provides the core types, error handling, and configuration
 //! for the ProRT-IP WarScan network scanner.
 //!
-//! # Examples
+//! # Overview
+//!
+//! The `prtip-core` crate serves as the foundation for ProRT-IP WarScan, providing:
+//!
+//! - **Type System**: Port ranges, scan targets, protocols, scan types
+//! - **Configuration**: Scan parameters, timing templates, output formats
+//! - **Error Handling**: Comprehensive error types with context
+//! - **Detection**: Protocol detectors for HTTP, MySQL, PostgreSQL, SMB, SSH
+//! - **Utilities**: CDN detection, circuit breakers, retry mechanisms
+//!
+//! # Quick Start
 //!
 //! ```
-//! use prtip_core::{PortRange, ScanTarget, Config};
+//! use prtip_core::{PortRange, ScanTarget, Config, ScanType, TimingTemplate};
 //!
-//! // Parse port ranges
+//! // Parse port ranges (various formats supported)
 //! let ports = PortRange::parse("80,443,8080-8090").unwrap();
 //! assert_eq!(ports.count(), 13); // 1 + 1 + 11 = 13
 //!
-//! // Parse scan targets
+//! // Parse scan targets (IP, CIDR, hostname)
 //! let target = ScanTarget::parse("192.168.1.0/24").unwrap();
 //! assert!(!target.is_single_host());
 //!
-//! // Create default configuration
-//! let config = Config::default();
+//! // Create configuration with timing template
+//! let mut config = Config::default();
+//! config.scan_config.scan_type = ScanType::Syn;
+//! config.performance_config.timing_template = TimingTemplate::Aggressive;
 //! assert!(config.validate().is_ok());
 //! ```
+//!
+//! # Common Patterns
+//!
+//! ## Parsing Targets and Ports
+//!
+//! ```
+//! use prtip_core::{ScanTarget, PortRange};
+//!
+//! // Multiple target formats
+//! let single = ScanTarget::parse("192.168.1.1").unwrap();
+//! let cidr = ScanTarget::parse("10.0.0.0/8").unwrap();
+//! let range = ScanTarget::parse("172.16.0.1-172.16.0.100").unwrap();
+//!
+//! // Port range formats
+//! let common = PortRange::parse("22,80,443").unwrap();
+//! let range_ports = PortRange::parse("1-1000").unwrap();
+//! let mixed = PortRange::parse("22,80,443,8000-9000").unwrap();
+//! ```
+//!
+//! ## Service Detection
+//!
+//! ```
+//! use prtip_core::ServiceInfo;
+//!
+//! // Service information with confidence
+//! let service = ServiceInfo {
+//!     name: "nginx".to_string(),
+//!     version: Some("1.18.0".to_string()),
+//!     product: Some("nginx".to_string()),
+//!     os_type: None,
+//!     device_type: None,
+//!     hostname: None,
+//!     extra_info: Some("Ubuntu".to_string()),
+//!     cpe: None,
+//!     confidence: 0.95,
+//! };
+//! ```
+//!
+//! ## Error Handling
+//!
+//! ```
+//! use prtip_core::{Result, Error};
+//!
+//! fn validate_port(port: u16) -> Result<u16> {
+//!     if port == 0 {
+//!         Err(Error::InvalidInput("Port cannot be 0".to_string()))
+//!     } else {
+//!         Ok(port)
+//!     }
+//! }
+//!
+//! assert!(validate_port(80).is_ok());
+//! assert!(validate_port(0).is_err());
+//! ```
+//!
+//! # Features
+//!
+//! All features are enabled by default. See the `Cargo.toml` for platform-specific features.
 
 pub mod cdn_detector;
 pub mod circuit_breaker;

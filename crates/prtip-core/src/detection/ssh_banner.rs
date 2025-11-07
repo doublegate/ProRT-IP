@@ -50,7 +50,7 @@ impl SshBanner {
 
     /// Parse SSH banner into components
     ///
-    /// Banner format: SSH-protoversion-softwareversion [comments]
+    /// Banner format: SSH-protoversion-softwareversion \[comments\]
     ///
     /// Returns (protocol_version, software_name, software_version, os_hint)
     #[allow(clippy::type_complexity)]

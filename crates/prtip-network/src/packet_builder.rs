@@ -571,7 +571,7 @@ impl TcpPacketBuilder {
 
     /// Build the complete packet (Ethernet + IPv4 + TCP)
     ///
-    /// This is the traditional packet building method that allocates a new Vec<u8>
+    /// This is the traditional packet building method that allocates a new `Vec<u8>`
     /// for each packet. For high packet rates (>100K pps), consider using
     /// `build_with_buffer()` instead for zero-allocation performance.
     pub fn build(self) -> Result<Vec<u8>> {
@@ -815,7 +815,7 @@ impl TcpPacketBuilder {
     /// Build just the IP+TCP packet (no Ethernet header) using zero-copy buffer
     ///
     /// This is the zero-copy equivalent of `build_ip_packet()`. Instead of
-    /// allocating a new Vec<u8>, it writes directly to the provided buffer pool.
+    /// allocating a new `Vec<u8>`, it writes directly to the provided buffer pool.
     ///
     /// # Arguments
     ///
@@ -1134,7 +1134,7 @@ impl UdpPacketBuilder {
 
     /// Build the complete packet (Ethernet + IPv4 + UDP)
     ///
-    /// This is the traditional packet building method that allocates a new Vec<u8>
+    /// This is the traditional packet building method that allocates a new `Vec<u8>`
     /// for each packet. For high packet rates (>100K pps), consider using
     /// `build_with_buffer()` instead for zero-allocation performance.
     pub fn build(self) -> Result<Vec<u8>> {
@@ -1350,7 +1350,7 @@ impl UdpPacketBuilder {
     /// Build just the IP+UDP packet (no Ethernet header) using zero-copy buffer
     ///
     /// This is the zero-copy equivalent of `build_ip_packet()`. Instead of
-    /// allocating a new Vec<u8>, it writes directly to the provided buffer pool.
+    /// allocating a new `Vec<u8>`, it writes directly to the provided buffer pool.
     ///
     /// # Arguments
     ///

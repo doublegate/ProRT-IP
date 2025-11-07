@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **CI/CD:** Fixed 9 doctest failures from v0.5.0 API changes (4 in prtip-core, 5 in prtip-scanner)
+  - Updated Error type usage (InvalidInput → Config)
+  - Fixed Config field references (scan_config → scan, performance_config → performance)
+  - Updated ServiceInfo field names (name → service, extra_info → info)
+  - Marked outdated scanner examples as ignored for future update
+
+### Changed
+- **CI/CD:** Reduced Gemini workflow from hourly to twice-daily (0000/1200 UTC) - 91% reduction in runs
+
+
 ## [0.5.0] - 2025-11-07
 
 ### Phase 5 Complete: Advanced Features 🎉

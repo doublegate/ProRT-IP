@@ -13,7 +13,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1766_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-1601_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
 [![Coverage](https://img.shields.io/badge/coverage-54.92%25-brightgreen.svg)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
@@ -112,20 +112,20 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5 COMPLETE ✅ | **v0.5.0 (Phase 5 Milestone)** ✅ (2025-11-07 - All 10 Sprints Complete) | **1,766 Tests (100%)** | **54.92% Coverage** 📈
+**Current Phase:** Phase 5 COMPLETE ✅ | **v0.5.0 (Phase 5 Milestone)** ✅ (2025-11-07 - All 10 Sprints Complete) | **1,601 Tests (100%)** | **54.92% Coverage** 📈
 
 **Latest Release:** v0.5.0 (Released 2025-11-07 - Phase 5 Complete: IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting V3 -1.8%, TLS Analysis, Plugin System, Fuzz Testing 230M+ executions, Benchmarking Framework, Documentation Polish)
 
-**Quality Metrics:** 1,766/1,766 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
+**Quality Metrics:** 1,601/1,601 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
 
 **Test Suite Breakdown:**
 
-- **Total Active Tests:** 1,766 passing (100% success rate across all platforms)
+- **Total Active Tests:** 1,601 passing (100% success rate across all platforms)
 - **Core Tests:** 133 (scanner core, network primitives)
 - **Scanner Tests:** 249 (TCP, UDP, Stealth, Discovery, Idle, Decoy)
 - **Integration Tests:** 371 passing + 5 platform-specific (376 total)
 - **Protocol/Detection Tests:** 245 (service detection, OS fingerprinting, TLS)
-- **Module Tests:** 833 (rate limiting, aggregation, storage, utilities, plugin system) - **+12 in Sprint 5.8**
+- **Module Tests:** 598 (rate limiting, aggregation, storage, utilities, plugin system)
 - **Platform-Specific Ignored:** 5 tests (Windows loopback limitations)
 - **Archived Tests:** 627 slow convergence tests from legacy rate limiters (preserved in backups/)
 
@@ -192,7 +192,7 @@ Sprint 5.8 "Plugin System Foundation" delivers complete extensibility infrastruc
 
 **Testing & Quality:**
 
-- ✅ **1,766 total tests** passing (100% success rate, +12 from v0.4.7)
+- ✅ **1,601 total tests** passing (100% success rate, +12 from Sprint 5.8)
 - ✅ **10 integration tests** for plugin system (discovery, loading, unloading, multiple plugins)
 - ✅ **Zero clippy warnings** across all crates
 - ✅ **54.92% coverage** maintained from Sprint 5.6
@@ -667,7 +667,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 
 ### Phase 5 Progress (✅ COMPLETE - 100%)
 
-**Status:** 9 of 10 core sprints complete (Sprint 5.5b is refinement sprint, not counted in 10 core sprints)
+**Status:** ✅ **Phase 5 COMPLETE (100%)** - All 10 core sprints delivered (v0.4.1-v0.5.0, 2025-10-28 to 2025-11-07)
 
 1. ✅ **Sprint 5.1: IPv6 Scanner Integration** - **COMPLETE** (v0.4.1, released 2025-10-29)
    - All 6 scanners support IPv4/IPv6 dual-stack (TCP Connect, SYN, UDP, Stealth, Discovery, Decoy)
@@ -717,28 +717,123 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
    - CDN certificate handling (Akamai, Cloudflare compatibility)
    - **Tests:** 1,644 total tests passing (805 tests added since v0.4.4)
 
-7. 📋 **Sprint 5.6: Code Coverage Enhancement (62.5% → 80%)** - **PLANNED (NEXT)**
-   - Baseline coverage analysis and module identification
-   - 52+ new tests for untested paths (critical paths, error handlers, edge cases)
-   - CI/CD coverage integration (.github/workflows/coverage.yml)
-   - Coverage badge in README
-   - Bug fixes discovered during coverage improvement
-   - **Target:** ≥80% overall coverage, ≥90% critical modules
+7. ✅ **Sprint 5.6: Code Coverage Enhancement** - **COMPLETE** (v0.4.6, released 2025-11-05)
+   - **149 new comprehensive tests** (51 scanner + 61 service + 37 security/edge)
+   - **54.92% coverage achieved** (up from 37%, +17.66% improvement)
+   - **Zero bugs discovered** during comprehensive verification
+   - **CI/CD automation:** GitHub Actions + Codecov integration
+   - **Guide:** [docs/28-CI-CD-COVERAGE.md](docs/28-CI-CD-COVERAGE.md) (866 lines)
+   - **Tests:** 1,728 total (target ≥80% deferred to future sprint)
 
 8. ✅ **Sprint 5.7: Fuzz Testing Infrastructure** - **COMPLETE** (v0.4.7, released 2025-01-06)
-9. ✅ **Sprint 5.8: Plugin System Foundation (Lua scripting)** - **COMPLETE** (v0.4.8, released 2025-11-06)
-10. ✅ **Sprint 5.9: Comprehensive Benchmarking** - **COMPLETE** (v0.4.9, released 2025-11-06)
+   - **230M+ executions** across 5 critical parsers (TCP, UDP, IPv6, ICMPv6, TLS)
+   - **Zero crashes discovered** (100% robustness validation)
+   - **807 structure-aware seeds** + 177 runtime-discovered (75% above target)
+   - **CI/CD integration:** Nightly fuzzing runs (02:00 UTC, 10 min/target)
+   - **Guide:** [docs/29-FUZZING-GUIDE.md](docs/29-FUZZING-GUIDE.md) (784 lines)
+   - **ROI Score:** 9.0/10 (exceptional security hardening value)
+
+9. ✅ **Sprint 5.8: Plugin System Foundation** - **COMPLETE** (v0.4.8, released 2025-11-06)
+   - **6 infrastructure modules** (~1,800 lines production code)
+   - **Lua 5.4 integration** with mlua 0.11 (thread-safe, sandboxed)
+   - **3 plugin types:** ScanPlugin, OutputPlugin, DetectionPlugin
+   - **Capabilities-based security:** Network/Filesystem/System/Database (deny-by-default)
+   - **2 example plugins:** banner-analyzer (8 services), ssl-checker (TLS analysis)
+   - **Guide:** [docs/30-PLUGIN-SYSTEM-GUIDE.md](docs/30-PLUGIN-SYSTEM-GUIDE.md) (784 lines)
+   - **Tests:** 10 integration tests for plugin lifecycle
+
+10. ✅ **Sprint 5.9: Benchmarking Framework** - **COMPLETE** (v0.4.9, released 2025-11-06)
+    - **8 benchmark scenarios:** SYN, Connect, UDP, Service Detection, IPv6, Idle, Rate Limiting, TLS
+    - **hyperfine integration** with statistical rigor (warmup, outlier removal, 95% CI)
+    - **Regression detection:** PASS <5%, WARN 5-10%, FAIL >10% slowdown
+    - **Baseline management:** JSON metrics export, historical tracking infrastructure
+    - **CI/CD placeholder:** Ready for automated performance tracking
+    - **Guide:** [docs/31-BENCHMARKING-GUIDE.md](docs/31-BENCHMARKING-GUIDE.md) (900+ lines)
+    - **ROI Score:** 8.5/10 (comprehensive performance framework)
+
 11. ✅ **Sprint 5.10: Documentation Polish** - **COMPLETE** (v0.5.0, released 2025-11-07)
+    - **User Guide:** docs/32-USER-GUIDE.md (1,180 lines) - Installation to advanced usage
+    - **Interactive Tutorials:** docs/33-TUTORIALS.md (760 lines) - 7 step-by-step walkthroughs
+    - **Examples Gallery:** docs/34-EXAMPLES.md (680 lines) - 39 real-world scenarios
+    - **mdBook Integration:** SUMMARY.md - Searchable documentation structure
+    - **API Reference:** Enhanced rustdoc with 150+ line examples
+    - **Comprehensive Sync:** README, ROADMAP, PROJECT-STATUS synchronized
+    - **Total Documentation:** 50,510+ lines across all guides
+    - **ROI Score:** 7.0/10 (professional polish, improved discoverability)
 
 **Phase 5 Complete:** v0.5.0 (Released 2025-11-07)
 
 **Progress Summary:**
 
-- **Core Sprints Completed:** 10 of 10 (100%)
-- **Total Sprints Including Refinements:** 10 completed (5.1, 5.2, 5.3, 5.X, 5.5, 5.5b, 5.6, 5.7, 5.8, 5.9)
-- **Tests:** 1,338 (Phase 4) → 1,766 (current) = +428 tests (+32% growth)
-- **Documentation:** 6,060 lines across 4 comprehensive Phase 5 guides
-- **Performance Achievements:** -1.8% rate limiting overhead, 1.33μs TLS parsing, 99.5% idle scan accuracy
+- **Core Sprints:** 10/10 complete (100%) ✅
+- **Total Sprints:** 11 including Sprint 5.5b refinement (5.1-5.10 + 5.5b + 5.X)
+- **Duration:** 11 days (2025-10-28 to 2025-11-07) - exceptional velocity
+- **Tests:** 1,338 (Phase 4 end) → 1,601 (Phase 5 end) = +263 tests (+19.7% growth)
+- **Documentation:** 50,510+ total lines (12 comprehensive guides added in Phase 5)
+- **Phase 5 Guides:** 15,000+ lines (23-34-*.md series)
+- **Releases:** 10 production releases (v0.4.1-v0.5.0)
+- **Performance Achievements:**
+  - Rate Limiting: -1.8% overhead (industry-leading)
+  - TLS Parsing: 1.33μs (37,594x faster than 50ms target)
+  - Idle Scan: 99.5% accuracy (Nmap parity)
+  - Fuzz Testing: 230M+ executions, 0 crashes
+  - Plugin System: <2% single plugin overhead, <10% with 5 plugins
+
+---
+
+## 🎉 v0.5.0 Phase 5 Milestone - What's New
+
+**Released:** November 7, 2025 | **Duration:** 11 days (10 major sprints) | **Status:** Production Ready ✅
+
+### Headline Features
+
+**🚀 Complete Advanced Feature Suite:**
+- ✅ **IPv6 100%** - All 6 scanners dual-stack (ICMPv6 Echo, NDP, random /64 decoys)
+- ✅ **Plugin System** - Lua 5.4 sandboxed extensibility (capabilities-based security)
+- ✅ **Benchmarking** - hyperfine framework with regression detection
+- ✅ **Documentation** - 50,510+ total lines (12 comprehensive guides)
+
+**⚡ Industry-Leading Performance:**
+- **-1.8% Rate Limiting Overhead** - First scanner faster than no limiting
+- **1.33μs TLS Parsing** - 37,594x faster than 50ms target
+- **230M+ Fuzz Executions** - Zero crashes discovered (100% robustness)
+
+**🔒 Security Excellence:**
+- 54.92% code coverage (CI/CD automated)
+- 0 clippy warnings across 1,601 tests
+- Structure-aware fuzzing (5 parsers, 807 seeds)
+- Plugin sandbox (100MB memory, 5s CPU, 1M instruction limits)
+
+**📚 Professional Documentation:**
+- User Guide (1,180 lines) - Installation to advanced usage
+- Interactive Tutorials (760 lines) - 7 step-by-step walkthroughs
+- Examples Gallery (680 lines) - 39 real-world scenarios
+- mdBook integration - Searchable reference
+
+### Quick Start - v0.5.0 Features
+
+```bash
+# IPv6 scanning (100% coverage)
+prtip -sS -6 -p 80,443 2001:db8::1
+
+# Rate limiting (industry-leading -1.8% overhead)
+prtip -sS -T4 --max-rate 10000 192.168.1.0/24
+
+# TLS certificate analysis (1.33μs parsing)
+prtip -sS -p 443 --service-detection scanme.nmap.org
+
+# Idle scan (maximum anonymity)
+prtip -sI 192.168.1.99 -p 80,443 target.com
+
+# Plugin system (Lua 5.4 sandboxed, v0.5.0+)
+# Example plugins: banner-analyzer, ssl-checker
+# See docs/30-PLUGIN-SYSTEM-GUIDE.md for development
+```
+
+**See also:**
+- [Complete Phase 5 Summary](#phase-5-progress) - All 10 sprints detailed
+- [Documentation](#documentation) - 50,510+ lines of guides
+- [CHANGELOG.md](CHANGELOG.md) - Complete version history
 
 ---
 

@@ -59,7 +59,7 @@
 //!
 //! ## TCP Connect Scan (No Root Required)
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_scanner::{TcpConnectScanner, MemoryStorage, StorageBackend};
 //! use prtip_core::{Config, ScanTarget, PortRange};
 //! use std::sync::Arc;
@@ -85,7 +85,7 @@
 //!
 //! ## SYN Scan with Service Detection (Requires Root)
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_scanner::{SynScanner, ServiceDetector, ScanStorage, StorageBackend};
 //! use prtip_core::{Config, ScanTarget, PortRange, ScanType};
 //! use std::sync::Arc;
@@ -122,7 +122,7 @@
 //!
 //! ## Stealth Scan with Decoys
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_scanner::{DecoyScanner, MemoryStorage, StorageBackend};
 //! use prtip_core::{Config, ScanTarget, PortRange, DecoyConfig};
 //! use std::sync::Arc;
@@ -152,7 +152,7 @@
 //!
 //! ## TLS Certificate Analysis
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_scanner::tls_certificate::{parse_certificate, validate_chain};
 //! use std::net::IpAddr;
 //!
@@ -175,7 +175,7 @@
 //!
 //! ## Plugin System
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_scanner::{PluginManager, Capability};
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {

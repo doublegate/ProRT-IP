@@ -1198,14 +1198,52 @@ prtip --scan-type connect -p 1-10000 -T 4 --max-concurrent 200 192.168.4.0/24
 
 ### Performance Benchmarks
 
-```bash
-# Localhost performance (CachyOS Linux, i9-10850K)
-$ time prtip --scan-type connect -p 1-1000 127.0.0.1      # ~4.5ms
-$ time prtip --scan-type connect -p 1-10000 127.0.0.1     # ~39ms
-$ time prtip --scan-type connect -p 1-65535 127.0.0.1     # ~190ms
+**Benchmarking Framework** (Sprint 5.9) ✨
 
-# With database storage
-$ time prtip --scan-type connect -p 1-10000 --with-db scan.db 127.0.0.1  # ~75ms
+Comprehensive performance validation infrastructure with 8+ scenarios and automated regression detection.
+
+**Quick Start:**
+```bash
+# Run all benchmarks (8 scenarios, ~5-10 minutes)
+cd benchmarks/05-Sprint5.9-Benchmarking-Framework
+./scripts/run-all-benchmarks.sh
+
+# Run individual scenario
+./scripts/01-syn-scan-1000-ports.sh
+
+# Compare against baseline
+./scripts/analyze-results.sh baselines/baseline-v0.4.8.json results/current.json
+```
+
+**8 Core Scenarios:**
+1. **SYN Scan:** 1,000 ports (validates "10M+ pps" claim) - Target: <100ms
+2. **Connect Scan:** 3 common ports (80,443,8080) - Target: <50ms
+3. **UDP Scan:** 3 UDP services (DNS, SNMP, NTP) - Target: <500ms
+4. **Service Detection:** Overhead validation - Target: <10%
+5. **IPv6 Overhead:** IPv4 vs IPv6 comparison - Target: <15%
+6. **Idle Scan:** Timing validation - Target: 500-800ms/port
+7. **Rate Limiting:** AdaptiveRateLimiterV3 overhead - Target: <5% (claimed -1.8%)
+8. **TLS Parsing:** Certificate parsing performance - Target: ~1.33μs
+
+**Regression Detection:**
+- **PASS:** <5% slower (within noise)
+- **WARN:** 5-10% slower (investigate)
+- **FAIL:** >10% slower (regression, CI fails)
+- **IMPROVED:** Faster than baseline
+
+**CI Integration:** Automated benchmarks on every PR + weekly scheduled runs
+
+**Documentation:** See `docs/31-BENCHMARKING-GUIDE.md` (900+ lines comprehensive guide)
+
+**Tool:** hyperfine v1.16+ (statistical benchmarking with mean, stddev, outlier detection)
+
+**Example Results (localhost, Linux):**
+```bash
+# SYN scan performance
+$ ./scripts/01-syn-scan-1000-ports.sh
+Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
+  Time (mean ± σ):      98.2 ms ±   4.5 ms
+  Range (min … max):    90.1 ms … 108.9 ms    10 runs
 ```
 
 ---

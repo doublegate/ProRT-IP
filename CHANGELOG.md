@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+**Plugin System (Sprint 5.8 - 2024-11-06):**
+
+ProRT-IP now features a complete Lua-based plugin system enabling extensibility through sandboxed scripting. This allows users to customize scanning behavior, add detection capabilities, and create custom output formats without modifying core code.
+
+**Core Features:**
+
+1. **Three Plugin Types:**
+   - ScanPlugin: Lifecycle hooks (pre_scan, on_target, post_scan)
+   - OutputPlugin: Custom result formatting and export
+   - DetectionPlugin: Enhanced service detection and banner analysis
+
+2. **Security-First Architecture:**
+   - Sandboxed Lua VMs with removed dangerous libraries (io, os, debug)
+   - Capabilities-based permission model (Network, Filesystem, System, Database)
+   - Resource limits (100MB memory, 5s CPU, 1M instructions)
+   - Deny-by-default security model
+
+3. **Plugin Infrastructure:**
+   - Plugin discovery and loading from `~/.prtip/plugins/`
+   - TOML metadata parsing with validation
+   - Hot reload support (load/unload without restart)
+   - 27 unit tests + 10 integration tests (408 tests total, all passing)
+
+4. **Example Plugins:**
+   - banner-analyzer: Detects 8 service types (HTTP, SSH, FTP, SMTP, MySQL, PostgreSQL, Redis, MongoDB)
+   - ssl-checker: SSL/TLS service identification and analysis
+
+5. **API Bindings:**
+   - Logging: `prtip.log(level, message)`
+   - Target info: `prtip.get_target()`
+   - Network ops: `prtip.connect()`, `prtip.send()`, `prtip.receive()`, `prtip.close()`
+   - Result manipulation: `prtip.add_result(key, value)`
+
+**Documentation:**
+
+- Comprehensive 784-line Plugin System Guide (`docs/30-PLUGIN-SYSTEM-GUIDE.md`)
+- Complete API reference with examples
+- Security model documentation
+- Development guide and best practices
+- Example plugin walkthroughs
+
+**Technical Implementation:**
+
+- 6 new modules (~1,800 lines):
+  - plugin_metadata.rs: TOML parsing and validation
+  - sandbox.rs: Capabilities-based security
+  - lua_api.rs: Lua VM creation and API exposure
+  - plugin_api.rs: Trait hierarchy and Lua wrappers
+  - plugin_manager.rs: Plugin discovery and lifecycle
+  - mod.rs: Module exports
+
+- Integration: mlua 0.11 with Lua 5.4 and "send" feature for thread safety
+- Zero regressions: All 408 tests pass (398 unit + 10 integration)
+
 ### Changed
 
 **CI/CD Pipeline Optimization (2025-11-06):**

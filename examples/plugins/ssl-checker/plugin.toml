@@ -1,0 +1,16 @@
+[plugin]
+name = "ssl-checker"
+version = "1.0.0"
+author = "ProRT-IP Contributors"
+description = "SSL/TLS certificate checker and analyzer"
+license = "GPL-3.0"
+plugin_type = "detection"
+capabilities = ["network"]
+
+[plugin.dependencies]
+min_prtip_version = "0.4.0"
+lua_version = "5.4"
+
+[plugin.metadata]
+tags = ["detection", "ssl", "tls", "certificate", "security"]
+category = "detection"

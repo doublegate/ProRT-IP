@@ -1,9 +1,9 @@
 # ProRT-IP Custom Commands
 
 **Location:** `.claude/commands/`
-**Count:** 15 commands
+**Count:** 25 commands (15 existing + 10 new)
 **Purpose:** Development workflow automation for Claude Code
-**Updated:** 2025-10-13
+**Updated:** 2025-11-06
 
 ## Overview
 

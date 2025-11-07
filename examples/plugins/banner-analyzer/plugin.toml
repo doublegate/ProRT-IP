@@ -1,0 +1,16 @@
+[plugin]
+name = "banner-analyzer"
+version = "1.0.0"
+author = "ProRT-IP Contributors"
+description = "Enhanced banner analysis for common services"
+license = "GPL-3.0"
+plugin_type = "detection"
+capabilities = []
+
+[plugin.dependencies]
+min_prtip_version = "0.4.0"
+lua_version = "5.4"
+
+[plugin.metadata]
+tags = ["detection", "banner", "service-identification"]
+category = "detection"

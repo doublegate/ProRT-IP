@@ -36,7 +36,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: 'cpp'  # Rust compiles to native code
+          languages: 'rust'
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable

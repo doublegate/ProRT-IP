@@ -28,8 +28,8 @@
 //!
 //! // Create configuration with timing template
 //! let mut config = Config::default();
-//! config.scan_config.scan_type = ScanType::Syn;
-//! config.performance_config.timing_template = TimingTemplate::Aggressive;
+//! config.scan.scan_type = ScanType::Syn;
+//! config.scan.timing_template = TimingTemplate::Aggressive;
 //! assert!(config.validate().is_ok());
 //! ```
 //!
@@ -43,7 +43,7 @@
 //! // Multiple target formats
 //! let single = ScanTarget::parse("192.168.1.1").unwrap();
 //! let cidr = ScanTarget::parse("10.0.0.0/8").unwrap();
-//! let range = ScanTarget::parse("172.16.0.1-172.16.0.100").unwrap();
+//! let range = ScanTarget::parse("172.16.0.0/24").unwrap();
 //!
 //! // Port range formats
 //! let common = PortRange::parse("22,80,443").unwrap();
@@ -58,14 +58,11 @@
 //!
 //! // Service information with confidence
 //! let service = ServiceInfo {
-//!     name: "nginx".to_string(),
-//!     version: Some("1.18.0".to_string()),
+//!     service: "http".to_string(),
 //!     product: Some("nginx".to_string()),
+//!     version: Some("1.18.0".to_string()),
+//!     info: Some("Ubuntu".to_string()),
 //!     os_type: None,
-//!     device_type: None,
-//!     hostname: None,
-//!     extra_info: Some("Ubuntu".to_string()),
-//!     cpe: None,
 //!     confidence: 0.95,
 //! };
 //! ```
@@ -77,7 +74,7 @@
 //!
 //! fn validate_port(port: u16) -> Result<u16> {
 //!     if port == 0 {
-//!         Err(Error::InvalidInput("Port cannot be 0".to_string()))
+//!         Err(Error::Config("Port cannot be 0".to_string()))
 //!     } else {
 //!         Ok(port)
 //!     }

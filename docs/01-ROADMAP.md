@@ -1,8 +1,8 @@
 # ProRT-IP WarScan: Development Roadmap
 
-**Version:** 2.2
-**Last Updated:** 2025-01-06
-**Project Status:** Phase 5 IN PROGRESS (70% Complete) ✅ | **63% Overall Progress** (5/8 phases) | Sprint 5.7 COMPLETE (Fuzz Testing)
+**Version:** 2.3
+**Last Updated:** 2025-11-06
+**Project Status:** Phase 5 IN PROGRESS (90% Complete) ✅ | **65% Overall Progress** (5/8 phases) | Sprint 5.9 COMPLETE (Benchmarking Framework)
 
 ---
 
@@ -31,7 +31,7 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 | **Enhancement Cycles 1-8** | **Ongoing** | **Reference Optimizations** | **Crypto, concurrency, resources, CLI, progress, filtering, exclusions, perf/stealth** | **✅ COMPLETE** |
 | Phase 3 | Weeks 7-10 | Detection Systems | OS fingerprinting, service detection, banner grabbing | ✅ COMPLETE |
 | Phase 4 | Weeks 11-13 | Performance & Evasion | Zero-copy, NUMA, PCAPNG, evasion techniques, error handling | ✅ COMPLETE (1,166 tests, v0.3.9-v0.4.0) |
-| **Phase 5** | **Weeks 14-20** | **Advanced Features** | **IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting, TLS Analysis** | **🔄 IN PROGRESS (40% - 4/10 sprints, v0.4.1-v0.4.3)** |
+| **Phase 5** | **Weeks 14-20** | **Advanced Features** | **IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting, TLS Analysis, Plugin System, Benchmarking** | **🔄 IN PROGRESS (90% - 9/10 sprints, v0.4.1-v0.4.9)** |
 | Phase 6 | Weeks 21-22 | TUI Interface | Interactive terminal dashboard | 📋 PLANNED |
 | Phase 7 | Weeks 23-24 | Polish & Release | Documentation, packaging, v1.0 release | 📋 PLANNED |
 | Phase 8 | Post-v1.0 | Future Enhancements | Web UI, desktop GUI, distributed scanning | 📋 PLANNED |
@@ -614,22 +614,24 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 ---
 
-#### Sprint 5.9: Benchmarking Suite 📋 PLANNED (Q1 2026)
+#### Sprint 5.9: Benchmarking Framework ✅ COMPLETE (v0.4.9, Nov 6, ~4h)
 
-**Status:** 📋 PLANNED
-**Estimated Duration:** 12-15 hours
-**ROI Score:** 6.5/10
+**Status:** ✅ COMPLETE
+**Actual Duration:** ~4 hours (estimated 15-20h)
+**ROI Score:** 8.5/10 (upgraded from 6.5)
 
-**Objectives:**
-- [ ] Criterion benchmark suite expansion
-- [ ] Scanner performance baselines
-- [ ] Regression detection automation
-- [ ] Performance tracking over releases
+**Objectives Achieved:**
+- [x] hyperfine benchmark suite (8 scenarios)
+- [x] Scanner performance baselines (all major features)
+- [x] Regression detection automation (thresholds + exit codes)
+- [x] Performance tracking infrastructure (baseline management)
 
 **Deliverables:**
-- 20+ Criterion benchmarks
-- Performance regression CI checks
-- Benchmark report automation
+- 8 benchmark scenarios (SYN, Connect, UDP, Service Detection, IPv6, Idle, Rate Limiting, TLS)
+- hyperfine integration with statistical rigor
+- Regression detection (PASS <5%, WARN 5-10%, FAIL >10%)
+- CI/CD workflow placeholder
+- Comprehensive 900+ line guide (31-BENCHMARKING-GUIDE.md)
 
 ---
 
@@ -655,7 +657,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 **Phase 5 Summary:**
 
-**Completed (80%):**
+**Completed (90%):**
 - ✅ Sprint 5.1: IPv6 Completion (100% coverage, 15% overhead)
 - ✅ Sprint 5.2: Service Detection (85-90% rate, 5 parsers)
 - ✅ Sprint 5.3: Idle Scan (Nmap parity, 99.5% accuracy)
@@ -664,10 +666,10 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - ✅ Sprint 5.6: Code Coverage (54.92%, +17.66%, 149 tests)
 - ✅ Sprint 5.7: Fuzz Testing (5 fuzzers, 230M+ exec, 0 crashes)
 - ✅ Sprint 5.8: Plugin System Foundation (6 modules, 2 examples, 784-line guide)
+- ✅ Sprint 5.9: Benchmarking Framework (8 scenarios, hyperfine, regression detection)
 
-**Remaining (20%):**
-- 📋 Sprint 5.9: Benchmarking (Criterion, regression detection)
-- 📋 Sprint 5.10: Documentation Polish (final Phase 5 docs)
+**Remaining (10%):**
+- 📋 Sprint 5.10: Documentation Polish (final Phase 5 docs, v0.5.0 release)
 
 **Target Completion:** Q1 2026 (v0.5.0 release)
 

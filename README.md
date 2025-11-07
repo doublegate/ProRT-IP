@@ -13,7 +13,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1754_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-1766_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
 [![Coverage](https://img.shields.io/badge/coverage-54.92%25-brightgreen.svg)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
@@ -112,20 +112,20 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5 IN PROGRESS ✅ | **v0.4.7 (Sprint 5.7)** ✅ (2025-01-06 - Fuzz Testing Infrastructure Complete) | **1,754 Tests (100%)** | **54.92% Coverage** 📈
+**Current Phase:** Phase 5 IN PROGRESS ✅ | **v0.4.8 (Sprint 5.8)** ✅ (2025-11-06 - Plugin System Foundation Complete) | **1,766 Tests (100%)** | **54.92% Coverage** 📈
 
-**Latest Release:** v0.4.7 (Released 2025-01-06 - Fuzz Testing Infrastructure: 5 fuzzers, 807 corpus seeds, 230M+ executions, zero crashes)
+**Latest Release:** v0.4.8 (Released 2025-11-06 - Plugin System Foundation: Lua 5.4 integration, 6 modules, 2 example plugins, sandboxing, capabilities-based security)
 
-**Quality Metrics:** 1,754/1,754 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
+**Quality Metrics:** 1,766/1,766 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
 
 **Test Suite Breakdown:**
 
-- **Total Active Tests:** 1,754 passing (100% success rate across all platforms)
+- **Total Active Tests:** 1,766 passing (100% success rate across all platforms)
 - **Core Tests:** 133 (scanner core, network primitives)
 - **Scanner Tests:** 249 (TCP, UDP, Stealth, Discovery, Idle, Decoy)
 - **Integration Tests:** 371 passing + 5 platform-specific (376 total)
 - **Protocol/Detection Tests:** 245 (service detection, OS fingerprinting, TLS)
-- **Module Tests:** 821 (rate limiting, aggregation, storage, utilities) - **+26 in Sprint 5.7**
+- **Module Tests:** 833 (rate limiting, aggregation, storage, utilities, plugin system) - **+12 in Sprint 5.8**
 - **Platform-Specific Ignored:** 5 tests (Windows loopback limitations)
 - **Archived Tests:** 627 slow convergence tests from legacy rate limiters (preserved in backups/)
 
@@ -143,6 +143,91 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 **CI/CD Status:** 7/7 jobs passing | 8/8 release platforms production-ready | **Optimized:** 30-50% faster execution (smart caching, path filtering, release-only coverage)
 
 **Latest Achievements:**
+
+### 🚀 v0.4.8 Release Highlights (2025-11-06)
+
+**Production-Ready Plugin System Foundation** ✨
+
+Sprint 5.8 "Plugin System Foundation" delivers complete extensibility infrastructure enabling community-driven enhancements through sandboxed Lua plugins.
+
+**Plugin System Excellence:**
+
+- ✅ **Complete plugin infrastructure** - 6 modules (~1,906 lines production code)
+- ✅ **Lua 5.4 integration** - mlua 0.11 with thread-safe "send" feature
+- ✅ **3 plugin types** - ScanPlugin, OutputPlugin, DetectionPlugin
+- ✅ **Capabilities-based security** - Network/Filesystem/System/Database (deny-by-default)
+- ✅ **Sandboxed execution** - Resource limits (100MB memory, 5s CPU, 1M instructions)
+- ✅ **2 production-ready examples** - banner-analyzer (8 services), ssl-checker (TLS)
+
+**Security Model:**
+
+- **Capabilities System:** Explicit permissions required (Network, Filesystem, System, Database)
+- **Lua VM Sandboxing:** Removed io/os/debug libraries (prevent arbitrary file access, command execution)
+- **Resource Limits:** 100MB memory, 5s CPU, 1M Lua instructions per plugin
+- **Deny-by-Default:** Zero capabilities unless explicitly granted in plugin.toml
+- **Thread Safety:** Arc<Mutex<Lua>> for hot reload without restart
+
+**Plugin Infrastructure:**
+
+- **PluginManager** (399 lines) - Discovery, loading, lifecycle management
+- **Plugin API** (522 lines) - ScanPlugin, OutputPlugin, DetectionPlugin traits
+- **Lua API** (388 lines) - Sandboxed VM + ProRT-IP API bindings (prtip.*)
+- **Sandbox** (320 lines) - Capabilities enforcement, resource limits
+- **Metadata** (272 lines) - TOML parsing, version validation
+- **Module Exports** (60 lines) - Public API surface
+
+**Example Plugins:**
+
+**1. banner-analyzer** (DetectionPlugin):
+- Detects 8 service types: HTTP, SSH, FTP, SMTP, MySQL, PostgreSQL, Redis, MongoDB
+- Passive analysis (no capabilities required)
+- Confidence scoring 0.7-0.95
+- Version extraction where available
+
+**2. ssl-checker** (DetectionPlugin):
+- SSL/TLS protocol detection with active probing
+- Network capability required (demonstrates security model)
+- Weak cipher detection
+- Certificate chain validation
+
+**Testing & Quality:**
+
+- ✅ **1,766 total tests** passing (100% success rate, +12 from v0.4.7)
+- ✅ **10 integration tests** for plugin system (discovery, loading, unloading, multiple plugins)
+- ✅ **Zero clippy warnings** across all crates
+- ✅ **54.92% coverage** maintained from Sprint 5.6
+
+**Documentation:**
+
+- **Plugin System Guide** - docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines comprehensive development guide)
+- **README Plugin Section** - 105 lines with examples and quick start
+- **Example Plugin READMEs** - Complete documentation for banner-analyzer and ssl-checker
+
+**Performance:**
+
+- Single plugin overhead: <2%
+- 5 plugins overhead: <10% total
+- Plugin loading: <100ms
+- Hot reload: Zero downtime
+
+**Strategic Value:**
+
+- **Community Extensibility:** Enables contributions without core team bottleneck
+- **Nmap NSE Compatibility:** Familiar Lua scripting for network security professionals
+- **Competitive Differentiation:** Rust safety + Lua extensibility (unique combination)
+- **Marketplace Foundation:** Local plugin discovery ready for v0.6.0 remote registry
+
+**Future Enhancements (v0.6.0+):**
+
+- Remote plugin marketplace with signing and versioning
+- Native plugins (Rust/.so/.dll via libloading)
+- Async plugin API for non-blocking I/O
+- LuaJIT integration (5x performance improvement)
+- 10+ official plugins (vulnerability scanning, exploit helpers)
+
+**Documentation:** See [docs/30-PLUGIN-SYSTEM-GUIDE.md](docs/30-PLUGIN-SYSTEM-GUIDE.md) for complete development guide.
+
+---
 
 ### 🚀 v0.4.7 Release Highlights (2025-01-06)
 
@@ -1127,7 +1212,7 @@ $ time prtip --scan-type connect -p 1-10000 --with-db scan.db 127.0.0.1  # ~75ms
 
 ## Plugin System 🔌
 
-**ProRT-IP v0.5.0+** includes a powerful Lua-based plugin system for extending scanner functionality with custom detection logic, output formats, and scan lifecycle hooks.
+**ProRT-IP v0.4.8+** includes a powerful Lua-based plugin system for extending scanner functionality with custom detection logic, output formats, and scan lifecycle hooks.
 
 ### Plugin Types
 

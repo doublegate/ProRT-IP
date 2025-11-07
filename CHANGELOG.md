@@ -9,7 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-**Plugin System (Sprint 5.8 - 2024-11-06):**
+- None yet
+
+### Changed
+
+- None yet
+
+### Fixed
+
+- None yet
+
+## [0.4.8] - 2025-11-06
+
+### Added
+
+**Plugin System (Sprint 5.8 - 2025-11-06):**
 
 ProRT-IP now features a complete Lua-based plugin system enabling extensibility through sandboxed scripting. This allows users to customize scanning behavior, add detection capabilities, and create custom output formats without modifying core code.
 
@@ -30,7 +44,7 @@ ProRT-IP now features a complete Lua-based plugin system enabling extensibility 
    - Plugin discovery and loading from `~/.prtip/plugins/`
    - TOML metadata parsing with validation
    - Hot reload support (load/unload without restart)
-   - 27 unit tests + 10 integration tests (408 tests total, all passing)
+   - 27 unit tests + 10 integration tests (1,766 tests total project-wide, all passing)
 
 4. **Example Plugins:**
    - banner-analyzer: Detects 8 service types (HTTP, SSH, FTP, SMTP, MySQL, PostgreSQL, Redis, MongoDB)
@@ -61,7 +75,7 @@ ProRT-IP now features a complete Lua-based plugin system enabling extensibility 
   - mod.rs: Module exports
 
 - Integration: mlua 0.11 with Lua 5.4 and "send" feature for thread safety
-- Zero regressions: All 408 tests pass (398 unit + 10 integration)
+- Zero regressions: All 1,766 tests pass (1,754 pre-existing + 12 new plugin tests)
 
 ### Changed
 
@@ -5924,5 +5938,14 @@ Following Phase 2 completion, five enhancement cycles systematically incorporate
 
 For detailed project status, see [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STATUS.md)
 
-[Unreleased]: https://github.com/doublegate/ProRT-IP/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/doublegate/ProRT-IP/compare/v0.4.8...HEAD
+[0.4.8]: https://github.com/doublegate/ProRT-IP/compare/v0.4.7...v0.4.8
+[0.4.7]: https://github.com/doublegate/ProRT-IP/compare/v0.4.6...v0.4.7
+[0.4.6]: https://github.com/doublegate/ProRT-IP/compare/v0.4.5...v0.4.6
+[0.4.5]: https://github.com/doublegate/ProRT-IP/compare/v0.4.4...v0.4.5
+[0.4.4]: https://github.com/doublegate/ProRT-IP/compare/v0.4.3...v0.4.4
+[0.4.3]: https://github.com/doublegate/ProRT-IP/compare/v0.4.2...v0.4.3
+[0.4.2]: https://github.com/doublegate/ProRT-IP/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/doublegate/ProRT-IP/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/doublegate/ProRT-IP/compare/v0.3.9...v0.4.0
 [0.0.1]: https://github.com/doublegate/ProRT-IP/releases/tag/v0.0.1

@@ -29,6 +29,12 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! # See Also
+//!
+//! - [Service Detection Guide](../../docs/24-SERVICE-DETECTION-GUIDE.md) - Comprehensive guide to service detection features
+//! - [User Guide: Service Detection](../../docs/32-USER-GUIDE.md#use-case-3-service-detection) - Service detection examples and best practices
+//! - [TLS Certificate Analysis Guide](../../docs/27-TLS-CERTIFICATE-GUIDE.md) - TLS certificate extraction for HTTPS services
 
 use crate::tls_certificate::{CertificateChain, CertificateInfo, TlsFingerprint};
 use crate::tls_handshake::TlsHandshake;
@@ -151,12 +157,40 @@ impl ServiceDetector {
     /// Indication (SNI), which allows the server to return the correct certificate
     /// for virtual hosts.
     ///
+    /// # SNI Importance
+    ///
+    /// Many HTTPS servers host multiple domains (virtual hosts) on a single IP address.
+    /// Without SNI, the server returns a default certificate which may not match the
+    /// domain you're analyzing. Providing the hostname ensures:
+    /// - Correct certificate extraction for the target domain
+    /// - Accurate SAN (Subject Alternative Names) analysis
+    /// - Proper virtual host identification
+    ///
     /// # Arguments
     ///
     /// * `target` - Socket address (IP + port) to scan
     /// * `hostname` - Optional hostname for TLS SNI (e.g., "example.com")
     ///
     /// # Examples
+    ///
+    /// ## Without SNI (may return wrong certificate)
+    ///
+    /// ```no_run
+    /// # use prtip_scanner::service_detector::ServiceDetector;
+    /// # use prtip_core::ServiceProbeDb;
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let db = ServiceProbeDb::parse("...")?;
+    /// let detector = ServiceDetector::new(db, 7);
+    ///
+    /// // Scan without hostname - gets default certificate
+    /// let addr = "93.184.216.34:443".parse()?;
+    /// let result = detector.detect_service(addr).await?;
+    /// // result.tls_certificate may be for wrong domain
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// ## With SNI (correct certificate)
     ///
     /// ```no_run
     /// # use prtip_scanner::service_detector::ServiceDetector;
@@ -168,9 +202,20 @@ impl ServiceDetector {
     /// // Scan with hostname for proper SNI
     /// let addr = "93.184.216.34:443".parse()?;
     /// let result = detector.detect_service_with_hostname(addr, Some("example.com")).await?;
+    ///
+    /// if let Some(cert) = result.tls_certificate {
+    ///     println!("Certificate for: {}", cert.subject);
+    ///     println!("Valid domains: {:?}", cert.san);
+    /// }
     /// # Ok(())
     /// # }
     /// ```
+    ///
+    /// # See Also
+    ///
+    /// - [`detect_service`](Self::detect_service) - Detect service without SNI
+    /// - [TLS Certificate Guide](../../docs/27-TLS-CERTIFICATE-GUIDE.md) - Certificate analysis with SNI
+    /// - [Service Detection Guide](../../docs/24-SERVICE-DETECTION-GUIDE.md) - Complete detection features
     pub async fn detect_service_with_hostname(
         &self,
         target: SocketAddr,

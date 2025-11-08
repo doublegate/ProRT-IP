@@ -59,62 +59,53 @@
 //!
 //! ## TCP Connect Scan (No Root Required)
 //!
-//! ```ignore
-//! use prtip_scanner::{TcpConnectScanner, MemoryStorage, StorageBackend};
-//! use prtip_core::{Config, ScanTarget, PortRange};
-//! use std::sync::Arc;
+//! ```no_run
+//! use prtip_scanner::TcpConnectScanner;
+//! use std::time::Duration;
 //!
 //! # async fn example() -> prtip_core::Result<()> {
-//! // Create in-memory storage
-//! let storage = Arc::new(MemoryStorage::new());
-//! let storage_backend = Arc::new(
-//!     StorageBackend::async_memory(storage, "192.168.1.1".parse()?)
-//! );
+//! // Create scanner with 2s timeout, 1 retry
+//! let scanner = TcpConnectScanner::new(Duration::from_secs(2), 1);
 //!
-//! // Create scanner
-//! let scanner = TcpConnectScanner::new(Config::default(), storage_backend);
+//! // Scan common ports on target
+//! let target = "192.168.1.1".parse().unwrap();
+//! let ports = vec![80, 443, 8080];
+//! let results = scanner.scan_ports(target, ports, 10).await?;
 //!
-//! // Scan common ports
-//! let target = ScanTarget::parse("192.168.1.1")?;
-//! let ports = PortRange::parse("80,443")?;
-//!
-//! scanner.scan(&target, &ports).await?;
+//! for result in results {
+//!     println!("Port {}: {:?}", result.port, result.state);
+//! }
 //! # Ok(())
 //! # }
 //! ```
 //!
 //! ## SYN Scan with Service Detection (Requires Root)
 //!
-//! ```ignore
-//! use prtip_scanner::{SynScanner, ServiceDetector, ScanStorage, StorageBackend};
-//! use prtip_core::{Config, ScanTarget, PortRange, ScanType};
-//! use std::sync::Arc;
+//! ```no_run
+//! use prtip_scanner::{SynScanner, service_detector::ServiceDetector};
+//! use prtip_core::{Config, ServiceProbeDb};
+//! use std::net::{IpAddr, SocketAddr};
 //!
-//! # async fn example() -> prtip_core::Result<()> {
-//! // Create storage
-//! let storage = Arc::new(ScanStorage::new("scan.db").await?);
-//! let storage_backend = Arc::new(
-//!     StorageBackend::async_database(storage.clone(), ScanType::Syn, "192.168.1.1").await?
-//! );
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! // Create SYN scanner
+//! let scanner = SynScanner::new(Config::default())?;
 //!
-//! // Create scanners
-//! let syn_scanner = SynScanner::new(Config::default(), storage_backend.clone()).await?;
-//! let service_detector = ServiceDetector::new(
-//!     "/usr/share/nmap/nmap-service-probes",
-//!     storage.clone()
-//! ).await?;
+//! // Load service detection database
+//! let probe_data = std::fs::read_to_string("/usr/share/nmap/nmap-service-probes")?;
+//! let db = ServiceProbeDb::parse(&probe_data)?;
+//! let service_detector = ServiceDetector::new(db, 7);
 //!
-//! // Scan and detect services
-//! let target = ScanTarget::parse("192.168.1.1")?;
-//! let ports = PortRange::parse("1-1000")?;
-//!
-//! syn_scanner.scan(&target, &ports).await?;
+//! // Scan ports
+//! let target: IpAddr = "192.168.1.1".parse()?;
+//! let ports = vec![80, 443, 22];
+//! let results = scanner.scan_ports(target, ports.clone()).await?;
 //!
 //! // Detect services on open ports
-//! let open_ports = vec![80, 443, 22];
-//! for port in open_ports {
-//!     let service = service_detector.detect_service(&target.to_ip()?, port).await?;
-//!     println!("Port {}: {:?}", port, service);
+//! for result in results.iter().filter(|r| r.state == prtip_core::PortState::Open) {
+//!     let addr = SocketAddr::new(target, result.port);
+//!     let service = service_detector.detect_service(addr).await?;
+//!     let version = service.version.as_deref().unwrap_or("unknown");
+//!     println!("Port {}: {} ({})", result.port, service.service, version);
 //! }
 //! # Ok(())
 //! # }
@@ -122,74 +113,69 @@
 //!
 //! ## Stealth Scan with Decoys
 //!
-//! ```ignore
-//! use prtip_scanner::{DecoyScanner, MemoryStorage, StorageBackend};
-//! use prtip_core::{Config, ScanTarget, PortRange, DecoyConfig};
-//! use std::sync::Arc;
+//! ```no_run
+//! use prtip_scanner::DecoyScanner;
+//! use prtip_core::{Config, ScanTarget};
 //!
-//! # async fn example() -> prtip_core::Result<()> {
-//! let mut config = Config::default();
-//! config.evasion_config.decoy_config = DecoyConfig {
-//!     enabled: true,
-//!     count: 5,
-//!     placement: prtip_scanner::DecoyPlacement::Random,
-//! };
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! // Create decoy scanner and configure decoys
+//! let mut scanner = DecoyScanner::new(Config::default());
+//! scanner.set_random_decoys(5); // Generate 5 random decoy IPs
 //!
-//! let storage = Arc::new(MemoryStorage::new());
-//! let storage_backend = Arc::new(
-//!     StorageBackend::async_memory(storage, "192.168.1.1".parse()?)
-//! );
-//!
-//! let scanner = DecoyScanner::new(config, storage_backend).await?;
-//!
+//! // Scan target port (packets sent from decoy IPs)
 //! let target = ScanTarget::parse("192.168.1.1")?;
-//! let ports = PortRange::parse("80,443")?;
+//! let result = scanner.scan_with_decoys(target, 80).await?;
 //!
-//! scanner.scan(&target, &ports).await?;
+//! println!("Port 80: {:?} (scanned via decoys)", result.state);
 //! # Ok(())
 //! # }
 //! ```
 //!
 //! ## TLS Certificate Analysis
 //!
-//! ```ignore
-//! use prtip_scanner::tls_certificate::{parse_certificate, validate_chain};
-//! use std::net::IpAddr;
+//! ```no_run
+//! use prtip_scanner::tls_handshake::TlsHandshake;
+//! use prtip_scanner::tls_certificate::parse_certificate;
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! // Analyze TLS certificate
-//! let target_ip: IpAddr = "8.8.8.8".parse()?;
-//! let cert_chain = parse_certificate(target_ip, 443, None).await?;
+//! // Perform TLS handshake and get server info
+//! let tls_handler = TlsHandshake::new();
+//! let server_info = tls_handler.connect("example.com", 443).await?;
 //!
-//! println!("Subject: {}", cert_chain.subject);
-//! println!("Issuer: {}", cert_chain.issuer);
-//! println!("Valid from: {:?}", cert_chain.not_before);
-//! println!("Valid to: {:?}", cert_chain.not_after);
+//! println!("Server: {}", server_info.common_name);
+//! println!("Issuer: {}", server_info.issuer);
+//! println!("TLS Version: {}", server_info.tls_version);
+//! println!("Expiry: {:?}", server_info.expiry);
 //!
-//! // Validate certificate chain
-//! let validation = validate_chain(&cert_chain, "google.com");
-//! println!("Validation: {:?}", validation);
+//! // Parse leaf certificate for detailed analysis
+//! if let Some(leaf_cert) = server_info.raw_cert_chain.first() {
+//!     let cert_info = parse_certificate(leaf_cert)?;
+//!     println!("Key Usage: {:?}", cert_info.key_usage);
+//!     println!("SAN: {:?}", cert_info.san_categorized.dns_names);
+//! }
 //! # Ok(())
 //! # }
 //! ```
 //!
 //! ## Plugin System
 //!
-//! ```ignore
-//! use prtip_scanner::{PluginManager, Capability};
+//! ```no_run
+//! use prtip_scanner::plugin::PluginManager;
 //!
-//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! let mut plugin_manager = PluginManager::new();
+//! # fn main() -> prtip_core::Result<()> {
+//! // Create plugin manager with default directory (~/.prtip/plugins/)
+//! let mut manager = PluginManager::with_default_dir()?;
 //!
-//! // Load plugin with specific capabilities
-//! plugin_manager.load_plugin(
-//!     "banner-analyzer",
-//!     "/path/to/plugin",
-//!     vec![Capability::Network]
-//! ).await?;
+//! // Discover all available plugins
+//! manager.discover_plugins()?;
 //!
-//! // Plugins can hook into scan lifecycle
-//! println!("Loaded {} plugins", plugin_manager.plugin_count());
+//! // Load specific plugin
+//! manager.load_plugin("banner-analyzer")?;
+//!
+//! // List loaded plugins
+//! for name in manager.list_loaded() {
+//!     println!("Loaded plugin: {}", name);
+//! }
 //! # Ok(())
 //! # }
 //! ```

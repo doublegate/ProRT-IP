@@ -47,6 +47,12 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! # See Also
+//!
+//! - [Rate Limiting Guide](../../docs/26-RATE-LIMITING-GUIDE.md) - V3 architecture and performance analysis
+//! - [User Guide: Rate Limiting](../../docs/32-USER-GUIDE.md#use-case-9-advanced-rate-limiting-configuration) - Rate limiting examples
+//! - [Benchmarking Guide](../../docs/31-BENCHMARKING-GUIDE.md) - Performance benchmarks
 
 use prtip_core::{Error, Result};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};

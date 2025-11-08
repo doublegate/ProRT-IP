@@ -77,7 +77,7 @@ pub struct Args {
     /// Examples: 192.168.1.1, 10.0.0.0/24, example.com
     #[arg(
         value_name = "TARGET",
-        required = true,
+        required_unless_present_any = ["list_templates", "show_template"],
         help_heading = "TARGET SPECIFICATION"
     )]
     pub targets: Vec<String>,
@@ -469,6 +469,15 @@ pub struct Args {
     #[arg(short = 'q', long, help_heading = "OUTPUT")]
     pub quiet: bool,
 
+    /// Skip all confirmations (assume 'yes' to all prompts)
+    ///
+    /// Automatically confirms all dangerous operation prompts without asking.
+    /// Useful for automation and CI/CD environments.
+    ///
+    /// Example: prtip --yes -sS -p- 8.8.8.8
+    #[arg(short = 'y', long, help_heading = "OUTPUT")]
+    pub yes: bool,
+
     /// Disable ASCII art banner (show compact version)
     #[arg(long, help_heading = "OUTPUT")]
     pub compact_banner: bool,
@@ -480,6 +489,24 @@ pub struct Args {
     /// Disable progress output
     #[arg(long, help_heading = "OUTPUT")]
     pub no_progress: bool,
+
+    /// Progress display style (compact/detailed/bars)
+    #[arg(
+        long,
+        value_name = "STYLE",
+        default_value = "compact",
+        help_heading = "OUTPUT"
+    )]
+    pub progress_style: String,
+
+    /// Progress update interval in seconds
+    #[arg(
+        long,
+        value_name = "SECS",
+        default_value = "1",
+        help_heading = "OUTPUT"
+    )]
+    pub progress_interval: u64,
 
     /// Statistics update interval in seconds
     #[arg(
@@ -1033,6 +1060,50 @@ pub struct Args {
         group = "ip_version"
     )]
     pub dual_stack: bool,
+
+    // ============================================================================
+    // SCAN TEMPLATES
+    // ============================================================================
+    /// Use a predefined scan template
+    ///
+    /// Templates provide pre-configured scan settings for common scenarios.
+    /// CLI flags override template values.
+    ///
+    /// Built-in templates:
+    ///   - web-servers: Common web ports (80, 443, 8080, etc.)
+    ///   - databases: Database ports (MySQL, PostgreSQL, MongoDB, Redis)
+    ///   - quick: Fast scan of top 100 ports
+    ///   - thorough: All 65,535 ports with service/OS detection
+    ///   - stealth: Minimal detection (FIN scan, slow timing)
+    ///   - discovery: Host discovery only (no port scan)
+    ///   - ssl-only: HTTPS ports with certificate analysis
+    ///   - admin-panels: Remote admin ports (SSH, RDP, VNC)
+    ///   - mail-servers: Email ports (SMTP, IMAP, POP3)
+    ///   - file-shares: File sharing protocols (SMB, NFS, FTP)
+    ///
+    /// Custom templates can be defined in ~/.prtip/templates.toml
+    ///
+    /// Examples:
+    ///   prtip --template web-servers 192.168.1.0/24
+    ///   prtip --template stealth -T4 target.com  # Override timing
+    #[arg(long, value_name = "NAME", help_heading = "SCAN TEMPLATES")]
+    pub template: Option<String>,
+
+    /// List all available scan templates
+    ///
+    /// Shows built-in and custom templates with descriptions.
+    ///
+    /// Example: prtip --list-templates
+    #[arg(long, help_heading = "SCAN TEMPLATES")]
+    pub list_templates: bool,
+
+    /// Show details for a specific template
+    ///
+    /// Displays the configuration and settings for a template.
+    ///
+    /// Example: prtip --show-template web-servers
+    #[arg(long, value_name = "NAME", help_heading = "SCAN TEMPLATES")]
+    pub show_template: Option<String>,
 }
 
 /// IP Version selection for scanning
@@ -1181,6 +1252,19 @@ impl Args {
 
         if self.progress && self.no_progress {
             anyhow::bail!("Cannot specify both --progress and --no-progress");
+        }
+
+        // Validate progress style
+        if !["compact", "detailed", "bars"].contains(&self.progress_style.as_str()) {
+            anyhow::bail!("Progress style must be one of: compact, detailed, bars");
+        }
+
+        if self.progress_interval == 0 {
+            anyhow::bail!("Progress interval must be greater than 0");
+        }
+
+        if self.progress_interval > 60 {
+            anyhow::bail!("Progress interval cannot exceed 1 minute (60 seconds)");
         }
 
         if self.stats_interval == 0 {
@@ -1827,6 +1911,42 @@ mod tests {
         let args = Args::parse_from(["prtip", "--no-progress", "192.168.1.1"]);
         assert!(!args.progress);
         assert!(args.no_progress);
+    }
+
+    #[test]
+    fn test_progress_style_default() {
+        let args = Args::parse_from(["prtip", "192.168.1.1"]);
+        assert_eq!(args.progress_style, "compact");
+    }
+
+    #[test]
+    fn test_progress_style_detailed() {
+        let args = Args::parse_from(["prtip", "--progress-style", "detailed", "192.168.1.1"]);
+        assert_eq!(args.progress_style, "detailed");
+    }
+
+    #[test]
+    fn test_progress_style_bars() {
+        let args = Args::parse_from(["prtip", "--progress-style", "bars", "192.168.1.1"]);
+        assert_eq!(args.progress_style, "bars");
+    }
+
+    #[test]
+    fn test_validate_invalid_progress_style() {
+        let args = Args::parse_from(["prtip", "--progress-style", "invalid", "192.168.1.1"]);
+        assert!(args.validate().is_err());
+    }
+
+    #[test]
+    fn test_progress_interval_default() {
+        let args = Args::parse_from(["prtip", "192.168.1.1"]);
+        assert_eq!(args.progress_interval, 1);
+    }
+
+    #[test]
+    fn test_progress_interval_custom() {
+        let args = Args::parse_from(["prtip", "--progress-interval", "5", "192.168.1.1"]);
+        assert_eq!(args.progress_interval, 5);
     }
 
     #[test]

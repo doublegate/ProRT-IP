@@ -19,6 +19,11 @@
 //! - Kiosks and information displays
 //!
 //! Modern systems (Linux 4.18+, Windows 10+) use random IPID for security.
+//!
+//! # See Also
+//!
+//! - [Idle Scan Guide](../../../docs/25-IDLE-SCAN-GUIDE.md) - Zombie selection criteria and techniques
+//! - [`IdleScanner`](super::idle_scanner::IdleScanner) - Using discovered zombies for scanning
 
 use crate::idle::ipid_tracker::{IPIDPattern, IPIDTracker};
 use ipnetwork::IpNetwork;

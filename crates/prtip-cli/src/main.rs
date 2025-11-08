@@ -4,15 +4,21 @@
 
 mod args;
 mod banner;
+mod confirm;
 mod db_commands;
 mod export;
 mod help;
+mod history;
 mod output;
+mod templates;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use args::Args;
 use banner::Banner;
 use clap::Parser;
+use colored::Colorize;
+use confirm::{ConfirmConfig, ConfirmationManager};
+use history::HistoryManager;
 use prtip_core::resource_limits::{adjust_and_get_limit, get_recommended_batch_size};
 use prtip_core::{PortRange, ScanTarget};
 use prtip_network::check_privileges;
@@ -156,7 +162,7 @@ async fn main() {
 
 async fn run() -> Result<()> {
     // Check for help subcommand before preprocessing
-    // This allows `prtip help`, `prtip help <topic>`, `prtip help examples`
+    // This allows `prtip help`, `prtip help <topic>`, `prtip help examples`, `prtip help search <query>`
     let argv: Vec<String> = std::env::args().collect();
     if argv.len() >= 2 && argv[1] == "help" {
         let help_system = help::HelpSystem::new();
@@ -166,6 +172,17 @@ async fn run() -> Result<()> {
         } else if argv[2] == "examples" {
             // `prtip help examples` - show examples
             help_system.show_examples();
+        } else if argv[2] == "search" {
+            // `prtip help search <query>` - search help content
+            if argv.len() >= 4 {
+                let query = argv[3..].join(" ");
+                help_system.search(&query);
+            } else {
+                eprintln!("Error: Missing search query");
+                eprintln!("Usage: prtip help search <query>");
+                eprintln!("Example: prtip help search timing");
+                std::process::exit(1);
+            }
         } else {
             // `prtip help <topic>` - show specific topic
             help_system.show_topic(&argv[2]);
@@ -215,6 +232,18 @@ async fn run() -> Result<()> {
         return Ok(());
     }
 
+    // Check for history subcommand
+    // This allows `prtip history`, `prtip history <n>`, `prtip history --clear`
+    if argv.len() >= 2 && argv[1] == "history" {
+        return handle_history_command(&argv[2..]).await;
+    }
+
+    // Check for replay subcommand
+    // This allows `prtip replay <index>`, `prtip replay --last`
+    if argv.len() >= 2 && argv[1] == "replay" {
+        return handle_replay_command(&argv[2..]).await;
+    }
+
     // Preprocess arguments to support nmap-style syntax
     let processed_args = preprocess_argv();
 
@@ -232,6 +261,15 @@ async fn run() -> Result<()> {
                 banner.print();
             }
         }
+    }
+
+    // Handle template commands (--list-templates, --show-template)
+    if args.list_templates {
+        return handle_list_templates();
+    }
+
+    if let Some(ref template_name) = args.show_template {
+        return handle_show_template(template_name);
     }
 
     // Handle --interface-list or --iflist flags
@@ -297,6 +335,21 @@ async fn run() -> Result<()> {
 
     // Create config from arguments
     let mut config = args.to_config()?;
+
+    // Apply template if specified (template values are overridden by CLI flags)
+    if let Some(ref template_name) = args.template {
+        use templates::TemplateManager;
+
+        let manager =
+            TemplateManager::with_custom_templates().context("Failed to load templates")?;
+
+        manager
+            .apply_template(template_name, &mut config)
+            .with_context(|| format!("Failed to apply template '{}'", template_name))?;
+
+        info!("Applied template: {}", template_name);
+    }
+
     info!(
         "Scan configuration: type={:?}, timing={:?}, timeout={}ms",
         config.scan.scan_type, config.scan.timing_template, config.scan.timeout_ms
@@ -333,6 +386,25 @@ async fn run() -> Result<()> {
             }
         }
     }
+
+    // Check for dangerous operations and confirm if needed
+    // This provides safety confirmations for:
+    // - Internet-scale scans (public IPs or large ranges)
+    // - Large target sets (>10,000 hosts)
+    // - Aggressive timing (T5)
+    // - Evasion techniques (fragmentation, decoys)
+    // - Running as root
+    let confirmation_config = ConfirmConfig {
+        auto_yes: args.yes,
+        is_interactive: !args.quiet && {
+            use std::io::{stdout, IsTerminal};
+            stdout().is_terminal()
+        },
+    };
+    let confirmation_manager = ConfirmationManager::new(confirmation_config);
+    confirmation_manager
+        .confirm_scan(&config, &targets)
+        .context("User declined to continue with scan")?;
 
     // Create storage backend
     let storage_backend = if args.with_db {
@@ -447,6 +519,9 @@ async fn run() -> Result<()> {
 
     // Print summary with scan statistics
     print_summary(&results, scan_duration);
+
+    // Record command in history
+    record_scan_history(&argv, &results, scan_duration, 0)?;
 
     Ok(())
 }
@@ -740,6 +815,414 @@ fn handle_interface_list() -> Result<()> {
 
     println!("\n{}", "=".repeat(60).bright_cyan());
     println!("Total: {} interface(s)", interface_count);
+
+    Ok(())
+}
+
+/// Handle history subcommand
+async fn handle_history_command(args: &[String]) -> Result<()> {
+    let manager = HistoryManager::new()?;
+
+    // Parse arguments
+    if args.is_empty() {
+        // `prtip history` - show all entries
+        if manager.is_empty() {
+            println!("{}", "No command history found.".yellow());
+            println!();
+            println!("Run some scans to build your history:");
+            println!("  prtip -sS -p 80,443 192.168.1.1");
+            println!("  prtip -sV target.com");
+            println!();
+            return Ok(());
+        }
+
+        println!("\n{}", "Command History".bright_white().bold());
+        println!("{}", "=".repeat(80).bright_cyan());
+        println!();
+
+        for (idx, entry) in manager.list_entries().iter().enumerate() {
+            println!("{}", entry.format_display(idx));
+            println!();
+        }
+
+        println!("{}", "=".repeat(80).bright_cyan());
+        println!("Total: {} command(s)", manager.len());
+        println!();
+        println!("Usage:");
+        println!("  prtip history <n>      - Show specific entry");
+        println!("  prtip history --clear  - Clear all history");
+        println!("  prtip replay <n>       - Re-run command by index");
+        println!("  prtip replay --last    - Re-run most recent command");
+        println!();
+        return Ok(());
+    }
+
+    // Check for --clear flag
+    if args[0] == "--clear" {
+        let count = manager.len();
+        let mut manager = manager;
+        manager.clear()?;
+        println!("{}", format!("✓ Cleared {} history entries", count).green());
+        return Ok(());
+    }
+
+    // Parse index (e.g., `prtip history 5`)
+    let index: usize = args[0].parse().with_context(|| {
+        format!(
+            "Invalid history index: '{}'\n\
+             Usage: prtip history <n> (where n is a number)\n\
+             Example: prtip history 0",
+            args[0]
+        )
+    })?;
+
+    // Get entry
+    let entry = manager.get_entry(index).with_context(|| {
+        format!(
+            "History index {} not found (valid range: 0-{})",
+            index,
+            manager.len().saturating_sub(1)
+        )
+    })?;
+
+    // Display detailed entry
+    println!(
+        "\n{}",
+        format!("History Entry [{}]", index).bright_white().bold()
+    );
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!();
+    println!(
+        "  {}: {}",
+        "Timestamp".bright_white(),
+        entry.timestamp.format("%Y-%m-%d %H:%M:%S UTC")
+    );
+    println!("  {}: {}", "Command".bright_white(), entry.command.cyan());
+    println!(
+        "  {}: {}",
+        "Exit Code".bright_white(),
+        if entry.exit_code == 0 {
+            "0 (success)".green()
+        } else {
+            format!("{} (error)", entry.exit_code).red()
+        }
+    );
+    println!();
+    println!("  {}:", "Summary".bright_white());
+    println!("    {}", entry.summary);
+    println!();
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!();
+    println!("To replay this command:");
+    println!("  prtip replay {}", index);
+    println!();
+    println!("To replay with modifications:");
+    println!("  prtip replay {} --verbose", index);
+    println!("  prtip replay {} -p 1-1000", index);
+    println!();
+
+    Ok(())
+}
+
+/// Handle replay subcommand
+async fn handle_replay_command(args: &[String]) -> Result<()> {
+    let manager = HistoryManager::new()?;
+
+    if manager.is_empty() {
+        bail!(
+            "No command history found.\n\
+             Run some scans first to build your history:\n\
+             prtip -sS -p 80,443 192.168.1.1"
+        );
+    }
+
+    // Parse arguments
+    if args.is_empty() {
+        bail!(
+            "Missing replay argument.\n\n\
+             Usage:\n\
+             prtip replay <index>     - Replay command by index\n\
+             prtip replay --last      - Replay most recent command\n\n\
+             Examples:\n\
+             prtip replay 0\n\
+             prtip replay --last\n\
+             prtip replay 5 --verbose"
+        );
+    }
+
+    // Get entry to replay
+    let entry = if args[0] == "--last" {
+        manager.get_last().context("History is empty")?.clone()
+    } else {
+        let index: usize = args[0].parse().with_context(|| {
+            format!(
+                "Invalid index: '{}'\n\
+                 Usage: prtip replay <n> (where n is a number)\n\
+                 Example: prtip replay 0",
+                args[0]
+            )
+        })?;
+
+        manager
+            .get_entry(index)
+            .with_context(|| {
+                format!(
+                    "History index {} not found (valid range: 0-{})",
+                    index,
+                    manager.len().saturating_sub(1)
+                )
+            })?
+            .clone()
+    };
+
+    // Validate entry can be replayed
+    HistoryManager::validate_replay(&entry)?;
+
+    // Rebuild command with optional modifications
+    let modifications = if args.len() > 1 {
+        Some(args[1..].iter().map(|s| s.as_str()).collect::<Vec<_>>())
+    } else {
+        None
+    };
+
+    let replay_args = HistoryManager::rebuild_command(&entry, modifications);
+
+    // Show what we're replaying
+    println!("\n{}", "Replaying Command".bright_white().bold());
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!(
+        "  {}: {}",
+        "Original".bright_white(),
+        entry.command.dimmed()
+    );
+    if !args[1..].is_empty() {
+        println!(
+            "  {}: {}",
+            "Modified".bright_white(),
+            replay_args.join(" ").cyan()
+        );
+    }
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!();
+
+    // Recursively call run() with the replayed arguments
+    // This will use the normal scan flow and record to history automatically
+    std::env::set_var("PRTIP_REPLAY_ARGS", serde_json::to_string(&replay_args)?);
+
+    // Note: We need to restart the entire process to properly parse arguments
+    // This is a limitation of clap's design - it expects to parse from std::env::args()
+    // For now, we'll bail with instructions to manually run the command
+    println!("{}", "⚠ Manual replay required".yellow().bold());
+    println!();
+    println!("Due to CLI parser limitations, please run the command manually:");
+    println!();
+    println!("  {}", replay_args.join(" ").cyan());
+    println!();
+    println!("This will be improved in a future version with proper replay support.");
+    println!();
+
+    Ok(())
+}
+
+/// Record a scan to history
+fn record_scan_history(
+    argv: &[String],
+    results: &[prtip_core::ScanResult],
+    duration: std::time::Duration,
+    exit_code: i32,
+) -> Result<()> {
+    use std::collections::HashSet;
+
+    // Skip recording if this is a replay (would create duplicate entries)
+    if std::env::var("PRTIP_REPLAY_ARGS").is_ok() {
+        return Ok(());
+    }
+
+    // Build summary
+    let hosts: HashSet<_> = results.iter().map(|r| r.target_ip()).collect();
+    let open_ports = results
+        .iter()
+        .filter(|r| r.state() == prtip_core::PortState::Open)
+        .count();
+
+    let duration_ms = duration.as_millis();
+    let duration_str = if duration_ms < 1000 {
+        format!("{}ms", duration_ms)
+    } else if duration_ms < 60_000 {
+        format!("{:.2}s", duration_ms as f64 / 1000.0)
+    } else {
+        let mins = duration_ms / 60_000;
+        let secs = (duration_ms % 60_000) / 1000;
+        format!("{}m {}s", mins, secs)
+    };
+
+    let summary = format!(
+        "{} hosts, {} ports scanned, {} open, duration: {}",
+        hosts.len(),
+        results.len(),
+        open_ports,
+        duration_str
+    );
+
+    // Add to history
+    let mut manager = HistoryManager::new()?;
+    manager.add_entry(argv.to_vec(), summary, exit_code)?;
+
+    Ok(())
+}
+
+/// Handle --list-templates flag
+fn handle_list_templates() -> Result<()> {
+    use templates::TemplateManager;
+
+    let manager = TemplateManager::with_custom_templates().context("Failed to load templates")?;
+
+    let templates = manager.list_templates();
+
+    if templates.is_empty() {
+        println!("{}", "No templates available.".yellow());
+        return Ok(());
+    }
+
+    println!("\n{}", "Available Scan Templates".bright_white().bold());
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!();
+
+    // Separate built-in and custom templates
+    let builtin_names: Vec<_> = manager.builtin_names();
+    let custom_names: Vec<_> = manager.custom_names();
+
+    // Show built-in templates
+    if !builtin_names.is_empty() {
+        println!("{}", "Built-in Templates:".bright_white());
+        println!();
+        for name in builtin_names {
+            if let Some(template) = manager.get_template(name) {
+                println!("  {} - {}", name.cyan().bold(), template.description);
+            }
+        }
+        println!();
+    }
+
+    // Show custom templates
+    if !custom_names.is_empty() {
+        println!("{}", "Custom Templates:".bright_white());
+        println!();
+        for name in custom_names {
+            if let Some(template) = manager.get_template(name) {
+                println!("  {} - {}", name.green().bold(), template.description);
+            }
+        }
+        println!();
+    }
+
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!("Total: {} template(s)", templates.len());
+    println!();
+    println!("Usage:");
+    println!("  prtip --template <name> <target>         - Use a template");
+    println!("  prtip --show-template <name>             - Show template details");
+    println!("  prtip --template <name> [flags] <target> - Override template values");
+    println!();
+    println!("Examples:");
+    println!("  prtip --template web-servers 192.168.1.0/24");
+    println!("  prtip --template stealth -T4 target.com");
+    println!();
+    println!("Custom templates can be defined in: ~/.prtip/templates.toml");
+    println!();
+
+    Ok(())
+}
+
+/// Handle --show-template flag
+fn handle_show_template(template_name: &str) -> Result<()> {
+    use templates::TemplateManager;
+
+    let manager = TemplateManager::with_custom_templates().context("Failed to load templates")?;
+
+    let template = manager
+        .get_template(template_name)
+        .ok_or_else(|| anyhow::anyhow!("Template '{}' not found", template_name))?;
+
+    let is_custom = manager.custom_names().contains(&template_name);
+    let template_type = if is_custom {
+        "Custom Template".green()
+    } else {
+        "Built-in Template".cyan()
+    };
+
+    println!(
+        "\n{}",
+        format!("Template: {}", template_name).bright_white().bold()
+    );
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!("  {}: {}", "Type".bright_white(), template_type);
+    println!(
+        "  {}: {}",
+        "Description".bright_white(),
+        template.description
+    );
+    println!();
+
+    // Show configuration
+    println!("  {}:", "Configuration".bright_white());
+
+    if let Some(ref ports) = template.ports {
+        println!("    {}: {:?}", "Ports".bright_white(), ports);
+    }
+
+    if let Some(ref scan_type) = template.scan_type {
+        println!("    {}: {}", "Scan Type".bright_white(), scan_type);
+    }
+
+    if let Some(enabled) = template.service_detection {
+        println!("    {}: {}", "Service Detection".bright_white(), enabled);
+    }
+
+    if let Some(enabled) = template.os_detection {
+        println!("    {}: {}", "OS Detection".bright_white(), enabled);
+    }
+
+    if let Some(ref timing) = template.timing {
+        println!("    {}: {}", "Timing".bright_white(), timing);
+    }
+
+    if let Some(rate) = template.max_rate {
+        println!("    {}: {} pps", "Max Rate".bright_white(), rate);
+    }
+
+    if let Some(enabled) = template.randomize {
+        println!("    {}: {}", "Randomize".bright_white(), enabled);
+    }
+
+    if let Some(enabled) = template.fragment {
+        println!("    {}: {}", "Fragment".bright_white(), enabled);
+    }
+
+    if let Some(enabled) = template.tls_analysis {
+        println!("    {}: {}", "TLS Analysis".bright_white(), enabled);
+    }
+
+    if let Some(enabled) = template.discovery_only {
+        println!("    {}: {}", "Discovery Only".bright_white(), enabled);
+    }
+
+    println!();
+    println!("{}", "=".repeat(80).bright_cyan());
+    println!();
+    println!("Usage:");
+    println!("  prtip --template {} <target>", template_name);
+    println!();
+    println!("To override template settings:");
+    println!(
+        "  prtip --template {} -T4 <target>     # Override timing",
+        template_name
+    );
+    println!(
+        "  prtip --template {} -p 1-1000 <target> # Override ports",
+        template_name
+    );
+    println!();
 
     Ok(())
 }

@@ -16,6 +16,11 @@
 //! - delta = 1: Port closed (target sent RST to zombie)
 //! - delta = 2: Port open (target sent SYN-ACK, zombie replied RST)
 //! - delta > 2: Zombie traffic noise (unreliable, rescan)
+//!
+//! # See Also
+//!
+//! - [Idle Scan Guide](../../../docs/25-IDLE-SCAN-GUIDE.md) - Complete implementation guide
+//! - [`ZombieDiscovery`](super::zombie_discovery::ZombieDiscovery) - Finding suitable zombies
 
 use crate::idle::ipid_tracker::IPIDTracker;
 use crate::idle::zombie_discovery::ZombieCandidate;

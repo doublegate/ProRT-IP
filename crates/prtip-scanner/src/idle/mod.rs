@@ -53,6 +53,12 @@
 //! - Original technique by Salvatore Sanfilippo (antirez)
 //! - RFC 791 (IP) - IPID field specification
 //! - RFC 793 (TCP) - SYN/ACK/RST handshake
+//!
+//! # See Also
+//!
+//! - [Idle Scan Guide](../../docs/25-IDLE-SCAN-GUIDE.md) - Complete idle scan implementation details
+//! - [User Guide: Idle Scan](../../docs/32-USER-GUIDE.md#use-case-10-idle-zombie-scan) - Idle scan usage examples
+//! - [Rate Limiting Guide](../../docs/26-RATE-LIMITING-GUIDE.md) - Adaptive rate limiting for idle scans
 
 pub mod idle_scanner;
 pub mod ipid_tracker;

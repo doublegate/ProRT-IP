@@ -24,6 +24,12 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! # See Also
+//!
+//! - [TLS Certificate Analysis Guide](../../docs/27-TLS-CERTIFICATE-GUIDE.md) - Complete TLS certificate analysis features
+//! - [`tls_certificate`](super::tls_certificate) - Advanced certificate parsing and chain validation
+//! - [Service Detection Guide](../../docs/24-SERVICE-DETECTION-GUIDE.md) - Service detection with TLS support
 
 use prtip_core::Error;
 use rustls::{ClientConfig, RootCertStore, ServerName};

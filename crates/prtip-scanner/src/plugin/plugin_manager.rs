@@ -5,6 +5,12 @@
 //! - Plugin loading (creating Lua VMs, loading scripts)
 //! - Plugin lifecycle (on_load, on_unload)
 //! - Plugin execution coordination
+//!
+//! # See Also
+//!
+//! - [Plugin System Guide](../../../docs/30-PLUGIN-SYSTEM-GUIDE.md) - Complete plugin development guide
+//! - [User Guide: Plugins](../../../docs/32-USER-GUIDE.md#use-case-14-plugin-development-and-extension) - Plugin usage examples
+//! - [`lua_api`](super::lua_api) - Lua API and sandboxing details
 
 use super::lua_api::{
     create_sandboxed_vm, register_prtip_api, set_lua_context, set_resource_limits, LuaContext,
@@ -112,6 +118,50 @@ impl PluginManager {
     ///
     /// Creates Lua VM, loads script, registers API, and calls on_load().
     /// Plugin is cached for subsequent use.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - Plugin name (must match directory name in plugins_dir)
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(())` - Plugin loaded successfully
+    /// * `Err` - Plugin not found, load error, or on_load() failure
+    ///
+    /// # Errors
+    ///
+    /// Returns error if:
+    /// - Plugin not discovered (call `discover_plugins()` first)
+    /// - `main.lua` not found in plugin directory
+    /// - Lua syntax error in plugin code
+    /// - Plugin's `on_load()` function returns false or errors
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use prtip_scanner::plugin::PluginManager;
+    ///
+    /// # fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// // Create manager and discover plugins
+    /// let mut manager = PluginManager::with_default_dir()?;
+    /// manager.discover_plugins()?;
+    ///
+    /// // Load specific plugin
+    /// manager.load_plugin("port-banner")?;
+    ///
+    /// // Plugin is now ready to use
+    /// if let Some(plugin) = manager.get_plugin("port-banner") {
+    ///     println!("Loaded: {} v{}", plugin.name(), plugin.version());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # See Also
+    ///
+    /// - [`discover_plugins`](Self::discover_plugins) - Scan plugins directory
+    /// - [`load_all`](Self::load_all) - Load all discovered plugins
+    /// - [Plugin System Guide](../../../docs/30-PLUGIN-SYSTEM-GUIDE.md) - Plugin development guide
     pub fn load_plugin(&mut self, name: &str) -> CoreResult<()> {
         // Check if already loaded
         if self.loaded_plugins.contains_key(name) {

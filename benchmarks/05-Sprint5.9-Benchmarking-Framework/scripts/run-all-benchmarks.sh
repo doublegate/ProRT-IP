@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Run All Benchmarks Orchestrator
-# Executes all 8 benchmark scenarios sequentially
+# Executes all 20+ benchmark scenarios sequentially
 #
 # Usage:
 #   ./run-all-benchmarks.sh              # Run all benchmarks
@@ -64,8 +64,9 @@ echo "Run directory: ${RUN_DIR}"
 echo "Save baseline: ${SAVE_BASELINE}"
 echo ""
 
-# Benchmark list (8 scenarios)
+# Benchmark list (20 scenarios - Sprint 5.5.4 expanded from 8)
 declare -a BENCHMARKS=(
+    # Original Sprint 5.9 scenarios (1-8)
     "01-syn-scan-1000-ports.sh"
     "02-connect-scan-common-ports.sh"
     "03-udp-scan-dns-snmp-ntp.sh"
@@ -74,6 +75,24 @@ declare -a BENCHMARKS=(
     "06-idle-scan-timing.sh"
     "07-rate-limiting-overhead.sh"
     "08-tls-cert-parsing.sh"
+    # Sprint 5.5.4 Scan Type Scenarios (9-12)
+    "09-fin-scan-stealth.sh"
+    "10-null-scan-stealth.sh"
+    "11-xmas-scan-stealth.sh"
+    "12-ack-scan-firewall-detection.sh"
+    # Sprint 5.5.4 Scale Tests (15-20)
+    "15-small-scan-1host-100ports.sh"
+    "16-medium-scan-100hosts-1000ports.sh"
+    "17-large-scan-1000hosts-100ports.sh"
+    "18-all-ports-single-host.sh"
+    "19-timing-t0-paranoid.sh"
+    "20-timing-t5-insane.sh"
+    # Sprint 5.5.4 Feature Overhead (21-25)
+    "21-os-fingerprinting-overhead.sh"
+    "22-banner-grabbing-overhead.sh"
+    "23-evasion-fragmentation-overhead.sh"
+    "24-evasion-decoys-overhead.sh"
+    "25-event-system-overhead.sh"
 )
 
 # Run each benchmark

@@ -959,23 +959,55 @@ Benchmark:
 **Establish Baseline (on releases):**
 ```bash
 # Tag release
-git tag -a v0.5.0 -m "v0.5.0 release"
+git tag -a v0.5.1 -m "Release v0.5.1"
 
 # Build release binary
 cargo build --release
 
-# Run full suite and save baseline
-./scripts/run-all-benchmarks.sh --baseline
+# Create baseline (automated script)
+cd benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts
+./create-baseline.sh v0.5.1
 
 # Results saved to:
-#   baselines/baseline-v0.5.0.json
-#   baselines/baseline-v0.5.0-metadata.md
+#   benchmarks/baselines/v0.5.1/*.json
+#   benchmarks/baselines/v0.5.1/baseline-metadata.md
+
+# Commit baseline
+git add benchmarks/baselines/
+git commit -m "chore: Add v0.5.1 performance baseline"
+```
+
+**Baseline Directory Structure:**
+```
+benchmarks/baselines/
+├── v0.5.0/
+│   ├── syn-scan-20251109-120000.json
+│   ├── connect-scan-20251109-120015.json
+│   ├── ...
+│   └── baseline-metadata.md
+├── v0.5.1/
+│   ├── syn-scan-20251109-140000.json
+│   ├── ...
+│   └── baseline-metadata.md
 ```
 
 **Baseline Naming Convention:**
-- `baseline-v0.4.8.json` (patch release)
-- `baseline-v0.5.0.json` (minor release)
-- `baseline-v1.0.0.json` (major release)
+- Version-tagged directories: `v0.4.8/`, `v0.5.0/`, `v1.0.0/`
+- Individual scenario files: `{scenario}-{timestamp}.json`
+- Metadata file: `baseline-metadata.md` (system info, git commit, scenarios)
+
+**Using Baselines for Regression Detection:**
+```bash
+# Compare current results against v0.5.0 baseline
+./benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts/analyze-results.sh \
+    benchmarks/baselines/v0.5.0 \
+    benchmarks/05-Sprint5.9-Benchmarking-Framework/results
+
+# Exit codes:
+#   0 = PASS (within 5% or improved)
+#   1 = WARN (5-10% slower)
+#   2 = FAIL (>10% slower, regression detected)
+```
 
 ### Trend Tracking (Future Enhancement)
 
@@ -1017,11 +1049,17 @@ plt.savefig('reports/performance-trend.png')
 ## Summary
 
 **Benchmarking Framework Capabilities:**
-- ✅ 8 core scenarios covering all major features
+- ✅ **20 benchmark scenarios** covering all major features (expanded Sprint 5.5.4)
+  - 8 core scenarios (Sprint 5.9)
+  - 5 additional scan types (FIN, NULL, Xmas, ACK, UDP)
+  - 4 scale tests (small/medium/large, all-ports)
+  - 2 timing templates (T0 paranoid, T5 insane)
+  - 5 feature overhead tests (OS fingerprinting, banner grabbing, fragmentation, decoys, events)
 - ✅ hyperfine integration for statistical rigor
 - ✅ Regression detection (5% warn, 10% fail)
-- ✅ CI/CD automation (GitHub Actions)
-- ✅ Historical baseline tracking
+- ✅ CI/CD automation (GitHub Actions - Sprint 5.5.4)
+- ✅ Historical baseline tracking (version-tagged directories)
+- ✅ PR comment generation (automated feedback)
 - ✅ Comprehensive documentation (this guide)
 
 **Next Steps:**
@@ -1035,10 +1073,11 @@ plt.savefig('reports/performance-trend.png')
 - Automated baseline updates (on release tags)
 - Multi-platform baselines (Linux + macOS + Windows)
 - Criterion.rs micro-benchmarks (CPU cycles, cache misses)
-- 20+ scenarios (large networks, plugin combinations)
+- Statistical significance testing (Python t-test integration)
+- Flamegraph integration (profile on regression)
 
 ---
 
-**Version:** 1.0.0
-**Last Updated:** 2025-11-06
-**Sprint:** 5.9 - Benchmarking Framework Complete
+**Version:** 1.1.0
+**Last Updated:** 2025-11-09
+**Sprint:** 5.5.4 - Performance Audit & Optimization (CI/CD + Regression Detection)

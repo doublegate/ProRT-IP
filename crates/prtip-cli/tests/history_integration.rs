@@ -94,6 +94,11 @@ fn test_full_workflow_add_list_replay() {
 
 #[test]
 fn test_persistence_across_manager_instances() {
+    // Save current env var state and unset for this test
+    // This test specifically validates file persistence, which requires actual file I/O
+    let old_disable = std::env::var("PRTIP_DISABLE_HISTORY").ok();
+    std::env::remove_var("PRTIP_DISABLE_HISTORY");
+
     let temp_dir = TempDir::new().unwrap();
 
     // Set up temporary home directory
@@ -142,6 +147,12 @@ fn test_persistence_across_manager_instances() {
 
     // Cleanup
     std::env::remove_var("HOME");
+
+    // Restore env var state
+    match old_disable {
+        Some(val) => std::env::set_var("PRTIP_DISABLE_HISTORY", val),
+        None => std::env::remove_var("PRTIP_DISABLE_HISTORY"),
+    }
 }
 
 #[test]

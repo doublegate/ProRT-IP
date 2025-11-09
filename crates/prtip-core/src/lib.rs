@@ -96,6 +96,7 @@ pub mod detection;
 pub mod error;
 pub mod errors;
 pub mod event_bus;
+pub mod event_logger;
 pub mod events;
 pub mod os_db;
 pub mod progress;
@@ -121,6 +122,7 @@ pub use detection::{
 pub use error::{Error, Result};
 pub use errors::{ScanError, ScanErrorKind};
 pub use event_bus::{EventBus, EventFilter};
+pub use event_logger::{EventLogger, EventLoggerConfig};
 pub use events::{
     DiscoveryMethod, MetricType, PauseReason, ScanEvent, ScanEventType, ScanStage, Throughput,
     ValidationError, WarningSeverity,

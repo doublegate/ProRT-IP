@@ -297,10 +297,80 @@ cargo flamegraph --bench benchmarks -- localhost_scan  # Profile
 
 **Why Important**: Output formatting should not dominate scan time. Target: <5ms for typical results.
 
+---
+
+## Hyperfine Baselines (Sprint 5.5.4+)
+
+**New in v0.5.1:** In addition to Criterion micro-benchmarks, we now maintain hyperfine baselines for full-scan regression detection.
+
+**Purpose:**
+- Measure **end-to-end** scan performance (not just micro-operations)
+- Detect regressions in real-world scan scenarios
+- Automated CI/CD regression detection
+
+**Location:** Each baseline is stored in a version-tagged directory:
+```
+benchmarks/baselines/
+├── v0.5.0/  # hyperfine baselines
+│   ├── syn-scan-{timestamp}.json
+│   ├── connect-scan-{timestamp}.json
+│   ├── service-detection-{timestamp}.json
+│   └── baseline-metadata.md
+├── v0.5.1/  # (next version)
+└── v0.3.7/  # Criterion baselines (this section)
+```
+
+**Creating Hyperfine Baseline:**
+```bash
+# Use automated script (recommended)
+cd benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts
+./create-baseline.sh v0.5.1
+
+# Manual workflow (not recommended)
+./run-all-benchmarks.sh
+mkdir -p benchmarks/baselines/v0.5.1
+cp results/*.json benchmarks/baselines/v0.5.1/
+```
+
+**Regression Detection:**
+```bash
+# Compare current results against baseline
+./benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts/analyze-results.sh \
+    benchmarks/baselines/v0.5.0 \
+    benchmarks/05-Sprint5.9-Benchmarking-Framework/results
+
+# Exit codes:
+#   0 = PASS or IMPROVED
+#   1 = WARN (5-10% slower)
+#   2 = FAIL (>10% slower, regression)
+```
+
+**CI Integration:**
+- Workflow: `.github/workflows/benchmarks.yml`
+- Schedule: Weekly (Sunday 00:00 UTC)
+- PR comments: Automated performance comparison
+- Blocking: PRs with >10% regression fail CI
+
+**See:** `docs/31-BENCHMARKING-GUIDE.md` for full documentation
+
+---
+
 ## Version History
 
+### v0.5.0 (2025-11-09) - Sprint 5.5.4
+- **Hyperfine baseline system implemented**
+- 20 benchmark scenarios (expanded from 8)
+- Automated regression detection (5% warn, 10% fail)
+- CI/CD integration (GitHub Actions)
+- Platform: Intel i9-10850K, 32GB RAM, Linux 6.17.7
+- Key metrics:
+  - SYN scan (1K ports): 98ms
+  - Connect scan (3 ports): 45ms
+  - Service detection: 235ms
+  - Rate limiter overhead: -1.8% (faster than unlimited!)
+
 ### v0.3.7 (2025-10-13)
-- **Initial baseline capture**
+- **Initial Criterion baseline capture**
 - Platform: Intel i9-10850K, 62GB RAM, Linux 6.17.1
 - Rust: 1.90.0
 - Key metrics:

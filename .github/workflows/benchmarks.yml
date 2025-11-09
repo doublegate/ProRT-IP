@@ -1,0 +1,144 @@
+name: Performance Benchmarks
+
+on:
+  # Manual trigger for on-demand benchmarking
+  workflow_dispatch:
+
+  # Weekly scheduled run (Sunday 00:00 UTC)
+  schedule:
+    - cron: '0 0 * * 0'
+
+  # Optional: Run on pushes to main for regression detection
+  # Disabled by default to avoid excessive CI usage
+  # push:
+  #   branches: [main]
+
+  # Optional: Run on pull requests for performance validation
+  # Disabled by default to avoid excessive CI usage
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write  # For PR comments
+
+jobs:
+  benchmark:
+    name: Run Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for baseline comparison
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache: true
+
+      - name: Cache hyperfine installation
+        id: cache-hyperfine
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/hyperfine
+          key: ${{ runner.os }}-hyperfine-1.18.0
+
+      - name: Install hyperfine
+        if: steps.cache-hyperfine.outputs.cache-hit != 'true'
+        run: cargo install hyperfine --version 1.18.0
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Install jq for JSON processing
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run benchmark suite
+        id: run-benchmarks
+        run: |
+          cd benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts
+          chmod +x run-all-benchmarks.sh
+          ./run-all-benchmarks.sh
+          echo "timestamp=$(date -u +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Find latest baseline
+        id: find-baseline
+        run: |
+          if [ -d "benchmarks/baselines" ]; then
+            latest_baseline=$(ls -1 benchmarks/baselines/baseline-v*.json 2>/dev/null | sort -V | tail -n 1)
+            if [ -n "$latest_baseline" ]; then
+              echo "baseline_found=true" >> $GITHUB_OUTPUT
+              echo "baseline_file=$latest_baseline" >> $GITHUB_OUTPUT
+            else
+              echo "baseline_found=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "baseline_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Compare against baseline
+        if: steps.find-baseline.outputs.baseline_found == 'true'
+        id: compare
+        run: |
+          chmod +x benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts/analyze-results.sh
+          cd benchmarks/05-Sprint5.9-Benchmarking-Framework
+          ./scripts/analyze-results.sh "${{ steps.find-baseline.outputs.baseline_file }}" results
+          comparison_exit_code=$?
+          echo "exit_code=$comparison_exit_code" >> $GITHUB_OUTPUT
+
+          # Read PR comment if generated
+          if [ -f "results/pr-comment.md" ]; then
+            echo "pr_comment<<EOF" >> $GITHUB_OUTPUT
+            cat results/pr-comment.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ steps.run-benchmarks.outputs.timestamp }}
+          path: |
+            benchmarks/05-Sprint5.9-Benchmarking-Framework/results/*.json
+            benchmarks/05-Sprint5.9-Benchmarking-Framework/results/*.md
+            benchmarks/05-Sprint5.9-Benchmarking-Framework/results/pr-comment.md
+          retention-days: 90  # 3 months of benchmark history
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.find-baseline.outputs.baseline_found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const commentPath = 'benchmarks/05-Sprint5.9-Benchmarking-Framework/results/pr-comment.md';
+
+            if (fs.existsSync(commentPath)) {
+              const comment = fs.readFileSync(commentPath, 'utf8');
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '## Benchmark Results\n\nBenchmarks completed successfully. No baseline comparison available.\n\nView [benchmark artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed results.'
+              });
+            }
+
+      - name: Fail on regression
+        if: steps.compare.outputs.exit_code == '2'
+        run: |
+          echo "::error::Performance regression detected! Check benchmark results for details."
+          exit 1
+
+      - name: Warn on potential regression
+        if: steps.compare.outputs.exit_code == '1'
+        run: |
+          echo "::warning::Potential performance regression detected (within tolerance). Review recommended."

@@ -50,15 +50,16 @@
 
 use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use parking_lot::Mutex;
-use prtip_core::{Config, PortState, Result, ScanResult};
+use prtip_core::{Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanType};
 use prtip_network::{
     create_capture, get_udp_payload, with_buffer, PacketCapture, UdpPacketBuilder,
 };
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
+use uuid::Uuid;
 
 // PCAPNG packet capture support
 use crate::pcapng::{Direction, PcapngWriter};
@@ -83,6 +84,8 @@ pub struct UdpScanner {
     hostgroup_limiter: Option<Arc<HostgroupLimiter>>,
     /// Optional adaptive rate limiter (ICMP-aware throttling)
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
+    /// Optional event bus for real-time progress updates
+    event_bus: Option<Arc<EventBus>>,
 }
 
 impl UdpScanner {
@@ -99,6 +102,7 @@ impl UdpScanner {
             local_ipv6,
             hostgroup_limiter: None,
             adaptive_limiter: None,
+            event_bus: None,
         })
     }
 
@@ -111,6 +115,16 @@ impl UdpScanner {
     /// Enable adaptive rate limiting (ICMP-aware throttling)
     pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
         self.adaptive_limiter = Some(limiter);
+        self
+    }
+
+    /// Attach an event bus for real-time scan events
+    ///
+    /// # Arguments
+    ///
+    /// * `bus` - Event bus to emit scan events to
+    pub fn with_event_bus(mut self, bus: Arc<EventBus>) -> Self {
+        self.event_bus = Some(bus);
         self
     }
 
@@ -161,6 +175,9 @@ impl UdpScanner {
         port: u16,
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<ScanResult> {
+        // Generate scan ID for potential event tracking
+        let scan_id = Uuid::new_v4();
+
         // Note: Hostgroup limiting should be handled by the caller (scheduler)
         // since UdpScanner scans individual ports, not entire targets.
         // Only check ICMP backoff here.
@@ -169,6 +186,19 @@ impl UdpScanner {
         if let Some(limiter) = &self.adaptive_limiter {
             if limiter.is_target_backed_off(target) {
                 debug!("Skipping {}:{} (ICMP backoff active)", target, port);
+
+                // Emit rate limit triggered event
+                if let Some(bus) = &self.event_bus {
+                    bus.publish(ScanEvent::RateLimitTriggered {
+                        scan_id,
+                        current_rate: 0.0,
+                        target_rate: 0.0,
+                        duration_ms: 0,
+                        timestamp: SystemTime::now(),
+                    })
+                    .await;
+                }
+
                 return Ok(ScanResult::new(target, port, PortState::Filtered));
             }
         }
@@ -194,7 +224,7 @@ impl UdpScanner {
         let timeout_ms = self.config.scan.timeout_ms;
         let wait_duration = Duration::from_millis(timeout_ms);
 
-        match timeout(
+        let result = match timeout(
             wait_duration,
             self.wait_for_response(target, port, src_port, pcapng_writer),
         )
@@ -202,10 +232,39 @@ impl UdpScanner {
         {
             Ok(Ok(state)) => {
                 let response_time = start_time.elapsed();
+
+                // Emit PortFound event for open ports
+                if state == PortState::Open {
+                    if let Some(bus) = &self.event_bus {
+                        bus.publish(ScanEvent::PortFound {
+                            scan_id,
+                            ip: target,
+                            port,
+                            state,
+                            protocol: Protocol::Udp,
+                            scan_type: ScanType::Udp,
+                            timestamp: SystemTime::now(),
+                        })
+                        .await;
+                    }
+                }
+
                 Ok(ScanResult::new(target, port, state).with_response_time(response_time))
             }
             Ok(Err(e)) => {
                 warn!("Error waiting for UDP response: {}", e);
+
+                // Emit warning event
+                if let Some(bus) = &self.event_bus {
+                    bus.publish(ScanEvent::WarningIssued {
+                        scan_id,
+                        message: format!("Error waiting for UDP response from {}:{}: {}", target, port, e),
+                        severity: prtip_core::WarningSeverity::Medium,
+                        timestamp: SystemTime::now(),
+                    })
+                    .await;
+                }
+
                 let response_time = start_time.elapsed();
                 Ok(ScanResult::new(target, port, PortState::Unknown)
                     .with_response_time(response_time))
@@ -217,7 +276,9 @@ impl UdpScanner {
                 Ok(ScanResult::new(target, port, PortState::Filtered)
                     .with_response_time(response_time))
             }
-        }
+        };
+
+        result
     }
 
     /// Send a UDP probe packet with dual-stack IPv4/IPv6 support

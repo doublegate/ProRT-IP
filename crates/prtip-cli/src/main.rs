@@ -1136,9 +1136,11 @@ fn record_scan_history(
         duration_str
     );
 
-    // Add to history
-    let mut manager = HistoryManager::new()?;
-    manager.add_entry(argv.to_vec(), summary, exit_code)?;
+    // Add to history (skip if running in test mode)
+    if std::env::var("PRTIP_DISABLE_HISTORY").is_err() {
+        let mut manager = HistoryManager::new()?;
+        manager.add_entry(argv.to_vec(), summary, exit_code)?;
+    }
 
     Ok(())
 }

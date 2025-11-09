@@ -22,7 +22,7 @@
 //!
 //! // Add a scan to history
 //! manager.add_entry(
-//!     vec!["prtip", "-sS", "-p", "80,443", "192.168.1.0/24"],
+//!     vec!["prtip".to_string(), "-sS".to_string(), "-p".to_string(), "80,443".to_string(), "192.168.1.0/24".to_string()],
 //!     "SYN scan of 192.168.1.0/24: 5 hosts, 2 open ports",
 //!     0,
 //! )?;
@@ -227,7 +227,7 @@ impl HistoryManager {
     /// # use prtip_cli::history::HistoryManager;
     /// let mut manager = HistoryManager::new()?;
     /// manager.add_entry(
-    ///     vec!["prtip", "-sS", "-p", "80,443", "192.168.1.1"],
+    ///     vec!["prtip".to_string(), "-sS".to_string(), "-p".to_string(), "80,443".to_string(), "192.168.1.1".to_string()],
     ///     "SYN scan of 192.168.1.1: 2 open ports",
     ///     0,
     /// )?;

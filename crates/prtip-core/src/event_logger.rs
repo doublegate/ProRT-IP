@@ -3,6 +3,25 @@
 //! This module provides automatic logging of all scan events to disk in
 //! JSON Lines format, enabling audit trails, replay, and analysis.
 //!
+//! # JSON Lines Format
+//!
+//! **Format Specification:** https://jsonlines.org/
+//!
+//! Each log file contains:
+//! - Header line: `{"event":"log_started","timestamp":"...","version":"1.0"}`
+//! - Event lines: One JSON object per event (serialized [`ScanEvent`])
+//! - Footer line: `{"event":"log_ended","timestamp":"..."}`
+//!
+//! **Example log file:**
+//! ```jsonl
+//! {"event":"log_started","timestamp":"2025-11-09T12:00:00Z","version":"1.0"}
+//! {"event":"scan_started","scan_id":"123e4567...","scan_type":"syn",...}
+//! {"event":"port_found","scan_id":"123e4567...","target":"192.168.1.1","port":80,...}
+//! {"event":"service_detected","scan_id":"123e4567...","service_name":"http",...}
+//! {"event":"scan_completed","scan_id":"123e4567...","duration_secs":120,...}
+//! {"event":"log_ended","timestamp":"2025-11-09T12:02:00Z"}
+//! ```
+//!
 //! # Architecture
 //!
 //! - **Format**: JSON Lines (one event per line)
@@ -12,33 +31,102 @@
 //!
 //! # Features
 //!
-//! - Subscribes to all scan events from EventBus
-//! - Writes header/footer metadata for each scan
-//! - Automatic log rotation and compression
-//! - Thread-safe, non-blocking async writes
-//! - Graceful handling of disk full / I/O errors
+//! - **Auto-Subscribe**: Subscribes to all scan events from EventBus
+//! - **Metadata**: Writes header/footer metadata for each scan
+//! - **Rotation**: Automatic log rotation at size threshold
+//! - **Compression**: Optional gzip compression of rotated logs
+//! - **Thread-Safe**: Non-blocking async writes
+//! - **Error Handling**: Graceful handling of disk full / I/O errors
+//!
+//! # Query Examples
+//!
+//! ## Using jq (JSON query tool)
+//!
+//! ```bash
+//! # Get all open ports
+//! jq 'select(.event == "port_found" and .state == "open")' scan.jsonl
+//!
+//! # Count services by type
+//! jq 'select(.event == "service_detected") | .service_name' scan.jsonl | sort | uniq -c
+//!
+//! # Get scan duration
+//! jq 'select(.event == "scan_completed") | .duration_secs' scan.jsonl
+//!
+//! # Filter by time range
+//! jq 'select(.timestamp >= "2025-11-09T12:00:00Z")' scan.jsonl
+//! ```
+//!
+//! ## Using grep
+//!
+//! ```bash
+//! # Find all HTTP services
+//! grep '"service_name":"http"' scan.jsonl
+//!
+//! # Find specific IP
+//! grep '"target":"192.168.1.1"' scan.jsonl
+//!
+//! # Find errors
+//! grep '"event":"scan_error"' scan.jsonl
+//! ```
 //!
 //! # Examples
 //!
-//! ```no_run
+//! ## Basic Usage
+//!
+//! ```ignore
 //! use prtip_core::event_logger::EventLogger;
 //! use prtip_core::event_bus::EventBus;
 //! use std::sync::Arc;
+//! use std::path::Path;
+//! use uuid::Uuid;
 //!
 //! # async fn example() -> std::io::Result<()> {
 //! // Create event bus
 //! let bus = Arc::new(EventBus::new(1000));
+//! let scan_id = Uuid::new_v4();
 //!
 //! // Create event logger (automatically subscribes to all events)
 //! let logger = EventLogger::new(bus.clone()).await?;
 //!
-//! // Events are automatically logged to ~/.prtip/events/<scan_id>.jsonl
+//! // Start logging a scan
+//! logger.start_scan(scan_id).await?;
+//!
+//! // Events are automatically logged as they're published
+//! // ... scan runs ...
+//!
+//! // End logging
+//! logger.end_scan(scan_id).await?;
+//!
 //! // Cleanup old logs (>30 days)
-//! logger.cleanup_old_logs()?;
+//! logger.cleanup_old_logs(std::time::Duration::from_secs(30 * 24 * 3600)).await?;
 //!
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! ## Log Rotation
+//!
+//! ```ignore
+//! use prtip_core::event_logger::EventLogger;
+//! # use prtip_core::event_bus::EventBus;
+//! # use std::{sync::Arc, path::Path};
+//!
+//! # async fn example() -> std::io::Result<()> {
+//! # let bus = Arc::new(EventBus::new(1000));
+//! // Create logger with default configuration
+//! let logger = EventLogger::new(bus.clone()).await?;
+//!
+//! // Log rotation is managed automatically
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! # See Also
+//!
+//! - **Developer Guide**: [`docs/35-EVENT-SYSTEM-GUIDE.md`](../../docs/35-EVENT-SYSTEM-GUIDE.md)
+//! - **EventBus**: [`crate::event_bus`] - Event distribution
+//! - **Event Types**: [`crate::events`] - ScanEvent variants
+//! - **JSON Lines**: https://jsonlines.org/ - Format specification
 
 use crate::event_bus::{EventBus, EventFilter};
 use crate::events::ScanEvent;

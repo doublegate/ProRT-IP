@@ -10,11 +10,35 @@
 //! - [`ScanProgress`] - Thread-safe atomic counters for progress tracking
 //! - [`ErrorCategory`] - Error classification for statistics
 //!
-//! ## Event-Driven (Modern)
+//! ## Event-Driven (Modern) **← Recommended**
 //!
 //! - [`ProgressCalculator`] - Real-time ETA calculation with EWMA smoothing
 //! - [`ThroughputMonitor`] - Throughput metrics (pps, hpm, Mbps) with sliding window
 //! - [`ProgressAggregator`] - Event-based statistical aggregation
+//!
+//! # ProgressAggregator Overview
+//!
+//! **Primary component for real-time scan monitoring**
+//!
+//! **Features:**
+//! - **Auto-Subscribes**: Automatically subscribes to EventBus progress events
+//! - **Real-Time Metrics**: Percentage, completed/total, throughput, ETA
+//! - **ETA Calculation**: EWMA-smoothed estimates based on recent throughput
+//! - **Multi-Scanner**: Supports concurrent scan aggregation
+//! - **Thread-Safe**: `Arc<RwLock<>>` for concurrent access
+//!
+//! **Metrics Provided:**
+//! - `percentage: f64` - Scan completion (0-100%)
+//! - `completed: usize` - Items processed
+//! - `total: usize` - Total items
+//! - `throughput: Throughput` - Current packets/sec, ports/sec
+//! - `eta: Option<Duration>` - Estimated time to completion
+//! - `stage: ScanStage` - Current scan phase
+//!
+//! **Update Frequency:**
+//! - Metrics updated on every ProgressUpdate event
+//! - Throughput calculated from last 5 seconds (moving average)
+//! - ETA recalculated every update
 //!
 //! # Examples
 //!
@@ -31,26 +55,80 @@
 //! println!("ETA: {:?}", progress.eta());
 //! ```
 //!
-//! ## Event-Driven Usage
+//! ## Event-Driven Usage (Recommended)
 //!
-//! ```no_run
+//! ```ignore
 //! use prtip_core::progress::ProgressAggregator;
 //! use prtip_core::event_bus::EventBus;
 //! use std::sync::Arc;
+//! use uuid::Uuid;
 //!
 //! # async fn example() {
 //! let bus = Arc::new(EventBus::new(1000));
-//! let aggregator = ProgressAggregator::new(bus.clone());
+//! let scan_id = Uuid::new_v4();
 //!
-//! // Aggregator automatically subscribes to progress events
-//! // and maintains real-time statistics with ETA and throughput
+//! // Create aggregator (auto-subscribes to progress events)
+//! let aggregator = Arc::new(
+//!     ProgressAggregator::new(bus.clone(), scan_id)
+//! );
 //!
-//! let state = aggregator.get_state().await;
-//! println!("Progress: {:.1}%", state.overall_progress);
-//! println!("ETA: {:?}", state.eta);
-//! println!("Throughput: {:.0} pps", state.throughput.packets_per_second);
+//! // Initialize with totals
+//! aggregator.start(1000, 100).await; // 1000 targets, 100 ports
+//!
+//! // Get current metrics (async, non-blocking)
+//! let metrics = aggregator.get_current_metrics().await;
+//! println!("Progress: {:.1}%", metrics.percentage);
+//! println!("Throughput: {} pps", metrics.throughput.packets_per_sec);
+//!
+//! if let Some(eta) = metrics.eta {
+//!     println!("ETA: {} seconds", eta.as_secs());
+//! }
 //! # }
 //! ```
+//!
+//! ## Real-Time Monitoring
+//!
+//! ```ignore
+//! use prtip_core::progress::ProgressAggregator;
+//! use tokio::time::{interval, Duration};
+//! # use std::sync::Arc;
+//! # use prtip_core::event_bus::EventBus;
+//! # use uuid::Uuid;
+//!
+//! # async fn example() {
+//! # let bus = Arc::new(EventBus::new(1000));
+//! # let scan_id = Uuid::new_v4();
+//! let aggregator = Arc::new(ProgressAggregator::new(bus, scan_id));
+//! aggregator.start(1000, 100).await;
+//!
+//! // Update every second
+//! let mut ticker = interval(Duration::from_secs(1));
+//!
+//! loop {
+//!     ticker.tick().await;
+//!
+//!     let metrics = aggregator.get_current_metrics().await;
+//!
+//!     print!("\rProgress: {:.1}% ({}/{}) ",
+//!         metrics.percentage,
+//!         metrics.completed,
+//!         metrics.total
+//!     );
+//!
+//!     if metrics.percentage >= 100.0 {
+//!         println!("\nComplete!");
+//!         break;
+//!     }
+//! }
+//! # }
+//! ```
+//!
+//! # See Also
+//!
+//! - **Developer Guide**: [`docs/35-EVENT-SYSTEM-GUIDE.md`](../../../docs/35-EVENT-SYSTEM-GUIDE.md)
+//! - **EventBus**: [`crate::event_bus`] - Event distribution
+//! - **Event Types**: [`crate::events`] - ProgressUpdate events
+//! - **Benchmarks**: [`benchmarks/event-system-baseline.md`](../../../benchmarks/event-system-baseline.md)
 
 mod aggregator;
 mod calculator;

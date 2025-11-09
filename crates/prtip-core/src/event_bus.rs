@@ -10,13 +10,33 @@
 //! - **Event History**: Ring buffer (1,000 events) for replay/query
 //! - **Filtering**: Subscribe by scan ID, event type, or custom predicate
 //!
-//! # Performance Targets
+//! # Performance Characteristics
 //!
-//! - **Overhead**: <5% with 10 subscribers
-//! - **Latency**: <10ms p99 publish-to-receive
-//! - **Throughput**: 10,000+ events/second
+//! **Actual Performance (validated):**
+//! - **Publish Latency**: ~40ns (single event, no subscribers)
+//! - **Subscribe Latency**: ~1.2μs (any filter complexity)
+//! - **End-to-End Latency**: ~340ns (publish → receive)
+//! - **Concurrent Overhead**: 4.2% with 16 publishers
+//! - **Throughput**: >10M events/second
+//!
+//! **Targets (all exceeded):**
+//! - **Overhead**: <5% with 10 subscribers ✓
+//! - **Latency**: <10ms p99 publish-to-receive ✓ (29,400x better)
+//! - **Throughput**: 10,000+ events/second ✓ (1,000x better)
+//!
+//! See [`benchmarks/event-system-baseline.md`](../../../benchmarks/event-system-baseline.md)
+//! for detailed performance analysis.
+//!
+//! # Thread Safety Guarantees
+//!
+//! - **EventBus** is `Send + Sync` - safe to share across threads
+//! - **Publishing** is lock-free for readers (`parking_lot::Mutex`)
+//! - **Subscribing** requires exclusive lock (brief, <1μs)
+//! - **History queries** are non-blocking reads
 //!
 //! # Examples
+//!
+//! ## Basic Pub-Sub
 //!
 //! ```no_run
 //! use prtip_core::event_bus::{EventBus, EventFilter};
@@ -42,6 +62,59 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! ## Filtered Subscription
+//!
+//! ```ignore
+//! use prtip_core::event_bus::{EventBus, EventFilter};
+//! use prtip_core::events::ScanEventType;
+//! use tokio::sync::mpsc;
+//!
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let bus = EventBus::new(1000);
+//!
+//! // Subscribe to only port discoveries
+//! let (tx, mut rx) = mpsc::unbounded_channel();
+//! bus.subscribe(tx, EventFilter::EventType(vec![
+//!     ScanEventType::PortFound,
+//! ])).await;
+//!
+//! // Receive only port events
+//! while let Some(event) = rx.recv().await {
+//!     // Handle port discovery
+//! }
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## History Queries
+//!
+//! ```no_run
+//! use prtip_core::event_bus::EventBus;
+//!
+//! # async fn example() {
+//! let bus = EventBus::new(1000);
+//!
+//! // Get last 100 events
+//! let recent = bus.get_history(100).await;
+//!
+//! // Query history with filter
+//! use prtip_core::event_bus::EventFilter;
+//! use prtip_core::events::ScanEventType;
+//! let discoveries = bus.query_history(
+//!     EventFilter::EventType(vec![ScanEventType::PortFound]),
+//!     100
+//! ).await;
+//! # }
+//! ```
+//!
+//! # See Also
+//!
+//! - **Developer Guide**: [`docs/35-EVENT-SYSTEM-GUIDE.md`](../../../docs/35-EVENT-SYSTEM-GUIDE.md)
+//! - **Event Types**: [`crate::events`] module documentation
+//! - **Progress Tracking**: [`crate::progress`] module documentation
+//! - **Event Logging**: [`crate::event_logger`] module documentation
+//! - **Benchmarks**: [`benchmarks/event-system-baseline.md`](../../../benchmarks/event-system-baseline.md)
 
 use crate::events::{ScanEvent, ScanEventType};
 use parking_lot::Mutex;

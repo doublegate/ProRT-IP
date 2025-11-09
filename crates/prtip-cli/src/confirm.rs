@@ -10,14 +10,21 @@
 //!
 //! ```no_run
 //! use prtip_cli::confirm::{ConfirmationManager, ConfirmConfig};
+//! use prtip_core::{Config, ScanTarget};
 //!
+//! # fn main() -> anyhow::Result<()> {
 //! let manager = ConfirmationManager::new(ConfirmConfig {
 //!     auto_yes: false,
 //!     is_interactive: true,
 //! });
 //!
+//! let config = Config::default();
+//! let targets = vec![ScanTarget::parse("192.168.1.1")?];
+//!
 //! // Check for dangerous scan before executing
 //! manager.confirm_scan(&config, &targets)?;
+//! # Ok(())
+//! # }
 //! ```
 
 use anyhow::{bail, Result};

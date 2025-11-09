@@ -1484,6 +1484,7 @@ impl Args {
                     capture_raw: self.capture_raw_responses,
                 },
                 progress: show_progress,
+                event_bus: None, // Event bus integration for TUI (Phase 6)
             },
             network: NetworkConfig {
                 interface: self.interface.clone(),

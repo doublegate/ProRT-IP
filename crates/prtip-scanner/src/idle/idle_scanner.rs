@@ -29,13 +29,14 @@ use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::MutableIpv4Packet;
 use pnet::packet::tcp::{MutableTcpPacket, TcpFlags};
 use pnet::transport::{transport_channel, TransportChannelType, TransportProtocol};
-use prtip_core::{Error, PortState, Result};
+use prtip_core::{Error, EventBus, PortState, Protocol, Result, ScanEvent, ScanType};
 use rand::Rng;
 use std::net::IpAddr;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use tokio::sync::Semaphore;
 use tracing::debug;
+use uuid::Uuid;
 
 /// Idle scan configuration
 #[derive(Debug, Clone)]
@@ -100,6 +101,8 @@ pub struct IdleScanner {
     config: IdleScanConfig,
     /// Optional adaptive rate limiter (ICMP-aware throttling)
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
+    /// Optional event bus for real-time progress updates
+    event_bus: Option<Arc<EventBus>>,
 }
 
 impl IdleScanner {
@@ -108,12 +111,23 @@ impl IdleScanner {
         Ok(Self {
             config,
             adaptive_limiter: None,
+            event_bus: None,
         })
     }
 
     /// Enable adaptive rate limiting (ICMP-aware throttling)
     pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
         self.adaptive_limiter = Some(limiter);
+        self
+    }
+
+    /// Attach an event bus for real-time scan events
+    ///
+    /// # Arguments
+    ///
+    /// * `bus` - Event bus to emit scan events to
+    pub fn with_event_bus(mut self, bus: Arc<EventBus>) -> Self {
+        self.event_bus = Some(bus);
         self
     }
 
@@ -138,9 +152,37 @@ impl IdleScanner {
         target: IpAddr,
         ports: &[u16],
     ) -> Result<Vec<IdleScanResult>> {
+        // Generate scan ID for event tracking
+        let scan_id = Uuid::new_v4();
+        let scan_start = std::time::Instant::now();
+
+        // Emit ScanStarted event
+        if let Some(bus) = &self.event_bus {
+            bus.publish(ScanEvent::ScanStarted {
+                scan_id,
+                scan_type: ScanType::Idle,
+                target_count: 1,
+                port_count: ports.len(),
+                timestamp: SystemTime::now(),
+            })
+            .await;
+
+            // Emit MetricRecorded for zombie IPID
+            bus.publish(ScanEvent::MetricRecorded {
+                scan_id,
+                metric: prtip_core::MetricType::PacketsSent,
+                value: self.config.zombie.quality_score as f64,
+                timestamp: SystemTime::now(),
+            })
+            .await;
+        }
+
         // Limit concurrent port probes to avoid overwhelming zombie
         let semaphore = Arc::new(Semaphore::new(10));
         let mut tasks = Vec::new();
+
+        // Clone event bus for tasks
+        let event_bus = self.event_bus.clone();
 
         for &port in ports {
             let zombie = self.config.zombie.clone();
@@ -149,10 +191,11 @@ impl IdleScanner {
             let confidence_threshold = self.config.confidence_threshold;
             let adaptive_limiter = self.adaptive_limiter.clone();
             let sem = semaphore.clone();
+            let bus = event_bus.clone();
 
             let task = tokio::spawn(async move {
                 let _permit = sem.acquire().await.unwrap();
-                Self::scan_single_port_with_retry(
+                let result = Self::scan_single_port_with_retry(
                     zombie,
                     target,
                     port,
@@ -161,7 +204,27 @@ impl IdleScanner {
                     confidence_threshold,
                     adaptive_limiter,
                 )
-                .await
+                .await;
+
+                // Emit PortFound event for open ports
+                if let Ok(ref scan_result) = result {
+                    if scan_result.state == PortState::Open {
+                        if let Some(bus) = &bus {
+                            bus.publish(ScanEvent::PortFound {
+                                scan_id,
+                                ip: target,
+                                port,
+                                state: scan_result.state,
+                                protocol: Protocol::Tcp,
+                                scan_type: ScanType::Idle,
+                                timestamp: SystemTime::now(),
+                            })
+                            .await;
+                        }
+                    }
+                }
+
+                result
             });
 
             tasks.push(task);
@@ -179,6 +242,26 @@ impl IdleScanner {
                     tracing::warn!("Task join error: {}", e);
                 }
             }
+        }
+
+        // Calculate final statistics
+        let open_count = results.iter().filter(|r| r.state == PortState::Open).count();
+        let closed_count = results.iter().filter(|r| r.state == PortState::Closed).count();
+        let filtered_count = results.iter().filter(|r| r.state == PortState::Filtered).count();
+
+        // Emit ScanCompleted event
+        if let Some(bus) = &self.event_bus {
+            bus.publish(ScanEvent::ScanCompleted {
+                scan_id,
+                duration: scan_start.elapsed(),
+                total_targets: 1,
+                open_ports: open_count,
+                closed_ports: closed_count,
+                filtered_ports: filtered_count,
+                detected_services: 0, // Idle scan doesn't do service detection
+                timestamp: SystemTime::now(),
+            })
+            .await;
         }
 
         Ok(results)

@@ -1,10 +1,12 @@
 //! Configuration management for ProRT-IP
 
 use crate::error::{Error, Result};
+use crate::event_bus::EventBus;
 use crate::types::{ScanType, TimingTemplate};
 use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 /// Main configuration structure
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -113,6 +115,12 @@ pub struct ScanConfig {
     /// Enable progress bar display
     #[serde(default)]
     pub progress: bool,
+    /// Optional event bus for real-time progress updates
+    ///
+    /// If provided, scanners will emit events to this bus.
+    /// If None, scanners operate in legacy mode (atomic counters only).
+    #[serde(skip)]
+    pub event_bus: Option<Arc<EventBus>>,
 }
 
 impl Default for ScanConfig {
@@ -126,7 +134,26 @@ impl Default for ScanConfig {
             host_delay_ms: 0,
             service_detection: ServiceDetectionConfig::default(),
             progress: false,
+            event_bus: None, // Backward compatible
         }
+    }
+}
+
+impl ScanConfig {
+    /// Attach an event bus for real-time progress updates
+    ///
+    /// # Example
+    /// ```
+    /// use prtip_core::{ScanConfig, EventBus};
+    /// use std::sync::Arc;
+    ///
+    /// let bus = Arc::new(EventBus::new(1000));
+    /// let config = ScanConfig::default().with_event_bus(bus);
+    /// assert!(config.event_bus.is_some());
+    /// ```
+    pub fn with_event_bus(mut self, bus: Arc<EventBus>) -> Self {
+        self.event_bus = Some(bus);
+        self
     }
 }
 

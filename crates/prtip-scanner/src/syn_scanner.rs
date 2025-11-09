@@ -40,17 +40,18 @@
 use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
-use prtip_core::{Config, PortState, Result, ScanResult};
+use prtip_core::{Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanStage, ScanType};
 use prtip_network::{
     create_capture, packet_buffer::with_buffer, PacketCapture, TcpFlags, TcpOption,
     TcpPacketBuilder,
 };
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 use tokio::sync::mpsc;
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
+use uuid::Uuid;
 
 // PCAPNG packet capture support
 use crate::pcapng::{Direction, PcapngWriter};
@@ -100,6 +101,8 @@ pub struct SynScanner {
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
     /// Optional AdaptiveV3 rate limiter (<5% overhead target, experimental)
     adaptive_v3: Option<Arc<AdaptiveRateLimiterV2>>,
+    /// Optional event bus for real-time progress updates
+    event_bus: Option<Arc<EventBus>>,
 }
 
 impl SynScanner {
@@ -119,6 +122,7 @@ impl SynScanner {
             hostgroup_limiter: None,
             adaptive_limiter: None,
             adaptive_v3: None,
+            event_bus: None,
         })
     }
 
@@ -137,6 +141,16 @@ impl SynScanner {
     /// Enable AdaptiveV3 rate limiting (<5% overhead, experimental)
     pub fn with_adaptive_v3(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
         self.adaptive_v3 = Some(limiter);
+        self
+    }
+
+    /// Attach an event bus for real-time scan events
+    ///
+    /// # Arguments
+    ///
+    /// * `bus` - Event bus to emit scan events to
+    pub fn with_event_bus(mut self, bus: Arc<EventBus>) -> Self {
+        self.event_bus = Some(bus);
         self
     }
 
@@ -784,6 +798,31 @@ impl SynScanner {
     /// Scan multiple ports in parallel
     /// Sprint 5.1: Updated for dual-stack IPv4/IPv6 support
     pub async fn scan_ports(&self, target: IpAddr, ports: Vec<u16>) -> Result<Vec<ScanResult>> {
+        // Generate scan ID for event tracking
+        let scan_id = Uuid::new_v4();
+        let scan_start = Instant::now();
+
+        // Emit ScanStarted event
+        if let Some(bus) = &self.event_bus {
+            bus.publish(ScanEvent::ScanStarted {
+                scan_id,
+                scan_type: ScanType::Syn,
+                target_count: 1,
+                port_count: ports.len(),
+                timestamp: SystemTime::now(),
+            })
+            .await;
+
+            // Emit stage change to ScanningPorts
+            bus.publish(ScanEvent::StageChanged {
+                scan_id,
+                from_stage: ScanStage::ResolvingTargets,
+                to_stage: ScanStage::ScanningPorts,
+                timestamp: SystemTime::now(),
+            })
+            .await;
+        }
+
         // 1. Acquire hostgroup permit (if rate limiting enabled)
         let _permit = if let Some(limiter) = &self.hostgroup_limiter {
             Some(limiter.acquire_target().await)
@@ -795,6 +834,22 @@ impl SynScanner {
         if let Some(limiter) = &self.adaptive_limiter {
             if limiter.is_target_backed_off(target) {
                 debug!("Skipping {} (ICMP backoff active)", target);
+
+                // Emit scan completion with no results
+                if let Some(bus) = &self.event_bus {
+                    bus.publish(ScanEvent::ScanCompleted {
+                        scan_id,
+                        duration: scan_start.elapsed(),
+                        total_targets: 1,
+                        open_ports: 0,
+                        closed_ports: 0,
+                        filtered_ports: 0,
+                        detected_services: 0,
+                        timestamp: SystemTime::now(),
+                    })
+                    .await;
+                }
+
                 return Ok(Vec::new());
             }
         }
@@ -802,14 +857,33 @@ impl SynScanner {
         let (tx, mut rx) = mpsc::channel(1000);
         let mut tasks = Vec::new();
 
+        // Clone event bus for tasks
+        let event_bus = self.event_bus.clone();
+
         // Spawn scan tasks for each port
         for port in ports {
             let tx = tx.clone();
             let scanner = self.clone_for_task();
+            let bus = event_bus.clone();
 
             let task = tokio::spawn(async move {
                 match scanner.scan_port(target, port).await {
                     Ok(result) => {
+                        // Emit PortFound event for open ports
+                        if result.state == PortState::Open {
+                            if let Some(bus) = &bus {
+                                bus.publish(ScanEvent::PortFound {
+                                    scan_id,
+                                    ip: target,
+                                    port,
+                                    state: result.state,
+                                    protocol: Protocol::Tcp,
+                                    scan_type: ScanType::Syn,
+                                    timestamp: SystemTime::now(),
+                                })
+                                .await;
+                            }
+                        }
                         let _ = tx.send(result).await;
                     }
                     Err(e) => {
@@ -835,6 +909,26 @@ impl SynScanner {
             let _ = task.await;
         }
 
+        // Calculate final statistics
+        let open_count = results.iter().filter(|r| r.state == PortState::Open).count();
+        let closed_count = results.iter().filter(|r| r.state == PortState::Closed).count();
+        let filtered_count = results.iter().filter(|r| r.state == PortState::Filtered).count();
+
+        // Emit ScanCompleted event
+        if let Some(bus) = &self.event_bus {
+            bus.publish(ScanEvent::ScanCompleted {
+                scan_id,
+                duration: scan_start.elapsed(),
+                total_targets: 1,
+                open_ports: open_count,
+                closed_ports: closed_count,
+                filtered_ports: filtered_count,
+                detected_services: 0, // SYN scan doesn't do service detection
+                timestamp: SystemTime::now(),
+            })
+            .await;
+        }
+
         Ok(results)
     }
 
@@ -850,6 +944,7 @@ impl SynScanner {
             hostgroup_limiter: self.hostgroup_limiter.clone(),
             adaptive_limiter: self.adaptive_limiter.clone(),
             adaptive_v3: self.adaptive_v3.clone(),
+            event_bus: self.event_bus.clone(),
         }
     }
 }

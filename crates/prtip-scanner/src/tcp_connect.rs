@@ -17,14 +17,17 @@
 
 use crate::lockfree_aggregator::LockFreeAggregator;
 use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
-use prtip_core::{Error, PortState, Result, ScanProgress, ScanResult};
+use prtip_core::{
+    Error, EventBus, PortState, Protocol, Result, ScanEvent, ScanProgress, ScanResult, ScanStage,
+};
 use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 use tokio::net::TcpStream;
 use tokio::sync::Semaphore;
 use tokio::time::timeout;
 use tracing::{debug, trace, warn};
+use uuid::Uuid;
 
 #[cfg(feature = "numa")]
 use prtip_network::numa::NumaManager;
@@ -65,6 +68,8 @@ pub struct TcpConnectScanner {
     hostgroup_limiter: Option<Arc<HostgroupLimiter>>,
     /// Optional adaptive rate limiter (ICMP-aware throttling)
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
+    /// Optional event bus for real-time progress updates
+    event_bus: Option<Arc<EventBus>>,
 }
 
 impl TcpConnectScanner {
@@ -80,6 +85,7 @@ impl TcpConnectScanner {
             retries,
             hostgroup_limiter: None,
             adaptive_limiter: None,
+            event_bus: None,
         }
     }
 
@@ -100,6 +106,16 @@ impl TcpConnectScanner {
     /// * `limiter` - Adaptive rate limiter to use
     pub fn with_adaptive_limiter(mut self, limiter: Arc<AdaptiveRateLimiterV2>) -> Self {
         self.adaptive_limiter = Some(limiter);
+        self
+    }
+
+    /// Attach an event bus for real-time scan events
+    ///
+    /// # Arguments
+    ///
+    /// * `bus` - Event bus to emit scan events to
+    pub fn with_event_bus(mut self, bus: Arc<EventBus>) -> Self {
+        self.event_bus = Some(bus);
         self
     }
 
@@ -271,6 +287,31 @@ impl TcpConnectScanner {
         #[cfg(feature = "numa")] numa_manager: Option<&Arc<NumaManager>>,
         #[cfg(not(feature = "numa"))] _numa_manager: Option<&()>,
     ) -> Result<Vec<ScanResult>> {
+        // Generate scan ID for event tracking
+        let scan_id = Uuid::new_v4();
+        let scan_start = Instant::now();
+
+        // Emit ScanStarted event
+        if let Some(bus) = &self.event_bus {
+            bus.publish(ScanEvent::ScanStarted {
+                scan_id,
+                scan_type: prtip_core::ScanType::Connect,
+                target_count: 1,
+                port_count: ports.len(),
+                timestamp: SystemTime::now(),
+            })
+            .await;
+
+            // Emit stage change to ScanningPorts
+            bus.publish(ScanEvent::StageChanged {
+                scan_id,
+                from_stage: ScanStage::ResolvingTargets,
+                to_stage: ScanStage::ScanningPorts,
+                timestamp: SystemTime::now(),
+            })
+            .await;
+        }
+
         // 1. Acquire hostgroup permit (if rate limiting enabled)
         let _permit = if let Some(limiter) = &self.hostgroup_limiter {
             Some(limiter.acquire_target().await)
@@ -282,6 +323,22 @@ impl TcpConnectScanner {
         if let Some(limiter) = &self.adaptive_limiter {
             if limiter.is_target_backed_off(target) {
                 debug!("Skipping {} (ICMP backoff active)", target);
+
+                // Emit scan completion with no results
+                if let Some(bus) = &self.event_bus {
+                    bus.publish(ScanEvent::ScanCompleted {
+                        scan_id,
+                        duration: scan_start.elapsed(),
+                        total_targets: 1,
+                        open_ports: 0,
+                        closed_ports: 0,
+                        filtered_ports: 0,
+                        detected_services: 0,
+                        timestamp: SystemTime::now(),
+                    })
+                    .await;
+                }
+
                 return Ok(Vec::new());
             }
         }
@@ -363,6 +420,22 @@ impl TcpConnectScanner {
         while let Some(result) = futures_unordered.next().await {
             match result {
                 Ok(Ok(scan_result)) => {
+                    // Emit PortFound event for open ports
+                    if scan_result.state == PortState::Open {
+                        if let Some(bus) = &self.event_bus {
+                            bus.publish(ScanEvent::PortFound {
+                                scan_id,
+                                ip: scan_result.target_ip,
+                                port: scan_result.port,
+                                state: scan_result.state,
+                                protocol: Protocol::Tcp,
+                                scan_type: prtip_core::ScanType::Connect,
+                                timestamp: SystemTime::now(),
+                            })
+                            .await;
+                        }
+                    }
+
                     if let Some(p) = progress {
                         p.increment_completed();
                         match scan_result.state {
@@ -393,6 +466,26 @@ impl TcpConnectScanner {
             "Collected {} results from lock-free aggregator",
             results.len()
         );
+
+        // Calculate final statistics
+        let open_count = results.iter().filter(|r| r.state == PortState::Open).count();
+        let closed_count = results.iter().filter(|r| r.state == PortState::Closed).count();
+        let filtered_count = results.iter().filter(|r| r.state == PortState::Filtered).count();
+
+        // Emit ScanCompleted event
+        if let Some(bus) = &self.event_bus {
+            bus.publish(ScanEvent::ScanCompleted {
+                scan_id,
+                duration: scan_start.elapsed(),
+                total_targets: 1,
+                open_ports: open_count,
+                closed_ports: closed_count,
+                filtered_ports: filtered_count,
+                detected_services: 0, // TCP Connect doesn't do service detection
+                timestamp: SystemTime::now(),
+            })
+            .await;
+        }
 
         Ok(results)
     }

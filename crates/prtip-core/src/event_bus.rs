@@ -129,6 +129,19 @@ pub struct EventBus {
     state: Arc<Mutex<EventBusState>>,
 }
 
+impl std::fmt::Debug for EventBus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let state = self.state.lock();
+        f.debug_struct("EventBus")
+            .field("subscribers", &state.subscribers.len())
+            .field("history_size", &state.history.len())
+            .field("max_history", &state.max_history)
+            .field("total_events", &state.total_events)
+            .field("dropped_events", &state.dropped_events)
+            .finish()
+    }
+}
+
 impl EventBus {
     /// Create a new event bus with specified history size
     ///

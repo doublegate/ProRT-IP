@@ -47,7 +47,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fs::{self, File};
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Maximum number of history entries to keep
 const MAX_HISTORY_ENTRIES: usize = 1000;
@@ -118,6 +118,16 @@ impl HistoryManager {
     /// - Directory creation fails
     /// - History file is corrupted (invalid JSON)
     pub fn new() -> Result<Self> {
+        // Check if history is disabled (for testing or CI environments)
+        // This prevents file I/O conflicts when tests run in parallel
+        if std::env::var("PRTIP_DISABLE_HISTORY").is_ok() {
+            // Return in-memory-only manager with dummy path
+            return Ok(Self {
+                history_path: PathBuf::from("/dev/null"),
+                entries: Vec::new(),
+            });
+        }
+
         let history_path = Self::get_history_path()?;
 
         // Create ~/.prtip/ directory if it doesn't exist
@@ -180,6 +190,11 @@ impl HistoryManager {
     /// This uses the write-to-temp-then-rename pattern to prevent corruption
     /// from partial writes (e.g., power loss, CTRL+C).
     fn save_to_file(&self) -> Result<()> {
+        // Skip file operations if history is disabled (dummy path indicates this)
+        if self.history_path == Path::new("/dev/null") {
+            return Ok(());
+        }
+
         // Serialize to JSON with pretty formatting
         let json = serde_json::to_string_pretty(&self.entries)
             .context("Failed to serialize history to JSON")?;
@@ -321,6 +336,11 @@ impl HistoryManager {
     /// ```
     pub fn clear(&mut self) -> Result<()> {
         self.entries.clear();
+
+        // Skip file operations if history is disabled (dummy path indicates this)
+        if self.history_path == Path::new("/dev/null") {
+            return Ok(());
+        }
 
         // Delete history file if it exists
         if self.history_path.exists() {

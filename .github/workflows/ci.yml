@@ -158,6 +158,10 @@ jobs:
             cargo test --workspace --locked
           fi
         shell: bash
+        env:
+          # Disable history file I/O during tests to prevent race conditions
+          # when multiple tests run in parallel (same fix as commit 0bf2a70)
+          PRTIP_DISABLE_HISTORY: "1"
 
       - name: Build release
         run: cargo build --release --workspace --locked

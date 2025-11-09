@@ -294,7 +294,10 @@ impl StealthScanner {
                 if let Some(bus) = &self.event_bus {
                     bus.publish(ScanEvent::WarningIssued {
                         scan_id,
-                        message: format!("Error waiting for response from {}:{}: {}", target, port, e),
+                        message: format!(
+                            "Error waiting for response from {}:{}: {}",
+                            target, port, e
+                        ),
                         severity: prtip_core::WarningSeverity::Medium,
                         timestamp: SystemTime::now(),
                     })

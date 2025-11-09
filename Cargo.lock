@@ -2031,12 +2031,14 @@ dependencies = [
  "chrono",
  "clap",
  "colored",
+ "console",
  "criterion",
  "csv",
  "dirs",
  "indicatif",
  "libc",
  "num_cpus",
+ "parking_lot",
  "pcap-file",
  "predicates",
  "prtip-core",
@@ -2051,6 +2053,7 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

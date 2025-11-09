@@ -1104,6 +1104,24 @@ pub struct Args {
     /// Example: prtip --show-template web-servers
     #[arg(long, value_name = "NAME", help_heading = "SCAN TEMPLATES")]
     pub show_template: Option<String>,
+
+    /// Enable event logging to JSON Lines file
+    ///
+    /// Logs all scan events to a .jsonl file for replay, analysis, and debugging.
+    /// Events are written as one JSON object per line (streaming format).
+    ///
+    /// Example: prtip -sS -p 80,443 --event-log scan-events.jsonl 192.168.1.0/24
+    #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
+    pub event_log: Option<PathBuf>,
+
+    /// Stream results live as discovered (vs batch at end)
+    ///
+    /// Display ports, services, and hosts immediately as they are discovered
+    /// instead of waiting for scan completion. Useful for long-running scans.
+    ///
+    /// Example: prtip -sS -p 1-65535 --live-results 192.168.1.1
+    #[arg(long, help_heading = "OUTPUT")]
+    pub live_results: bool,
 }
 
 /// IP Version selection for scanning

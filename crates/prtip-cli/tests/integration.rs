@@ -72,6 +72,7 @@ fn test_cli_zero_max_rate() {
 #[test]
 fn test_cli_multiple_targets() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
+    cmd.env("PRTIP_DISABLE_HISTORY", "1"); // Disable history during tests
     cmd.args(["-p", "9999", "127.0.0.1", "127.0.0.2", "127.0.0.3"]);
 
     // May need privileges, but should at least parse correctly
@@ -170,11 +171,13 @@ fn test_cli_verbose_levels() {
 fn test_cli_scan_types() {
     // Test connect scan (default)
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
+    cmd.env("PRTIP_DISABLE_HISTORY", "1");
     cmd.args(["-s", "connect", "-p", "9999", "127.0.0.1"]);
     let _ = cmd.output();
 
     // Test syn scan (will likely fail without privileges, but should parse)
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
+    cmd.env("PRTIP_DISABLE_HISTORY", "1");
     cmd.args(["-s", "syn", "-p", "9999", "127.0.0.1"]);
     let output = cmd.output().unwrap();
     // Either works or fails with privilege error
@@ -368,6 +371,7 @@ fn create_test_db_with_scan(temp_dir: &TempDir) -> (String, String) {
 
     // Run a scan with database storage
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
+    cmd.env("PRTIP_DISABLE_HISTORY", "1"); // Disable history during tests
     cmd.args(&["-p", "80,443", target, "--with-db", "--database", &db_path]);
 
     let output = cmd.output().unwrap();
@@ -518,11 +522,13 @@ fn test_db_compare_scans() {
         .unwrap()
         .to_string();
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_prtip"));
+    cmd.env("PRTIP_DISABLE_HISTORY", "1"); // Disable history during tests
     cmd.args(&["-p", "80", "127.0.0.1", "--with-db", "--database", &db_path]);
     cmd.output().unwrap();
 
     // Create second scan (different ports)
     let mut cmd2 = Command::new(env!("CARGO_BIN_EXE_prtip"));
+    cmd2.env("PRTIP_DISABLE_HISTORY", "1"); // Disable history during tests
     cmd2.args(&[
         "-p",
         "443",

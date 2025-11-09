@@ -651,12 +651,45 @@ See `/tmp/ProRT-IP/SPRINT-5.5.2-COMPLETE.md` for full completion report.
 
 ---
 
-## Sprint 5.5.3: Event System & Progress Reporting
+## Sprint 5.5.3: Event System & Progress Reporting 🔄
 
+**Status:** IN PROGRESS (20% Complete - 8/40 tasks, ~6 hours)
 **Priority:** CRITICAL (TUI foundation, blocks Phase 6)
 **Duration:** 4-5 days (32-40 hours estimated)
 **ROI Score:** 9.5/10 (Critical impact, significant effort)
 **Dependencies:** Sprint 5.5.2 (builds on progress infrastructure)
+**Started:** 2025-11-08
+
+### Progress Summary
+
+**Completed (8/40 tasks):**
+- ✅ Task 1.1: Core ScanEvent Enum (18 variants)
+- ✅ Task 1.2: Supporting Types (ScanStage, PortState, DiscoveryMethod)
+- ✅ Task 1.3: Event Validation (timestamp, field constraints, 18 tests)
+- ✅ Task 2.1: EventBus Core (pub-sub, thread-safe, auto-cleanup)
+- ✅ Task 2.2: Event Filtering (type, scan ID, host, port, severity)
+- ✅ Task 2.3: Ring Buffer History (1,000 events, O(1) insert)
+- ✅ Task 2.4: Integration Tests (15 tests, concurrent workflows)
+- 🔄 Task 2.5: Performance Benchmarking (PAUSED)
+
+**Code Delivered:**
+- `crates/prtip-core/src/events/types.rs` (680 lines)
+- `crates/prtip-core/src/event_bus.rs` (620 lines)
+- `crates/prtip-core/src/events/filters.rs` (380 lines)
+- `crates/prtip-core/src/events/history.rs` (203 lines)
+- **Total:** 1,913 lines, 52 tests (100% passing)
+
+**Remaining (32 tasks, ~26-32 hours):**
+- Task 2.5: Benchmarking (1-2h)
+- Task Area 3: Scanner Integration (6-8h)
+- Task Area 4: Progress Collection (6-8h)
+- Task Area 5: CLI Integration (4-5h)
+- Task Area 6: Event Logging (3-4h)
+- Task Area 7: Testing & Benchmarking (4-5h)
+
+**See:** `to-dos/SPRINT-5.5.3-EVENT-SYSTEM-TODO.md` for detailed task list
+
+---
 
 ### Objective
 

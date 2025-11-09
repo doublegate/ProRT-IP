@@ -13,7 +13,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-1692_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-2084_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
 [![Coverage](https://img.shields.io/badge/coverage-54.92%25-brightgreen.svg)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
@@ -112,23 +112,24 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5.5 IN PROGRESS (2/6 sprints) | **v0.5.0 Released** (2025-11-07) | **1,692 Tests (100%)** | **54.92% Coverage** 📈
+**Current Phase:** Phase 5.5 IN PROGRESS (3/6 sprints) | **v0.5.0 Released** (2025-11-07) | **2,084 Tests (100%)** | **54.92% Coverage** 📈
 
 **Latest Release:** v0.5.0 (Released 2025-11-07 - Phase 5 Complete: IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting V3 -1.8%, TLS Analysis, Plugin System, Fuzz Testing 230M+ executions, Benchmarking Framework, Documentation Polish)
 
-**Latest Sprint:** Sprint 5.5.2 CLI Usability & UX (COMPLETE 2025-11-08 - Enhanced Help, Better Errors, Progress with ETA, Smart Confirmations, Scan Templates, Command History)
+**Current Sprint:** Sprint 5.5.3 Event System & Progress Integration (IN PROGRESS 20% - Event-driven architecture for real-time scan updates and TUI foundation)
 
-**Quality Metrics:** 1,692/1,692 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
+**Quality Metrics:** 2,084/2,084 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
 
 **Test Suite Breakdown:**
 
-- **Total Active Tests:** 1,692 passing (100% success rate across all platforms)
+- **Total Active Tests:** 2,084 passing (100% success rate across all platforms)
 - **Core Tests:** 133 (scanner core, network primitives)
 - **Scanner Tests:** 249 (TCP, UDP, Stealth, Discovery, Idle, Decoy)
 - **CLI Tests:** 222 (help, errors, progress, confirmations, templates, history)
+- **Event System Tests:** 52 (event types, bus, filters, history, integration)
 - **Integration Tests:** 371 passing + 5 platform-specific (376 total)
 - **Protocol/Detection Tests:** 245 (service detection, OS fingerprinting, TLS)
-- **Module Tests:** 467 (rate limiting, aggregation, storage, utilities, plugin system)
+- **Module Tests:** 807 (rate limiting, aggregation, storage, utilities, plugin system, events)
 - **Platform-Specific Ignored:** 5 tests (Windows loopback limitations)
 - **Archived Tests:** 627 slow convergence tests from legacy rate limiters (preserved in backups/)
 
@@ -206,6 +207,65 @@ Sprint 5.5.2 transforms ProRT-IP CLI from functional to exceptional with enhance
 - **Discoverability:** Help search finds any topic in <1 second (fuzzy matching, typo tolerance)
 
 **See Also:** CHANGELOG.md Sprint 5.5.2, docs/32-USER-GUIDE.md Section 8, to-dos/PHASE-5.5-PRE-TUI-ENHANCEMENTS.md
+
+---
+
+### 🔄 Sprint 5.5.3 IN PROGRESS - Event System & Progress Integration (20% Complete)
+
+**Event-Driven Architecture Foundation** ⚡
+
+Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6's TUI with real-time scan updates and progress tracking.
+
+**Progress: 20% (8/40 tasks, ~6 hours)**
+
+**Completed Task Areas:**
+
+✅ **Task Area 1: Event Type Design (100% - 3/3 tasks)**
+- ScanEvent enum with 18 variants (Lifecycle, Progress, Discovery, Diagnostics)
+- Supporting types: ScanStage, PortState, DiscoveryMethod, Throughput
+- Event validation (timestamp, field constraints)
+
+✅ **Task Area 2: EventBus Architecture (80% - 4/5 tasks)**
+- Pub-sub pattern with broadcast channels (thread-safe Arc<Mutex>)
+- Event filtering (by type, scan ID, host, port range, severity)
+- Ring buffer history (1,000 events, O(1) insert, bounded memory)
+- 15 integration tests covering concurrent workflows
+
+**Code Delivered:**
+
+- **crates/prtip-core/src/events/types.rs** (680 lines) - Core event types
+- **crates/prtip-core/src/event_bus.rs** (620 lines) - Pub-sub infrastructure
+- **crates/prtip-core/src/events/filters.rs** (380 lines) - Event filtering
+- **crates/prtip-core/src/events/history.rs** (203 lines) - Ring buffer history
+- **Total:** 1,913 lines production code, 52 tests (100% passing)
+
+**Technical Architecture:**
+
+- **Events:** Enum-based (type safety, exhaustiveness checking)
+- **Channels:** Unbounded mpsc (no backpressure, auto-drop slow subscribers)
+- **History:** Ring buffer (O(1) insert, 1,000 event capacity)
+- **Backward Compatible:** Optional EventBus in ScanConfig
+- **Performance Targets:** <5% overhead, <10ms p99 latency
+
+**Remaining Work (32 tasks, ~26-32 hours):**
+
+- Task 2.5: Performance benchmarking (1-2h)
+- Task Area 3: Scanner integration (6-8h, emit events from all 8 scanners)
+- Task Area 4: Progress collection (6-8h, real-time ETA calculation)
+- Task Area 5: CLI integration (4-5h, event-driven display)
+- Task Area 6: Event logging (3-4h, JSON Lines with rotation)
+- Task Area 7: Testing & benchmarking (4-5h, comprehensive test suite)
+
+**Strategic Value:**
+
+- **TUI Foundation:** Event system enables Phase 6 real-time UI updates
+- **Observability:** Live progress tracking and scan diagnostics
+- **Extensibility:** Plugin system can subscribe to scan events
+- **Debugging:** Event history for replay and analysis
+
+**Quality:** All tests passing, 0 clippy warnings, professional architecture ready for scanner integration.
+
+**See Also:** to-dos/SPRINT-5.5.3-EVENT-SYSTEM-TODO.md, CHANGELOG.md Sprint 5.5.3
 
 ---
 

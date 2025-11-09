@@ -468,9 +468,18 @@ impl TcpConnectScanner {
         );
 
         // Calculate final statistics
-        let open_count = results.iter().filter(|r| r.state == PortState::Open).count();
-        let closed_count = results.iter().filter(|r| r.state == PortState::Closed).count();
-        let filtered_count = results.iter().filter(|r| r.state == PortState::Filtered).count();
+        let open_count = results
+            .iter()
+            .filter(|r| r.state == PortState::Open)
+            .count();
+        let closed_count = results
+            .iter()
+            .filter(|r| r.state == PortState::Closed)
+            .count();
+        let filtered_count = results
+            .iter()
+            .filter(|r| r.state == PortState::Filtered)
+            .count();
 
         // Emit ScanCompleted event
         if let Some(bus) = &self.event_bus {

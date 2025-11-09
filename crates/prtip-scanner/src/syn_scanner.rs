@@ -40,7 +40,9 @@
 use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
-use prtip_core::{Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanStage, ScanType};
+use prtip_core::{
+    Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanStage, ScanType,
+};
 use prtip_network::{
     create_capture, packet_buffer::with_buffer, PacketCapture, TcpFlags, TcpOption,
     TcpPacketBuilder,
@@ -910,9 +912,18 @@ impl SynScanner {
         }
 
         // Calculate final statistics
-        let open_count = results.iter().filter(|r| r.state == PortState::Open).count();
-        let closed_count = results.iter().filter(|r| r.state == PortState::Closed).count();
-        let filtered_count = results.iter().filter(|r| r.state == PortState::Filtered).count();
+        let open_count = results
+            .iter()
+            .filter(|r| r.state == PortState::Open)
+            .count();
+        let closed_count = results
+            .iter()
+            .filter(|r| r.state == PortState::Closed)
+            .count();
+        let filtered_count = results
+            .iter()
+            .filter(|r| r.state == PortState::Filtered)
+            .count();
 
         // Emit ScanCompleted event
         if let Some(bus) = &self.event_bus {

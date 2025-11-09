@@ -153,8 +153,7 @@ fn benchmark_concurrent_publish(c: &mut Criterion) {
                         let bus = bus.clone();
                         handles.push(tokio::spawn(async move {
                             for _ in 0..100 {
-                                bus.publish(create_test_event("progress"))
-                                    .await;
+                                bus.publish(create_test_event("progress")).await;
                             }
                         }));
                     }
@@ -199,9 +198,7 @@ fn benchmark_history_query(c: &mut Criterion) {
     group.bench_function("query_filtered", |b| {
         b.to_async(&rt).iter(|| async {
             bus.query_history(
-                black_box(EventFilter::EventType(vec![
-                    ScanEventType::HostDiscovered,
-                ])),
+                black_box(EventFilter::EventType(vec![ScanEventType::HostDiscovered])),
                 black_box(100),
             )
             .await;

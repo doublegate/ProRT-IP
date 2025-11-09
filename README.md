@@ -116,7 +116,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Latest Release:** v0.5.0 (Released 2025-11-07 - Phase 5 Complete: IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting V3 -1.8%, TLS Analysis, Plugin System, Fuzz Testing 230M+ executions, Benchmarking Framework, Documentation Polish)
 
-**Current Sprint:** Sprint 5.5.3 Event System & Progress Integration (IN PROGRESS 57% - Event system + scanner + CLI integration complete, TUI foundation ready)
+**Current Sprint:** Sprint 5.5.3 Event System & Progress Integration (IN PROGRESS 70% - Event system + scanner + progress + CLI integration complete, TUI foundation ready)
 
 **Quality Metrics:** 2,084/2,084 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
 
@@ -210,13 +210,13 @@ Sprint 5.5.2 transforms ProRT-IP CLI from functional to exceptional with enhance
 
 ---
 
-### 🔄 Sprint 5.5.3 IN PROGRESS - Event System & Progress Integration (57% Complete)
+### 🔄 Sprint 5.5.3 IN PROGRESS - Event System & Progress Integration (70% Complete)
 
-**Event-Driven Architecture + Scanner + CLI Integration** ⚡
+**Event-Driven Architecture + Scanner + Progress + CLI Integration** ⚡
 
 Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6's TUI with real-time scan updates and progress tracking.
 
-**Progress: 57% (21/40 tasks, ~22 hours)**
+**Progress: 70% (27/40 tasks, ~30 hours)**
 
 **Completed Task Areas:**
 
@@ -238,7 +238,14 @@ Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6
 - ICMP backoff monitoring (UDP scanner), zombie quality metrics (Idle scanner)
 - 100% backward compatible (Optional event_bus, no breaking changes)
 
-✅ **Task Area 5: CLI Integration (100% - 4/4 tasks)** - NEW!
+✅ **Task Area 4: Progress Collection (100% - 6/6 tasks)** - NEW!
+- ProgressCalculator: EWMA-based ETA calculation (469 lines, 11 tests)
+- ThroughputMonitor: Sliding window metrics - PPS, HPM, Mbps (510 lines, 14 tests)
+- ProgressAggregator: Event-driven state aggregation (696 lines, 11 tests)
+- Legacy module: 100% backward compatibility (134 lines, 6 tests)
+- Thread-safe (Arc<RwLock>), async-compatible, <5ms event processing
+
+✅ **Task Area 5: CLI Integration (100% - 4/4 tasks)**
 - EventBus integration in main.rs (conditional on --quiet flag)
 - ProgressDisplay initialization with event subscriptions
 - Live results streaming with --live-results flag
@@ -258,12 +265,19 @@ Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6
   - tcp_connect.rs, syn_scanner.rs, udp_scanner.rs, stealth_scanner.rs, idle_scanner.rs
   - config.rs (+29 lines EventBus integration), args.rs (+1 line CLI fix)
 
+- **Progress Collection (5 files, 1,876 lines)** - NEW!
+  - crates/prtip-core/src/progress/mod.rs (67 lines) - Module structure
+  - crates/prtip-core/src/progress/calculator.rs (469 lines) - EWMA ETA
+  - crates/prtip-core/src/progress/monitor.rs (510 lines) - Throughput tracking
+  - crates/prtip-core/src/progress/aggregator.rs (696 lines) - Event aggregation
+  - crates/prtip-core/src/progress/legacy.rs (134 lines) - Backward compat
+
 - **CLI Integration (4 files, +753 lines)**
   - crates/prtip-cli/src/main.rs (+50 lines) - EventBus & ProgressDisplay
   - crates/prtip-cli/tests/integration_progress.rs (+700 lines) - 20 tests
   - lib.rs (+1 line export), progress.rs (+1 line allow), Cargo.toml (+1 line)
 
-- **Total:** 3,818 lines code, 72 tests (100% passing), 25 benchmarks
+- **Total:** 5,694 lines code, 114 tests (100% passing), 25 benchmarks
 
 **Technical Architecture:**
 
@@ -274,11 +288,11 @@ Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6
 - **Performance:** 40ns publish, 340ns end-to-end, <5% overhead @ 16 threads
 - **Integration:** event_bus field + with_event_bus() builder pattern
 
-**Remaining Work (19 tasks, ~15-20 hours):**
+**Remaining Work (13 tasks, ~7-9 hours):**
 
-- Task Area 4: Progress collection (6-8h, real-time ETA calculation)
-- Task Area 6: Event logging (3-4h, JSON Lines with rotation)
-- Task Area 7: Testing & benchmarking (4-5h, comprehensive test suite)
+- Task Area 6: Event Logging (4 tasks, 3-4h, JSON Lines with rotation + querying)
+- Task Area 7: Testing & Benchmarking (6 tasks, 4-5h, E2E tests + performance validation)
+- Task Area 8: Documentation (3 tasks, implied in Area 7)
 
 **Strategic Value:**
 

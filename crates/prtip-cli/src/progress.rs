@@ -33,13 +33,38 @@
 //! // Complete stage
 //! tracker.complete_stage(ScanStage::Scanning);
 //! ```
+//!
+//! # Event-Driven Progress (New)
+//!
+//! ```no_run
+//! use prtip_cli::progress::{ProgressDisplay, ProgressStyle};
+//! use prtip_core::event_bus::EventBus;
+//! use std::sync::Arc;
+//!
+//! # async fn example() {
+//! let event_bus = Arc::new(EventBus::new(1000));
+//! let display = ProgressDisplay::new(event_bus.clone(), ProgressStyle::Detailed, false);
+//!
+//! // Progress automatically updates from events
+//! display.start().await;
+//! # }
+//! ```
+
+// Allow dead code for now - ProgressTracker will be used in Phase 6 TUI
+#![allow(dead_code)]
 
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle as IndicatifStyle};
+use parking_lot::Mutex;
+use prtip_core::event_bus::{EventBus, EventFilter};
+use prtip_core::events::{ScanEvent, ScanEventType, Throughput};
+use prtip_core::progress::ProgressAggregator;
 use std::collections::HashMap;
 use std::fmt;
 use std::io::{self, Write};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
+use tokio::sync::mpsc;
 
 /// Scan stages for multi-stage progress tracking
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -654,6 +679,331 @@ fn format_bandwidth(bps: f64) -> String {
         format!("{:.2} KB/s", bps / 1_000.0)
     } else {
         format!("{:.0} B/s", bps)
+    }
+}
+
+/// Event-driven progress display
+///
+/// Subscribes to EventBus and automatically updates progress based on
+/// scan events. Uses ProgressAggregator for real-time ETA and throughput.
+pub struct ProgressDisplay {
+    /// Event bus for receiving events
+    event_bus: Arc<EventBus>,
+    /// Progress aggregator for state tracking
+    aggregator: Arc<ProgressAggregator>,
+    /// Progress bar for display
+    progress_bar: Option<ProgressBar>,
+    /// Display style
+    style: ProgressStyle,
+    /// Quiet mode (no display)
+    quiet_mode: bool,
+    /// Last display update time
+    last_update: Arc<Mutex<Instant>>,
+    /// Update interval
+    update_interval: Duration,
+    /// Whether output is to a TTY
+    is_tty: bool,
+}
+
+impl ProgressDisplay {
+    /// Create a new event-driven progress display
+    ///
+    /// Automatically subscribes to progress events and updates display.
+    ///
+    /// # Arguments
+    ///
+    /// * `event_bus` - Event bus to subscribe to
+    /// * `style` - Display style (Compact, Detailed, Bars)
+    /// * `quiet` - Quiet mode (no output)
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use prtip_cli::progress::{ProgressDisplay, ProgressStyle};
+    /// use prtip_core::event_bus::EventBus;
+    /// use std::sync::Arc;
+    ///
+    /// # async fn example() {
+    /// let event_bus = Arc::new(EventBus::new(1000));
+    /// let display = ProgressDisplay::new(
+    ///     event_bus,
+    ///     ProgressStyle::Detailed,
+    ///     false
+    /// );
+    /// display.start().await;
+    /// # }
+    /// ```
+    pub fn new(event_bus: Arc<EventBus>, style: ProgressStyle, quiet: bool) -> Self {
+        let is_tty = atty::is(atty::Stream::Stdout);
+        let aggregator = Arc::new(ProgressAggregator::new(event_bus.clone()));
+
+        // Initialize progress bar if not quiet
+        let progress_bar = if !quiet && is_tty && style == ProgressStyle::Compact {
+            let pb = ProgressBar::new(100);
+            pb.set_style(
+                IndicatifStyle::default_bar()
+                    .template("{msg}\n{bar:40.cyan/blue} {pos:>3}%")
+                    .expect("Valid template")
+                    .progress_chars("=>-"),
+            );
+            Some(pb)
+        } else {
+            None
+        };
+
+        Self {
+            event_bus,
+            aggregator,
+            progress_bar,
+            style,
+            quiet_mode: quiet,
+            last_update: Arc::new(Mutex::new(Instant::now())),
+            update_interval: Duration::from_millis(100), // 100ms debounce
+            is_tty,
+        }
+    }
+
+    /// Start listening to events and updating display
+    ///
+    /// Spawns a background task that listens to progress events
+    /// and updates the display accordingly.
+    pub async fn start(&self) -> tokio::task::JoinHandle<()> {
+        let (tx, mut rx) = mpsc::unbounded_channel();
+
+        // Subscribe to relevant events
+        self.event_bus
+            .subscribe(
+                tx,
+                EventFilter::EventType(vec![
+                    ScanEventType::ScanStarted,
+                    ScanEventType::ProgressUpdate,
+                    ScanEventType::PortFound,
+                    ScanEventType::ServiceDetected,
+                    ScanEventType::ScanCompleted,
+                    ScanEventType::ScanError,
+                ]),
+            )
+            .await;
+
+        let quiet = self.quiet_mode;
+        let style = self.style;
+        let last_update = self.last_update.clone();
+        let update_interval = self.update_interval;
+        let aggregator = self.aggregator.clone();
+        let progress_bar = self.progress_bar.clone();
+        let is_tty = self.is_tty;
+
+        // Spawn event listener task
+        tokio::spawn(async move {
+            while let Some(event) = rx.recv().await {
+                if quiet {
+                    continue;
+                }
+
+                // Debounce updates
+                {
+                    let mut last = last_update.lock();
+                    let now = Instant::now();
+                    if now.duration_since(*last) < update_interval {
+                        continue;
+                    }
+                    *last = now;
+                } // Drop MutexGuard before awaits
+
+                // Update display based on event
+                match event {
+                    ScanEvent::ScanStarted { .. } => {
+                        Self::display_started(&aggregator, &style, is_tty).await;
+                    }
+                    ScanEvent::ProgressUpdate { .. }
+                    | ScanEvent::PortFound { .. }
+                    | ScanEvent::ServiceDetected { .. } => {
+                        Self::display_progress(&aggregator, &style, &progress_bar, is_tty).await;
+                    }
+                    ScanEvent::ScanCompleted { .. } => {
+                        Self::display_completed(&aggregator, &style, &progress_bar, is_tty).await;
+                    }
+                    ScanEvent::ScanError { error, .. } => {
+                        Self::display_error(&error, is_tty);
+                    }
+                    _ => {}
+                }
+            }
+        })
+    }
+
+    /// Display scan started message
+    async fn display_started(
+        aggregator: &Arc<ProgressAggregator>,
+        style: &ProgressStyle,
+        is_tty: bool,
+    ) {
+        let _state = aggregator.get_state().await;
+        let total = 100; // Placeholder, will be updated by events
+
+        if !is_tty {
+            println!("[Scan Started] Targets: {}", total);
+            return;
+        }
+
+        match style {
+            ProgressStyle::Compact => {
+                println!("Scan started: {} targets", total);
+            }
+            ProgressStyle::Detailed => {
+                println!("╔════════════════════════════════════════╗");
+                println!("║          Scan Started                  ║");
+                println!("╠════════════════════════════════════════╣");
+                println!("║ Targets:  {:>28} ║", format_number(total as u64));
+                println!("╚════════════════════════════════════════╝");
+            }
+            ProgressStyle::Bars => {
+                println!("Starting scan: {} targets...", total);
+            }
+        }
+    }
+
+    /// Display progress update
+    async fn display_progress(
+        aggregator: &Arc<ProgressAggregator>,
+        style: &ProgressStyle,
+        progress_bar: &Option<ProgressBar>,
+        is_tty: bool,
+    ) {
+        let state = aggregator.get_state().await;
+
+        match style {
+            ProgressStyle::Compact => {
+                if let Some(pb) = progress_bar {
+                    let msg = format!(
+                        "{:.1}% | {} | ETA: {}",
+                        state.overall_progress,
+                        Self::format_throughput(&state.throughput),
+                        Self::format_eta(state.eta),
+                    );
+                    pb.set_position(state.overall_progress as u64);
+                    pb.set_message(msg);
+                } else if !is_tty {
+                    println!(
+                        "[Progress] {:.1}% | {} open ports",
+                        state.overall_progress, state.open_ports
+                    );
+                }
+            }
+            ProgressStyle::Detailed => {
+                if is_tty {
+                    print!("\x1b[4A\x1b[J"); // Clear 4 lines
+                }
+                println!("Progress: {:.1}%", state.overall_progress);
+                println!(
+                    "Ports:    {} open / {} closed / {} filtered",
+                    state.open_ports, state.closed_ports, state.filtered_ports
+                );
+                println!("Speed:    {}", Self::format_throughput(&state.throughput));
+                if let Some(eta) = state.eta {
+                    println!("ETA:      {}", format_duration(eta));
+                } else {
+                    println!("ETA:      Calculating...");
+                }
+                let _ = io::stdout().flush();
+            }
+            ProgressStyle::Bars => {
+                if is_tty {
+                    print!("\x1b[2A\x1b[J"); // Clear 2 lines
+                }
+                let bar = Self::render_bar(state.overall_progress as f64);
+                println!(
+                    "{} {:.1}% ({} ports found)",
+                    bar, state.overall_progress, state.open_ports
+                );
+                println!(
+                    "{} | ETA: {}",
+                    Self::format_throughput(&state.throughput),
+                    Self::format_eta(state.eta)
+                );
+                let _ = io::stdout().flush();
+            }
+        }
+    }
+
+    /// Display scan completed message
+    async fn display_completed(
+        aggregator: &Arc<ProgressAggregator>,
+        _style: &ProgressStyle,
+        progress_bar: &Option<ProgressBar>,
+        is_tty: bool,
+    ) {
+        let state = aggregator.get_state().await;
+
+        if let Some(pb) = progress_bar {
+            pb.finish_and_clear();
+        }
+
+        if is_tty {
+            print!("\x1b[4A\x1b[J"); // Clear progress display
+        }
+
+        println!("\n{}", "Scan Completed".green().bold());
+        println!("Discovered hosts: {}", state.discovered_hosts);
+        println!("Open ports:       {}", state.open_ports);
+        println!("Closed ports:     {}", state.closed_ports);
+        println!("Filtered ports:   {}", state.filtered_ports);
+        println!("Services found:   {}", state.detected_services);
+    }
+
+    /// Display error message
+    fn display_error(error: &str, is_tty: bool) {
+        if is_tty {
+            eprintln!("{} {}", "Error:".red().bold(), error);
+        } else {
+            eprintln!("[ERROR] {}", error);
+        }
+    }
+
+    /// Format throughput for display
+    fn format_throughput(throughput: &Throughput) -> String {
+        format!(
+            "{:.0} pps | {:.0} hpm",
+            throughput.packets_per_second, throughput.hosts_per_minute
+        )
+    }
+
+    /// Format ETA for display
+    fn format_eta(eta: Option<Duration>) -> String {
+        if let Some(duration) = eta {
+            format_duration(duration)
+        } else {
+            "N/A".to_string()
+        }
+    }
+
+    /// Render a progress bar
+    fn render_bar(percent: f64) -> String {
+        let width = 40;
+        let filled = ((percent / 100.0) * width as f64) as usize;
+        let empty = width - filled;
+
+        let mut bar = String::from("[");
+        bar.push_str(&"▓".repeat(filled.saturating_sub(1)));
+        if filled > 0 {
+            bar.push('▓');
+        }
+        bar.push_str(&"░".repeat(empty));
+        bar.push(']');
+        bar
+    }
+
+    /// Finish and clean up display
+    pub fn finish(&self) {
+        if let Some(pb) = &self.progress_bar {
+            pb.finish_and_clear();
+        }
+    }
+}
+
+impl Drop for ProgressDisplay {
+    fn drop(&mut self) {
+        self.finish();
     }
 }
 

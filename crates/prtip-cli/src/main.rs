@@ -10,6 +10,7 @@ mod export;
 mod help;
 mod history;
 mod output;
+mod progress;
 mod templates;
 
 use anyhow::{bail, Context, Result};
@@ -19,6 +20,9 @@ use clap::Parser;
 use colored::Colorize;
 use confirm::{ConfirmConfig, ConfirmationManager};
 use history::HistoryManager;
+use progress::{ProgressDisplay, ProgressStyle};
+use prtip_core::event_bus::{EventBus, EventFilter};
+use prtip_core::events::ScanEventType;
 use prtip_core::resource_limits::{adjust_and_get_limit, get_recommended_batch_size};
 use prtip_core::{PortRange, ScanTarget};
 use prtip_network::check_privileges;
@@ -355,6 +359,69 @@ async fn run() -> Result<()> {
         config.scan.scan_type, config.scan.timing_template, config.scan.timeout_ms
     );
 
+    // Create EventBus for progress tracking and live results (if not quiet)
+    let event_bus = if !args.quiet {
+        Some(Arc::new(EventBus::new(1000)))
+    } else {
+        None
+    };
+
+    // Attach EventBus to ScanConfig
+    if let Some(ref bus) = event_bus {
+        config.scan = config.scan.with_event_bus(bus.clone());
+        info!("Event-driven progress tracking enabled");
+    }
+
+    // Calculate total ports for progress display
+    let total_ports = targets.len() * ports.count();
+
+    // Initialize ProgressDisplay (event-driven)
+    let progress_display = if let Some(ref bus) = event_bus {
+        // Determine display style (compact by default, can be extended later)
+        let style = ProgressStyle::Compact;
+        let display = ProgressDisplay::new(bus.clone(), style, args.quiet);
+
+        // Start the display task
+        let _display_task = display.start().await;
+
+        info!("Progress display initialized ({} total ports)", total_ports);
+        Some(display)
+    } else {
+        None
+    };
+
+    // Setup live results streaming if requested
+    if args.live_results {
+        if let Some(ref bus) = event_bus {
+            let bus_clone = bus.clone();
+            tokio::spawn(async move {
+                let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+
+                // Subscribe to PortFound events
+                bus_clone
+                    .subscribe(tx, EventFilter::EventType(vec![ScanEventType::PortFound]))
+                    .await;
+
+                // Stream results to stdout immediately
+                while let Some(event) = rx.recv().await {
+                    if let prtip_core::events::ScanEvent::PortFound {
+                        ip,
+                        port,
+                        state,
+                        protocol,
+                        ..
+                    } = event
+                    {
+                        println!("[LIVE] {}:{} {} ({})", ip, port, state, protocol);
+                    }
+                }
+            });
+            info!("Live results streaming enabled");
+        } else {
+            warn!("Live results requires event tracking (ignored in --quiet mode)");
+        }
+    }
+
     // Get recommended batch size based on ulimit
     let desired_batch = config.performance.batch_size.unwrap_or(1000);
     match get_recommended_batch_size(desired_batch as u64, config.performance.requested_ulimit) {
@@ -493,6 +560,11 @@ async fn run() -> Result<()> {
 
     let scan_duration = scan_start.elapsed();
     info!("Scan complete: {} results", results.len());
+
+    // Cleanup progress display
+    if let Some(display) = progress_display {
+        display.finish();
+    }
 
     // Format and output results
     let is_terminal = {

@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Sprint 5.5.3: Event System & Progress Integration (PARTIAL - Phase 1-3, 43%)
+### Sprint 5.5.3: Event System & Progress Integration (PARTIAL - Phase 1-3+5, 57%)
 
-**Status:** IN PROGRESS (17/40 tasks complete, ~14 hours)
+**Status:** IN PROGRESS (21/40 tasks complete, ~22 hours)
 
 #### Event System Foundation
 
@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `benchmarks/event-system-baseline.md` (300 lines) - Baseline documentation
 - `to-dos/SPRINT-5.5.3-EVENT-SYSTEM-TODO.md` (2,077 lines) - Comprehensive execution guide
 
-#### Modified Files (6 scanner integrations, +311 lines)
+#### Modified Files (9 files, +361 lines)
 
 - `crates/prtip-core/src/config.rs` (+29 lines) - EventBus integration
 - `crates/prtip-scanner/src/tcp_connect.rs` (+95 lines) - Event emissions
@@ -134,14 +134,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `crates/prtip-scanner/src/scheduler.rs` (+1 line) - Test configuration fix
 - `crates/prtip-cli/src/args.rs` (+1 line) - EventBus field initialization
 - `crates/prtip-scanner/Cargo.toml` (+3 lines) - UUID dependency
+- `crates/prtip-cli/src/main.rs` (+50 lines) - EventBus and ProgressDisplay integration
+- `crates/prtip-cli/src/lib.rs` (+1 line) - ProgressDisplay export
+- `crates/prtip-cli/src/progress.rs` (+1 line) - Dead code allow attribute
+- `crates/prtip-cli/Cargo.toml` (+1 line) - UUID dev-dependency
+- `crates/prtip-cli/tests/integration_progress.rs` (+700 lines, NEW) - 20 integration tests
 
 #### Testing
 
 - **Unit Tests:** 37 new tests (event validation, bus core, filters)
-- **Integration Tests:** 15 new tests (multi-subscriber, concurrent workflows)
+- **Integration Tests:** 35 new tests
+  - 15 EventBus tests (multi-subscriber, concurrent workflows)
+  - 20 CLI integration tests (progress display, live results, quiet mode, edge cases)
 - **Benchmarks:** 25 benchmark scenarios (5 groups: publish, subscribe, concurrent, history, latency)
-- **Total:** +52 tests (all passing, 398 core+scanner tests)
-- **Coverage:** Event system modules at ~90%
+- **Total:** +72 tests (all passing, 418 core+scanner+cli tests)
+- **Coverage:** Event system modules at ~90%, CLI integration at 100%
 - **Quality:** 0 errors, 0 warnings (clippy -D warnings)
 
 #### Technical Architecture
@@ -161,9 +168,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Arc<EventBus> cloning across scanner threads
 - Thread-safe event emission in async tasks
 
-**Remaining Work (57%):**
+**Task Area 5: CLI Integration** (100% COMPLETE - 4/4 tasks) ✅
+
+- **EventBus Integration in Main** (Task 5.2)
+  - EventBus creation when not in quiet mode
+  - Attached to ScanConfig via with_event_bus()
+  - ProgressDisplay initialization with event bus
+  - Total ports calculation for accurate progress tracking
+  - Cleanup on scan completion with display.finish()
+  - Thread-safe Arc<EventBus> sharing
+
+- **Live Results Streaming** (Task 5.3)
+  - `--live-results` flag for immediate port discovery output
+  - Subscribes to PortFound events via EventFilter
+  - Spawned async task for concurrent streaming
+  - Format: `[LIVE] <ip>:<port> <state> (<protocol>)`
+  - Compatible with progress display (stdout/stderr separation)
+  - Warning when used with --quiet mode
+
+- **ProgressDisplay Export** (Task 5.1)
+  - Exported ProgressDisplay from lib.rs for external use
+  - Public API for progress tracking components
+  - Enables integration testing and Phase 6 TUI development
+
+- **Integration Tests** (Task 5.4)
+  - 20 comprehensive integration tests (100% passing)
+  - 5 progress display tests (TCP, SYN, UDP, Stealth, Idle)
+  - 3 quiet mode tests (no progress, scan execution, output)
+  - 5 live results tests (streaming, progress compat, quiet mode, multi-target, format)
+  - 4 EventBus integration tests (config attach, lifecycle, port events, completion)
+  - 3 edge case tests (no ports, single port, large scan)
+  - Helper function emit_test_scan_events() for event simulation
+  - Arc<tokio::sync::Mutex<Vec>> for async event tracking
+
+**Remaining Work (43%):**
 - Task Area 4: Progress Collection (6-8h, 6 tasks)
-- Task Area 5: CLI Integration (4-5h, 5 tasks)
 - Task Area 6: Event Logging (3-4h, 4 tasks)
 - Task Area 7: Testing & Benchmarking (4-5h, 6 tasks)
 

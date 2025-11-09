@@ -19,5 +19,5 @@ pub use confirm::{ConfirmConfig, ConfirmationManager};
 pub use error::{exit_codes, CliError};
 pub use error_formatter::{create_error_formatter, ErrorFormatter};
 pub use history::{HistoryEntry, HistoryManager};
-pub use progress::{ProgressMetrics, ProgressStyle, ProgressTracker, ScanStage};
+pub use progress::{ProgressDisplay, ProgressMetrics, ProgressStyle, ProgressTracker, ScanStage};
 pub use templates::{ScanTemplate, TemplateManager};

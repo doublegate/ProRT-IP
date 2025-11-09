@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: Service Version Detection
 //!
 //! Demonstrates: Detecting service versions on common ports
@@ -104,10 +108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Step 3: Detect services
     println!("\nPhase 3: Service detection (intensity 7)...\n");
     println!("{:-<80}", "");
-    println!(
-        "{:5} | {:20} | {:30} | CPE",
-        "Port", "Service", "Version",
-    );
+    println!("{:5} | {:20} | {:30} | CPE", "Port", "Service", "Version",);
     println!("{:-<80}", "");
 
     for port in open_ports {

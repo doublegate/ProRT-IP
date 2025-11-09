@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: TCP Connect Scan (No Root Required)
 //!
 //! Demonstrates: TCP Connect scan using OS sockets (portable, no privileges)

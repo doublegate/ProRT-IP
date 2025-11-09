@@ -8,7 +8,6 @@
 
 use crate::events::*;
 use crate::types::{PortState, Protocol, ScanType};
-use std::net::IpAddr;
 use std::time::{Duration, SystemTime};
 use uuid::Uuid;
 

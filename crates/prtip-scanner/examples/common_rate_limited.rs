@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: Rate-Limited Scanning (Polite Mode)
 //!
 //! Demonstrates: Slow, polite scanning with T0-T2 timing for stealth and courtesy

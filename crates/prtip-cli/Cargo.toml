@@ -57,7 +57,6 @@ colored = { workspace = true }
 # Progress bar and terminal handling
 indicatif = { workspace = true }
 console = "0.15"
-atty = { workspace = true }
 
 # Utilities
 num_cpus = { workspace = true }

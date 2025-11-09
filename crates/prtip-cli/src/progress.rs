@@ -218,7 +218,8 @@ pub struct ProgressTracker {
 impl ProgressTracker {
     /// Create a new progress tracker
     pub fn new(style: ProgressStyle) -> Self {
-        let is_tty = atty::is(atty::Stream::Stdout);
+        use std::io::IsTerminal;
+        let is_tty = std::io::stdout().is_terminal();
         Self {
             current_stage: ScanStage::Resolution,
             total_work: HashMap::new(),
@@ -734,7 +735,8 @@ impl ProgressDisplay {
     /// # }
     /// ```
     pub fn new(event_bus: Arc<EventBus>, style: ProgressStyle, quiet: bool) -> Self {
-        let is_tty = atty::is(atty::Stream::Stdout);
+        use std::io::IsTerminal;
+        let is_tty = std::io::stdout().is_terminal();
         let aggregator = Arc::new(ProgressAggregator::new(event_bus.clone()));
 
         // Initialize progress bar if not quiet

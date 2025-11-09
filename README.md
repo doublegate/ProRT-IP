@@ -116,7 +116,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 **Latest Release:** v0.5.0 (Released 2025-11-07 - Phase 5 Complete: IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting V3 -1.8%, TLS Analysis, Plugin System, Fuzz Testing 230M+ executions, Benchmarking Framework, Documentation Polish)
 
-**Current Sprint:** Sprint 5.5.3 Event System & Progress Integration (IN PROGRESS 43% - Event system + scanner integration complete, TUI foundation ready)
+**Current Sprint:** Sprint 5.5.3 Event System & Progress Integration (IN PROGRESS 57% - Event system + scanner + CLI integration complete, TUI foundation ready)
 
 **Quality Metrics:** 2,084/2,084 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
 
@@ -210,13 +210,13 @@ Sprint 5.5.2 transforms ProRT-IP CLI from functional to exceptional with enhance
 
 ---
 
-### 🔄 Sprint 5.5.3 IN PROGRESS - Event System & Progress Integration (43% Complete)
+### 🔄 Sprint 5.5.3 IN PROGRESS - Event System & Progress Integration (57% Complete)
 
-**Event-Driven Architecture + Scanner Integration** ⚡
+**Event-Driven Architecture + Scanner + CLI Integration** ⚡
 
 Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6's TUI with real-time scan updates and progress tracking.
 
-**Progress: 43% (17/40 tasks, ~14 hours)**
+**Progress: 57% (21/40 tasks, ~22 hours)**
 
 **Completed Task Areas:**
 
@@ -225,18 +225,24 @@ Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6
 - Supporting types: ScanStage, PortState, DiscoveryMethod, Throughput
 - Event validation (timestamp, field constraints)
 
-✅ **Task Area 2: EventBus Architecture (100% - 5/5 tasks)** - NOW COMPLETE
+✅ **Task Area 2: EventBus Architecture (100% - 5/5 tasks)**
 - Pub-sub pattern with broadcast channels (thread-safe Arc<Mutex>)
 - Event filtering (by type, scan ID, host, port range, severity)
 - Ring buffer history (1,000 events, O(1) insert, bounded memory)
 - 15 integration tests covering concurrent workflows
 - **Performance benchmarking:** 40ns publish (250,000x better than target!)
 
-✅ **Task Area 3: Scanner Integration (100% - 6/6 tasks)** - NEW!
+✅ **Task Area 3: Scanner Integration (100% - 6/6 tasks)**
 - All 6 scanners emit real-time events: TCP Connect, SYN, UDP, Stealth (FIN/NULL/Xmas/ACK), Idle
 - ScanStarted, PortFound, ScanCompleted events across all scanner types
 - ICMP backoff monitoring (UDP scanner), zombie quality metrics (Idle scanner)
 - 100% backward compatible (Optional event_bus, no breaking changes)
+
+✅ **Task Area 5: CLI Integration (100% - 4/4 tasks)** - NEW!
+- EventBus integration in main.rs (conditional on --quiet flag)
+- ProgressDisplay initialization with event subscriptions
+- Live results streaming with --live-results flag
+- 20 integration tests (progress display, quiet mode, live results, edge cases)
 
 **Code Delivered:**
 
@@ -252,7 +258,12 @@ Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6
   - tcp_connect.rs, syn_scanner.rs, udp_scanner.rs, stealth_scanner.rs, idle_scanner.rs
   - config.rs (+29 lines EventBus integration), args.rs (+1 line CLI fix)
 
-- **Total:** 3,065 lines code, 52 tests (100% passing), 25 benchmarks
+- **CLI Integration (4 files, +753 lines)**
+  - crates/prtip-cli/src/main.rs (+50 lines) - EventBus & ProgressDisplay
+  - crates/prtip-cli/tests/integration_progress.rs (+700 lines) - 20 tests
+  - lib.rs (+1 line export), progress.rs (+1 line allow), Cargo.toml (+1 line)
+
+- **Total:** 3,818 lines code, 72 tests (100% passing), 25 benchmarks
 
 **Technical Architecture:**
 
@@ -263,10 +274,9 @@ Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6
 - **Performance:** 40ns publish, 340ns end-to-end, <5% overhead @ 16 threads
 - **Integration:** event_bus field + with_event_bus() builder pattern
 
-**Remaining Work (23 tasks, ~20-25 hours):**
+**Remaining Work (19 tasks, ~15-20 hours):**
 
 - Task Area 4: Progress collection (6-8h, real-time ETA calculation)
-- Task Area 5: CLI integration (4-5h, event-driven display)
 - Task Area 6: Event logging (3-4h, JSON Lines with rotation)
 - Task Area 7: Testing & benchmarking (4-5h, comprehensive test suite)
 
@@ -278,7 +288,7 @@ Sprint 5.5.3 establishes the event system infrastructure that will power Phase 6
 - **Extensibility:** Plugin system can subscribe to scan events
 - **Debugging:** Event history for replay and analysis
 
-**Quality:** 398 core+scanner tests passing, 0 errors, 0 clippy warnings, production-ready architecture.
+**Quality:** 418 core+scanner+cli tests passing (20 new CLI integration tests), 0 errors, 0 clippy warnings, production-ready architecture.
 
 **See Also:** to-dos/SPRINT-5.5.3-EVENT-SYSTEM-TODO.md, CHANGELOG.md Sprint 5.5.3
 

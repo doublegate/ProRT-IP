@@ -54,13 +54,15 @@ thiserror = { workspace = true }
 # Terminal colors
 colored = { workspace = true }
 
-# Progress bar
+# Progress bar and terminal handling
 indicatif = { workspace = true }
+console = "0.15"
 atty = { workspace = true }
 
 # Utilities
 num_cpus = { workspace = true }
 dirs = "5.0"
+parking_lot = { workspace = true }
 
 # Platform-specific
 libc = { workspace = true }
@@ -70,6 +72,7 @@ tempfile = "3.8"
 assert_cmd = "2.0"
 predicates = "3.0"
 criterion = { version = "0.5", features = ["html_reports"] }
+uuid = { workspace = true }
 
 [[bench]]
 name = "benchmarks"

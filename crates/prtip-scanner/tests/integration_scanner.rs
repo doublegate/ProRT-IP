@@ -303,6 +303,7 @@ async fn test_scheduler_config_validation() {
             host_delay_ms: 0,
             service_detection: Default::default(),
             progress: false,
+            event_bus: None,
         },
         network: NetworkConfig {
             interface: None,

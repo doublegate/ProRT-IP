@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: Timing Templates Comparison
 //!
 //! Demonstrates: All timing templates (T0-T4) with performance benchmarks

@@ -58,11 +58,13 @@ governor = "0.6"
 ipnetwork = "0.20"
 rand = "0.8"
 chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.7", features = ["v4", "serde"] }
 num_cpus = "1.16"
 rlimit = "0.10"
 indicatif = "0.17"
 regex = "1.11"
 sysinfo = "0.30"
+atty = "0.2"
 
 # Plugin system
 mlua = { version = "0.11", features = ["lua54", "vendored", "send"] }

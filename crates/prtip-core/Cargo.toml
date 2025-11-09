@@ -19,6 +19,8 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 ipnetwork = { workspace = true }
 chrono = { workspace = true }
+uuid = { workspace = true }
+parking_lot = { workspace = true }
 tracing = { workspace = true }
 rlimit = { workspace = true }
 indicatif = { workspace = true }
@@ -29,3 +31,8 @@ sysinfo = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
+criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+
+[[bench]]
+name = "event_system"
+harness = false

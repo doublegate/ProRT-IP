@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: Dual-Stack IPv4/IPv6 Scanning
 //!
 //! Demonstrates: Scanning both IPv4 and IPv6 targets

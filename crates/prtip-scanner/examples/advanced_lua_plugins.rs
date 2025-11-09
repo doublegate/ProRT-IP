@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: Lua Plugin System
 //!
 //! Demonstrates: Custom protocol detection via Lua plugins

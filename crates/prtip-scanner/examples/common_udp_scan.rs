@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: UDP Port Scanning
 //!
 //! Demonstrates: UDP scanning with protocol-specific probes (DNS, SNMP, NetBIOS)

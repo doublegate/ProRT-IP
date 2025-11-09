@@ -1,4 +1,8 @@
-#![allow(clippy::field_reassign_with_default, clippy::useless_vec, clippy::to_string_in_format_args)]
+#![allow(
+    clippy::field_reassign_with_default,
+    clippy::useless_vec,
+    clippy::to_string_in_format_args
+)]
 //! Example: Fast Scan (Top 100 Ports)
 //!
 //! Demonstrates: Quick scanning of top 100 most common ports with aggressive timing

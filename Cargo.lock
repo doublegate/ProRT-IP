@@ -2050,7 +2050,7 @@ dependencies = [
 
 [[package]]
 name = "prtip-cli"
-version = "0.5.0"
+version = "0.5.0-fix"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -2084,7 +2084,7 @@ dependencies = [
 
 [[package]]
 name = "prtip-core"
-version = "0.5.0"
+version = "0.5.0-fix"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2111,7 +2111,7 @@ dependencies = [
 
 [[package]]
 name = "prtip-network"
-version = "0.5.0"
+version = "0.5.0-fix"
 dependencies = [
  "anyhow",
  "criterion",
@@ -2134,7 +2134,7 @@ dependencies = [
 
 [[package]]
 name = "prtip-scanner"
-version = "0.5.0"
+version = "0.5.0-fix"
 dependencies = [
  "anyhow",
  "chrono",

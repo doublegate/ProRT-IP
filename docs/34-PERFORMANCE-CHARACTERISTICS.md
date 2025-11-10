@@ -729,7 +729,7 @@ Duration (sec) = (Hosts × Ports) / Throughput_pps
 **v0.5.0 (Phase 5 Complete - 2025-11-07):**
 
 - 10 sprints delivered (11 days)
-- 1,601 tests (100% passing)
+- 2,102 tests (100% passing)
 - 54.92% code coverage
 - Production-ready milestone
 

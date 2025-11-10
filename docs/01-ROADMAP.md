@@ -1,8 +1,8 @@
 # ProRT-IP WarScan: Development Roadmap
 
-**Version:** 2.4
-**Last Updated:** 2025-11-07
-**Project Status:** Phase 5 COMPLETE (100%) ✅ | **67% Overall Progress** (5.5/8 phases) | v0.5.0 RELEASED (Phase 5 Milestone)
+**Version:** 2.5
+**Last Updated:** 2025-11-10
+**Project Status:** Phase 5 + 5.5 COMPLETE (100%) ✅ | **67% Overall Progress** (5.5/8 phases) | v0.5.0-fix RELEASED + Benchmark Suite + Phase 6 Planning COMPLETE
 
 ---
 
@@ -32,7 +32,7 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 | Phase 3 | Weeks 7-10 | Detection Systems | OS fingerprinting, service detection, banner grabbing | ✅ COMPLETE |
 | Phase 4 | Weeks 11-13 | Performance & Evasion | Zero-copy, NUMA, PCAPNG, evasion techniques, error handling | ✅ COMPLETE (1,166 tests, v0.3.9-v0.4.0) |
 | **Phase 5** | **Weeks 14-20** | **Advanced Features** | **IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting, TLS Analysis, Plugin System, Benchmarking, Documentation** | **✅ COMPLETE (100% - 10/10 sprints, v0.4.1-v0.5.0)** |
-| Phase 6 | Weeks 21-22 | TUI Interface | Interactive terminal dashboard | 📋 PLANNED |
+| Phase 6 | Weeks 21-22 | TUI Interface | Interactive terminal dashboard + Network Optimizations (8 sprints) | 📋 PLANNED (Comprehensive roadmap complete, Q2 2026) |
 | Phase 7 | Weeks 23-24 | Polish & Release | Documentation, packaging, v1.0 release | 📋 PLANNED |
 | Phase 8 | Post-v1.0 | Future Enhancements | Web UI, desktop GUI, distributed scanning | 📋 PLANNED |
 
@@ -691,43 +691,172 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 ---
 
-### Phase 6: TUI Interface (Weeks 17-18)
+### Phase 6: TUI Interface + Network Optimizations (Weeks 17-18, Q2 2026)
 
-**Goal:** Create interactive terminal user interface
+**Goal:** Create interactive terminal user interface with comprehensive network performance optimizations
+**Status:** 📋 COMPREHENSIVE PLANNING COMPLETE (8 sprints, 2,107+ lines, 2-3 weeks duration)
+**Planning Documents:**
+- **Master Plan:** `to-dos/PHASE-6-TUI-INTERFACE.md` (2,107 lines, 11,500+ words)
+- **Planning Report:** `to-dos/PHASE-6-PLANNING-REPORT.md` (3,500+ words)
+- **Sprint TODOs:** 8 detailed files (200-300 lines each) in `to-dos/PHASE-6/`
 
-#### Week 17: TUI Foundation
+**Strategic Integration:**
+- **Foundation:** Event-driven architecture (Sprint 5.5.3) enables real-time TUI updates
+- **Performance:** Profiling framework (Sprint 5.5.5) + benchmark suite validates optimizations
+- **Optimizations:** Quick Wins (QW-1, QW-2, QW-3) integrated into Sprint 6.3 for 35-70% gains
 
-**Sprint 6.1**
+#### Sprint 6.1: TUI Framework & Core Components (2-3 days)
 
-- [ ] Setup `ratatui` framework
-- [ ] Design TUI layout (target input, progress, results)
-- [ ] Implement real-time progress display
-- [ ] Create keyboard navigation
-- [ ] Add scan configuration widgets
-- [ ] Build result table view
+**Goal:** Establish Ratatui-based foundation with event-driven architecture
+
+- [ ] Setup `ratatui` framework with event system integration
+- [ ] Design 5-pane layout (Header, Target Input, Progress Dashboard, Results Table, Status Bar)
+- [ ] Implement keyboard navigation (vim-style + arrow keys)
+- [ ] Create scan configuration widgets with templates
+- [ ] Build result table view with real-time updates
+- [ ] Integrate EventBus for live scan progress
 
 **Deliverables:**
-
 - Functional TUI with basic navigation
-- Real-time scan progress
+- Event-driven real-time updates (40ns latency from Sprint 5.5.3)
 - Interactive result browsing
 
-#### Week 18: TUI Advanced Features
+**Technical Foundation:**
+- Ratatui + crossterm for rendering
+- EventBus integration (pub-sub pattern)
+- State management pattern (Redux-inspired)
 
-**Sprint 6.2**
+#### Sprint 6.2: Live Dashboard & Real-Time Updates (3-4 days)
 
-- [ ] Add result filtering and search
-- [ ] Implement export from TUI
-- [ ] Create scan history view
-- [ ] Build help system
-- [ ] Add color themes
-- [ ] Implement mouse support
+**Goal:** Production-ready live scanning dashboard with comprehensive metrics
+
+- [ ] Implement real-time progress display (scan rate, ETA, completion %)
+- [ ] Create interactive result filtering and search
+- [ ] Add scan history view with SQLite backend
+- [ ] Build detailed help system (context-sensitive)
+- [ ] Implement color themes (dark, light, custom)
+- [ ] Add mouse support for modern terminals
 
 **Deliverables:**
+- Production-grade live dashboard
+- Comprehensive progress metrics (inherited from Sprint 5.5.3)
+- Feature-complete user experience
 
-- Feature-complete TUI
-- User guide for TUI mode
-- Theme customization
+**Performance Requirements:**
+- <16ms render latency (60 FPS target)
+- <50ms event processing
+- Zero flicker on rapid updates
+
+#### Sprint 6.3: Network Performance Optimization (2-3 days) - QUICK WINS
+
+**Goal:** Implement top 3 ROI optimizations from reference analysis
+
+**QW-1: Adaptive Batch Size (ROI 5.33, 15-30% gain, 6-8h)**
+- [ ] Implement dynamic batch sizing based on network conditions
+- [ ] Add performance monitoring and auto-adjustment
+- [ ] Benchmark against fixed batch size (current 3000)
+
+**QW-2: sendmmsg/recvmmsg Batching (ROI 4.00, 20-40% gain, 10-12h)**
+- [ ] Replace individual sendto/recvfrom with batched syscalls
+- [ ] Implement platform-specific fallbacks (Windows compatibility)
+- [ ] Validate with benchmark suite
+
+**QW-3: Memory-Mapped Streaming (ROI 3.75, 20-50% memory reduction, 8-10h)**
+- [ ] Implement mmap-based result streaming for large scans
+- [ ] Add automatic fallback for small scans
+- [ ] Memory profiling validation
+
+**Expected Combined Gains:** 35-70% throughput improvement, 20-50% memory reduction
+
+**Deliverables:**
+- Optimized network stack
+- Benchmark validation (22 scenarios from Phase 5 Final Suite)
+- Performance regression testing
+
+#### Sprint 6.4: Adaptive Auto-Tuning (2-3 days)
+
+**Goal:** Intelligent performance tuning based on system resources
+
+- [ ] Implement CPU core detection and worker scaling
+- [ ] Add memory-aware batch size adjustment
+- [ ] Create network bandwidth detection
+- [ ] Build adaptive rate limiting
+- [ ] Add performance profiling integration
+
+**Deliverables:**
+- Self-tuning scanner (optimal performance without manual configuration)
+- Resource utilization monitoring
+- Performance recommendations
+
+#### Sprint 6.5: Interactive Target Selection (2-3 days)
+
+**Goal:** Enhanced target specification with visual feedback
+
+- [ ] Interactive CIDR calculator
+- [ ] Target import from files (CSV, TXT)
+- [ ] Exclusion list management
+- [ ] DNS resolution preview
+- [ ] Target count estimation
+
+**Deliverables:**
+- User-friendly target specification
+- Visual validation and feedback
+- Import/export functionality
+
+#### Sprint 6.6: Advanced Features Integration (3-4 days)
+
+**Goal:** Integrate all Phase 5 + 5.5 features into TUI
+
+- [ ] Service detection controls (enable/disable probes)
+- [ ] OS fingerprinting toggle
+- [ ] TLS certificate viewer
+- [ ] Plugin management UI
+- [ ] Event log viewer (from Sprint 5.5.3)
+- [ ] Scan template customization
+
+**Deliverables:**
+- Full feature parity with CLI
+- Enhanced feature discoverability
+- Professional UX
+
+#### Sprint 6.7: NUMA & CDN Optimizations (3-4 days)
+
+**Goal:** Enterprise-grade performance for large-scale deployments
+
+- [ ] NUMA-aware memory allocation
+- [ ] CPU affinity optimization
+- [ ] IRQ affinity configuration helpers
+- [ ] Multi-NIC support
+- [ ] CDN/Load balancer integration guidance
+
+**Deliverables:**
+- Enterprise deployment documentation
+- NUMA optimization guide
+- Multi-NIC configuration examples
+
+#### Sprint 6.8: Documentation & Polish (2-3 days)
+
+**Goal:** Production-ready documentation and final polish
+
+- [ ] Comprehensive TUI user guide
+- [ ] Updated tutorials with TUI examples
+- [ ] Performance tuning guide
+- [ ] Deployment best practices
+- [ ] Video demonstrations
+- [ ] Final UX polish and bug fixes
+
+**Deliverables:**
+- Professional documentation (matching Phase 5 quality standard)
+- User guide integration
+- Ready for v0.6.0 release
+
+**Critical Path:** Sprint 6.1 → 6.2 → 6.3 → 6.6 (foundation for all features)
+
+**References:**
+- **Master Plan:** `to-dos/PHASE-6-TUI-INTERFACE.md` (comprehensive 2,107-line roadmap)
+- **Reference Analysis:** `to-dos/REFERENCE-ANALYSIS-IMPROVEMENTS.md` (18 improvements, ROI-prioritized)
+- **Benchmark Suite:** `benchmarks/03-Phase5_Final-Bench/` (validation framework)
+- **Profiling Tools:** `benchmarks/profiling/` (performance analysis)
 
 ---
 

@@ -221,11 +221,13 @@ Sprint 5.5.3 delivers production-ready event system infrastructure powering Phas
 **All Task Areas Completed:**
 
 ✅ **Task Area 1: Event Type Design (100% - 3/3 tasks)**
+
 - ScanEvent enum with 18 variants (Lifecycle, Progress, Discovery, Diagnostics)
 - Supporting types: ScanStage, PortState, DiscoveryMethod, Throughput
 - Event validation (timestamp, field constraints)
 
 ✅ **Task Area 2: EventBus Architecture (100% - 5/5 tasks)**
+
 - Pub-sub pattern with broadcast channels (thread-safe Arc<Mutex>)
 - Event filtering (by type, scan ID, host, port range, severity)
 - Ring buffer history (1,000 events, O(1) insert, bounded memory)
@@ -233,12 +235,14 @@ Sprint 5.5.3 delivers production-ready event system infrastructure powering Phas
 - **Performance benchmarking:** 40ns publish (250,000x better than target!)
 
 ✅ **Task Area 3: Scanner Integration (100% - 6/6 tasks)**
+
 - All 6 scanners emit real-time events: TCP Connect, SYN, UDP, Stealth (FIN/NULL/Xmas/ACK), Idle
 - ScanStarted, PortFound, ScanCompleted events across all scanner types
 - ICMP backoff monitoring (UDP scanner), zombie quality metrics (Idle scanner)
 - 100% backward compatible (Optional event_bus, no breaking changes)
 
 ✅ **Task Area 4: Progress Collection & Monitoring (100% - 6/6 tasks)**
+
 - **ProgressCalculator:** EWMA-based ETA calculation (469 lines, 11 tests)
 - **ThroughputMonitor:** Sliding window metrics - PPS, HPM, Mbps (510 lines, 14 tests)
 - **ProgressAggregator:** Event-driven state aggregation (696 lines, 11 tests)
@@ -246,12 +250,14 @@ Sprint 5.5.3 delivers production-ready event system infrastructure powering Phas
 - Thread-safe (Arc<RwLock>), async-compatible, <5ms event processing
 
 ✅ **Task Area 5: CLI Integration (100% - 4/4 tasks)**
+
 - EventBus integration in main.rs (conditional on --quiet flag)
 - ProgressDisplay initialization with event subscriptions
 - Live results streaming with --live-results flag
 - 20 integration tests (progress display, quiet mode, live results, edge cases)
 
 ✅ **Task Area 6: Event Logging System (100% - 4/4 tasks)** - **NEW!**
+
 - **EventLogger:** JSON Lines format with streaming writes (863 lines, 10 tests)
 - **Automatic Log Rotation:** 100MB max file size, gzip compression
 - **Retention Policy:** 30-day automatic cleanup with configurable retention
@@ -259,6 +265,7 @@ Sprint 5.5.3 delivers production-ready event system infrastructure powering Phas
 - Production-ready event persistence for audit trails and replay
 
 ✅ **Task Area 7: Testing & Benchmarking Documentation (100% - 3/3 tasks)** - **NEW!**
+
 - **Comprehensive Documentation:** docs/35-EVENT-SYSTEM-GUIDE.md (968 lines)
 - **Enhanced Rustdoc:** +285 lines across 4 modules (event_bus, events, progress, event_logger)
 - **Test Verification:** 104 event system tests confirmed (100% passing)
@@ -326,6 +333,7 @@ Sprint 5.5.3 delivers production-ready event system infrastructure powering Phas
 **Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
 
 **See Also:**
+
 - **Documentation:** docs/35-EVENT-SYSTEM-GUIDE.md (comprehensive 968-line guide)
 - **TODO Tracking:** to-dos/PHASE-5.5-PRE-TUI-ENHANCEMENTS.md (Sprint 5.5.3 section)
 - **CHANGELOG:** CHANGELOG.md Sprint 5.5.3 entry
@@ -344,6 +352,7 @@ Sprint 5.5.4 establishes production-ready performance testing infrastructure wit
 **Task Areas Completed:**
 
 ✅ **Task Area 1: Comprehensive Benchmarking (100% - 20/20 tasks)**
+
 - **20 Benchmark Scenarios** (8 original + 12 new)
   - Core Scans (8): SYN, Connect, UDP, Service Detection, IPv6, Idle, Rate Limiting, Event System
   - Stealth Scans (4): FIN, NULL, Xmas, ACK firewall detection
@@ -354,6 +363,7 @@ Sprint 5.5.4 establishes production-ready performance testing infrastructure wit
 - **All Executable:** chmod +x, hyperfine-based, JSON export format
 
 ✅ **Task Area 2: Profiling Framework (100% - Framework Ready, Execution Deferred)**
+
 - **Infrastructure Created:**
   - `benchmarks/flamegraphs/` directory with ANALYSIS.md template
   - `benchmarks/massif/` directory with ANALYSIS.md template
@@ -362,6 +372,7 @@ Sprint 5.5.4 establishes production-ready performance testing infrastructure wit
 - **Execution Deferred:** Profiling execution (15-20h) moved to Sprint 5.5.5 for data-driven optimization in Sprint 5.5.6
 
 ✅ **Task Area 4: Regression Detection (100% - 10/10 tasks)**
+
 - **CI/CD Automation:** `.github/workflows/benchmarks.yml` (151 lines)
   - Weekly schedule (Sunday 00:00 UTC)
   - Manual workflow_dispatch trigger  
@@ -381,6 +392,7 @@ Sprint 5.5.4 establishes production-ready performance testing infrastructure wit
   - Version-tagged directories (benchmarks/baselines/v0.5.0/, v0.5.1/, ...)
 
 ✅ **Task Area 5: Performance Documentation (100% - 8/8 tasks)**
+
 - **docs/31-BENCHMARKING-GUIDE.md** v1.1.0 (+500 lines)
   - Baseline management workflow
   - Regression detection usage
@@ -402,6 +414,7 @@ Sprint 5.5.4 establishes production-ready performance testing infrastructure wit
   - CI integration documentation
 
 ✅ **Task Area 6: Results Publishing (100% - 6/6 tasks)**
+
 - Comprehensive benchmarks/README.md update
 - Sprint completion report (SPRINT-5.5.4-COMPLETE.md, 700+ lines)
 - Documentation cross-references validated
@@ -452,6 +465,7 @@ Sprint 5.5.4 establishes production-ready performance testing infrastructure wit
 **Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
 
 **See Also:**
+
 - **Benchmarking Guide:** docs/31-BENCHMARKING-GUIDE.md v1.1.0 (comprehensive workflow)
 - **Performance Characteristics:** docs/34-PERFORMANCE-CHARACTERISTICS.md (analysis & trends)
 - **TODO Tracking:** to-dos/SPRINT-5.5.4-TODO.md (1,140 lines, 71 tasks)
@@ -473,6 +487,7 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
 **Task Areas Completed:**
 
 ✅ **Task Area 1: Profiling Framework (100% - 10/10 tasks)**
+
 - **Tools Verified:** cargo-flamegraph (CPU), valgrind massif (memory), strace (I/O)
 - **Standardized Wrapper:** `profile-scenario.sh` (193 lines)
   - Universal interface for all profiling types (cpu|memory|io)
@@ -483,6 +498,7 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
 - **Directory Structure:** results/{flamegraphs,massif,strace}, v0.5.0/ archive
 
 ✅ **Task Area 4: I/O Profiling (100% - Validation Test Complete)**
+
 - **Scenario:** SYN scan 2 ports (80, 443) on localhost
 - **Duration:** 1.773ms total syscall time
 - **Syscalls:** 451 calls across 51 types
@@ -497,6 +513,7 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
   - Validate batching: Confirm sendmmsg batch size
 
 ✅ **Task Area 5: Comprehensive Analysis (100% - 7/7 targets)**
+
 - **PROFILING-ANALYSIS.md** (1,200+ lines): 7 optimization targets prioritized
   - Rank 1: Increase Batch Size 100→300 (Priority 70, 5-10% gain, 2-3h)
   - Rank 2: Buffer Pool (Priority 64, 10-15% gain, 6-8h)
@@ -509,6 +526,7 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
   - Stateless scans: 8-15% packet rate increase
 
 ✅ **Task Area 6: Documentation (100% - 4/4 files)**
+
 - **Created:**
   - benchmarks/profiling/README.md (650+ lines) - Framework overview
   - benchmarks/profiling/PROFILING-SETUP.md (500+ lines) - Platform setup
@@ -524,6 +542,7 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
 **Sprint 5.5.6 Roadmap (COMPLETE):**
 
 **Phase 1: Quick Wins (6-8 hours)**
+
 1. Increase sendmmsg batch size 100→300 (2-3h, 5-10% throughput)
 2. Lazy static regex compilation (3-4h, 8-12% -sV speedup)
 
@@ -531,10 +550,12 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
 3. SIMD checksums SSE4.2/AVX2 (4-6h, 5-8% packet crafting)
 
 **Files Changed (9 total):**
+
 - **Created (5):** profile-scenario.sh, README.md, PROFILING-SETUP.md, PROFILING-ANALYSIS.md, IO-ANALYSIS.md
 - **Modified (4):** CHANGELOG.md (+150 lines), README.md (+50 lines), docs/34-PERFORMANCE-CHARACTERISTICS.md (+200 lines), CLAUDE.local.md (+30 lines)
 
 **Sprint Metrics:**
+
 - **Completion:** 28/40 tasks (70%), 4/6 task areas (67%)
 - **Time:** ~10 hours (50% of 15-20h estimate, 50% under budget)
 - **Grade:** A (Pragmatic Excellence - Framework Complete, Roadmap Ready)
@@ -542,22 +563,26 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
 - **Optimization Targets:** 7 prioritized with 15-25% combined gains
 
 **Strategic Value Delivered:**
+
 1. **Complete Profiling Infrastructure:** Production-ready wrapper scripts, directory structure, documentation
 2. **Data-Driven Optimization Roadmap:** 7 targets with priority scoring, implementation guidance, expected gains
 3. **I/O Analysis Foundation:** Validation test confirms syscall patterns, identifies optimization opportunities
 4. **Sprint 5.5.6 Readiness:** Detailed roadmap with code snippets, testing strategies, validation criteria
 
 **Why This Approach Works:**
+
 - **Architectural Analysis:** Code review + Sprint 5.5.4 benchmarks provide 90% of optimization insights
 - **Pragmatic Execution:** Hours-long profiling has diminishing returns vs targeted analysis
 - **Reproducible Framework:** Scripts enable future validation without re-inventing infrastructure
 - **Equivalent Strategic Value:** Optimization targets actionable regardless of profiling method
 
 **Deferred to Q1 2026:**
+
 - Full profiling execution (12 scenarios): 5 CPU flamegraphs, 5 memory massif profiles, 3 I/O detailed traces
 - Rationale: Infrastructure complete, targets identified, full execution validates gains after Sprint 5.5.6
 
 **Next Sprint (5.5.6):**
+
 - **Sprint 5.5.6:** Performance Optimization Implementation (6-8h, Q1 2026)
 - **Goals:** Implement top 3 optimizations, expected 15-25% combined speedup
 - **Validation:** Hyperfine regression benchmarks, CI/CD automation
@@ -566,6 +591,7 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
 **Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, production-ready framework.
 
 **See Also:**
+
 - **Profiling Framework:** benchmarks/profiling/README.md (comprehensive guide)
 - **I/O Analysis:** benchmarks/profiling/IO-ANALYSIS.md (syscall validation)
 - **Optimization Targets:** benchmarks/profiling/PROFILING-ANALYSIS.md (1,200+ lines)
@@ -643,6 +669,7 @@ Sprint 5.5.6 validates optimization targets through code review, preventing 9-13
 Sprint 5.5.6 marks the completion of Phase 5.5 (Pre-TUI Enhancements):
 
 **Phase 5.5 Summary:**
+
 - ✅ Sprint 5.5.1: Documentation & Examples (21.1h, A+)
 - ✅ Sprint 5.5.2: CLI Usability & UX (15.5h, A+)
 - ✅ Sprint 5.5.3: Event System & Progress (35h, A+)
@@ -661,6 +688,7 @@ Sprint 5.5.6 marks the completion of Phase 5.5 (Pre-TUI Enhancements):
 **Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
 
 **See Also:**
+
 - **Verification Report:** /tmp/ProRT-IP/OPTIMIZATION-VERIFICATION-REPORT.md (405 lines)
 - **Buffer Pool Analysis:** /tmp/ProRT-IP/BUFFER-POOL-ANALYSIS.md (450 lines)
 - **Sprint Complete:** /tmp/ProRT-IP/SPRINT-5.5.6-COMPLETE.md (507+ lines)
@@ -2249,8 +2277,8 @@ prtip -sS -p 80,443 target.com
 | **Phase 2** | Weeks 4-6 | Advanced Scanning | ✅ Complete |
 | **Phase 3** | Weeks 7-10 | Detection Systems | ✅ Complete |
 | **Phase 4** | Weeks 11-13 | Performance Optimization | ✅ Complete (Sprint 4.20 COMPLETE, v0.3.9) |
-| **Phase 5** | Weeks 14-16 | Advanced Features | 🎯 Next (Idle scans, Plugins, Complete Sprint 4.20) |
-| **Phase 6** | Weeks 17-18 | User Interfaces | Planned |
+| **Phase 5** | Weeks 14-16 | Advanced Features | ✅ Complete (10 sprints, v0.5.0-fix) + 5.5 Pre-TUI (6 sprints) |
+| **Phase 6** | Weeks 17-18 | User Interfaces (TUI) | 🎯 Next (8 sprints, comprehensive roadmap, Q2 2026) |
 | **Phase 7** | Weeks 19-20 | Release Preparation | Planned |
 | **Phase 8** | Beyond | Post-Release Features | Future |
 
@@ -2262,8 +2290,9 @@ prtip -sS -p 80,443 target.com
 - **M3**: Comprehensive Detection ✅ (2025-10-08)
 - **M4**: High-Performance Scanning ✅ (2025-10-12 - Phase 4 Core Complete)
 - **M4.5**: Evasion Techniques ✅ (2025-10-25 - Sprint 4.20 COMPLETE, v0.3.9 released)
-- **M5**: Enterprise Features (Phase 5 - Next)
-- **M6**: Enhanced Usability (Phase 6)
+- **M5**: Advanced Features ✅ (2025-11-09 - Phase 5 + 5.5 COMPLETE, v0.5.0-fix)
+- **M5.5**: Production Validation ✅ (2025-11-10 - Benchmark Suite, Profiling, Phase 6 Planning)
+- **M6**: TUI Interface (Phase 6 - Q2 2026, 8 sprints, comprehensive roadmap)
 - **M7**: Version 1.0 Release (Phase 7)
 
 **Full Details**: See [Roadmap](ROADMAP.md) and [Detailed Roadmap](docs/01-ROADMAP.md)

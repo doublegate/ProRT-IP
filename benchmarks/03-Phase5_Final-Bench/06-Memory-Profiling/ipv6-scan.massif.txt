@@ -1,0 +1,1337 @@
+--------------------------------------------------------------------------------
+Command:            ./target/release/prtip -6 -sS -p 1-1000 ::1
+Massif arguments:   --massif-out-file=/home/parobek/Code/ProRT-IP/benchmarks/03-Phase5_Final-Bench/06-Memory-Profiling/ipv6-scan.massif.out --time-unit=ms
+ms_print arguments: /home/parobek/Code/ProRT-IP/benchmarks/03-Phase5_Final-Bench/06-Memory-Profiling/ipv6-scan.massif.out
+--------------------------------------------------------------------------------
+
+
+    MB
+2.742^                                                          #             
+     |                                                          #             
+     |                                                         @#             
+     |                                                         @#             
+     |                                                        @@#             
+     |                                                        @@#       :::   
+     |                                                  @    :@@#     ::: :   
+     |                                                ::@    :@@#:::@:::: :   
+     |                                     :@:::::::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                                     :@:::  ::@@::@::::@@@#:::@:::: :   
+     |                            :       @:@:::  ::@@::@::::@@@#:::@:::: @   
+     |                     ::::@:@:::    :@:@:::  ::@@::@::::@@@#:::@:::: @:: 
+   0 +----------------------------------------------------------------------->ms
+     0                                                                     541
+
+Number of snapshots: 81
+ Detailed snapshots: [2, 14, 16, 25, 27, 34, 35, 39, 45, 47, 48, 49, 50, 51, 52 (peak), 62, 72]
+
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  0              0                0                0             0            0
+  1             99              488              472            16            0
+  2            107            1,768            1,736            32            0
+98.19% (1,736B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->57.92% (1,024B) 0x5C63EC5: _IO_file_doallocate (in /usr/lib/libc.so.6)
+| ->57.92% (1,024B) 0x5C75B52: _IO_doallocbuf (in /usr/lib/libc.so.6)
+|   ->57.92% (1,024B) 0x5C72A86: _IO_file_underflow (in /usr/lib/libc.so.6)
+|     ->57.92% (1,024B) 0x5C65D1B: getdelim (in /usr/lib/libc.so.6)
+|       ->57.92% (1,024B) 0x5C7E754: pthread_getattr_np (in /usr/lib/libc.so.6)
+|         ->57.92% (1,024B) 0x45A25F9: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->57.92% (1,024B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->57.92% (1,024B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->26.70% (472B) 0x5C64BFE: fopen (in /usr/lib/libc.so.6)
+| ->26.70% (472B) 0x5C7E633: pthread_getattr_np (in /usr/lib/libc.so.6)
+|   ->26.70% (472B) 0x45A25F9: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->26.70% (472B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->26.70% (472B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->13.57% (240B) 0x5C65BBF: getdelim (in /usr/lib/libc.so.6)
+| ->13.57% (240B) 0x5C7E754: pthread_getattr_np (in /usr/lib/libc.so.6)
+|   ->13.57% (240B) 0x45A25F9: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->13.57% (240B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->13.57% (240B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+  3            114            1,096              995           101            0
+  4            120            1,056              975            81            0
+  5            124           43,712           43,044           668            0
+  6            130           98,808           96,437         2,371            0
+  7            136           99,120           96,741         2,379            0
+  8            143          108,408          104,422         3,986            0
+  9            151          120,080          113,867         6,213            0
+ 10            159          146,728          139,741         6,987            0
+ 11            167          169,896          162,145         7,751            0
+ 12            175          175,040          166,579         8,461            0
+ 13            183          219,152          210,033         9,119            0
+ 14            191          227,608          217,704         9,904            0
+95.65% (217,704B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->34.64% (78,848B) 0x46658B3: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->33.74% (76,800B) 0x45EA7DD: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->33.74% (76,800B) 0x4560148: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | | ->33.74% (76,800B) 0x44F8C59: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |   ->33.74% (76,800B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |     ->33.74% (76,800B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |       ->33.74% (76,800B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |         ->33.74% (76,800B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |           ->33.74% (76,800B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| | |             ->33.74% (76,800B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| | |               
+| | ->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+| | 
+| ->00.90% (2,048B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->18.00% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->18.00% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->18.00% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->18.00% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->18.00% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->09.96% (22,661B) 0x46658A1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->09.16% (20,853B) 0x45DC9BB: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->09.16% (20,853B) in 151 places, all below massif's threshold (1.00%)
+| |   
+| ->00.79% (1,808B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->09.60% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->09.45% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->09.45% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->09.45% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |     ->09.45% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |       ->09.45% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |         ->09.45% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |           ->09.45% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             ->09.45% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |               ->09.45% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| |                 ->09.45% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| |                   
+| ->00.15% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->06.87% (15,635B) in 183 places, all below massif's threshold (1.00%)
+| 
+->05.40% (12,288B) 0x483FFAA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->05.40% (12,288B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->05.40% (12,288B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->05.40% (12,288B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->05.40% (12,288B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->05.40% (12,288B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->02.74% (6,240B) 0x483FD8F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.74% (6,240B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.74% (6,240B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.74% (6,240B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->02.74% (6,240B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->02.74% (6,240B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->02.67% (6,080B) 0x4AE8E83: _dl_allocate_tls (in /usr/lib/ld-linux-x86-64.so.2)
+| ->02.67% (6,080B) 0x5C7DE44: pthread_create (in /usr/lib/libc.so.6)
+|   ->02.67% (6,080B) 0x482D4B2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.67% (6,080B) 0x4838922: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->02.67% (6,080B) 0x45269E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->02.67% (6,080B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->02.67% (6,080B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->02.67% (6,080B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->02.67% (6,080B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->02.25% (5,120B) 0x4526953: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.25% (5,120B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.25% (5,120B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.25% (5,120B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->02.25% (5,120B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.35% (3,072B) 0x45261BB: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.35% (3,072B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.35% (3,072B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.35% (3,072B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.35% (3,072B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.12% (2,560B) 0x4525CC0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.12% (2,560B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.12% (2,560B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.12% (2,560B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.12% (2,560B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.05% (2,400B) 0x4525F0D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.05% (2,400B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.05% (2,400B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.05% (2,400B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+        ->01.05% (2,400B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+          
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 15            199          241,840          230,737        11,103            0
+ 16            207          247,088          235,335        11,753            0
+95.24% (235,335B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->34.94% (86,336B) 0x46658B3: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->31.08% (76,800B) 0x45EA7DD: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->31.08% (76,800B) 0x4560148: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | | ->31.08% (76,800B) 0x44F8C59: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |   ->31.08% (76,800B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |     ->31.08% (76,800B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |       ->31.08% (76,800B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |         ->31.08% (76,800B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | |           ->31.08% (76,800B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| | |             ->31.08% (76,800B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| | |               
+| | ->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+| | 
+| ->02.64% (6,528B) 0x474D02C: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->02.64% (6,528B) 0x45E8E84: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->02.64% (6,528B) 0x45FAE4A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |     ->02.64% (6,528B) 0x44FD32E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |       ->02.64% (6,528B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |         ->02.64% (6,528B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |           ->02.64% (6,528B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             ->02.64% (6,528B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |               ->02.64% (6,528B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| |                 ->02.64% (6,528B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| |                   
+| ->01.22% (3,008B) in 2 places, all below massif's threshold (1.00%)
+|   
+->16.58% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->16.58% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->16.58% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->16.58% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->16.58% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->12.09% (29,865B) 0x46658A1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->10.27% (25,369B) 0x45DC9BB: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->10.27% (25,369B) in 173 places, all below massif's threshold (1.00%)
+| |   
+| ->01.82% (4,496B) in 9 places, all below massif's threshold (1.00%)
+|   
+->08.84% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->08.70% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->08.70% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->08.70% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |     ->08.70% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |       ->08.70% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |         ->08.70% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |           ->08.70% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             ->08.70% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |               ->08.70% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| |                 ->08.70% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| |                   
+| ->00.14% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->08.49% (20,974B) in 200 places, all below massif's threshold (1.00%)
+| 
+->04.97% (12,288B) 0x483FFAA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->04.97% (12,288B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->04.97% (12,288B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->04.97% (12,288B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->04.97% (12,288B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->04.97% (12,288B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->02.53% (6,240B) 0x483FD8F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.53% (6,240B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.53% (6,240B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.53% (6,240B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->02.53% (6,240B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->02.53% (6,240B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->02.46% (6,080B) 0x4AE8E83: _dl_allocate_tls (in /usr/lib/ld-linux-x86-64.so.2)
+| ->02.46% (6,080B) 0x5C7DE44: pthread_create (in /usr/lib/libc.so.6)
+|   ->02.46% (6,080B) 0x482D4B2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.46% (6,080B) 0x4838922: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->02.46% (6,080B) 0x45269E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->02.46% (6,080B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->02.46% (6,080B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->02.46% (6,080B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->02.46% (6,080B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->02.07% (5,120B) 0x4526953: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.07% (5,120B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.07% (5,120B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.07% (5,120B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->02.07% (5,120B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.24% (3,072B) 0x45261BB: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.24% (3,072B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.24% (3,072B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.24% (3,072B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.24% (3,072B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.04% (2,560B) 0x4525CC0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.04% (2,560B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.04% (2,560B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.04% (2,560B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+        ->01.04% (2,560B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+          
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 17            215          296,080          279,566        16,514            0
+ 18            223          172,616          161,306        11,310            0
+ 19            231          158,216          148,905         9,311            0
+ 20            239          120,992          114,813         6,179            0
+ 21            244          121,072          114,877         6,195            0
+ 22            252          133,328          126,350         6,978            0
+ 23            259          132,608          125,717         6,891            0
+ 24            267          167,776          160,853         6,923            0
+ 25            275          312,328          304,820         7,508            0
+97.60% (304,820B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->43.54% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->43.54% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->43.54% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->43.54% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->43.54% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->43.54% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->43.54% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->43.54% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->13.11% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->13.11% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->13.11% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->13.11% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->13.11% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->10.49% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->10.49% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->10.49% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->10.49% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->10.49% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->10.49% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->10.49% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->10.49% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->10.24% (31,972B) in 282 places, all below massif's threshold (1.00%)
+| 
+->06.99% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->06.89% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->06.89% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->06.89% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |     ->06.89% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |       ->06.89% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |         ->06.89% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |           ->06.89% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             ->06.89% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |               ->06.89% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| |                 ->06.89% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| |                   
+| ->00.11% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->03.93% (12,288B) 0x483FFAA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->03.93% (12,288B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->03.93% (12,288B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->03.93% (12,288B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->03.93% (12,288B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->03.93% (12,288B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->02.30% (7,168B) 0x46597DA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.97% (6,144B) 0x46595B6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->01.97% (6,144B) 0x462A185: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->01.97% (6,144B) 0x46589A2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |     ->01.97% (6,144B) 0x484319F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |       ->01.97% (6,144B) 0x4841AC8: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |         ->01.97% (6,144B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |           ->01.97% (6,144B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             ->01.97% (6,144B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |               ->01.97% (6,144B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+| |                 ->01.97% (6,144B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+| |                   
+| ->00.33% (1,024B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->02.00% (6,240B) 0x483FD8F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.00% (6,240B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.00% (6,240B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.00% (6,240B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->02.00% (6,240B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->02.00% (6,240B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->01.95% (6,080B) 0x4AE8E83: _dl_allocate_tls (in /usr/lib/ld-linux-x86-64.so.2)
+| ->01.95% (6,080B) 0x5C7DE44: pthread_create (in /usr/lib/libc.so.6)
+|   ->01.95% (6,080B) 0x482D4B2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.95% (6,080B) 0x4838922: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.95% (6,080B) 0x45269E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.95% (6,080B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.95% (6,080B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->01.95% (6,080B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->01.95% (6,080B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->01.64% (5,120B) 0x4526953: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.64% (5,120B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.64% (5,120B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.64% (5,120B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.64% (5,120B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.40% (4,384B) 0x453131C: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.40% (4,384B) 0x45031D1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.40% (4,384B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.40% (4,384B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+        ->01.40% (4,384B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+          ->01.40% (4,384B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+            ->01.40% (4,384B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+              ->01.40% (4,384B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+                
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 26            283        1,760,152        1,751,651         8,501            0
+ 27            289        1,761,944        1,753,372         8,572            0
+99.51% (1,753,372B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->81.73% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->81.73% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->81.73% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->81.73% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->81.73% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->81.73% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->81.73% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->81.73% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->07.72% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->07.72% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->07.72% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->07.72% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->07.72% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->07.72% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->07.72% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->07.72% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->04.64% (81,804B) in 303 places, all below massif's threshold (1.00%)
+| 
+->02.32% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.32% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.32% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.32% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->02.32% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.86% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.86% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.86% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.86% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.86% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.86% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.86% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.86% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.24% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.22% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  | ->01.22% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |   ->01.22% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |     ->01.22% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |       ->01.22% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |         ->01.22% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |           ->01.22% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |             ->01.22% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |               ->01.22% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+  |                 ->01.22% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+  |                   
+  ->00.02% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+  
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 28            295        1,765,432        1,756,784         8,648            0
+ 29            301        1,766,072        1,757,303         8,769            0
+ 30            307        1,769,552        1,760,631         8,921            0
+ 31            310        1,772,440        1,763,500         8,940            0
+ 32            334        1,772,480        1,763,563         8,917            0
+ 33            341        1,805,736        1,796,741         8,995            0
+ 34            349        1,810,904        1,801,572         9,332            0
+99.48% (1,801,572B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->79.52% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->79.52% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->79.52% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->79.52% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->79.52% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->79.52% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->79.52% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->79.52% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->07.51% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->07.51% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->07.51% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->07.51% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->07.51% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->07.51% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->07.51% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->07.51% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->05.37% (97,188B) in 333 places, all below massif's threshold (1.00%)
+| 
+->02.26% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.26% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.26% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.26% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->02.26% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.81% (32,816B) 0x5CCB0A5: opendir (in /usr/lib/libc.so.6)
+| ->01.81% (32,816B) 0x8A99FDC: userdb_start_query.lto_priv.0 (userdb.c:562)
+|   ->01.81% (32,816B) 0x8AA5EC0: groupdb_by_name.constprop.0 (userdb.c:1387)
+|     ->01.81% (32,816B) 0x8A84753: UnknownInlinedFun (userdb-glue.c:296)
+|       ->01.81% (32,816B) 0x8A84753: _nss_systemd_getgrnam_r (nss-systemd.c:464)
+|         ->01.81% (32,816B) 0x5D3F112: getgrnam_r (in /usr/lib/libc.so.6)
+|           ->01.81% (32,816B) 0x4510E03: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->01.81% (32,816B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|               ->01.81% (32,816B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|                 ->01.81% (32,816B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|                   ->01.81% (32,816B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|                     ->01.81% (32,816B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|                       ->01.81% (32,816B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                         
+->01.81% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.81% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.81% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.81% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.81% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.81% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.81% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.81% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.21% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.19% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  | ->01.19% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |   ->01.19% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |     ->01.19% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |       ->01.19% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |         ->01.19% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |           ->01.19% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |             ->01.19% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |               ->01.19% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+  |                 ->01.19% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+  |                   
+  ->00.02% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+  
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 35            357        1,829,392        1,811,765        17,627            0
+99.04% (1,811,765B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->78.71% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->78.71% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->78.71% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->78.71% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->78.71% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->78.71% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->78.71% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->78.71% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->07.43% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->07.43% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->07.43% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->07.43% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->07.43% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->07.43% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->07.43% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->07.43% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->05.87% (107,381B) in 337 places, all below massif's threshold (1.00%)
+| 
+->02.24% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.24% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.24% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.24% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->02.24% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.79% (32,816B) 0x5CCB0A5: opendir (in /usr/lib/libc.so.6)
+| ->01.79% (32,816B) 0x8A99FDC: userdb_start_query.lto_priv.0 (userdb.c:562)
+|   ->01.79% (32,816B) 0x8AA5EC0: groupdb_by_name.constprop.0 (userdb.c:1387)
+|     ->01.79% (32,816B) 0x8A84753: UnknownInlinedFun (userdb-glue.c:296)
+|       ->01.79% (32,816B) 0x8A84753: _nss_systemd_getgrnam_r (nss-systemd.c:464)
+|         ->01.79% (32,816B) 0x5D3F112: getgrnam_r (in /usr/lib/libc.so.6)
+|           ->01.79% (32,816B) 0x4510E03: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->01.79% (32,816B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|               ->01.79% (32,816B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|                 ->01.79% (32,816B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|                   ->01.79% (32,816B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|                     ->01.79% (32,816B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|                       ->01.79% (32,816B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                         
+->01.79% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.79% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.79% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.79% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.79% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.79% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.79% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.79% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.19% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.18% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  | ->01.18% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |   ->01.18% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |     ->01.18% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |       ->01.18% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |         ->01.18% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |           ->01.18% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |             ->01.18% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |               ->01.18% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+  |                 ->01.18% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+  |                   
+  ->00.02% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+  
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 36            363        1,795,488        1,769,919        25,569            0
+ 37            368        1,926,568        1,900,991        25,577            0
+ 38            374        1,926,840        1,901,234        25,606            0
+ 39            380        2,057,960        2,032,343        25,617            0
+98.76% (2,032,343B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->69.97% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->69.97% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->69.97% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->69.97% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->69.97% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->69.97% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->69.97% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->69.97% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->12.88% (265,024B) 0x8A7AFCC: greedy_realloc (alloc-util.c:65)
+| ->12.74% (262,144B) 0x8ABCC5C: UnknownInlinedFun (sd-varlink.c:834)
+| | ->12.74% (262,144B) 0x8ABCC5C: sd_varlink_process.isra.0 (sd-varlink.c:1478)
+| |   ->12.74% (262,144B) 0x8ABDDB9: defer_callback.lto_priv.0 (sd-varlink.c:2963)
+| |     ->12.74% (262,144B) 0x8AA208F: source_dispatch (sd-event.c:4201)
+| |       ->12.74% (262,144B) 0x8AA2FC4: UnknownInlinedFun (sd-event.c:4782)
+| |         ->12.74% (262,144B) 0x8AA2FC4: UnknownInlinedFun (sd-event.c:4843)
+| |           ->12.74% (262,144B) 0x8AA2FC4: userdb_process.part.0 (userdb.c:694)
+| |             ->12.74% (262,144B) 0x8AA37CC: UnknownInlinedFun (userdb.c:630)
+| |             | ->12.74% (262,144B) 0x8AA37CC: membershipdb_iterator_get (userdb.c:1939)
+| |             |   ->12.74% (262,144B) 0x8AA3B0E: membershipdb_by_group_strv (userdb.c:1961)
+| |             |     ->12.74% (262,144B) 0x8A84803: UnknownInlinedFun (userdb-glue.c:302)
+| |             |       ->12.74% (262,144B) 0x8A84803: _nss_systemd_getgrnam_r (nss-systemd.c:464)
+| |             |         ->12.74% (262,144B) 0x5D3F112: getgrnam_r (in /usr/lib/libc.so.6)
+| |             |           ->12.74% (262,144B) 0x4510E03: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             |             ->12.74% (262,144B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             |               ->12.74% (262,144B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             |                 ->12.74% (262,144B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             |                   ->12.74% (262,144B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             |                     ->12.74% (262,144B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| |             |                       ->12.74% (262,144B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| |             |                         
+| |             ->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+| |             
+| ->00.14% (2,880B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->06.61% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->06.61% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->06.61% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->06.61% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->06.61% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->06.61% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->06.61% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->06.61% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->04.65% (95,751B) in 340 places, all below massif's threshold (1.00%)
+| 
+->01.99% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.99% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.99% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.99% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.99% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.59% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.59% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.59% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.59% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.59% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.59% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.59% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.59% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.06% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.04% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  | ->01.04% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |   ->01.04% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |     ->01.04% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |       ->01.04% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |         ->01.04% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |           ->01.04% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |             ->01.04% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |               ->01.04% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+  |                 ->01.04% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+  |                   
+  ->00.02% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+  
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 40            386        1,771,840        1,763,037         8,803            0
+ 41            392        1,805,336        1,793,839        11,497            0
+ 42            398        1,808,616        1,796,399        12,217            0
+ 43            402        1,811,280        1,798,479        12,801            0
+ 44            408        1,816,664        1,803,711        12,953            0
+ 45            414        1,840,536        1,825,519        15,017            0
+99.18% (1,825,519B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->78.24% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->78.24% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->78.24% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->78.24% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->78.24% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->78.24% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->78.24% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->78.24% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->07.39% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->07.39% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->07.39% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->07.39% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->07.39% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->07.39% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->07.39% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->07.39% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->06.57% (120,927B) in 366 places, all below massif's threshold (1.00%)
+| 
+->02.23% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.23% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.23% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.23% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->02.23% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.79% (33,024B) 0x4461549: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.79% (33,024B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.79% (33,024B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.79% (33,024B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.79% (33,024B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.79% (33,024B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.79% (33,024B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->01.79% (33,024B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->01.79% (33,024B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->01.78% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.78% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.78% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.78% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.78% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.78% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.78% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.78% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.19% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.17% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  | ->01.17% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |   ->01.17% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |     ->01.17% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |       ->01.17% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |         ->01.17% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |           ->01.17% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |             ->01.17% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |               ->01.17% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+  |                 ->01.17% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+  |                   
+  ->00.02% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+  
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 46            420        2,015,184        1,985,503        29,681            0
+ 47            424        2,223,320        2,177,647        45,673            0
+97.95% (2,177,647B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->64.77% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->64.77% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->64.77% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->64.77% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->64.77% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->64.77% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->64.77% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->64.77% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->14.75% (327,936B) 0x4461549: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->14.75% (327,936B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->14.75% (327,936B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->14.75% (327,936B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->14.75% (327,936B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->14.75% (327,936B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->14.75% (327,936B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->14.75% (327,936B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->14.75% (327,936B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->06.23% (138,623B) in 366 places, all below massif's threshold (1.00%)
+| 
+->06.12% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->06.12% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->06.12% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->06.12% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->06.12% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->06.12% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->06.12% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->06.12% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->02.76% (61,360B) 0x469EE9A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.76% (61,360B) 0x4464CC5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.76% (61,360B) 0x4544098: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.55% (56,640B) 0x4843559: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     | ->02.55% (56,640B) 0x4841231: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |   ->02.55% (56,640B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |     ->02.55% (56,640B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |       ->02.55% (56,640B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |         ->02.55% (56,640B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+|     |           ->02.55% (56,640B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+|     |             
+|     ->00.21% (4,720B) in 1+ places, all below ms_print's threshold (01.00%)
+|     
+->01.84% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.84% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.84% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.84% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.84% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.47% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.47% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.47% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.47% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+        ->01.47% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+          ->01.47% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+            ->01.47% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+              ->01.47% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+                
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 48            428        2,390,184        2,330,943        59,241            0
+97.52% (2,330,943B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->60.25% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->60.25% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->60.25% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->60.25% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->60.25% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->60.25% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->60.25% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->60.25% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->19.18% (458,496B) 0x4461549: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->19.18% (458,496B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->19.18% (458,496B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->19.18% (458,496B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->19.18% (458,496B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->19.18% (458,496B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->19.18% (458,496B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->19.18% (458,496B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->19.18% (458,496B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->05.76% (137,759B) in 366 places, all below massif's threshold (1.00%)
+| 
+->05.69% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->05.69% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->05.69% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->05.69% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->05.69% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->05.69% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->05.69% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->05.69% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->03.55% (84,960B) 0x469EE9A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->03.55% (84,960B) 0x4464CC5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->03.55% (84,960B) 0x4544098: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->03.36% (80,240B) 0x4843559: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     | ->03.36% (80,240B) 0x4841231: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |   ->03.36% (80,240B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |     ->03.36% (80,240B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |       ->03.36% (80,240B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |         ->03.36% (80,240B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+|     |           ->03.36% (80,240B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+|     |             
+|     ->00.20% (4,720B) in 1+ places, all below ms_print's threshold (01.00%)
+|     
+->01.71% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.71% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.71% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.71% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.71% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.37% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.37% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.37% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.37% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+        ->01.37% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+          ->01.37% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+            ->01.37% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+              ->01.37% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+                
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 49            435        2,690,768        2,608,831        81,937            0
+96.95% (2,608,831B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->53.52% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->53.52% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->53.52% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->53.52% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->53.52% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->53.52% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->53.52% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->53.52% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->25.63% (689,664B) 0x4461549: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->25.63% (689,664B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->25.63% (689,664B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->25.63% (689,664B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->25.63% (689,664B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->25.63% (689,664B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->25.63% (689,664B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->25.63% (689,664B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->25.63% (689,664B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->05.10% (137,279B) in 366 places, all below massif's threshold (1.00%)
+| 
+->05.05% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->05.05% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->05.05% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->05.05% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->05.05% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->05.05% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->05.05% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->05.05% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->04.91% (132,160B) 0x469EE9A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->04.91% (132,160B) 0x4464CC5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->04.91% (132,160B) 0x4544098: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->04.74% (127,440B) 0x4843559: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     | ->04.74% (127,440B) 0x4841231: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |   ->04.74% (127,440B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |     ->04.74% (127,440B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |       ->04.74% (127,440B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |         ->04.74% (127,440B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+|     |           ->04.74% (127,440B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+|     |             
+|     ->00.18% (4,720B) in 1+ places, all below ms_print's threshold (01.00%)
+|     
+->01.52% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.52% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.52% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.52% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.52% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.22% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.22% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.22% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.22% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+        ->01.22% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+          ->01.22% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+            ->01.22% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+              ->01.22% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+                
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 50            436        2,722,568        2,638,095        84,473            0
+96.90% (2,638,095B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->52.89% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->52.89% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->52.89% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->52.89% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->52.89% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->52.89% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->52.89% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->52.89% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->26.23% (714,240B) 0x4461549: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->26.23% (714,240B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->26.23% (714,240B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->26.23% (714,240B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->26.23% (714,240B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->26.23% (714,240B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->26.23% (714,240B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->26.23% (714,240B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->26.23% (714,240B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->05.04% (137,247B) in 366 places, all below massif's threshold (1.00%)
+| 
+->05.03% (136,880B) 0x469EE9A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->05.03% (136,880B) 0x4464CC5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->05.03% (136,880B) 0x4544098: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->04.85% (132,160B) 0x4843559: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     | ->04.85% (132,160B) 0x4841231: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |   ->04.85% (132,160B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |     ->04.85% (132,160B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |       ->04.85% (132,160B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |         ->04.85% (132,160B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+|     |           ->04.85% (132,160B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+|     |             
+|     ->00.17% (4,720B) in 1+ places, all below ms_print's threshold (01.00%)
+|     
+->05.00% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->05.00% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->05.00% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->05.00% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->05.00% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->05.00% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->05.00% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->05.00% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.50% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.50% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.50% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.50% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.50% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.20% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.20% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.20% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.20% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+        ->01.20% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+          ->01.20% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+            ->01.20% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+              ->01.20% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+                
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 51            437        2,763,880        2,674,847        89,033            0
+96.78% (2,674,847B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->52.10% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->52.10% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->52.10% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->52.10% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->52.10% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->52.10% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->52.10% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->52.10% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->26.95% (744,960B) 0x4461549: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->26.95% (744,960B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->26.95% (744,960B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->26.95% (744,960B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->26.95% (744,960B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->26.95% (744,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->26.95% (744,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->26.95% (744,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->26.95% (744,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->05.12% (141,600B) 0x469EE9A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->05.12% (141,600B) 0x4464CC5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->05.12% (141,600B) 0x4544098: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->04.95% (136,880B) 0x4843559: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     | ->04.95% (136,880B) 0x4841231: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |   ->04.95% (136,880B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |     ->04.95% (136,880B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |       ->04.95% (136,880B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |         ->04.95% (136,880B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+|     |           ->04.95% (136,880B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+|     |             
+|     ->00.17% (4,720B) in 1+ places, all below ms_print's threshold (01.00%)
+|     
+->05.01% (138,559B) in 366 places, all below massif's threshold (1.00%)
+| 
+->04.92% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->04.92% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->04.92% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->04.92% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->04.92% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->04.92% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->04.92% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->04.92% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.48% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.48% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.48% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.48% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.48% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.19% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.19% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.19% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.19% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+        ->01.19% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+          ->01.19% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+            ->01.19% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+              ->01.19% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+                
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 52            439        2,874,848        2,767,559       107,289            0
+96.27% (2,767,559B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->50.09% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->50.09% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->50.09% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->50.09% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->50.09% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->50.09% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->50.09% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->50.09% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->26.71% (768,000B) 0x4461549: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->26.71% (768,000B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->26.71% (768,000B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->26.71% (768,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->26.71% (768,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->26.71% (768,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->26.71% (768,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->26.71% (768,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->26.71% (768,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->05.09% (146,320B) 0x469EE9A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->05.09% (146,320B) 0x4464CC5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->05.09% (146,320B) 0x4544098: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->04.93% (141,600B) 0x4843559: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     | ->04.93% (141,600B) 0x4841231: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |   ->04.93% (141,600B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |     ->04.93% (141,600B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |       ->04.93% (141,600B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     |         ->04.93% (141,600B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+|     |           ->04.93% (141,600B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+|     |             
+|     ->00.16% (4,720B) in 1+ places, all below ms_print's threshold (01.00%)
+|     
+->04.73% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->04.73% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->04.73% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->04.73% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->04.73% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->04.73% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->04.73% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->04.73% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->04.57% (131,511B) in 368 places, all below massif's threshold (1.00%)
+| 
+->02.50% (72,000B) 0x445F01C: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.50% (72,000B) 0x44A4CA0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.50% (72,000B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.50% (72,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->02.50% (72,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->02.50% (72,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->02.50% (72,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->02.50% (72,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->02.50% (72,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->01.42% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.42% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.42% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.42% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.42% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.14% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.14% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+    ->01.14% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+      ->01.14% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+        ->01.14% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+          ->01.14% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+            ->01.14% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+              ->01.14% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+                
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 53            442        2,377,776        2,321,991        55,785            0
+ 54            445        1,930,688        1,920,623        10,065            0
+ 55            448        1,924,768        1,914,967         9,801            0
+ 56            451        1,923,144        1,914,059         9,085            0
+ 57            454        1,918,560        1,909,728         8,832            0
+ 58            457        1,918,648        1,909,776         8,872            0
+ 59            460        1,927,400        1,918,511         8,889            0
+ 60            463        1,927,544        1,918,686         8,858            0
+ 61            467        1,927,920        1,919,062         8,858            0
+ 62            470        1,956,072        1,947,238         8,834            0
+99.55% (1,947,238B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->73.62% (1,440,000B) 0x468D3B0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->73.62% (1,440,000B) 0x450783A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->73.62% (1,440,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->73.62% (1,440,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->73.62% (1,440,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->73.62% (1,440,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->73.62% (1,440,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->73.62% (1,440,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->07.65% (149,632B) 0x46658B3: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->07.54% (147,456B) 0x468B583: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->07.54% (147,456B) 0x469F5D9: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->07.54% (147,456B) 0x44A24F7: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   | ->07.54% (147,456B) 0x44F660F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   |   ->07.54% (147,456B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   |     ->07.54% (147,456B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   |       ->07.54% (147,456B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   |         ->07.54% (147,456B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   |           ->07.54% (147,456B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| |   |             ->07.54% (147,456B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| |   |               
+| |   ->00.00% (0B) in 1+ places, all below ms_print's threshold (01.00%)
+| |   
+| ->00.11% (2,176B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->06.95% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->06.95% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->06.95% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->06.95% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->06.95% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->06.95% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->06.95% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->06.95% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->04.56% (89,158B) in 380 places, all below massif's threshold (1.00%)
+| 
+->02.09% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->02.09% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->02.09% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->02.09% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->02.09% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.89% (36,880B) 0x46621B6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.89% (36,880B) 0x4662298: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.89% (36,880B) 0x450DC8E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.89% (36,880B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.89% (36,880B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.89% (36,880B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.89% (36,880B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->01.89% (36,880B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->01.89% (36,880B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->01.68% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.68% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.68% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.68% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.68% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.68% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.68% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.68% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.12% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  ->01.10% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  | ->01.10% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |   ->01.10% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |     ->01.10% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |       ->01.10% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |         ->01.10% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |           ->01.10% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |             ->01.10% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+  |               ->01.10% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+  |                 ->01.10% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+  |                   
+  ->00.02% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+  
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 63            473        1,956,096        1,947,246         8,850            0
+ 64            476        1,956,160        1,947,254         8,906            0
+ 65            479        1,956,240        1,947,341         8,899            0
+ 66            488        2,046,048        2,037,121         8,927            0
+ 67            491        2,054,864        2,043,759        11,105            0
+ 68            494        2,131,256        2,082,513        48,743            0
+ 69            498        2,131,384        2,082,641        48,743            0
+ 70            501        2,262,256        2,213,494        48,762            0
+ 71            511        2,262,200        2,213,457        48,743            0
+ 72            514          330,712          322,015         8,697            0
+97.37% (322,015B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->41.12% (136,000B) 0x4674040: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->41.12% (136,000B) 0x4502E26: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->41.12% (136,000B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->41.12% (136,000B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->41.12% (136,000B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->41.12% (136,000B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->41.12% (136,000B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->41.12% (136,000B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->12.39% (40,979B) in 404 places, all below massif's threshold (1.00%)
+| 
+->12.39% (40,960B) 0x4525D7F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->12.39% (40,960B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->12.39% (40,960B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->12.39% (40,960B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->12.39% (40,960B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->09.91% (32,768B) 0x44F11C5: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->09.91% (32,768B) 0x44FF5B1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->09.91% (32,768B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->09.91% (32,768B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->09.91% (32,768B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->09.91% (32,768B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->09.91% (32,768B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->09.91% (32,768B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->06.60% (21,840B) 0x483C40A: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->06.50% (21,504B) 0x483C327: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->06.50% (21,504B) 0x483F4E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->06.50% (21,504B) 0x4826356: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |     ->06.50% (21,504B) 0x483C52D: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |       ->06.50% (21,504B) 0x48401D2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |         ->06.50% (21,504B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |           ->06.50% (21,504B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             ->06.50% (21,504B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |               ->06.50% (21,504B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+| |                 ->06.50% (21,504B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+| |                   
+| ->00.10% (336B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->03.72% (12,288B) 0x483FFAA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->03.72% (12,288B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->03.72% (12,288B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->03.72% (12,288B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->03.72% (12,288B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->03.72% (12,288B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->02.17% (7,168B) 0x46597DA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.86% (6,144B) 0x46595B6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| | ->01.86% (6,144B) 0x462A185: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |   ->01.86% (6,144B) 0x46589A2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |     ->01.86% (6,144B) 0x484319F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |       ->01.86% (6,144B) 0x4841AC8: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |         ->01.86% (6,144B) 0x4836C63: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |           ->01.86% (6,144B) 0x4839680: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |             ->01.86% (6,144B) 0x482D73E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| |               ->01.86% (6,144B) 0x5C7D0D5: ??? (in /usr/lib/libc.so.6)
+| |                 ->01.86% (6,144B) 0x5D0FE83: clone (in /usr/lib/libc.so.6)
+| |                   
+| ->00.31% (1,024B) in 1+ places, all below ms_print's threshold (01.00%)
+| 
+->01.89% (6,240B) 0x483FD8F: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.89% (6,240B) 0x45258CA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.89% (6,240B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.89% (6,240B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.89% (6,240B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|         ->01.89% (6,240B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|           
+->01.84% (6,080B) 0x4AE8E83: _dl_allocate_tls (in /usr/lib/ld-linux-x86-64.so.2)
+| ->01.84% (6,080B) 0x5C7DE44: pthread_create (in /usr/lib/libc.so.6)
+|   ->01.84% (6,080B) 0x482D4B2: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.84% (6,080B) 0x4838922: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.84% (6,080B) 0x45269E6: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.84% (6,080B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.84% (6,080B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|             ->01.84% (6,080B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|               ->01.84% (6,080B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|                 
+->01.55% (5,120B) 0x4526953: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.55% (5,120B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.55% (5,120B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.55% (5,120B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|       ->01.55% (5,120B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|         
+->01.33% (4,384B) 0x453131C: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.33% (4,384B) 0x45031D1: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.33% (4,384B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.33% (4,384B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.33% (4,384B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.33% (4,384B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.33% (4,384B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.33% (4,384B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.33% (4,384B) 0x453CFC0: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+| ->01.33% (4,384B) 0x44F6B6E: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|   ->01.33% (4,384B) 0x452A1EA: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|     ->01.33% (4,384B) 0x4526F29: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|       ->01.33% (4,384B) 0x44BAA85: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|         ->01.33% (4,384B) 0x45A2900: ??? (in /home/parobek/Code/ProRT-IP/target/release/prtip)
+|           ->01.33% (4,384B) 0x5BFCB8A: ??? (in /usr/lib/libc.so.6)
+|             ->01.33% (4,384B) 0x5BFCC4A: (below main) (in /usr/lib/libc.so.6)
+|               
+->01.15% (3,804B) 0x5D3CF50: ??? (in /usr/lib/libc.so.6)
+  ->01.15% (3,804B) 0x5D3AFBE: ??? (in /usr/lib/libc.so.6)
+    ->01.15% (3,804B) in 2 places, all below massif's threshold (1.00%)
+      
+--------------------------------------------------------------------------------
+  n       time(ms)         total(B)   useful-heap(B) extra-heap(B)    stacks(B)
+--------------------------------------------------------------------------------
+ 73            517          188,840          180,539         8,301            0
+ 74            520          179,880          172,648         7,232            0
+ 75            523          174,072          168,600         5,472            0
+ 76            526          167,456          163,212         4,244            0
+ 77            529          165,568          161,636         3,932            0
+ 78            532           91,024           88,939         2,085            0
+ 79            538           83,936           82,708         1,228            0
+ 80            541           73,920           73,012           908            0

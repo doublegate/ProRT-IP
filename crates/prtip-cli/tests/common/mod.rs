@@ -64,6 +64,7 @@ pub fn get_binary_path() -> PathBuf {
 pub fn run_prtip(args: &[&str]) -> Output {
     let binary = get_binary_path();
     Command::new(binary)
+        .env("PRTIP_DISABLE_HISTORY", "1") // Prevent concurrent test processes from corrupting shared history file
         .args(args)
         .output()
         .expect("Failed to execute prtip")

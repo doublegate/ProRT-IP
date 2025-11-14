@@ -65,6 +65,12 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
 
 #### Development Documentation
 - [00-ARCHITECTURE.md](00-ARCHITECTURE.md) - System design and architecture (v3.1, 1,164 lines)
+- [TUI-ARCHITECTURE.md](TUI-ARCHITECTURE.md) - Terminal User Interface comprehensive guide (v1.0.0, 891 lines)
+  * Technology stack (ratatui 0.29, crossterm 0.28, tokio async runtime)
+  * Event-driven architecture (10K+ events/sec throughput)
+  * Widget system (4 production widgets: StatusBar, MainWidget, LogWidget, HelpWidget)
+  * State management patterns (Arc<RwLock<ScanState>>, thread-safe UIState)
+  * Performance characteristics (60 FPS rendering, <5ms frame time)
 - [04-IMPLEMENTATION-GUIDE.md](04-IMPLEMENTATION-GUIDE.md) - Code structure and patterns (1,339 lines)
 - [06-TESTING.md](06-TESTING.md) - Testing strategy and infrastructure (1,034 lines)
 - [28-CI-CD-COVERAGE.md](28-CI-CD-COVERAGE.md) - CI/CD and code coverage (1,115 lines)

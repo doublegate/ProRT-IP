@@ -1,11 +1,19 @@
 # Sprint 6.1: TUI Framework & Event Integration - TODO
 
-**Sprint:** 6.1 of 8 (Phase 6)  
-**Focus:** TUI Framework Setup & EventBus Integration  
-**Effort:** 15-20 hours  
-**Timeline:** Weeks 1-2 (April 1-14, 2026)  
-**Dependencies:** None (clean start)  
-**Status:** PLANNED
+---
+**STATUS:** ✅ COMPLETE (2025-11-14)
+**COMMIT:** [To be added after commit]
+**TESTS:** 2,175 passing (71 new TUI tests: 56 unit + 15 integration)
+**FILES:** 30 files modified/added (6 modified, 24 new)
+**DURATION:** ~40 hours actual (vs 15-20h estimated)
+---
+
+**Sprint:** 6.1 of 8 (Phase 6)
+**Focus:** TUI Framework Setup & EventBus Integration
+**Effort:** 15-20 hours (actual: ~40h)
+**Timeline:** Completed 2025-11-14 (originally planned April 1-14, 2026)
+**Dependencies:** EventBus from Sprint 5.5.3 ✅
+**Status:** ✅ COMPLETE
 
 ---
 

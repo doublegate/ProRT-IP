@@ -112,9 +112,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5.5 COMPLETE (6/6 sprints, 100%) | **v0.5.0-fix Released** (2025-11-09) | **2,175 Tests (100%)** | **54.92% Coverage** 📈
+**Current Phase:** Phase 5.5 COMPLETE (6/6 sprints, 100%) | **v0.5.1 Released** (2025-11-09) | **2,175 Tests (100%)** | **54.92% Coverage** 📈
 
-**Latest Release:** v0.5.0-fix (Released 2025-11-09 - Phase 5 + 5.5 COMPLETE: All Phase 5 features + Documentation/Examples, CLI Usability, Event System, Benchmarking, Profiling Framework, Evidence-Based Optimization)
+**Latest Release:** v0.5.1 (Released 2025-11-09 - Phase 5 + 5.5 COMPLETE: All Phase 5 features + Documentation/Examples, CLI Usability, Event System, Benchmarking, Profiling Framework, Evidence-Based Optimization)
 
 **Current Sprint:** Sprint 5.5.6 Performance Optimization (✅ COMPLETE 100% - Evidence-based verification, 260-420% ROI, 1,777+ lines analysis)
 
@@ -1222,7 +1222,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 
 ### Phase 5 Progress (✅ COMPLETE - 100%)
 
-**Status:** ✅ **Phase 5 COMPLETE (100%)** - All 10 core sprints delivered (v0.4.1-v0.5.0-fix, 2025-10-28 to 2025-11-09)
+**Status:** ✅ **Phase 5 COMPLETE (100%)** - All 10 core sprints delivered (v0.4.1-v0.5.1, 2025-10-28 to 2025-11-09)
 
 1. ✅ **Sprint 5.1: IPv6 Scanner Integration** - **COMPLETE** (v0.4.1, released 2025-10-29)
    - All 6 scanners support IPv4/IPv6 dual-stack (TCP Connect, SYN, UDP, Stealth, Discovery, Decoy)
@@ -1306,7 +1306,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
     - **Guide:** [docs/31-BENCHMARKING-GUIDE.md](docs/31-BENCHMARKING-GUIDE.md) (900+ lines)
     - **ROI Score:** 8.5/10 (comprehensive performance framework)
 
-11. ✅ **Sprint 5.10: Documentation Polish** - **COMPLETE** (v0.5.0-fix, released 2025-11-09)
+11. ✅ **Sprint 5.10: Documentation Polish** - **COMPLETE** (v0.5.1, released 2025-11-09)
     - **User Guide:** docs/32-USER-GUIDE.md (1,180 lines) - Installation to advanced usage
     - **Interactive Tutorials:** docs/33-TUTORIALS.md (760 lines) - 7 step-by-step walkthroughs
     - **Examples Gallery:** docs/34-EXAMPLES.md (680 lines) - 39 real-world scenarios
@@ -1316,7 +1316,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
     - **Total Documentation:** 50,510+ lines across all guides
     - **ROI Score:** 7.0/10 (professional polish, improved discoverability)
 
-**Phase 5 Complete:** v0.5.0-fix (Released 2025-11-09)
+**Phase 5 Complete:** v0.5.1 (Released 2025-11-09)
 
 **Progress Summary:**
 
@@ -1326,7 +1326,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 - **Tests:** 1,338 (Phase 4 end) → 1,601 (Phase 5 end) = +263 tests (+19.7% growth)
 - **Documentation:** 50,510+ total lines (12 comprehensive guides added in Phase 5)
 - **Phase 5 Guides:** 15,000+ lines (23-34-*.md series)
-- **Releases:** 10 production releases (v0.4.1-v0.5.0-fix)
+- **Releases:** 10 production releases (v0.4.1-v0.5.1)
 - **Performance Achievements:**
   - Rate Limiting: -1.8% overhead (industry-leading)
   - TLS Parsing: 1.33μs (37,594x faster than 50ms target)
@@ -1336,7 +1336,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 
 ---
 
-## 🎉 v0.5.0-fix Phase 5 + 5.5 COMPLETE - What's New
+## 🎉 v0.5.1 Phase 5 + 5.5 COMPLETE - What's New
 
 **Released:** November 9, 2025 | **Duration:** Phase 5 (11 days, 10 sprints) + Phase 5.5 (6 sprints, ~105h) | **Status:** Production Ready ✅
 
@@ -1369,7 +1369,7 @@ ProRT-IP now features the **fastest rate limiter** among all network scanners, w
 - Examples Gallery (680 lines) - 39 real-world scenarios
 - mdBook integration - Searchable reference
 
-### Quick Start - v0.5.0-fix Features
+### Quick Start - v0.5.1 Features
 
 ```bash
 # IPv6 scanning (100% coverage)
@@ -2379,7 +2379,7 @@ prtip -sS -p 80,443 target.com
 | **Phase 2** | Weeks 4-6 | Advanced Scanning | ✅ Complete |
 | **Phase 3** | Weeks 7-10 | Detection Systems | ✅ Complete |
 | **Phase 4** | Weeks 11-13 | Performance Optimization | ✅ Complete (Sprint 4.20 COMPLETE, v0.3.9) |
-| **Phase 5** | Weeks 14-16 | Advanced Features | ✅ Complete (10 sprints, v0.5.0-fix) + 5.5 Pre-TUI (6 sprints) |
+| **Phase 5** | Weeks 14-16 | Advanced Features | ✅ Complete (10 sprints, v0.5.1) + 5.5 Pre-TUI (6 sprints) |
 | **Phase 6** | Weeks 17-18 | User Interfaces (TUI) | 🎯 Next (8 sprints, comprehensive roadmap, Q2 2026) |
 | **Phase 7** | Weeks 19-20 | Release Preparation | Planned |
 | **Phase 8** | Beyond | Post-Release Features | Future |
@@ -2392,7 +2392,7 @@ prtip -sS -p 80,443 target.com
 - **M3**: Comprehensive Detection ✅ (2025-10-08)
 - **M4**: High-Performance Scanning ✅ (2025-10-12 - Phase 4 Core Complete)
 - **M4.5**: Evasion Techniques ✅ (2025-10-25 - Sprint 4.20 COMPLETE, v0.3.9 released)
-- **M5**: Advanced Features ✅ (2025-11-09 - Phase 5 + 5.5 COMPLETE, v0.5.0-fix)
+- **M5**: Advanced Features ✅ (2025-11-09 - Phase 5 + 5.5 COMPLETE, v0.5.1)
 - **M5.5**: Production Validation ✅ (2025-11-10 - Benchmark Suite, Profiling, Phase 6 Planning)
 - **M6**: TUI Interface (Phase 6 - Q2 2026, 8 sprints, comprehensive roadmap)
 - **M7**: Version 1.0 Release (Phase 7)

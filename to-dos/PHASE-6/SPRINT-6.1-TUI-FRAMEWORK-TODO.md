@@ -2,7 +2,7 @@
 
 ---
 **STATUS:** ✅ COMPLETE (2025-11-14)
-**COMMIT:** [To be added after commit]
+**COMMIT:** 9bf9da0 (feat(tui): Sprint 6.1 TUI Framework COMPLETE + Documentation Updates)
 **TESTS:** 2,175 passing (71 new TUI tests: 56 unit + 15 integration)
 **FILES:** 30 files modified/added (6 modified, 24 new)
 **DURATION:** ~40 hours actual (vs 15-20h estimated)

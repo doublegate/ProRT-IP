@@ -7,9 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.5.1] - 2025-11-14
+
+### Added
+
+#### Sprint 6.1: TUI Framework & Event Integration - Production Ready
+
+**Major Feature Release:** Complete Terminal User Interface (TUI) implementation with EventBus integration, 60 FPS rendering, and comprehensive widget system.
+
+**Strategic Achievement:** Establishes foundation for all Phase 6 TUI features with production-ready terminal interface for real-time scan visualization.
+
 ### Fixed
 
-#### [Internal] Test Infrastructure - History File Concurrency (2025-11-14)
+#### Test Infrastructure - History File Concurrency Issue Resolved
 
 **Problem:** 64 integration tests failing due to concurrent writes corrupting shared `~/.prtip/history.json` file during parallel test execution.
 

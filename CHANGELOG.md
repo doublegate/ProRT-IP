@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+#### [Internal] Test Infrastructure - History File Concurrency (2025-11-14)
+
+**Problem:** 64 integration tests failing due to concurrent writes corrupting shared `~/.prtip/history.json` file during parallel test execution.
+
+**Root Cause:** Multiple test processes writing to same history file simultaneously caused JSON corruption despite atomic write pattern. Error: `trailing characters at line 329 column 2`.
+
+**Solution:** Enable test isolation via `PRTIP_DISABLE_HISTORY` environment variable in test helper function (`run_prtip()` in `crates/prtip-cli/tests/common/mod.rs`). Leverages existing infrastructure from Sprint 5.5.2 (history feature already supported test isolation, tests just weren't using it).
+
+**Impact:**
+- ✅ +64 tests fixed (100% pass rate restored: 2,175/2,175 passing)
+- ✅ Zero production code changes (test infrastructure only)
+- ✅ 1-line fix: Added `.env("PRTIP_DISABLE_HISTORY", "1")` to Command builder
+- ✅ Tests now use in-memory-only history (no shared file writes)
+- ✅ User's `~/.prtip/history.json` remains uncorrupted during test runs
+
+**Fixed Test Suites:**
+- `test_cli_args`: 22/56 → 56/56 (+34 fixed)
+- `test_evasion_combined`: 4/10 → 10/10 (+6 fixed)
+- `test_idle_scan_cli`: 7/29 → 29/29 (+22 fixed)
+- `test_scan_types`: 15/17 → 17/17 (+2 fixed)
+
+**Quality:** All code quality checks passing (cargo fmt, clippy, build)
+
+---
+
 ## Sprint 6.1: TUI Framework & Event Integration - COMPLETE (100%)
 
 **Status:** COMPLETE (100%) | **Completed:** 2025-11-14 | **Duration:** Implementation already complete (from previous session)

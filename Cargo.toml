@@ -4,6 +4,7 @@ members = [
     "crates/prtip-network",
     "crates/prtip-scanner",
     "crates/prtip-cli",
+    "crates/prtip-tui",
 ]
 exclude = ["fuzz"]
 
@@ -67,6 +68,12 @@ sysinfo = "0.30"
 
 # Plugin system
 mlua = { version = "0.11", features = ["lua54", "vendored", "send"] }
+
+# TUI (Terminal User Interface)
+ratatui = "0.29"
+crossterm = { version = "0.28", features = ["event-stream"] }
+tui-input = "0.10"
+futures = "0.3"
 
 # Platform-specific (shared definitions)
 nix = { version = "0.27", features = ["user", "process"] }

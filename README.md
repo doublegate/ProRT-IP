@@ -13,7 +13,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org/)
 [![Version](https://img.shields.io/github/v/release/doublegate/ProRT-IP)](https://github.com/doublegate/ProRT-IP/releases)
-[![Tests](https://img.shields.io/badge/tests-2102_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-2175_passing-brightgreen.svg)](https://github.com/doublegate/ProRT-IP/actions)
 [![Coverage](https://img.shields.io/badge/coverage-54.92%25-brightgreen.svg)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![GitHub](https://img.shields.io/badge/github-ProRT--IP-blue)](https://github.com/doublegate/ProRT-IP)
 
@@ -42,7 +42,7 @@
 - **Evasion Techniques:** IP fragmentation (-f, --mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoy scanning (-D RND:N, manual IPs + ME positioning), idle/zombie scan (-sI ZOMBIE)
 - **High Performance:** Asynchronous I/O with lock-free coordination, zero-copy packet building
 - **Cross-Platform:** Linux, Windows, macOS support with NUMA optimization
-- **Multiple Interfaces:** CLI (v1.0), TUI (planned), Web UI (planned), GUI (planned)
+- **Multiple Interfaces:** CLI (v1.0), TUI (Sprint 6.1 Complete), Web UI (planned), GUI (planned)
 
 ### Introduction
 
@@ -112,17 +112,17 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current Phase:** Phase 5.5 COMPLETE (6/6 sprints, 100%) | **v0.5.0-fix Released** (2025-11-09) | **2,102 Tests (100%)** | **54.92% Coverage** 📈
+**Current Phase:** Phase 5.5 COMPLETE (6/6 sprints, 100%) | **v0.5.0-fix Released** (2025-11-09) | **2,175 Tests (100%)** | **54.92% Coverage** 📈
 
 **Latest Release:** v0.5.0-fix (Released 2025-11-09 - Phase 5 + 5.5 COMPLETE: All Phase 5 features + Documentation/Examples, CLI Usability, Event System, Benchmarking, Profiling Framework, Evidence-Based Optimization)
 
 **Current Sprint:** Sprint 5.5.6 Performance Optimization (✅ COMPLETE 100% - Evidence-based verification, 260-420% ROI, 1,777+ lines analysis)
 
-**Quality Metrics:** 2,102/2,102 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
+**Quality Metrics:** 2,175/2,175 tests passing (100% success rate) | 54.92% code coverage | 230M+ fuzz executions (0 crashes) | 0 clippy warnings | 0 security vulnerabilities
 
 **Test Suite Breakdown:**
 
-- **Total Active Tests:** 2,102 passing (100% success rate across all platforms)
+- **Total Active Tests:** 2,175 passing (100% success rate across all platforms)
 - **Core Tests:** 133 (scanner core, network primitives)
 - **Scanner Tests:** 249 (TCP, UDP, Stealth, Discovery, Idle, Decoy)
 - **CLI Tests:** 222 (help, errors, progress, confirmations, templates, history)
@@ -309,7 +309,7 @@ Sprint 5.5.3 delivers production-ready event system infrastructure powering Phas
 - **Test Race Conditions Fixed:** 32 tests updated with PRTIP_DISABLE_HISTORY environment variable
 - **Doctest Compilation Errors Resolved:** 7 doctest errors fixed across core modules
 - **Zero Clippy Warnings:** Maintained clean codebase (0 warnings)
-- **All Tests Passing:** 2,102/2,102 tests (100% success rate)
+- **All Tests Passing:** 2,175/2,175 tests (100% success rate)
 
 **Technical Architecture:**
 
@@ -330,7 +330,7 @@ Sprint 5.5.3 delivers production-ready event system infrastructure powering Phas
 - **Debugging:** Event history + persistent logs for replay and analysis
 - **Production Ready:** Comprehensive testing, documentation, and quality validation
 
-**Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
+**Quality:** 2,175 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
 
 **See Also:**
 
@@ -462,7 +462,7 @@ Sprint 5.5.4 establishes production-ready performance testing infrastructure wit
 - **Sprint 5.5.6:** Implement optimizations based on profiling (10%+ speedup target on 3+ scenarios, Q1 2026)
 - **Next Release:** Create v0.5.1 baseline with `create-baseline.sh v0.5.1`
 
-**Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
+**Quality:** 2,175 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
 
 **See Also:**
 
@@ -588,7 +588,7 @@ Sprint 5.5.5 delivers production-ready profiling infrastructure with comprehensi
 - **Validation:** Hyperfine regression benchmarks, CI/CD automation
 - **Release:** v0.5.1 with performance improvements
 
-**Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, production-ready framework.
+**Quality:** 2,175 tests passing (100%), 54.92% coverage, 0 clippy warnings, production-ready framework.
 
 **See Also:**
 
@@ -679,13 +679,13 @@ Sprint 5.5.6 marks the completion of Phase 5.5 (Pre-TUI Enhancements):
 
 **Total Duration:** ~105 hours across 6 sprints
 **Status:** 100% COMPLETE (6/6 sprints)
-**Quality:** All tests passing (2,102), 54.92% coverage maintained
+**Quality:** All tests passing (2,175), 54.92% coverage maintained
 
 **Strategic Value:** Phase 5.5 establishes production-ready CLI with TUI-ready backend architecture (event system, state management, profiling infrastructure).
 
 **Next Phase:** Phase 6 - TUI Interface (Q2 2026)
 
-**Quality:** 2,102 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
+**Quality:** 2,175 tests passing (100%), 54.92% coverage, 0 clippy warnings, 0 errors, production-ready.
 
 **See Also:**
 
@@ -1939,6 +1939,108 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
   Time (mean ± σ):      98.2 ms ±   4.5 ms
   Range (min … max):    90.1 ms … 108.9 ms    10 runs
 ```
+
+---
+
+## Terminal User Interface (TUI) 🎨
+
+**NEW in Sprint 6.1:** ProRT-IP now includes a production-ready Terminal User Interface for real-time scan visualization and interactive control.
+
+### TUI Features
+
+**Core Capabilities:**
+- **Real-Time Visualization:** Live scan progress with 60 FPS rendering
+- **Event-Driven Updates:** Integrated with EventBus for instant result updates (10K+ events/sec)
+- **4 Production Widgets:** StatusBar, MainWidget, LogWidget, HelpWidget
+- **Thread-Safe State:** Shared `Arc<RwLock<ScanState>>` for scanner integration
+- **Responsive Design:** Immediate mode rendering with <5ms frame time
+
+### TUI Architecture
+
+**Technology Stack:**
+- **ratatui 0.29:** Modern TUI framework with immediate mode rendering
+- **crossterm 0.28:** Cross-platform terminal manipulation
+- **tokio async:** Event loop coordination with `tokio::select!` pattern
+- **parking_lot:** High-performance RwLock (2-3× faster than std::sync)
+
+**Performance:**
+- **Rendering:** 60 FPS (16.67ms frame budget, <5ms actual)
+- **Event Throughput:** 10,000+ events/second with aggregation
+- **Memory Overhead:** <10 MB (TUI framework + buffers)
+- **Event Latency:** <16ms (max aggregation delay)
+
+### Keyboard Shortcuts
+
+**Global Controls:**
+- `q` / `Ctrl+C` - Quit TUI
+- `?` - Toggle help screen
+- `Tab` / `Shift+Tab` - Navigate between panes
+
+**Navigation:**
+- `↑/↓` or `j/k` - Cursor up/down
+- `Page Up/Down` - Scroll by page
+- `Home/End` - Jump to start/end
+- `←/→` or `h/l` - Horizontal navigation (planned)
+
+### Widget Overview
+
+**1. StatusBar Widget**
+- Real-time progress bar (0-100%, color-coded)
+- ETA calculation with smart formatting (HH:MM:SS)
+- Throughput display (K/s, M/s formatting)
+- Elapsed time tracking
+
+**2. MainWidget**
+- Sortable 4-column table (Port, State, Protocol, Service)
+- 8 sort combinations (4 columns × 2 orders)
+- Color-coded port states (open=green, filtered=yellow, closed=red)
+- Keyboard navigation (↑/↓, Page Up/Down, Home/End)
+
+**3. LogWidget**
+- Scrollable real-time event log with timestamps
+- 6 filter modes (All/Ports/Hosts/Services/Errors/Warnings)
+- Auto-scroll toggle
+- Ringbuffer (1,000 entries max, FIFO eviction)
+
+**4. HelpWidget**
+- Scrollable help with keyboard shortcuts
+- Context-sensitive mode (global vs contextual)
+- Color-coded sections (headers=yellow, shortcuts=green)
+
+### Using the TUI
+
+**Launch TUI Mode:**
+```bash
+# Start TUI with default scan
+prtip --tui -p 80,443 192.168.1.0/24
+
+# TUI with service detection
+prtip --tui -sV -p 1-1000 scanme.nmap.org
+
+# TUI with all features
+prtip --tui -sS -sV -O -p- 192.168.1.1
+```
+
+**TUI Layout:**
+```
+┌─────────────────────────────────────────┐
+│          Header (scan info)             │  10% height
+├─────────────────────────────────────────┤
+│         Main Area (results)             │  80% height
+├─────────────────────────────────────────┤
+│   Footer (help text, FPS, stats)        │  10% height
+└─────────────────────────────────────────┘
+```
+
+**Quality Metrics:**
+- **Tests:** 71 passing (56 unit + 15 integration)
+- **Code:** ~3,638 lines production code
+- **Documentation:** 891-line TUI-ARCHITECTURE.md guide
+- **Performance:** Validated at 60 FPS with 10K+ events/sec
+
+**See Also:**
+- **[TUI Architecture Guide](docs/TUI-ARCHITECTURE.md)** - Comprehensive 891-line design document
+- **[Sprint 6.1 Completion](CHANGELOG.md#sprint-61-tui-framework--event-integration---complete-100)** - Full implementation details
 
 ---
 

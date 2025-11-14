@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 3.1
-**Last Updated:** 2025-11-10
-**Current Phase:** Phase 5 + 5.5 COMPLETE (100%) | v0.5.0-fix RELEASED (2025-11-09) | **Phase 5 Final Benchmark Suite COMPLETE** | **Phase 6 Planning COMPLETE**
-**Current Sprint:** Phase 5 Final Validation ✅ COMPLETE (22 benchmarks, profiling, Phase 6 roadmap) | **Completed:** 2025-11-10
+**Version:** 3.2
+**Last Updated:** 2025-11-14
+**Current Phase:** Phase 6 IN PROGRESS (Sprint 6.1 COMPLETE) | v0.5.0-fix + TUI Framework
+**Current Sprint:** Sprint 6.1: TUI Framework ✅ COMPLETE (60 FPS, 10K+ events/sec, 71 tests, 4 widgets) | **Completed:** 2025-11-14
 
 ---
 
@@ -55,7 +55,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
 | **Version** | v0.5.0 | ✅ Current | Released 2025-11-07 (Phase 5 Milestone) |
-| **Tests** | 2,102 (100% passing) | ✅ Excellent | Phase 5 + Sprint 5.5.2-5.5.3 complete, all tests green |
+| **Tests** | 2,175 (100% passing) | ✅ Excellent | Phase 5 + Sprint 6.1 complete, all tests green (with PRTIP_DISABLE_HISTORY=1) |
 | **Coverage** | 54.92% | ✅ Good | Maintained from Sprint 5.6 |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |
 | **CI Platforms** | 7/7 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
@@ -77,7 +77,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Phase 3: Detection Systems** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 24/24 tasks |
 | **Phase 4: Performance** | ✅ COMPLETE | 2025-10-09 | 2025-10-26 | 22/22 sprints (4.1-4.22) |
 | **Phase 5: Advanced Features** | ✅ COMPLETE | 2025-10-28 | 2025-11-07 | 10/10 sprints (100%) |
-| **Phase 6: TUI** | 📋 Planned | Q2 2026 | TBD | 0/12 tasks |
+| **Phase 6: TUI** | 🔄 IN PROGRESS | 2025-11-14 | TBD | 1/12 tasks (Sprint 6.1 ✅) |
 | **Phase 7: Release** | 📋 Planned | Q3 2026 | TBD | 0/13 tasks |
 
 ### Phase 5 Sprint Progress (Detailed)
@@ -104,7 +104,13 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Phase 5 Final Benchmark Suite** | ✅ COMPLETE | ~8h | **22 benchmark scenarios** (8 core scans + 7 stealth + 4 scale + 2 timing + 1 OS fingerprint), **comprehensive profiling** (CPU/Memory/I/O), **3,200+ line report** (benchmarks/03-Phase5_Final-Bench/README.md), **830-line profiling summary**, **performance validation** (IPv6 -1.9% vs documented +15%, rate limit -1.6% validates -1.8%, network I/O 0.9-1.6% exceptional), **Phase 4→5 regression analysis**, **production readiness confirmed** | +0 (2,102) |
 | **Phase 6 Planning** | ✅ COMPLETE | ~8h | **Comprehensive 8-sprint roadmap** (2,107-line master plan, 3,500+ word report), **reference analysis** (11 ref-docs, 4 RustScan sources, 30 web research), **18 improvements** across 4 tiers (ROI-prioritized), **top 3 quick wins** (QW-1: Adaptive Batch Size ROI 5.33, QW-2: sendmmsg/recvmmsg ROI 4.00, QW-3: Memory-Mapped Streaming ROI 3.75), **expected gains: 35-70% throughput, 20-50% memory reduction** | +0 (2,102) |
 
-**Phase 5 Cumulative**: 2,102 tests (100% passing), Phase 5 complete: 10/10 sprints (100%) ✅, **Phase 5.5: 6/6 sprints (100%) ✅**, **Phase 5 Final Validation COMPLETE ✅**, **Phase 6 Planning COMPLETE ✅**, 10 major releases (v0.4.1-v0.5.0-fix) | **Phase 5 Milestone: v0.5.0-fix (2025-11-09)** | **Latest: Phase 5 Final Benchmark + Phase 6 Planning (2025-11-10)**
+### Phase 6 Sprint Progress
+
+| Sprint | Status | Duration | Deliverables | Tests Added |
+|--------|--------|----------|--------------|-------------|
+| **6.1: TUI Framework** | ✅ COMPLETE | ~40h | **ratatui 0.29 + crossterm 0.28** framework, **60 FPS rendering** (<5ms frame time), **10K+ events/sec** throughput, **4 production widgets** (StatusBar, MainWidget, LogWidget, HelpWidget), **Thread-safe state** (Arc<RwLock<ScanState>>), **Event-driven architecture** (tokio::select!), **891-line TUI-ARCHITECTURE.md**, **3,638 lines implementation**, **71 tests** (56 unit + 15 integration) | +73 (2,102→2,175) |
+
+**Phase 5 Cumulative**: 2,102 tests (100% passing), Phase 5 complete: 10/10 sprints (100%) ✅, **Phase 5.5: 6/6 sprints (100%) ✅**, **Phase 5 Final Validation COMPLETE ✅**, **Phase 6 Planning COMPLETE ✅**, 10 major releases (v0.4.1-v0.5.0-fix) | **Phase 5 Milestone: v0.5.0-fix (2025-11-09)** | **Latest: Sprint 6.1 TUI Framework COMPLETE (2025-11-14)**
 
 **Note:** † Sprint 5.6 added 149 tests but actual test count remained 1,728 until Sprint 5.7 due to test reorganization
 

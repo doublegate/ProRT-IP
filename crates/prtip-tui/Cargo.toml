@@ -1,0 +1,36 @@
+[package]
+name = "prtip-tui"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+
+[dependencies]
+# Internal dependencies
+prtip-core = { path = "../prtip-core" }
+
+# TUI framework
+ratatui = { workspace = true }
+crossterm = { workspace = true }
+tui-input = { workspace = true }
+futures = { workspace = true }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Concurrency
+parking_lot = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# Testing utilities
+uuid = { workspace = true, features = ["v4"] }

@@ -493,6 +493,9 @@ mod tests {
                 batch_size: None,
                 requested_ulimit: None,
                 numa_enabled: false,
+                adaptive_batch_enabled: false,
+                min_batch_size: 1,
+                max_batch_size: 1024,
             },
             scan: prtip_core::ScanConfig {
                 timeout_ms: 100,

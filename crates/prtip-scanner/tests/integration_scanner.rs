@@ -308,6 +308,9 @@ async fn test_scheduler_config_validation() {
         network: NetworkConfig {
             interface: None,
             source_port: None,
+            skip_cdn: false,
+            cdn_whitelist: None,
+            cdn_blacklist: None,
         },
         output: OutputConfig {
             format: OutputFormat::Json,
@@ -320,6 +323,9 @@ async fn test_scheduler_config_validation() {
             batch_size: None,
             requested_ulimit: None,
             numa_enabled: false,
+            adaptive_batch_enabled: false,
+            min_batch_size: 1,
+            max_batch_size: 1024,
         },
         evasion: Default::default(),
     };

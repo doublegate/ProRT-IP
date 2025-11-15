@@ -17,6 +17,7 @@ use crate::{
 use prtip_core::{
     Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb,
 };
+use prtip_network::{CdnDetector, CdnProvider};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -55,6 +56,7 @@ pub struct ScanScheduler {
     discovery: Arc<DiscoveryEngine>,
     rate_limiter: Option<Arc<AdaptiveRateLimiterV3>>,
     storage_backend: Arc<StorageBackend>,
+    cdn_detector: Option<CdnDetector>,
     #[cfg(feature = "numa")]
     numa_manager: Option<Arc<NumaManager>>,
 }
@@ -89,6 +91,47 @@ impl ScanScheduler {
             let rate_u64 = Some(rate as u64);
             AdaptiveRateLimiterV3::new(rate_u64)
         });
+
+        // Create CDN detector if skip_cdn is enabled
+        let cdn_detector = if config.network.skip_cdn {
+            // Helper function to parse provider names
+            fn parse_provider(name: &str) -> Option<CdnProvider> {
+                match name.to_lowercase().as_str() {
+                    "cloudflare" | "cf" => Some(CdnProvider::Cloudflare),
+                    "aws" | "cloudfront" | "amazon" => Some(CdnProvider::AwsCloudFront),
+                    "azure" | "microsoft" | "ms" => Some(CdnProvider::AzureCdn),
+                    "akamai" => Some(CdnProvider::Akamai),
+                    "fastly" => Some(CdnProvider::Fastly),
+                    "google" | "gcp" | "gcloud" => Some(CdnProvider::GoogleCloud),
+                    _ => None,
+                }
+            }
+
+            let detector = if let Some(ref whitelist) = config.network.cdn_whitelist {
+                // Parse whitelist providers
+                let providers: Vec<CdnProvider> = whitelist
+                    .iter()
+                    .filter_map(|name| parse_provider(name))
+                    .collect();
+                info!("CDN detection enabled with whitelist: {:?}", providers);
+                CdnDetector::with_whitelist(providers)
+            } else if let Some(ref blacklist) = config.network.cdn_blacklist {
+                // Parse blacklist providers
+                let providers: Vec<CdnProvider> = blacklist
+                    .iter()
+                    .filter_map(|name| parse_provider(name))
+                    .collect();
+                info!("CDN detection enabled with blacklist: {:?}", providers);
+                CdnDetector::with_blacklist(providers)
+            } else {
+                // Default: skip all CDN providers
+                info!("CDN detection enabled (all providers)");
+                CdnDetector::new()
+            };
+            Some(detector)
+        } else {
+            None
+        };
 
         // Initialize NUMA manager if enabled
         #[cfg(feature = "numa")]
@@ -149,6 +192,7 @@ impl ScanScheduler {
             discovery,
             rate_limiter,
             storage_backend,
+            cdn_detector,
             #[cfg(feature = "numa")]
             numa_manager,
         })
@@ -226,8 +270,48 @@ impl ScanScheduler {
         pcapng_writer: Option<Arc<std::sync::Mutex<crate::pcapng::PcapngWriter>>>,
     ) -> Result<Vec<ScanResult>> {
         // Expand target into individual IPs
-        let hosts = target.expand_hosts();
-        debug!("Target expanded to {} hosts", hosts.len());
+        let original_hosts = target.expand_hosts();
+        debug!("Target expanded to {} hosts", original_hosts.len());
+
+        // Filter CDN IPs if enabled
+        let hosts = if let Some(ref detector) = self.cdn_detector {
+            let mut filtered = Vec::new();
+            let mut skipped = 0;
+            let mut provider_counts: std::collections::HashMap<CdnProvider, usize> =
+                std::collections::HashMap::new();
+
+            for host in original_hosts {
+                if let Some(provider) = detector.detect(&host) {
+                    // Track statistics
+                    *provider_counts.entry(provider).or_insert(0) += 1;
+                    skipped += 1;
+                    debug!("Skipping CDN IP {}: {:?}", host, provider);
+                } else {
+                    filtered.push(host);
+                }
+            }
+
+            // Log statistics
+            if skipped > 0 {
+                let total = filtered.len() + skipped;
+                let reduction_pct = (skipped * 100) / total;
+                info!(
+                    "Filtered {} CDN IPs ({}% reduction): {:?}",
+                    skipped, reduction_pct, provider_counts
+                );
+            }
+
+            // Check if all hosts were filtered
+            if filtered.is_empty() {
+                debug!("All hosts filtered (CDN detection), skipping scan");
+                return Ok(Vec::new());
+            }
+
+            debug!("Scanning {} hosts after CDN filtering", filtered.len());
+            filtered
+        } else {
+            original_hosts
+        };
 
         // Parse port range from config
         // For Phase 1, we'll scan common ports if none specified
@@ -412,10 +496,49 @@ impl ScanScheduler {
         info!("Starting scan with host discovery");
 
         // Expand all targets to individual IPs
-        let mut all_ips = Vec::new();
+        let mut original_ips = Vec::new();
         for target in &targets {
-            all_ips.extend(target.expand_hosts());
+            original_ips.extend(target.expand_hosts());
         }
+
+        // Filter CDN IPs if enabled
+        let all_ips = if let Some(ref detector) = self.cdn_detector {
+            let mut filtered = Vec::new();
+            let mut skipped = 0;
+            let mut provider_counts: std::collections::HashMap<CdnProvider, usize> =
+                std::collections::HashMap::new();
+
+            for ip in original_ips {
+                if let Some(provider) = detector.detect(&ip) {
+                    // Track statistics
+                    *provider_counts.entry(provider).or_insert(0) += 1;
+                    skipped += 1;
+                    debug!("Skipping CDN IP {}: {:?}", ip, provider);
+                } else {
+                    filtered.push(ip);
+                }
+            }
+
+            // Log statistics
+            if skipped > 0 {
+                let total = filtered.len() + skipped;
+                let reduction_pct = (skipped * 100) / total;
+                info!(
+                    "Filtered {} CDN IPs before discovery ({}% reduction): {:?}",
+                    skipped, reduction_pct, provider_counts
+                );
+            }
+
+            // Check if all hosts were filtered
+            if filtered.is_empty() {
+                info!("All hosts filtered (CDN detection), skipping scan");
+                return Ok(Vec::new());
+            }
+
+            filtered
+        } else {
+            original_ips
+        };
 
         info!("Discovering live hosts among {} addresses", all_ips.len());
 
@@ -805,6 +928,9 @@ mod tests {
             network: NetworkConfig {
                 interface: None,
                 source_port: None,
+                skip_cdn: false,
+                cdn_whitelist: None,
+                cdn_blacklist: None,
             },
             output: OutputConfig {
                 format: OutputFormat::Json,
@@ -817,6 +943,9 @@ mod tests {
                 batch_size: None,
                 requested_ulimit: None,
                 numa_enabled: false,
+                adaptive_batch_enabled: false,
+                min_batch_size: 1,
+                max_batch_size: 1024,
             },
             evasion: Default::default(),
         }

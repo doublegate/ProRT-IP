@@ -36,10 +36,104 @@
 //! # }
 //! ```
 
+use crate::adaptive_batch::{AdaptiveBatchSizer, AdaptiveConfig};
 use prtip_core::{Error, Result};
 
 /// Maximum batch size for sendmmsg
 pub const MAX_BATCH_SIZE: usize = 1024;
+
+/// Platform-specific batch capabilities
+///
+/// Provides runtime detection of sendmmsg/recvmmsg support and
+/// platform-appropriate batch sizing.
+///
+/// # Platform Support
+///
+/// - **Linux**: Full batch support with sendmmsg/recvmmsg (max 1024 packets)
+/// - **Windows/macOS**: Sequential fallback (batch size 1)
+///
+/// # Example
+///
+/// ```
+/// use prtip_network::PlatformCapabilities;
+///
+/// let caps = PlatformCapabilities::detect();
+/// if caps.supports_batching() {
+///     println!("Batch I/O supported: max {} packets", caps.max_batch_size);
+/// } else {
+///     println!("Falling back to sequential I/O on {}", caps.platform);
+/// }
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlatformCapabilities {
+    /// Whether sendmmsg() is available (Linux only)
+    pub has_sendmmsg: bool,
+    /// Whether recvmmsg() is available (Linux only)
+    pub has_recvmmsg: bool,
+    /// Maximum batch size (1024 on Linux, 1 on others)
+    pub max_batch_size: usize,
+    /// Platform name ("linux", "windows", "macos", etc.)
+    pub platform: String,
+}
+
+impl PlatformCapabilities {
+    /// Detect platform capabilities at runtime
+    ///
+    /// Automatically detects sendmmsg/recvmmsg support based on the
+    /// target operating system.
+    ///
+    /// # Returns
+    ///
+    /// Platform capabilities with appropriate batch sizing
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use prtip_network::PlatformCapabilities;
+    ///
+    /// let caps = PlatformCapabilities::detect();
+    /// assert!(caps.max_batch_size >= 1);
+    /// ```
+    pub fn detect() -> Self {
+        #[cfg(target_os = "linux")]
+        {
+            Self {
+                has_sendmmsg: true,
+                has_recvmmsg: true,
+                max_batch_size: MAX_BATCH_SIZE,
+                platform: "linux".to_string(),
+            }
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        {
+            Self {
+                has_sendmmsg: false,
+                has_recvmmsg: false,
+                max_batch_size: 1, // Sequential fallback
+                platform: std::env::consts::OS.to_string(),
+            }
+        }
+    }
+
+    /// Check if batch operations are supported
+    ///
+    /// Returns `true` if both sendmmsg and recvmmsg are available.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use prtip_network::PlatformCapabilities;
+    ///
+    /// let caps = PlatformCapabilities::detect();
+    /// if caps.supports_batching() {
+    ///     println!("Using batch I/O for optimal performance");
+    /// }
+    /// ```
+    pub fn supports_batching(&self) -> bool {
+        self.has_sendmmsg && self.has_recvmmsg
+    }
+}
 
 /// Packet batch for sendmmsg
 pub struct PacketBatch {
@@ -109,6 +203,8 @@ pub struct BatchSender {
     _interface: String,
     /// Current packet batch
     batch: PacketBatch,
+    /// Optional adaptive batch sizer for dynamic sizing
+    adaptive_sizer: Option<AdaptiveBatchSizer>,
     /// Platform-specific sender
     #[cfg(target_os = "linux")]
     linux_sender: Option<LinuxBatchSender>,
@@ -121,16 +217,27 @@ impl BatchSender {
     ///
     /// * `interface` - Network interface name (e.g., "eth0")
     /// * `batch_size` - Maximum number of packets per batch (capped at 1024)
+    /// * `adaptive_config` - Optional adaptive batch sizing configuration
     ///
     /// # Example
     ///
     /// ```no_run
-    /// use prtip_network::BatchSender;
+    /// use prtip_network::{BatchSender, AdaptiveConfig};
     ///
-    /// let sender = BatchSender::new("eth0", 64).unwrap();
+    /// // Without adaptive sizing
+    /// let sender = BatchSender::new("eth0", 64, None).unwrap();
+    ///
+    /// // With adaptive sizing
+    /// let config = AdaptiveConfig::default();
+    /// let sender = BatchSender::new("eth0", 64, Some(config)).unwrap();
     /// ```
-    pub fn new(interface: &str, batch_size: usize) -> Result<Self> {
+    pub fn new(
+        interface: &str,
+        batch_size: usize,
+        adaptive_config: Option<AdaptiveConfig>,
+    ) -> Result<Self> {
         let batch = PacketBatch::new(batch_size);
+        let adaptive_sizer = adaptive_config.map(AdaptiveBatchSizer::new);
 
         #[cfg(target_os = "linux")]
         let linux_sender = Some(LinuxBatchSender::new(interface)?);
@@ -138,6 +245,7 @@ impl BatchSender {
         Ok(Self {
             _interface: interface.to_string(),
             batch,
+            adaptive_sizer,
             #[cfg(target_os = "linux")]
             linux_sender,
         })
@@ -196,6 +304,31 @@ impl BatchSender {
                 .ok_or_else(|| Error::Network("Linux sender not initialized".to_string()))?;
 
             let sent = linux.send_batch(&self.batch, retries).await?;
+
+            // Update adaptive sizer if enabled
+            if let Some(ref mut sizer) = self.adaptive_sizer {
+                // Record packets sent for throughput tracking
+                sizer.record_send(sent);
+
+                // Update batch size based on performance
+                let new_batch_size = sizer.update();
+                if new_batch_size != self.batch.capacity {
+                    tracing::debug!(
+                        "Adaptive batch sizing: {} -> {} packets (throughput-based adjustment)",
+                        self.batch.capacity,
+                        new_batch_size
+                    );
+                    self.batch.capacity = new_batch_size;
+
+                    // Resize Vec capacity to match (only if increasing)
+                    if new_batch_size > self.batch.packets.capacity() {
+                        self.batch
+                            .packets
+                            .reserve(new_batch_size - self.batch.packets.capacity());
+                    }
+                }
+            }
+
             self.batch.clear();
             Ok(sent)
         }
@@ -816,6 +949,7 @@ mod tests {
         let mut sender = BatchSender {
             _interface: "lo".to_string(),
             batch: PacketBatch::new(batch_size),
+            adaptive_sizer: None,
             #[cfg(target_os = "linux")]
             linux_sender: None, // Skip actual socket creation
         };
@@ -836,6 +970,7 @@ mod tests {
         let mut sender = BatchSender {
             _interface: "lo".to_string(),
             batch: PacketBatch::new(2),
+            adaptive_sizer: None,
             #[cfg(target_os = "linux")]
             linux_sender: None,
         };
@@ -940,4 +1075,84 @@ mod tests {
     // 2. Actual network interface
     // 3. Test packets to receive
     // These are better suited for docs/15-TEST-ENVIRONMENT.md scenarios
+
+    // ============= Platform Capabilities Tests =============
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_platform_capabilities_linux() {
+        let caps = PlatformCapabilities::detect();
+
+        assert!(caps.has_sendmmsg, "Linux should support sendmmsg");
+        assert!(caps.has_recvmmsg, "Linux should support recvmmsg");
+        assert_eq!(
+            caps.max_batch_size, MAX_BATCH_SIZE,
+            "Linux should use MAX_BATCH_SIZE (1024)"
+        );
+        assert_eq!(caps.platform, "linux", "Platform should be 'linux'");
+        assert!(
+            caps.supports_batching(),
+            "Linux should support batch operations"
+        );
+    }
+
+    #[test]
+    #[cfg(not(target_os = "linux"))]
+    fn test_platform_capabilities_fallback() {
+        let caps = PlatformCapabilities::detect();
+
+        assert!(
+            !caps.has_sendmmsg,
+            "Non-Linux platforms should not support sendmmsg"
+        );
+        assert!(
+            !caps.has_recvmmsg,
+            "Non-Linux platforms should not support recvmmsg"
+        );
+        assert_eq!(
+            caps.max_batch_size, 1,
+            "Non-Linux platforms should fall back to batch size 1"
+        );
+        assert!(
+            !caps.platform.is_empty(),
+            "Platform name should not be empty"
+        );
+        assert!(
+            !caps.supports_batching(),
+            "Non-Linux platforms should not support batch operations"
+        );
+
+        // Verify platform name is set correctly
+        #[cfg(target_os = "windows")]
+        assert_eq!(caps.platform, "windows");
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(caps.platform, "macos");
+    }
+
+    #[test]
+    fn test_platform_capabilities_supports_batching() {
+        let caps = PlatformCapabilities::detect();
+
+        // supports_batching() should return true only if both sendmmsg and recvmmsg are available
+        let expected = caps.has_sendmmsg && caps.has_recvmmsg;
+        assert_eq!(
+            caps.supports_batching(),
+            expected,
+            "supports_batching() should match (has_sendmmsg && has_recvmmsg)"
+        );
+
+        // Verify consistency with max_batch_size
+        if caps.supports_batching() {
+            assert!(
+                caps.max_batch_size > 1,
+                "Batching platforms should have max_batch_size > 1"
+            );
+        } else {
+            assert_eq!(
+                caps.max_batch_size, 1,
+                "Non-batching platforms should have max_batch_size = 1"
+            );
+        }
+    }
 }

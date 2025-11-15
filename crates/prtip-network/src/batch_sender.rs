@@ -23,7 +23,8 @@
 //! use prtip_core::Result;
 //!
 //! # async fn example() -> Result<()> {
-//! let mut sender = BatchSender::new("eth0", 32)?;
+//! // Create BatchSender without adaptive sizing
+//! let mut sender = BatchSender::new("eth0", 32, None)?;
 //!
 //! // Add packets to batch
 //! sender.add_packet(vec![0u8; 64])?;
@@ -259,7 +260,7 @@ impl BatchSender {
     ///
     /// ```no_run
     /// # use prtip_network::BatchSender;
-    /// # let mut sender = BatchSender::new("eth0", 32).unwrap();
+    /// # let mut sender = BatchSender::new("eth0", 32, None).unwrap();
     /// let packet = vec![0u8; 64];
     /// if sender.add_packet(packet).unwrap() {
     ///     // Batch is full, flush it
@@ -285,7 +286,7 @@ impl BatchSender {
     /// ```no_run
     /// # async fn example() -> prtip_core::Result<()> {
     /// # use prtip_network::BatchSender;
-    /// # let mut sender = BatchSender::new("eth0", 32)?;
+    /// # let mut sender = BatchSender::new("eth0", 32, None)?;
     /// let sent = sender.flush(3).await?;
     /// println!("Sent {} packets", sent);
     /// # Ok(())

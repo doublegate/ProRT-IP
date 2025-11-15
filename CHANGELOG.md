@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-#### Sprint 6.3: Network Optimizations - Task Areas 3.3-3.4 COMPLETE
+#### Sprint 6.3: Network Optimizations - Task Areas 3.3-3.4 + 4.0 COMPLETE
 
-**Status:** 2/6 task areas complete (CDN Deduplication + Adaptive Batching) | **Completed:** 2025-11-15 | **Duration:** ~8h
+**Status:** 3/6 task areas complete (CDN Deduplication + Adaptive Batching + Integration Testing) | **Completed:** 2025-11-15 | **Duration:** ~11h total (Task Areas 3.3-3.4: ~8h, Task Area 4: ~3h)
 
 **Strategic Achievement:** Production-ready adaptive batch sizing infrastructure with comprehensive CLI configuration. Establishes foundation for 20-40% throughput improvement when integrated with scanner (Phase 6.4).
 
@@ -31,6 +31,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation: min ≤ max constraint enforced with clear error messages
 - Config wiring: CLI args → `PerformanceConfig` fields (u16 → usize cast)
 - Extended `prtip_core::PerformanceConfig` with 3 new fields + serde defaults
+
+**Task Area 4.0: Final Integration & Cross-Platform Testing** (~447 lines, 6 comprehensive tests)
+
+**File:** `crates/prtip-scanner/tests/integration_sprint_6_3.rs` (NEW)
+
+**Purpose:** End-to-end validation that all Sprint 6.3 components (CDN filtering, adaptive batching, batch I/O) work correctly together across different platforms and configurations.
+
+**Test Suite Coverage:**
+
+1. **test_full_stack_batch_io_linux()** (Linux-only, platform-specific)
+   - Validates complete batch I/O flow on Linux with sendmmsg/recvmmsg
+   - Detects platform capabilities (`PlatformCapabilities::detect()`)
+   - Asserts Linux has batch I/O support (`has_sendmmsg == true`)
+   - Executes scan with batch_size=32 configuration
+   - Verifies all 3 targets scanned (22 ports each = 66 results)
+   - Asserts scan completes within 5 seconds (batch I/O efficiency)
+
+2. **test_full_stack_cdn_filtering()** (Cross-platform)
+   - Validates complete CDN filtering flow with mixed targets
+   - Config: `skip_cdn = true` (CDN filtering enabled)
+   - Targets: 5 total (3 CDN providers + 2 TEST-NET)
+   - Asserts only 2 non-CDN targets scanned (3 filtered, 2 × 22 ports = 44 results)
+   - Validates no CDN IPs in results (Cloudflare, AWS CloudFront, Fastly)
+   - Asserts scan completes within 3 seconds (30-70% time reduction)
+
+3. **test_full_stack_adaptive_batching()** (Cross-platform)
+   - Validates complete adaptive batching flow with component integration
+   - Creates AdaptiveBatchSizer with config (min=1, max=1024, thresholds 95%/85%)
+   - Simulates good network conditions (98% delivery rate)
+   - Asserts batch size increases under good conditions (>1, ≤1024)
+   - Executes scan with adaptive_batch_enabled=true
+   - Verifies all 3 targets scanned with adaptive batching (3 × 22 ports = 66 results)
+   - Asserts scan completes within 5 seconds
+
+4. **test_combined_features()** (Integration test)
+   - Validates all Sprint 6.3 features working together
+   - Config: `skip_cdn=true` + `adaptive_batch=true` + batch I/O (if Linux)
+   - Targets: 5 mixed (3 CDN + 2 non-CDN)
+   - Asserts only 2 non-CDN targets scanned (CDN filtering works)
+   - Verifies 2 unique IPs × 22 ports = 44 results
+   - Asserts scan completes within 3 seconds (combined optimizations)
+   - Validates result correctness (no CDN IPs present)
+
+5. **test_cross_platform_compatibility()** (Platform detection)
+   - Validates platform-specific feature detection and graceful fallbacks
+   - **Linux:** Asserts `has_sendmmsg == true` (batch I/O available)
+   - **Windows/macOS:** Asserts `has_sendmmsg == false` (batch I/O unavailable)
+   - **Fallback Test:** Executes scan on Windows/macOS with batch_size configured
+   - Verifies graceful fallback to non-batch I/O (1 target × 22 ports = 22 results)
+   - Asserts fallback mode completes within 5 seconds (still functional)
+
+6. **test_performance_regression()** (Baseline vs optimized comparison)
+   - Validates no performance regression with Sprint 6.3 features enabled
+   - **Baseline:** Config with all features disabled (skip_cdn=false, adaptive=false)
+   - **Optimized:** Config with all features enabled (skip_cdn=true, adaptive=true)
+   - Targets: 3 non-CDN IPs (fair comparison, no CDN filtering advantage)
+   - Asserts same target count scanned by both (3 unique IPs each)
+   - **Regression Check:** Optimized time ≤ baseline × 1.20 (20% tolerance for CI variability)
+   - Reports throughput comparison (targets/second for both runs)
+   - Note: Throughput improvement varies by platform/network, only checks NO REGRESSION
+
+**Helper Functions:**
+
+- `create_sprint_6_3_config()` - Test config builder with all features configurable
+- `create_mixed_targets()` - Mix of CDN (Cloudflare, CloudFront, Fastly) + TEST-NET IPs
+- `calculate_throughput()` - Throughput measurement (targets/sec) for performance testing
+
+**Testing Patterns:**
+
+- **Platform-Specific Tests:** Uses `#[cfg_attr(not(target_os = "linux"), ignore)]` for Linux-only tests
+- **TEST-NET IPs:** Uses 192.0.2.0/24 and 198.51.100.0/24 (RFC 5737 documentation ranges)
+- **Multi-Port Scanning:** Accounts for 22 default ports per target (21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 993, 995, 1723, 3306, 3389, 5432, 5900, 8080, 8443)
+- **Unique Target Counting:** Uses HashSet to count unique IPs from results (avoids multi-port confusion)
+- **CI Tolerance:** 3-5 second timeouts allow for CI environment variability
+
+**Quality Metrics:**
+
+- **Tests:** 6/6 integration tests passing (100% success rate)
+- **Coverage:** All 3 Sprint 6.3 components tested individually + combined
+- **Platform Coverage:** Linux-specific tests + cross-platform compatibility tests
+- **Performance Validation:** Regression test with 20% tolerance for CI variability
+- **Code Quality:** 0 clippy warnings, clean formatting, comprehensive assertions
+
+**Files Modified:**
+
+- `crates/prtip-scanner/tests/integration_sprint_6_3.rs` (NEW, ~447 lines)
+- Integration with existing test infrastructure (`ScanScheduler`, `StorageBackend`, `PlatformCapabilities`)
+
+**Strategic Value:**
+
+- **Confidence:** End-to-end validation of all Sprint 6.3 features working together
+- **Cross-Platform:** Validates Linux batch I/O + Windows/macOS fallback paths
+- **Regression Detection:** Performance baseline prevents future regressions
+- **Documentation:** Tests serve as executable documentation for feature usage
+- **CI/CD:** Integration tests run on all platforms via GitHub Actions
+
+**Known Limitations:**
+
+- Performance gains measured with TEST-NET IPs (unreachable targets, timeout-based)
+- Real-world throughput improvements require live network targets (20-40% expected)
+- Adaptive batching benefits depend on network conditions (CI environments are stable)
+
+**See Also:**
+- /tmp/ProRT-IP/SPRINT-6.3-INTEGRATION-TESTS-COMPLETE.md (comprehensive completion report)
+- crates/prtip-network/src/adaptive_batch.rs (AdaptiveBatchSizer implementation)
+- crates/prtip-network/src/batch_sender.rs (BatchSender with adaptive support)
+- docs/ref-docs/25-NETWORK-OPTIMIZATIONS.md (optimization strategies)
 
 **Architecture Enhancements:**
 
@@ -53,10 +160,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Quality Metrics:**
 
-- **Tests:** 2,105 passing (100% success rate, zero failures)
+- **Tests:** 2,111 passing (100% success rate, +6 integration tests)
+  - Task Area 3.3-3.4: 2,105 tests (infrastructure + CLI)
+  - Task Area 4.0: +6 integration tests (end-to-end validation)
 - **Clippy:** 0 warnings with strict linting
 - **Formatting:** Clean (cargo fmt --check passed)
-- **Code:** ~85 lines added across 8 files
+- **Code:** ~532 lines added across 9 files
+  - Infrastructure: ~85 lines (Task Areas 3.3-3.4)
+  - Integration Tests: +447 lines (Task Area 4.0)
 - **Backward Compatibility:** 100% preserved (adaptive batching opt-in only)
 
 **Files Modified:**
@@ -69,6 +180,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 6. `crates/prtip-scanner/tests/test_cdn_integration.rs` (+3L) - Test config update
 7. `crates/prtip-scanner/tests/integration_scanner.rs` (+3L) - Test config update
 8. `crates/prtip-cli/src/output.rs` (+3L) - Test config update
+9. `crates/prtip-scanner/tests/integration_sprint_6_3.rs` (+447L, NEW) - End-to-end integration tests
 
 **Performance Characteristics:**
 

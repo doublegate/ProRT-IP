@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **CI/CD: Added Code Coverage with cargo-tarpaulin** (2025-11-15)
+  - Added cargo-tarpaulin installation step to CI workflow (Linux/macOS only)
+  - Added coverage generation step using `cargo tarpaulin --workspace --locked --lib --bins --tests`
+  - Generates Cobertura XML output in `./coverage/` directory
+  - Changed Codecov upload from `test-results-action@v1` to `codecov-action@v4` (correct action for coverage data)
+  - Excludes `prtip-network` and `prtip-scanner` crates (consistent with existing test strategy)
+  - Windows platform excluded (limited test coverage already, tarpaulin Linux/macOS only)
+  - Coverage timeout: 300 seconds (5 minutes) to prevent CI hangs
+  - **Impact:** Automated code coverage reporting to Codecov on every CI run
+
 ### Fixed
 
 - **Test Infrastructure: macOS batch_coordination.rs Test Failures** (2025-11-15)

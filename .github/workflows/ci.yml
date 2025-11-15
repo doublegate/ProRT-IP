@@ -170,11 +170,28 @@ jobs:
       # Release artifacts are built in the dedicated release.yml workflow.
       # CI purpose is testing (debug builds sufficient for test validation).
 
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+      - name: Install cargo-tarpaulin
+        if: matrix.os != 'windows-latest'
+        run: cargo install cargo-tarpaulin
+
+      - name: Generate test coverage with tarpaulin
+        if: matrix.os != 'windows-latest'
+        run: |
+          cargo tarpaulin --workspace --locked --lib --bins --tests \
+            --exclude prtip-network --exclude prtip-scanner \
+            --out Xml --output-dir ./coverage \
+            --timeout 300
+        env:
+          PRTIP_DISABLE_HISTORY: "1"
+
+      - name: Upload test coverage to Codecov
+        if: ${{ !cancelled() && matrix.os != 'windows-latest' }}
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/cobertura.xml
+          fail_ci_if_error: false
+          verbose: true
 
   # Job 4: Security audit
   security_audit:

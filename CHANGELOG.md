@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+(No unreleased changes yet)
+
+---
+
+## [0.5.2] - 2025-11-14
+
+### Added
+
 #### Sprint 6.2: Live Dashboard & Real-Time Metrics - COMPLETE (100%)
 
 **Status:** 6/6 tasks complete | **Completed:** 2025-11-14 | **Duration:** ~21.5h

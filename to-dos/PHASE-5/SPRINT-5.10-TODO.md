@@ -300,7 +300,7 @@ docs/
 │   ├── README.md
 │   ├── guides/
 │   │   ├── 23-ipv6.md -> ../23-IPv6-GUIDE.md
-│   │   ├── 24-service-detection.md -> ../24-SERVICE-DETECTION.md
+│   │   ├── 24-service-detection.md -> ../24-SERVICE-DETECTION-GUIDE.md
 │   │   ├── ...
 │   │   ├── 32-user-guide.md -> ../32-USER-GUIDE.md
 │   │   ├── 33-tutorials.md -> ../33-TUTORIALS.md
@@ -1085,7 +1085,7 @@ docs/
 
 ### Technical Guides
 - **[IPv6 Guide](docs/23-IPv6-GUIDE.md)** - Complete IPv6 support (1,958 lines)
-- **[Service Detection](docs/24-SERVICE-DETECTION.md)** - 85-90% accuracy (659 lines)
+- **[Service Detection](docs/24-SERVICE-DETECTION-GUIDE.md)** - 85-90% accuracy (659 lines)
 - **[Idle Scan Guide](docs/25-IDLE-SCAN-GUIDE.md)** - Nmap parity (650 lines)
 - **[Rate Limiting](docs/26-RATE-LIMITING-GUIDE.md)** - Industry-leading -1.8% (v2.0.0)
 - **[TLS Certificate](docs/27-TLS-CERTIFICATE-GUIDE.md)** - X.509v3 analysis (2,160 lines)

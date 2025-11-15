@@ -29,18 +29,18 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 | **[11-RELEASE-PROCESS.md](11-RELEASE-PROCESS.md)** | Guide to the automated release process | Maintainers |
 | **[12-BENCHMARKING-GUIDE.md](12-BENCHMARKING-GUIDE.md)** | How to run and interpret performance benchmarks | Performance engineers, developers |
 | **[13-PLATFORM-SUPPORT.md](13-PLATFORM-SUPPORT.md)** | Comprehensive platform support guide with installation instructions | End users, system administrators |
-| **[14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md)** | Nmap command-line flag compatibility guide | Nmap users |
+| **[14-NMAP-COMPATIBILITY.md](14-NMAP-COMPATIBILITY.md)** | Nmap command-line flag compatibility guide | Nmap users |
 | **[15-PHASE4-COMPLIANCE.md](15-PHASE4-COMPLIANCE.md)** | Documentation of compliance with Phase 4 requirements | Project managers, stakeholders |
 | **[16-REGRESSION-FIX-STRATEGY.md](16-REGRESSION-FIX-STRATEGY.md)** | Strategy for fixing performance regressions | Developers |
 | **[17-TESTING-INFRASTRUCTURE.md](17-TESTING-INFRASTRUCTURE.md)** | Overview of the testing infrastructure | Developers, QA engineers |
-| **[18-EFFICIENCY_REPORT.md](18-EFFICIENCY_REPORT.md)** | Report on the efficiency of the scanner | Performance engineers, stakeholders |
+| **[18-EFFICIENCY-REPORT.md](18-EFFICIENCY-REPORT.md)** | Report on the efficiency of the scanner | Performance engineers, stakeholders |
 | **[19-EVASION-GUIDE.md](19-EVASION-GUIDE.md)** | Guide to network evasion techniques | Security engineers, penetration testers |
 | **[20-PHASE4-ENHANCEMENTS.md](20-PHASE4-ENHANCEMENTS.md)** | Documentation of enhancements made in Phase 4 | Developers, project managers |
 | **[21-PERFORMANCE-GUIDE.md](21-PERFORMANCE-GUIDE.md)** | Guide to performance tuning and optimization | Performance engineers, developers |
-| **[22.1-CLAUDE-POST-PHASE4_1of2.md](22.1-CLAUDE-POST-PHASE4_1of2.md)** | Claude's notes and observations after Phase 4 (Part 1) | AI developers, project managers |
-| **[22.2-CLAUDE-POST-PHASE4_2of2.md](22.2-CLAUDE-POST-PHASE4_2of2.md)** | Claude's notes and observations after Phase 4 (Part 2) | AI developers, project managers |
+| **[archive/PHASE-4-CLAUDE-NOTES-PART-1.md](archive/PHASE-4-CLAUDE-NOTES-PART-1.md)** | Claude's notes and observations after Phase 4 (Part 1) | AI developers, project managers |
+| **[archive/PHASE-4-CLAUDE-NOTES-PART-2.md](archive/PHASE-4-CLAUDE-NOTES-PART-2.md)** | Claude's notes and observations after Phase 4 (Part 2) | AI developers, project managers |
 | **[23-IPv6-GUIDE.md](23-IPv6-GUIDE.md)** | Comprehensive guide to IPv6 scanning | All users |
-| **[24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md)** | Guide to service detection and fingerprinting | All users |
+| **[24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md)** | Guide to service detection and fingerprinting | All users |
 | **[25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md)** | Guide to performing idle (zombie) scans | Security engineers, penetration testers |
 | **[26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md)** | Guide to the advanced rate limiting features | All users |
 | **[DATABASE.md](DATABASE.md)** | Guide to the SQLite database schema and query interface | Developers, analysts |
@@ -386,7 +386,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 
 ---
 
-### 14-NMAP_COMPATIBILITY.md
+### 14-NMAP-COMPATIBILITY.md
 
 **Purpose:** Nmap command-line flag compatibility guide
 
@@ -453,7 +453,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 
 ---
 
-### 18-EFFICIENCY_REPORT.md
+### 18-EFFICIENCY-REPORT.md
 
 **Purpose:** Report on the efficiency of the scanner
 
@@ -523,7 +523,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 
 ---
 
-### 22.1-CLAUDE-POST-PHASE4_1of2.md
+### archive/PHASE-4-CLAUDE-NOTES-PART-1.md
 
 **Purpose:** Claude's notes and observations after Phase 4 (Part 1)
 
@@ -539,7 +539,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 
 ---
 
-### 22.2-CLAUDE-POST-PHASE4_2of2.md
+### archive/PHASE-4-CLAUDE-NOTES-PART-2.md
 
 **Purpose:** Claude's notes and observations after Phase 4 (Part 2)
 
@@ -571,7 +571,7 @@ This directory contains comprehensive documentation for the ProRT-IP WarScan pro
 
 ---
 
-### 24-SERVICE-DETECTION.md
+### 24-SERVICE-DETECTION-GUIDE.md
 
 **Purpose:** Guide to service detection and fingerprinting
 

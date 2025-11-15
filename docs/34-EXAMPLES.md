@@ -951,7 +951,7 @@ msfconsole
 
 **Technical Guides:**
 - **IPv6:** [23-IPv6-GUIDE.md](23-IPv6-GUIDE.md) - Complete IPv6 support
-- **Service Detection:** [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md) - Deep dive
+- **Service Detection:** [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) - Deep dive
 - **Idle Scan:** [25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md) - Anonymous scanning
 - **Rate Limiting:** [26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md) - V3 optimization
 - **TLS Certificates:** [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md) - SSL/TLS analysis

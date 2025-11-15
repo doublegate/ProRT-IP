@@ -85,7 +85,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | Sprint | Status | Duration | Deliverables | Tests Added |
 |--------|--------|----------|--------------|-------------|
 | 5.1: IPv6 Completion | ✅ COMPLETE | 30h | 6/6 scanners, 23-IPv6-GUIDE.md (1,958L), 6 CLI flags | +51 (1,338→1,389) |
-| 5.2: Service Detection | ✅ COMPLETE | 12h | 5 parsers (85-90% detection), 24-SERVICE-DETECTION.md (659L) | +23 (1,389→1,412) |
+| 5.2: Service Detection | ✅ COMPLETE | 12h | 5 parsers (85-90% detection), 24-SERVICE-DETECTION-GUIDE.md (659L) | +23 (1,389→1,412) |
 | 5.3: Idle Scan | ✅ COMPLETE | 18h | Full Nmap parity, 25-IDLE-SCAN-GUIDE.md (650L), 99.5% accuracy | +54 (1,412→1,466) |
 | Sprint 5.X: V3 Promotion | ✅ COMPLETE | ~8h total | AdaptiveRateLimiterV3 -1.8% overhead, V3 default, 26-RATE-LIMITING-GUIDE.md v2.0.0 | Zero (all passing) |
 | 5.5: TLS Certificate Analysis | ✅ COMPLETE | 18h | X.509v3 parsing, SNI, 27-TLS-CERTIFICATE-GUIDE.md (2,160L), 1.33μs parsing | +50 (1,466→1,516) |
@@ -174,7 +174,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 - [x] 00-ARCHITECTURE.md (v3.0, +290L, A+)
 - [x] 01-ROADMAP.md (v2.0, +290L, A+)
 - [x] 23-IPv6-GUIDE.md (verified current)
-- [x] 24-SERVICE-DETECTION.md (verified current)
+- [x] 24-SERVICE-DETECTION-GUIDE.md (verified current)
 - [x] 25-IDLE-SCAN-GUIDE.md (verified current)
 - [x] 26-RATE-LIMITING-GUIDE.md (verified current)
 - [x] 10-PROJECT-STATUS.md (100% complete, this file)
@@ -184,7 +184,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 **Session 2** (Feature Docs, ~3 hours):
 - [ ] 19-EVASION-GUIDE.md (6 techniques update)
-- [ ] 14-NMAP_COMPATIBILITY.md (50+ flags)
+- [ ] 14-NMAP-COMPATIBILITY.md (50+ flags)
 - [ ] 21-PERFORMANCE-GUIDE.md (Phase 5 metrics)
 - [ ] to-dos/SPRINT-5.4-PLAN.md
 - [ ] to-dos/SPRINT-5.5-PLAN.md
@@ -227,7 +227,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 - **Deliverables**:
   - 85-90% detection rate (+10-15pp improvement from Phase 4)
   - 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
-  - docs/24-SERVICE-DETECTION.md (659 lines)
+  - docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
   - +23 tests (1,389 → 1,412)
   - <1% performance overhead (0.05ms per target)
 - **Key Achievements**:
@@ -295,7 +295,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - 00-ARCHITECTURE.md (v2.0→v3.0, +290 lines)
   - 01-ROADMAP.md (v1.5→v2.0, +290 lines)
 - **Part 2**: 4 guides verified current
-  - 23-IPv6-GUIDE.md, 24-SERVICE-DETECTION.md
+  - 23-IPv6-GUIDE.md, 24-SERVICE-DETECTION-GUIDE.md
   - 25-IDLE-SCAN-GUIDE.md, 26-RATE-LIMITING-GUIDE.md
 - **Part 3**: 4 core docs completed
   - 10-PROJECT-STATUS.md (v2.0, 100% complete)

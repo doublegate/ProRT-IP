@@ -406,7 +406,7 @@ let poll_interval = match total_ports {
 
 1. **NMAP_COMPATIBILITY.md Location Mismatch**
    - **Issue:** Referenced as `docs/NMAP_COMPATIBILITY.md` but may not exist
-   - **Fix:** Verify existence or rename from `docs/14-NMAP_COMPATIBILITY.md`
+   - **Fix:** Verify existence or rename from `docs/14-NMAP-COMPATIBILITY.md`
    - **Files to Update:** CLAUDE.md, README.md
 
 2. **Test Count Verification Needed**

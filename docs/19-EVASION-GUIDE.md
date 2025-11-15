@@ -1672,7 +1672,7 @@ prtip -sS --badsum -f -D RND:10 -p 1-1000 target.com
 ### ProRT-IP Documentation
 
 - **Architecture**: `docs/00-ARCHITECTURE.md` - System design
-- **Nmap Compatibility**: `docs/14-NMAP_COMPATIBILITY.md` - Flag mappings
+- **Nmap Compatibility**: `docs/14-NMAP-COMPATIBILITY.md` - Flag mappings
 - **Performance**: `docs/07-PERFORMANCE.md` - Optimization guide
 - **Testing**: `docs/06-TESTING.md` - Test suite documentation
 

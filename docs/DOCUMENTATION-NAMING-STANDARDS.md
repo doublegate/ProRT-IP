@@ -351,7 +351,7 @@ PHASE-5-README-ARCHIVE.md             ✅ Archive with qualifier
 
 **Missing -GUIDE Suffix:**
 ```
-24-SERVICE-DETECTION.md               ❌ Should be: 24-SERVICE-DETECTION-GUIDE.md
+24-SERVICE-DETECTION-GUIDE.md               ❌ Should be: 24-SERVICE-DETECTION-GUIDE.md
 ```
 
 **Inconsistent Naming:**
@@ -363,8 +363,8 @@ PHASE-5-README-ARCHIVE.md             ✅ Archive with qualifier
 
 **Underscore Instead of Hyphen:**
 ```
-18-EFFICIENCY_REPORT.md               ❌ Should be: 18-EFFICIENCY-REPORT.md
-14-NMAP_COMPATIBILITY.md              ❌ Should be: 14-NMAP-COMPATIBILITY.md (or remove number)
+18-EFFICIENCY-REPORT.md               ❌ Should be: 18-EFFICIENCY-REPORT.md
+14-NMAP-COMPATIBILITY.md              ❌ Should be: 14-NMAP-COMPATIBILITY.md (or remove number)
 ```
 
 **Missing Type Suffix:**
@@ -376,8 +376,8 @@ PHASE-5-README-ARCHIVE.md             ✅ Archive with qualifier
 
 **Unclear Purpose:**
 ```
-22.1-CLAUDE-POST-PHASE4_1of2.md       ❌ Non-standard numbering, underscore
-22.2-CLAUDE-POST-PHASE4_2of2.md       ❌ Should be archived or renamed
+archive/PHASE-4-CLAUDE-NOTES-PART-1.md       ❌ Non-standard numbering, underscore
+archive/PHASE-4-CLAUDE-NOTES-PART-2.md       ❌ Should be archived or renamed
 ```
 
 **Archive Candidates:**
@@ -395,11 +395,11 @@ PHASE-5-README-ARCHIVE.md             ✅ Archive with qualifier
 
 | Current Name | Proposed Name | Reason |
 |--------------|---------------|--------|
-| `24-SERVICE-DETECTION.md` | `24-SERVICE-DETECTION-GUIDE.md` | Missing -GUIDE suffix (feature guide) |
-| `18-EFFICIENCY_REPORT.md` | `18-EFFICIENCY-REPORT.md` | Underscore → hyphen |
-| `14-NMAP_COMPATIBILITY.md` | `NMAP-COMPATIBILITY-REFERENCE.md` | Underscore → hyphen, consider unnumbered |
-| `22.1-CLAUDE-POST-PHASE4_1of2.md` | `archive/PHASE-4-CLAUDE-NOTES-PART-1.md` | Non-standard format, archive |
-| `22.2-CLAUDE-POST-PHASE4_2of2.md` | `archive/PHASE-4-CLAUDE-NOTES-PART-2.md` | Non-standard format, archive |
+| `24-SERVICE-DETECTION-GUIDE.md` | `24-SERVICE-DETECTION-GUIDE.md` | Missing -GUIDE suffix (feature guide) |
+| `18-EFFICIENCY-REPORT.md` | `18-EFFICIENCY-REPORT.md` | Underscore → hyphen |
+| `14-NMAP-COMPATIBILITY.md` | `NMAP-COMPATIBILITY-REFERENCE.md` | Underscore → hyphen, consider unnumbered |
+| `archive/PHASE-4-CLAUDE-NOTES-PART-1.md` | `archive/PHASE-4-CLAUDE-NOTES-PART-1.md` | Non-standard format, archive |
+| `archive/PHASE-4-CLAUDE-NOTES-PART-2.md` | `archive/PHASE-4-CLAUDE-NOTES-PART-2.md` | Non-standard format, archive |
 
 ### Medium Priority (Clarity Improvements)
 
@@ -435,9 +435,9 @@ docs/20-PHASE4-ENHANCEMENTS.md        → (already exists in archive, delete dup
 **Scope:** Fix critical inconsistencies (underscores, missing suffixes)
 
 **Actions:**
-1. Rename `24-SERVICE-DETECTION.md` → `24-SERVICE-DETECTION-GUIDE.md`
-2. Rename `18-EFFICIENCY_REPORT.md` → `18-EFFICIENCY-REPORT.md`
-3. Rename `14-NMAP_COMPATIBILITY.md` → `14-NMAP-COMPATIBILITY.md`
+1. Rename `24-SERVICE-DETECTION-GUIDE.md` → `24-SERVICE-DETECTION-GUIDE.md`
+2. Rename `18-EFFICIENCY-REPORT.md` → `18-EFFICIENCY-REPORT.md`
+3. Rename `14-NMAP-COMPATIBILITY.md` → `14-NMAP-COMPATIBILITY.md`
 4. Archive `22.1` and `22.2` CLAUDE files
 5. Update all cross-references in other docs
 6. Run automated link check (new CI workflow)

@@ -73,20 +73,20 @@ Range 10-19: Development & Process (10 files)
 ├── 11-RELEASE-PROCESS.md          ✅ Release procedures
 ├── 12-BENCHMARKING-GUIDE.md       ✅ Benchmarking howto
 ├── 13-PLATFORM-SUPPORT.md         ✅ Platform compatibility
-├── 14-NMAP_COMPATIBILITY.md       ⚠️  Has underscore (rename needed)
+├── 14-NMAP-COMPATIBILITY.md       ⚠️  Has underscore (rename needed)
 ├── 15-PHASE4-COMPLIANCE.md        ⚠️  Should archive (historical)
 ├── 16-REGRESSION-FIX-STRATEGY.md  ⚠️  Should archive (historical)
 ├── 17-TESTING-INFRASTRUCTURE.md   ✅ Testing framework
-├── 18-EFFICIENCY_REPORT.md        ⚠️  Has underscore (rename needed)
+├── 18-EFFICIENCY-REPORT.md        ⚠️  Has underscore (rename needed)
 └── 19-EVASION-GUIDE.md            ✅ Evasion techniques
 
 Range 20-29: Feature Guides (10 files used, conflicts exist)
 ├── 20-PHASE4-ENHANCEMENTS.md      ⚠️  Duplicate in archive (delete)
 ├── 21-PERFORMANCE-GUIDE.md        ⚠️  Duplicate of 07-PERFORMANCE? (verify)
-├── 22.1-CLAUDE-POST-PHASE4_1of2.md ❌ Non-standard numbering
-├── 22.2-CLAUDE-POST-PHASE4_2of2.md ❌ Non-standard numbering
+├── archive/PHASE-4-CLAUDE-NOTES-PART-1.md ❌ Non-standard numbering
+├── archive/PHASE-4-CLAUDE-NOTES-PART-2.md ❌ Non-standard numbering
 ├── 23-IPv6-GUIDE.md               ✅ IPv6 feature guide
-├── 24-SERVICE-DETECTION.md        ⚠️  Missing -GUIDE suffix
+├── 24-SERVICE-DETECTION-GUIDE.md        ⚠️  Missing -GUIDE suffix
 ├── 25-IDLE-SCAN-GUIDE.md          ✅ Idle scan guide
 ├── 26-RATE-LIMITING-GUIDE.md      ✅ Rate limiting guide
 ├── 27-TLS-CERTIFICATE-GUIDE.md    ✅ TLS certificate guide
@@ -133,7 +133,7 @@ Range 40-99: UNUSED (reserved for future)
    - `15-PHASE4-COMPLIANCE.md` (historical, completed phase)
    - `16-REGRESSION-FIX-STRATEGY.md` (historical)
    - `20-PHASE4-ENHANCEMENTS.md` (historical)
-   - `22.1/22.2-CLAUDE-POST-PHASE4` (notes, should archive)
+   - `archive/PHASE-4-CLAUDE-NOTES` (notes, should archive)
 
 6. **Missing Ranges:**
    - Range 40-49: Operations guides (Performance, Monitoring, Troubleshooting)
@@ -250,8 +250,8 @@ Range 40-99: UNUSED (reserved for future)
 
 | Current | Action | New Name | Rationale |
 |---------|--------|----------|-----------|
-| `22.1-CLAUDE-POST-PHASE4_1of2.md` | Archive | `archive/PHASE-4-CLAUDE-NOTES-PART-1.md` | Historical, non-standard numbering |
-| `22.2-CLAUDE-POST-PHASE4_2of2.md` | Archive | `archive/PHASE-4-CLAUDE-NOTES-PART-2.md` | Historical, non-standard numbering |
+| `archive/PHASE-4-CLAUDE-NOTES-PART-1.md` | Archive | `archive/PHASE-4-CLAUDE-NOTES-PART-1.md` | Historical, non-standard numbering |
+| `archive/PHASE-4-CLAUDE-NOTES-PART-2.md` | Archive | `archive/PHASE-4-CLAUDE-NOTES-PART-2.md` | Historical, non-standard numbering |
 | `34-EXAMPLES.md` | Merge/Delete | Merge into `34-EXAMPLES-GALLERY.md` | Duplicate content |
 | `34-PERFORMANCE-CHARACTERISTICS.md` | Renumber | `40-PERFORMANCE-CHARACTERISTICS.md` | Move to operations range |
 | `20-PHASE4-ENHANCEMENTS.md` | Delete | (already in archive/) | Duplicate |
@@ -262,9 +262,9 @@ Range 40-99: UNUSED (reserved for future)
 
 | Current | New Name | Rationale |
 |---------|----------|-----------|
-| `24-SERVICE-DETECTION.md` | `24-SERVICE-DETECTION-GUIDE.md` | Add -GUIDE suffix |
-| `14-NMAP_COMPATIBILITY.md` | `14-NMAP-COMPATIBILITY.md` | Fix underscore |
-| `18-EFFICIENCY_REPORT.md` | `18-EFFICIENCY-REPORT.md` | Fix underscore |
+| `24-SERVICE-DETECTION-GUIDE.md` | `24-SERVICE-DETECTION-GUIDE.md` | Add -GUIDE suffix |
+| `14-NMAP-COMPATIBILITY.md` | `14-NMAP-COMPATIBILITY.md` | Fix underscore |
+| `18-EFFICIENCY-REPORT.md` | `18-EFFICIENCY-REPORT.md` | Fix underscore |
 
 **After Phase 1: Clean Numbering**
 ```
@@ -296,7 +296,7 @@ Current:                        Proposed:
 21-??? (available)              21-SERVICE-DETECTION-GUIDE.md (was 24)
 22-??? (archived)               22-STEALTH-TECHNIQUES-GUIDE.md (new, consolidate 19?)
 23-IPv6-GUIDE.md                23-IPv6-GUIDE.md (keep)
-24-SERVICE-DETECTION.md         24-TLS-CERTIFICATE-GUIDE.md (was 27)
+24-SERVICE-DETECTION-GUIDE.md         24-TLS-CERTIFICATE-GUIDE.md (was 27)
 25-IDLE-SCAN-GUIDE.md           25-IDLE-SCAN-GUIDE.md (keep)
 26-RATE-LIMITING-GUIDE.md       26-RATE-LIMITING-GUIDE.md (keep)
 27-TLS-CERTIFICATE-GUIDE.md     27-PLUGIN-SYSTEM-GUIDE.md (was 30)

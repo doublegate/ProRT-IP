@@ -574,7 +574,7 @@ sudo prtip -A -p 1-1000 192.168.1.1
 ```
 
 > **See Also:**
-> - [Service Detection Guide](24-SERVICE-DETECTION.md) - Protocol parsers deep dive
+> - [Service Detection Guide](24-SERVICE-DETECTION-GUIDE.md) - Protocol parsers deep dive
 > - [Examples: Service Fingerprinting](34-EXAMPLES-GALLERY.md#service-detection)
 > - [TLS Analysis](#use-case-8-ssltls-analysis) - Related certificate inspection
 
@@ -1826,7 +1826,7 @@ sudo -E prtip -sS -p 80,443 192.168.1.10
 
 ### 5.3: CLI Flag Reference
 
-**See full reference:** [14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md)
+**See full reference:** [14-NMAP-COMPATIBILITY.md](14-NMAP-COMPATIBILITY.md)
 
 **Essential Flags:**
 ```bash
@@ -2282,7 +2282,7 @@ cargo test
 - Nmap: 90-95% (slightly higher due to larger probe database)
 - ProRT-IP: 85-90% (good, improving)
 
-**See:** [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md) for details
+**See:** [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) for details
 
 ---
 
@@ -2673,7 +2673,7 @@ prtip -sS -p 1-65535 192.168.1.0/24 --batch-size 10000
 
 **Technical Guides:**
 - [23-IPv6-GUIDE.md](23-IPv6-GUIDE.md) - Complete IPv6 support
-- [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md) - Service detection deep-dive
+- [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) - Service detection deep-dive
 - [25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md) - Anonymous scanning
 - [26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md) - Industry-leading rate limiter
 - [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md) - SSL/TLS analysis

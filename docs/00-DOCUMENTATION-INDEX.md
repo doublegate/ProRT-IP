@@ -56,7 +56,7 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
 
 #### Technical Guides (Phase 5 Features)
 - [23-IPv6-GUIDE.md](23-IPv6-GUIDE.md) - IPv6 scanning (1,958 lines)
-- [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md) - Service detection (587 lines)
+- [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) - Service detection (587 lines)
 - [25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md) - Idle/Zombie scanning (1,472 lines)
 - [26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md) - Rate limiting V3 (470 lines)
 - [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md) - TLS certificate analysis (2,160 lines)
@@ -86,7 +86,7 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
 
 #### Specialized Guides
 - [19-EVASION-GUIDE.md](19-EVASION-GUIDE.md) - Evasion techniques (1,749 lines)
-- [14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md) - Nmap compatibility (1,135 lines)
+- [14-NMAP-COMPATIBILITY.md](14-NMAP-COMPATIBILITY.md) - Nmap compatibility (1,135 lines)
 - [21-PERFORMANCE-GUIDE.md](21-PERFORMANCE-GUIDE.md) - Performance optimization (873 lines)
 - [13-PLATFORM-SUPPORT.md](13-PLATFORM-SUPPORT.md) - Platform-specific information (452 lines)
 
@@ -99,7 +99,7 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
 | Feature | User Guide | Tutorial | Examples | Technical Guide | API Docs |
 |---------|-----------|----------|----------|----------------|----------|
 | **IPv6 Scanning** | ✅ [UC 5](32-USER-GUIDE.md#use-case-5-ipv6-scanning) | ✅ [T4](33-TUTORIALS.md#tutorial-4-multi-protocol-scanning-ipv4--ipv6) | ✅ 8 examples | ✅ [23-IPv6](23-IPv6-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-network/latest/prtip_network/ipv6/) |
-| **Service Detection** | ✅ [UC 3](32-USER-GUIDE.md#use-case-3-service-detection) | ✅ [T3](33-TUTORIALS.md#tutorial-3-service-detection) | ✅ 12 examples | ✅ [24-SERVICE](24-SERVICE-DETECTION.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/service_detector/) |
+| **Service Detection** | ✅ [UC 3](32-USER-GUIDE.md#use-case-3-service-detection) | ✅ [T3](33-TUTORIALS.md#tutorial-3-service-detection) | ✅ 12 examples | ✅ [24-SERVICE](24-SERVICE-DETECTION-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/service_detector/) |
 | **Idle Scan** | ✅ [UC 19](32-USER-GUIDE.md#use-case-19-idle-scan-anonymous-scanning) | ✅ [T5](33-TUTORIALS.md#tutorial-5-stealth-scanning-techniques) | ✅ 6 examples | ✅ [25-IDLE](25-IDLE-SCAN-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/idle/) |
 | **Rate Limiting V3** | ✅ [UC 6c](32-USER-GUIDE.md#6c-rate-limiting) | ✅ [T6](33-TUTORIALS.md#tutorial-6-large-scale-scanning) | ✅ 5 examples | ✅ [26-RATE](26-RATE-LIMITING-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/adaptive_rate_limiter_v3/) |
 | **TLS Certificates** | ✅ [UC 13](32-USER-GUIDE.md#use-case-13-tls-certificate-analysis) | ✅ [T3](33-TUTORIALS.md#tutorial-3-service-detection) | ✅ 7 examples | ✅ [27-TLS](27-TLS-CERTIFICATE-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/tls_certificate/) |
@@ -164,7 +164,7 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
 
 1. **Nmap Compatibility Overview** (10 min)
    - Read: [README.md#nmap-compatibility](../README.md#nmap-compatibility)
-   - Review: [14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md)
+   - Review: [14-NMAP-COMPATIBILITY.md](14-NMAP-COMPATIBILITY.md)
    - Understand command mapping
 
 2. **Command Translation Examples** (10 min)
@@ -279,7 +279,7 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
 
 5. **Advanced Reconnaissance** (30 min)
    - TLS Intelligence: [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md)
-   - Service Detection: [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md)
+   - Service Detection: [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md)
    - IPv6 Recon: [23-IPv6-GUIDE.md](23-IPv6-GUIDE.md)
 
 **Estimated Time:** 2-3 hours
@@ -424,7 +424,7 @@ Complete IPv6 support across all 6 scanner types with 100% feature parity to IPv
 
 **Documentation:**
 
-- **Technical Guide:** [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md)
+- **Technical Guide:** [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md)
   - 587-line comprehensive guide
   - Probe database, protocol parsers
   - Detection algorithms, accuracy metrics
@@ -462,7 +462,7 @@ Complete IPv6 support across all 6 scanner types with 100% feature parity to IPv
 
 **Cross-References:**
 - TLS Integration: [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md)
-- Nmap Compatibility: [14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md)
+- Nmap Compatibility: [14-NMAP-COMPATIBILITY.md](14-NMAP-COMPATIBILITY.md)
 
 ---
 
@@ -590,12 +590,12 @@ X.509v3 certificate parsing with SNI support, chain validation, and 1.33μs perf
   - Online:
     - [tls_handshake](https://docs.rs/prtip-scanner/latest/prtip_scanner/tls_handshake/)
     - [tls_certificate](https://docs.rs/prtip-scanner/latest/prtip_scanner/tls_certificate/)
-  - See Also: [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md), [32-USER-GUIDE.md#use-case-13](32-USER-GUIDE.md#use-case-13-tls-certificate-analysis), [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md)
+  - See Also: [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md), [32-USER-GUIDE.md#use-case-13](32-USER-GUIDE.md#use-case-13-tls-certificate-analysis), [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md)
 
 - **Quick Start:** `cargo run --example tls_basic_cert_extract`
 
 **Cross-References:**
-- Service Detection: [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md)
+- Service Detection: [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md)
 - Security: [08-SECURITY.md](08-SECURITY.md)
 
 ---
@@ -712,7 +712,7 @@ Hyperfine-based benchmarking framework with 10 scenarios, CI integration, and re
 | File | Purpose | Audience | Length | Last Updated | Version |
 |------|---------|----------|--------|--------------|---------|
 | [23-IPv6-GUIDE.md](23-IPv6-GUIDE.md) | IPv6 scanning comprehensive guide | Users, Developers | 1,958 lines | 2025-10-XX | - |
-| [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md) | Service detection guide | Users, Security Researchers | 587 lines | 2025-10-XX | - |
+| [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) | Service detection guide | Users, Security Researchers | 587 lines | 2025-10-XX | - |
 | [25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md) | Idle/Zombie scanning guide | Security Researchers | 1,472 lines | 2025-10-30 | - |
 | [26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md) | Rate limiting V3 guide | Performance Tuners | 470 lines | 2025-11-02 | v1.1.0 |
 | [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md) | TLS certificate analysis guide | Users, Developers | 2,160 lines | 2025-11-04 | - |
@@ -744,7 +744,7 @@ Hyperfine-based benchmarking framework with 10 scenarios, CI integration, and re
 | File | Purpose | Audience | Length | Last Updated | Version |
 |------|---------|----------|--------|--------------|---------|
 | [19-EVASION-GUIDE.md](19-EVASION-GUIDE.md) | Evasion techniques comprehensive guide | Security Researchers | 1,749 lines | 2025-10-XX | - |
-| [14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md) | Nmap compatibility reference | Nmap Users | 1,135 lines | 2025-10-XX | - |
+| [14-NMAP-COMPATIBILITY.md](14-NMAP-COMPATIBILITY.md) | Nmap compatibility reference | Nmap Users | 1,135 lines | 2025-10-XX | - |
 | [21-PERFORMANCE-GUIDE.md](21-PERFORMANCE-GUIDE.md) | Performance optimization guide | Performance Tuners | 873 lines | 2025-10-XX | - |
 | [13-PLATFORM-SUPPORT.md](13-PLATFORM-SUPPORT.md) | Platform-specific information | All | 452 lines | 2025-10-XX | - |
 | [28-CI-CD-COVERAGE.md](28-CI-CD-COVERAGE.md) | CI/CD and code coverage | Developers | 1,115 lines | 2025-11-05 | - |
@@ -842,7 +842,7 @@ Hyperfine-based benchmarking framework with 10 scenarios, CI integration, and re
 
 | Task | Documentation | Direct Link |
 |------|--------------|-------------|
-| **Nmap Command Mapping** | 14-NMAP_COMPATIBILITY.md | [Nmap Compatibility](14-NMAP_COMPATIBILITY.md) |
+| **Nmap Command Mapping** | 14-NMAP-COMPATIBILITY.md | [Nmap Compatibility](14-NMAP-COMPATIBILITY.md) |
 | **Nmap User Migration** | 32-USER-GUIDE.md | [Nmap Mapping](32-USER-GUIDE.md#nmap-command-mapping) |
 | **Feature Comparison** | README.md | [Features](../README.md#features) |
 
@@ -858,11 +858,11 @@ README.md (3,200 lines)
     ├─→ 32-USER-GUIDE.md (Usage)
     ├─→ 33-TUTORIALS.md (Learning)
     ├─→ CONTRIBUTING.md (Development)
-    └─→ 14-NMAP_COMPATIBILITY.md (Migration)
+    └─→ 14-NMAP-COMPATIBILITY.md (Migration)
 
 32-USER-GUIDE.md (2,448 lines) ⭐ Central Hub
     ├─→ 23-IPv6-GUIDE.md (IPv6 details)
-    ├─→ 24-SERVICE-DETECTION.md (Service detection)
+    ├─→ 24-SERVICE-DETECTION-GUIDE.md (Service detection)
     ├─→ 25-IDLE-SCAN-GUIDE.md (Idle scanning)
     ├─→ 26-RATE-LIMITING-GUIDE.md (Rate limiting)
     ├─→ 27-TLS-CERTIFICATE-GUIDE.md (TLS certificates)
@@ -875,7 +875,7 @@ README.md (3,200 lines)
     ├─→ 32-USER-GUIDE.md (Reference)
     ├─→ 34-EXAMPLES-GALLERY.md (Example code)
     ├─→ 23-IPv6-GUIDE.md (IPv6 tutorial)
-    ├─→ 24-SERVICE-DETECTION.md (Service detection tutorial)
+    ├─→ 24-SERVICE-DETECTION-GUIDE.md (Service detection tutorial)
     ├─→ 25-IDLE-SCAN-GUIDE.md (Stealth tutorial)
     ├─→ 26-RATE-LIMITING-GUIDE.md (Large-scale tutorial)
     └─→ 30-PLUGIN-SYSTEM-GUIDE.md (Plugin tutorial)

@@ -619,7 +619,7 @@ sqlite3 results.db "
 
 - [Architecture Documentation](00-ARCHITECTURE.md) - System design
 - [API Reference](05-API-REFERENCE.md) - Programmatic access
-- [Nmap Compatibility](14-NMAP_COMPATIBILITY.md) - Nmap flag reference
+- [Nmap Compatibility](14-NMAP-COMPATIBILITY.md) - Nmap flag reference
 - [Performance Guide](21-PERFORMANCE-GUIDE.md) - Optimization techniques
 
 ---

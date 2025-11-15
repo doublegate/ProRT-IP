@@ -1637,7 +1637,7 @@ prtip export --db scan.db --format csv --output report.csv
 ## See Also
 
 - `prtip --help` - All output format options
-- `docs/14-NMAP_COMPATIBILITY.md` - Nmap output format compatibility
+- `docs/14-NMAP-COMPATIBILITY.md` - Nmap output format compatibility
 - Wireshark User Guide: https://www.wireshark.org/docs/
 - SQLite Query Language: https://www.sqlite.org/lang.html
 ```

@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Documentation: Phase 1 Naming Standards Implementation** (2025-11-15)
+  - Renamed 5 documentation files to fix critical naming inconsistencies per `DOCUMENTATION-NAMING-STANDARDS.md`
+  - **Add -GUIDE Suffix:** `docs/24-SERVICE-DETECTION.md` → `docs/24-SERVICE-DETECTION-GUIDE.md`
+    - Missing suffix on feature guide (consistency with 23-IPv6-GUIDE.md, 25-IDLE-SCAN-GUIDE.md, etc.)
+    - Updated 14 cross-references across documentation
+  - **Fix Underscores → Hyphens:**
+    - `docs/18-EFFICIENCY_REPORT.md` → `docs/18-EFFICIENCY-REPORT.md` (3 references updated)
+    - `docs/14-NMAP_COMPATIBILITY.md` → `docs/14-NMAP-COMPATIBILITY.md` (14 references updated)
+  - **Archive Historical Content:**
+    - `docs/22.1-CLAUDE-POST-PHASE4_1of2.md` → `docs/archive/PHASE-4-CLAUDE-NOTES-PART-1.md`
+    - `docs/22.2-CLAUDE-POST-PHASE4_2of2.md` → `docs/archive/PHASE-4-CLAUDE-NOTES-PART-2.md`
+    - Non-standard numbering format (22.1/22.2), historical Phase 4 notes belong in archive
+    - Updated 4 cross-references
+  - **Files Modified:** 26 total (5 renames + 21 cross-reference updates)
+  - **Scope:** README.md, CHANGELOG.md, 7 docs/ files, 14 feature guides, 3 to-dos/ files, 1 archive file
+  - **Validation:** All markdown links verified, 0 broken references
+  - **Impact:** Consistent documentation naming, improved discoverability, cleaner docs/ directory
+  - **Next:** Phase 2 (medium priority renames) planned for quarterly review
+
 - **CI/CD: Added Code Coverage with cargo-tarpaulin** (2025-11-15)
   - Added cargo-tarpaulin installation step to CI workflow (Linux/macOS only)
   - Added coverage generation step using `cargo tarpaulin --workspace --locked --lib --bins --tests`
@@ -2666,7 +2685,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Confidence scoring for service identification
 
 #### Documentation
-- docs/24-SERVICE-DETECTION.md (659 lines) - Detection methodology
+- docs/24-SERVICE-DETECTION-GUIDE.md (659 lines) - Detection methodology
 
 #### Tests
 - +61 tests for protocol parsers (integrated with Sprint 5.6)
@@ -4299,7 +4318,7 @@ Large scans (1-1000 ports):
   - **Detection Pipeline**: Protocol-specific → Regex → Generic fallback
 
 - **Comprehensive Documentation (Phase 6.1)**:
-  - **docs/24-SERVICE-DETECTION.md** (659 lines, 18KB)
+  - **docs/24-SERVICE-DETECTION-GUIDE.md** (659 lines, 18KB)
     * Complete guide covering all 5 protocol modules
     * Architecture diagrams and detection flow
     * Per-protocol documentation with examples
@@ -4332,7 +4351,7 @@ Large scans (1-1000 ports):
   - New: `crates/prtip-core/src/detection/mysql_detect.rs` (301 lines)
   - New: `crates/prtip-core/src/detection/postgresql_detect.rs` (331 lines)
   - Modified: `crates/prtip-core/src/lib.rs` (+10 lines)
-  - New: `docs/24-SERVICE-DETECTION.md` (659 lines)
+  - New: `docs/24-SERVICE-DETECTION-GUIDE.md` (659 lines)
 
 - **Module Integration**: All detection modules exposed via prtip-core public API
   ```rust
@@ -4474,7 +4493,7 @@ Large scans (1-1000 ports):
     * IPv6 test coverage table (8 components)
     * Integration test example (test_all_scanners_support_ipv6_loopback)
     * Performance benchmarks (6 scanners on loopback)
-  - **docs/14-NMAP_COMPATIBILITY.md** (+80 lines, now 1,135 lines)
+  - **docs/14-NMAP-COMPATIBILITY.md** (+80 lines, now 1,135 lines)
     * New IPv6 Support subsection in compatibility matrix
     * 8 IPv6 flags documented with status, since version, notes
     * Example 11: IPv6 Scanning (Nmap vs ProRT-IP syntax comparison)
@@ -6095,7 +6114,7 @@ prtip -sS -p 80,443 192.168.1.1 2001:db8::1 example.com
   - Documented implementation status for all planned capabilities
   - Identified feature gaps with priorities for Phase 5
   - Provided code references and usage examples
-- Renamed `NMAP_COMPATIBILITY.md` → `14-NMAP_COMPATIBILITY.md` (numbered documentation scheme)
+- Renamed `NMAP_COMPATIBILITY.md` → `14-NMAP-COMPATIBILITY.md` (numbered documentation scheme)
 - Fixed 4 critical documentation inconsistencies:
   - Updated ROADMAP.md version reference (v0.3.0 → v0.3.5)
   - Updated ROADMAP.md phase status (Phase 3 COMPLETE → Phase 4 COMPLETE)

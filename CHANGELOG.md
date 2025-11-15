@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Test Infrastructure: macOS batch_coordination.rs Test Failures** (2025-11-15)
+  - Fixed 2 failing tests on macOS by adding missing `scanner.initialize()` calls
+  - Tests affected: `test_scan_ports_fallback_mode`, `test_scan_ports_rate_limiting_integration`
+  - **Root Cause:** macOS lacks sendmmsg/recvmmsg → uses fallback mode → requires packet capture initialization
+  - Linux tests passed because batch mode doesn't use legacy `self.capture` field
+  - **Fix:** Added `scanner.initialize().await` to all 3 tests (including Linux test for consistency)
+  - Made scanner variables `mut` (required for `initialize(&mut self)`)
+  - Added graceful error handling for initialization failures
+  - **Impact:** Zero production code changes, test infrastructure only, all 7 CI workflows now passing
+  - **Evidence:** All other scanner tests (20+ examples) already call `initialize()` - this was missing step
+  - **Verification:** Tests return expected 3-8 results instead of 0 results on macOS
+
 - **CI/CD Clippy Lint & Doctest Failures** (2025-11-15)
   - Fixed compilation error in `batch_io.rs:129`: Added missing 3rd parameter (`None`) to `BatchSender::new()` call
   - Fixed clippy `field_reassign_with_default` warning in `adaptive_batch.rs:467-468`: Use struct initialization instead of field reassignment

@@ -23,7 +23,7 @@ async fn test_scan_ports_batch_mode_linux() {
     // Create scanner with default config
     let mut config = Config::default();
     config.scan.timeout_ms = 2000; // 2 seconds
-    let scanner = match SynScanner::new(config) {
+    let mut scanner = match SynScanner::new(config) {
         Ok(s) => s,
         Err(e) => {
             eprintln!(
@@ -33,6 +33,15 @@ async fn test_scan_ports_batch_mode_linux() {
             return;
         }
     };
+
+    // Initialize packet capture (for consistency with other tests)
+    if let Err(e) = scanner.initialize().await {
+        eprintln!(
+            "Skipping test: Failed to initialize scanner (need root permissions): {}",
+            e
+        );
+        return;
+    }
 
     // Scan localhost on a few ports (likely closed/filtered)
     let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
@@ -83,7 +92,7 @@ async fn test_scan_ports_fallback_mode() {
     // Create scanner with default config
     let mut config = Config::default();
     config.scan.timeout_ms = 2000; // 2 seconds
-    let scanner = match SynScanner::new(config) {
+    let mut scanner = match SynScanner::new(config) {
         Ok(s) => s,
         Err(e) => {
             eprintln!(
@@ -93,6 +102,15 @@ async fn test_scan_ports_fallback_mode() {
             return;
         }
     };
+
+    // Initialize packet capture (required for fallback mode)
+    if let Err(e) = scanner.initialize().await {
+        eprintln!(
+            "Skipping test: Failed to initialize scanner (need root permissions): {}",
+            e
+        );
+        return;
+    }
 
     // Scan localhost on a few ports
     let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
@@ -146,7 +164,7 @@ async fn test_scan_ports_rate_limiting_integration() {
         max_batch_size: 1024,
     };
 
-    let scanner = match SynScanner::new(config) {
+    let mut scanner = match SynScanner::new(config) {
         Ok(s) => s,
         Err(e) => {
             eprintln!(
@@ -156,6 +174,15 @@ async fn test_scan_ports_rate_limiting_integration() {
             return;
         }
     };
+
+    // Initialize packet capture (required for fallback mode on macOS/Windows)
+    if let Err(e) = scanner.initialize().await {
+        eprintln!(
+            "Skipping test: Failed to initialize scanner (need root permissions): {}",
+            e
+        );
+        return;
+    }
 
     // Scan localhost on multiple ports
     let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));

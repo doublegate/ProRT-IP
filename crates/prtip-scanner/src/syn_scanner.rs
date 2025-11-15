@@ -538,7 +538,7 @@ impl SynScanner {
     ///
     /// # Example
     ///
-    /// ```no_run
+    /// ```ignore
     /// use std::net::IpAddr;
     /// use prtip_scanner::SynScanner;
     /// use prtip_core::Config;
@@ -547,7 +547,7 @@ impl SynScanner {
     ///
     /// # async fn example() -> prtip_core::Result<()> {
     /// # let config = Config::default();
-    /// # let scanner = SynScanner::new(config).await?;
+    /// # let scanner = SynScanner::new(config)?;
     /// let target: IpAddr = "192.168.1.1".parse().unwrap();
     /// let packet = scanner.build_syn_packet(target, 80, 54321)?;
     /// // Use packet with BatchSender for efficient sending

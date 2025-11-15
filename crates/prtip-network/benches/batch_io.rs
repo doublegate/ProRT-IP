@@ -126,7 +126,7 @@ fn bench_sendmmsg_syscall(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     // Try to create a batch sender (requires root)
-    let sender_result = BatchSender::new("lo", 64);
+    let sender_result = BatchSender::new("lo", 64, None);
 
     if let Ok(mut sender) = sender_result {
         for batch_size in [16, 32, 64, 128] {

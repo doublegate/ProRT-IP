@@ -464,8 +464,10 @@ mod tests {
 
     #[test]
     fn test_batch_size_decrease_on_poor_performance() {
-        let mut config = AdaptiveConfig::default();
-        config.min_batch_size = 16;
+        let config = AdaptiveConfig {
+            min_batch_size: 16,
+            ..Default::default()
+        };
         let mut sizer = AdaptiveBatchSizer::new(config);
 
         // Set high initial size
@@ -503,9 +505,11 @@ mod tests {
 
     #[test]
     fn test_memory_constraint_limits_batch_size() {
-        let mut config = AdaptiveConfig::default();
-        config.memory_limit = 30_000; // Small limit: ~20 packets max
-        config.max_batch_size = 1024;
+        let config = AdaptiveConfig {
+            memory_limit: 30_000, // Small limit: ~20 packets max
+            max_batch_size: 1024,
+            ..Default::default()
+        };
 
         let mut sizer = AdaptiveBatchSizer::new(config);
 

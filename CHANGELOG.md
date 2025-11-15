@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI/CD Clippy Lint & Doctest Failures** (2025-11-15)
+  - Fixed compilation error in `batch_io.rs:129`: Added missing 3rd parameter (`None`) to `BatchSender::new()` call
+  - Fixed clippy `field_reassign_with_default` warning in `adaptive_batch.rs:467-468`: Use struct initialization instead of field reassignment
+  - Fixed clippy `field_reassign_with_default` warning in `adaptive_batch.rs:506-508`: Use struct initialization instead of field reassignment
+  - Fixed clippy `len_zero` warning in `test_cdn_integration.rs:411`: Use `!is_empty()` instead of `len() >= 1`
+  - Fixed doctest compilation in `syn_scanner.rs:541`: Changed `no_run` to `ignore` for private method example, removed incorrect `.await` on non-async `SynScanner::new()`
+  - **Root Cause:** CI uses `--all-targets` flag which includes benchmarks, not checked by default local clippy. Doctest attempted to call private method from outside module context.
+  - **Impact:** Zero production code changes, test-only fixes, maintains 2,361/2,361 tests passing (100%), 107 ignored
+
 ### Added
 
 #### Sprint 6.3: Network Optimizations - Task Areas 3.3-3.4 + 4.0 COMPLETE

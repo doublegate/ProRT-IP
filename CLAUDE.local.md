@@ -1,6 +1,6 @@
 # ProRT-IP Local Memory
 
-**v0.5.1** (11-14) | **2,175 tests** ✅ | **PHASE 6 IN PROGRESS (Sprint 6.1 COMPLETE)** | **Project at ~68% (5.5/8 phases + Sprint 6.1)**
+**v0.5.1** (11-14) | **2,175 tests** ✅ | **PHASE 6 IN PROGRESS (Sprints 6.1-6.2 COMPLETE)** | **Project at ~70% (5.5/8 phases + Sprints 6.1-6.2)**
 
 ## At a Glance
 

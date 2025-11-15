@@ -413,6 +413,88 @@ async fn test_cdn_disabled_scans_all_ips() {
     );
 }
 
+#[tokio::test]
+async fn test_cdn_ipv6_detection() {
+    // Test CDN filtering for IPv6 addresses
+    let config = create_test_config_with_cdn(true, None, None);
+    let storage = Arc::new(StorageBackend::memory(500));
+    let scheduler = ScanScheduler::new(config, storage).await.unwrap();
+
+    // IPv6 CDN addresses from various providers
+    let targets = vec![
+        ScanTarget::parse("2606:4700:20::1").unwrap(), // Cloudflare IPv6
+        ScanTarget::parse("2600:9000::1").unwrap(),    // AWS CloudFront IPv6
+        ScanTarget::parse("2a04:4e40::1").unwrap(),    // Fastly IPv6
+        ScanTarget::parse("::1").unwrap(),             // IPv6 localhost (non-CDN)
+    ];
+
+    let results = scheduler.execute_scan(targets, None).await.unwrap();
+
+    // Should only have results for localhost (non-CDN IPv6)
+    // CDN IPv6 addresses should be filtered
+    if !results.is_empty() {
+        for result in &results {
+            let localhost: IpAddr = "::1".parse().unwrap();
+            assert_eq!(
+                result.target_ip, localhost,
+                "Only IPv6 localhost should be scanned (CDN IPv6 filtered)"
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn test_cdn_filtering_performance_overhead() {
+    // Test that CDN filtering has minimal performance overhead
+    use std::time::Instant;
+
+    let targets = vec![
+        ScanTarget::parse("104.16.132.229").unwrap(), // Cloudflare
+        ScanTarget::parse("13.32.1.1").unwrap(),      // AWS
+        ScanTarget::parse("151.101.1.1").unwrap(),    // Fastly
+        ScanTarget::parse("127.0.0.1").unwrap(),      // Localhost
+    ];
+
+    // Test with CDN filtering enabled
+    let config_cdn = create_test_config_with_cdn(true, None, None);
+    let storage_cdn = Arc::new(StorageBackend::memory(500));
+    let scheduler_cdn = ScanScheduler::new(config_cdn, storage_cdn).await.unwrap();
+
+    let start_cdn = Instant::now();
+    let _results_cdn = scheduler_cdn
+        .execute_scan(targets.clone(), None)
+        .await
+        .unwrap();
+    let duration_cdn = start_cdn.elapsed();
+
+    // Test without CDN filtering
+    let config_no_cdn = create_test_config_with_cdn(false, None, None);
+    let storage_no_cdn = Arc::new(StorageBackend::memory(500));
+    let scheduler_no_cdn = ScanScheduler::new(config_no_cdn, storage_no_cdn)
+        .await
+        .unwrap();
+
+    let start_no_cdn = Instant::now();
+    let _results_no_cdn = scheduler_no_cdn.execute_scan(targets, None).await.unwrap();
+    let duration_no_cdn = start_no_cdn.elapsed();
+
+    // CDN filtering should actually be FASTER (fewer hosts to scan)
+    // or have negligible overhead (<10%)
+    let overhead_ratio = duration_cdn.as_secs_f64() / duration_no_cdn.as_secs_f64();
+
+    // Allow up to 10% overhead (but typically should be faster)
+    assert!(
+        overhead_ratio <= 1.1,
+        "CDN filtering overhead should be <10%, got {:.2}%",
+        (overhead_ratio - 1.0) * 100.0
+    );
+
+    // In practice, should be faster since we skip 3/4 hosts (75% reduction)
+    // Uncomment to verify performance gain:
+    // println!("CDN filtering: {:?}, No CDN: {:?}, Ratio: {:.2}x",
+    //          duration_cdn, duration_no_cdn, overhead_ratio);
+}
+
 // NOTE: execute_scan_ports() currently doesn't implement CDN filtering
 // This is a future enhancement for Phase 6.4+ (see scheduler.rs lines 606-899)
 // CDN filtering is only active in execute_scan() and execute_scan_with_discovery()

@@ -1,0 +1,288 @@
+{
+  "benchmark_suite": "CDN IP Deduplication",
+  "version": "1.0.0",
+  "created": "2025-11-15",
+  "description": "Benchmark scenarios for validating CDN IP filtering effectiveness and performance overhead",
+  "scenarios": [
+    {
+      "id": "scenario_1_baseline",
+      "name": "Baseline (No CDN Filtering)",
+      "description": "Baseline scan with CDN filtering disabled to establish performance reference",
+      "cdn_filtering": {
+        "enabled": false,
+        "mode": null,
+        "providers": []
+      },
+      "target_ips": {
+        "total_count": 1000,
+        "cdn_ips": 500,
+        "non_cdn_ips": 500,
+        "distribution": {
+          "cloudflare": 100,
+          "aws_cloudfront": 100,
+          "azure_cdn": 100,
+          "akamai": 100,
+          "fastly": 50,
+          "google_cloud": 50,
+          "non_cdn": 500
+        }
+      },
+      "expected_results": {
+        "ips_scanned": 1000,
+        "ips_skipped": 0,
+        "reduction_percentage": 0.0,
+        "performance_overhead_max": 0.0
+      },
+      "validation": {
+        "assert_all_ips_scanned": true,
+        "assert_no_skips": true,
+        "assert_overhead_below": 0.0
+      }
+    },
+    {
+      "id": "scenario_2_default_mode",
+      "name": "Default Mode (Skip All CDNs)",
+      "description": "Default CDN filtering mode - skips all detected CDN provider IPs",
+      "cdn_filtering": {
+        "enabled": true,
+        "mode": "default",
+        "providers": []
+      },
+      "target_ips": {
+        "total_count": 1000,
+        "cdn_ips": 500,
+        "non_cdn_ips": 500,
+        "distribution": {
+          "cloudflare": 100,
+          "aws_cloudfront": 100,
+          "azure_cdn": 100,
+          "akamai": 100,
+          "fastly": 50,
+          "google_cloud": 50,
+          "non_cdn": 500
+        }
+      },
+      "expected_results": {
+        "ips_scanned": 500,
+        "ips_skipped": 500,
+        "reduction_percentage": 50.0,
+        "performance_overhead_max": 5.0
+      },
+      "validation": {
+        "assert_cdn_ips_skipped": true,
+        "assert_non_cdn_scanned": true,
+        "assert_reduction_gte": 45.0,
+        "assert_overhead_below": 10.0
+      }
+    },
+    {
+      "id": "scenario_3_whitelist_mode",
+      "name": "Whitelist Mode (Cloudflare + AWS Only)",
+      "description": "Whitelist mode - skips only specified CDN providers (Cloudflare and AWS CloudFront)",
+      "cdn_filtering": {
+        "enabled": true,
+        "mode": "whitelist",
+        "providers": ["cloudflare", "aws"]
+      },
+      "target_ips": {
+        "total_count": 1000,
+        "cdn_ips": 500,
+        "non_cdn_ips": 500,
+        "distribution": {
+          "cloudflare": 100,
+          "aws_cloudfront": 100,
+          "azure_cdn": 100,
+          "akamai": 100,
+          "fastly": 50,
+          "google_cloud": 50,
+          "non_cdn": 500
+        }
+      },
+      "expected_results": {
+        "ips_scanned": 800,
+        "ips_skipped": 200,
+        "reduction_percentage": 20.0,
+        "performance_overhead_max": 5.0
+      },
+      "validation": {
+        "assert_cloudflare_skipped": true,
+        "assert_aws_skipped": true,
+        "assert_other_cdns_scanned": true,
+        "assert_reduction_gte": 18.0,
+        "assert_overhead_below": 10.0
+      }
+    },
+    {
+      "id": "scenario_4_blacklist_mode",
+      "name": "Blacklist Mode (Exclude Cloudflare)",
+      "description": "Blacklist mode - skips all CDNs EXCEPT specified providers (only Cloudflare scanned)",
+      "cdn_filtering": {
+        "enabled": true,
+        "mode": "blacklist",
+        "providers": ["cloudflare"]
+      },
+      "target_ips": {
+        "total_count": 1000,
+        "cdn_ips": 500,
+        "non_cdn_ips": 500,
+        "distribution": {
+          "cloudflare": 100,
+          "aws_cloudfront": 100,
+          "azure_cdn": 100,
+          "akamai": 100,
+          "fastly": 50,
+          "google_cloud": 50,
+          "non_cdn": 500
+        }
+      },
+      "expected_results": {
+        "ips_scanned": 600,
+        "ips_skipped": 400,
+        "reduction_percentage": 40.0,
+        "performance_overhead_max": 5.0
+      },
+      "validation": {
+        "assert_cloudflare_scanned": true,
+        "assert_other_cdns_skipped": true,
+        "assert_non_cdn_scanned": true,
+        "assert_reduction_gte": 35.0,
+        "assert_overhead_below": 10.0
+      }
+    },
+    {
+      "id": "scenario_5_ipv6_filtering",
+      "name": "IPv6 CDN Filtering",
+      "description": "Validates CDN filtering works correctly for IPv6 addresses",
+      "cdn_filtering": {
+        "enabled": true,
+        "mode": "default",
+        "providers": []
+      },
+      "target_ips": {
+        "total_count": 500,
+        "cdn_ips": 250,
+        "non_cdn_ips": 250,
+        "ip_version": "IPv6",
+        "distribution": {
+          "cloudflare_ipv6": 50,
+          "aws_cloudfront_ipv6": 50,
+          "azure_cdn_ipv6": 50,
+          "akamai_ipv6": 50,
+          "fastly_ipv6": 25,
+          "google_cloud_ipv6": 25,
+          "non_cdn_ipv6": 250
+        }
+      },
+      "expected_results": {
+        "ips_scanned": 250,
+        "ips_skipped": 250,
+        "reduction_percentage": 50.0,
+        "performance_overhead_max": 5.0
+      },
+      "validation": {
+        "assert_ipv6_detection_works": true,
+        "assert_cdn_ipv6_skipped": true,
+        "assert_non_cdn_ipv6_scanned": true,
+        "assert_overhead_below": 10.0
+      }
+    },
+    {
+      "id": "scenario_6_mixed_ipv4_ipv6",
+      "name": "Mixed IPv4/IPv6 CDN Filtering",
+      "description": "Tests CDN filtering with dual-stack (IPv4 + IPv6) target lists",
+      "cdn_filtering": {
+        "enabled": true,
+        "mode": "default",
+        "providers": []
+      },
+      "target_ips": {
+        "total_count": 1000,
+        "cdn_ips": 500,
+        "non_cdn_ips": 500,
+        "ip_version": "Mixed",
+        "distribution": {
+          "cloudflare_ipv4": 50,
+          "cloudflare_ipv6": 50,
+          "aws_ipv4": 50,
+          "aws_ipv6": 50,
+          "azure_ipv4": 50,
+          "azure_ipv6": 50,
+          "akamai_ipv4": 50,
+          "akamai_ipv6": 50,
+          "fastly_ipv4": 25,
+          "fastly_ipv6": 25,
+          "google_ipv4": 25,
+          "google_ipv6": 25,
+          "non_cdn_ipv4": 250,
+          "non_cdn_ipv6": 250
+        }
+      },
+      "expected_results": {
+        "ips_scanned": 500,
+        "ips_skipped": 500,
+        "reduction_percentage": 50.0,
+        "performance_overhead_max": 5.0
+      },
+      "validation": {
+        "assert_dual_stack_detection": true,
+        "assert_both_ip_versions_filtered": true,
+        "assert_reduction_gte": 45.0,
+        "assert_overhead_below": 10.0
+      }
+    }
+  ],
+  "sample_ip_ranges": {
+    "cloudflare": {
+      "ipv4": ["104.16.0.0/13", "172.64.0.0/13", "162.158.0.0/15"],
+      "ipv6": ["2606:4700::/32", "2803:f800::/32", "2405:b500::/32"]
+    },
+    "aws_cloudfront": {
+      "ipv4": ["13.32.0.0/15", "13.224.0.0/14", "54.192.0.0/16"],
+      "ipv6": ["2600:9000::/28"]
+    },
+    "azure_cdn": {
+      "ipv4": ["20.21.0.0/16", "147.243.0.0/16"],
+      "ipv6": ["2603:1030::/25"]
+    },
+    "akamai": {
+      "ipv4": ["23.0.0.0/12", "104.64.0.0/10"],
+      "ipv6": ["2600:1400::/24"]
+    },
+    "fastly": {
+      "ipv4": ["151.101.0.0/16", "199.232.0.0/16"],
+      "ipv6": ["2a04:4e40::/32"]
+    },
+    "google_cloud": {
+      "ipv4": ["34.64.0.0/10", "35.192.0.0/12"],
+      "ipv6": ["2600:1900::/28"]
+    }
+  },
+  "performance_targets": {
+    "cdn_filtering_overhead": {
+      "target": "< 5%",
+      "acceptable": "< 10%",
+      "description": "CDN filtering should add minimal overhead to scan initialization"
+    },
+    "scan_reduction": {
+      "default_mode": ">= 30%",
+      "whitelist_mode": ">= 15%",
+      "blacklist_mode": ">= 20%",
+      "description": "Expected reduction in IPs scanned for real-world CDN distribution"
+    },
+    "detection_accuracy": {
+      "target": ">= 99%",
+      "description": "Percentage of CDN IPs correctly detected and filtered"
+    }
+  },
+  "execution_notes": {
+    "test_methodology": "Run each scenario with --cdn-filter flags, measure IPs scanned vs skipped",
+    "performance_measurement": "Compare scan time with CDN filtering enabled vs disabled baseline",
+    "validation_approach": "Assert expected IP counts, reduction percentages, and performance overhead",
+    "environment": "Requires ProRT-IP v0.5.2+ with CDN filtering support",
+    "prerequisites": [
+      "Build release binary: cargo build --release",
+      "Root privileges for raw socket creation",
+      "CDN detector with latest IP ranges"
+    ]
+  }
+}

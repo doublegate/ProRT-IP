@@ -548,4 +548,70 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_azure_cdn_detection() {
+        let detector = CdnDetector::new();
+
+        // Known Azure CDN IPs
+        let azure_ips = vec![
+            "20.21.1.1".parse().unwrap(),    // Azure range 20.21.0.0/16
+            "147.243.1.1".parse().unwrap(),  // Azure range 147.243.0.0/16
+            "2603:1030::1".parse().unwrap(), // Azure IPv6
+        ];
+
+        for ip in azure_ips {
+            assert_eq!(
+                detector.detect(&ip),
+                Some(CdnProvider::AzureCdn),
+                "IP {} should be detected as Azure CDN",
+                ip
+            );
+            assert!(detector.is_cdn(&ip));
+        }
+    }
+
+    #[test]
+    fn test_akamai_detection() {
+        let detector = CdnDetector::new();
+
+        // Known Akamai IPs
+        let akamai_ips = vec![
+            "23.1.1.1".parse().unwrap(),     // Akamai range 23.0.0.0/12
+            "104.64.1.1".parse().unwrap(),   // Akamai range 104.64.0.0/10
+            "2600:1400::1".parse().unwrap(), // Akamai IPv6
+        ];
+
+        for ip in akamai_ips {
+            assert_eq!(
+                detector.detect(&ip),
+                Some(CdnProvider::Akamai),
+                "IP {} should be detected as Akamai",
+                ip
+            );
+            assert!(detector.is_cdn(&ip));
+        }
+    }
+
+    #[test]
+    fn test_google_cloud_cdn_detection() {
+        let detector = CdnDetector::new();
+
+        // Known Google Cloud CDN IPs
+        let google_ips = vec![
+            "34.64.1.1".parse().unwrap(),    // Google Cloud range 34.64.0.0/10
+            "35.192.1.1".parse().unwrap(),   // Google Cloud range 35.192.0.0/12
+            "2600:1900::1".parse().unwrap(), // Google Cloud IPv6
+        ];
+
+        for ip in google_ips {
+            assert_eq!(
+                detector.detect(&ip),
+                Some(CdnProvider::GoogleCloud),
+                "IP {} should be detected as Google Cloud CDN",
+                ip
+            );
+            assert!(detector.is_cdn(&ip));
+        }
+    }
 }

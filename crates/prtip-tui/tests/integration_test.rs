@@ -461,7 +461,11 @@ fn test_dashboard_tab_switching() {
     ui_state.next_dashboard_tab();
     assert_eq!(ui_state.active_dashboard_tab, DashboardTab::Metrics);
 
-    // Switch back to PortTable
+    // Switch to NetworkGraph
+    ui_state.next_dashboard_tab();
+    assert_eq!(ui_state.active_dashboard_tab, DashboardTab::NetworkGraph);
+
+    // Switch back to PortTable (completes the cycle)
     ui_state.next_dashboard_tab();
     assert_eq!(ui_state.active_dashboard_tab, DashboardTab::PortTable);
 }

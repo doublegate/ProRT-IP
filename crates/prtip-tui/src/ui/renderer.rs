@@ -10,7 +10,9 @@ use std::sync::Arc;
 
 use crate::state::{DashboardTab, ScanState, UIState};
 use crate::ui::layout;
-use crate::widgets::{Component, MetricsDashboardWidget, PortTableWidget, ServiceTableWidget};
+use crate::widgets::{
+    Component, MetricsDashboardWidget, NetworkGraphWidget, PortTableWidget, ServiceTableWidget,
+};
 
 /// Render the TUI to the frame
 ///
@@ -50,11 +52,13 @@ pub fn render(frame: &mut Frame, scan_state: Arc<RwLock<ScanState>>, ui_state: &
         Line::from("Port Table"),
         Line::from("Service Table"),
         Line::from("Metrics"),
+        Line::from("Network Graph"),
     ];
     let active_tab_index = match ui_state.active_dashboard_tab {
         DashboardTab::PortTable => 0,
         DashboardTab::ServiceTable => 1,
         DashboardTab::Metrics => 2,
+        DashboardTab::NetworkGraph => 3,
     };
     let tabs = Tabs::new(tab_titles)
         .select(active_tab_index)
@@ -80,6 +84,10 @@ pub fn render(frame: &mut Frame, scan_state: Arc<RwLock<ScanState>>, ui_state: &
         DashboardTab::Metrics => {
             let metrics_dashboard = MetricsDashboardWidget::new(Arc::clone(&scan_state));
             metrics_dashboard.render(frame, main_chunks[1], ui_state);
+        }
+        DashboardTab::NetworkGraph => {
+            let network_graph = NetworkGraphWidget::new(Arc::clone(&scan_state));
+            network_graph.render(frame, main_chunks[1], ui_state);
         }
     }
 

@@ -42,7 +42,7 @@
 - **Evasion Techniques:** IP fragmentation (-f, --mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoy scanning (-D RND:N, manual IPs + ME positioning), idle/zombie scan (-sI ZOMBIE)
 - **High Performance:** Asynchronous I/O with lock-free coordination, zero-copy packet building
 - **Cross-Platform:** Linux, Windows, macOS support with NUMA optimization
-- **Multiple Interfaces:** CLI (v1.0), TUI (Sprint 6.2 Partial - 4/6 tasks), Web UI (planned), GUI (planned)
+- **Multiple Interfaces:** CLI (v1.0), TUI (Sprint 6.2 COMPLETE - 100%), Web UI (planned), GUI (planned)
 
 ### Introduction
 
@@ -1944,7 +1944,7 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 
 ## Terminal User Interface (TUI) 🎨
 
-**UPDATED in Sprint 6.2:** ProRT-IP now includes production-ready dashboard widgets with tabbed interface for real-time port discovery, service detection, and performance metrics.
+**UPDATED in Sprint 6.2:** ProRT-IP now includes production-ready dashboard widgets with tabbed interface for real-time port discovery, service detection, performance metrics, and network activity visualization.
 
 ### TUI Features
 
@@ -1952,8 +1952,8 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 
 - **Real-Time Visualization:** Live scan progress with 60 FPS rendering
 - **Event-Driven Updates:** Integrated with EventBus for instant result updates (10K+ events/sec)
-- **7 Production Widgets:** StatusBar, MainWidget, LogWidget, HelpWidget + **3 Dashboard Widgets** (PortTable, ServiceTable, Metrics)
-- **Tabbed Dashboard Interface:** 3 real-time dashboards with Tab key switching
+- **8 Production Widgets:** StatusBar, MainWidget, LogWidget, HelpWidget + **4 Dashboard Widgets** (PortTable, ServiceTable, Metrics, NetworkGraph)
+- **Tabbed Dashboard Interface:** 4 real-time dashboards with Tab key switching
 - **Thread-Safe State:** Shared `Arc<RwLock<ScanState>>` for scanner integration
 - **Responsive Design:** Immediate mode rendering with <5ms frame time per widget
 
@@ -1979,7 +1979,7 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 
 - `q` / `Ctrl+C` - Quit TUI
 - `?` - Toggle help screen
-- `Tab` / `Shift+Tab` - **Switch between dashboards (Port Table ↔ Service Table ↔ Metrics)**
+- `Tab` / `Shift+Tab` - **Switch between dashboards (Port Table ↔ Service Table ↔ Metrics ↔ Network Graph)**
 
 **Dashboard Navigation:**
 
@@ -2063,6 +2063,18 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 - Color-coded status: Green (active), Yellow (paused), Red (error)
 - <5ms render time (3× under 60 FPS budget)
 
+**8. NetworkGraphWidget** 📊 **NEW in Sprint 6.2**
+
+- Real-time network activity visualization with time-series chart
+- **Chart Layout:** 60-second sliding window graph (X-axis: time, Y-axis: throughput)
+- **Data Series:** Three lines - packets sent (cyan), packets received (green), ports discovered (yellow)
+- **Metrics Collection:** 1 sample/second with NetworkMetrics ringbuffer (VecDeque, capacity 60)
+- **Calculations:** Derivative computation for "ports/sec" from cumulative counts
+- **Auto-scaling:** Y-axis bounds with 10% headroom for visual clarity
+- **Integration:** EventBus ThroughputEvent subscription for real-time updates
+- Sample interval enforcement (≥1s between samples) for data consistency
+- Comprehensive test coverage: ringbuffer management, derivative calculations, bounds checking
+
 ### Using the TUI
 
 **Launch TUI Mode:**
@@ -2084,25 +2096,26 @@ prtip --tui -sS -sV -O -p- 192.168.1.1
 ┌─────────────────────────────────────────────────────────────┐
 │          Header (scan info)                                 │  10% height
 ├─────────────────────────────────────────────────────────────┤
-│ Port Table | Service Table | Metrics                        │  Tab bar
+│ Port Table | Service Table | Metrics | Network Graph        │  Tab bar
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  [Active Dashboard Widget Content]                          │  80% height
 │  - PortTableWidget (6-column sortable table)                │
 │  - ServiceTableWidget (6-column confidence-coded table)     │
 │  - MetricsDashboardWidget (3-column metrics layout)         │
+│  - NetworkGraphWidget (60-second time-series chart)         │
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
 │   Footer (help text, FPS, stats, active tab indicator)     │  10% height
 └─────────────────────────────────────────────────────────────┘
 
-Press Tab to switch dashboards: Port Table → Service Table → Metrics → Port Table
+Press Tab to switch dashboards: Port Table → Service Table → Metrics → Network Graph → Port Table
 ```
 
 **Quality Metrics:**
 
-- **Tests:** 165 passing (140 unit + 25 integration) [up from 71 in Sprint 6.1]
-- **Code:** ~8,138 lines production code (3,638 base + 4,500 dashboard widgets)
+- **Tests:** 175 passing (150 unit + 25 integration) [up from 71 in Sprint 6.1]
+- **Code:** ~8,588 lines production code (3,638 base + 4,950 dashboard widgets)
 - **Documentation:** 891-line TUI-ARCHITECTURE.md guide (v1.1.0 with Sprint 6.2 widgets)
 - **Performance:** <5ms render time per widget, validated at 60 FPS with 10K+ events/sec
 

@@ -90,7 +90,7 @@ pub async fn process_events(
                             // TODO: Sprint 6.2 - horizontal scroll
                         }
 
-                        // Sprint 6.2 Task 2.3-2.4: Route events to active dashboard widget
+                        // Sprint 6.2 Task 2.3-2.5: Route events to active dashboard widget
                         _ => {
                             // Route to active widget based on dashboard tab
                             let handled = match ui_state.active_dashboard_tab {
@@ -110,6 +110,10 @@ pub async fn process_events(
                                 }
                                 DashboardTab::Metrics => {
                                     // Metrics dashboard is read-only, no event handling
+                                    false
+                                }
+                                DashboardTab::NetworkGraph => {
+                                    // Network graph is read-only, no event handling
                                     false
                                 }
                             };

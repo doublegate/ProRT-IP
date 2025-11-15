@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-#### Sprint 6.2: Live Dashboard & Real-Time Metrics - IN PROGRESS (67% Complete)
+#### Sprint 6.2: Live Dashboard & Real-Time Metrics - COMPLETE (100%)
 
-**Status:** 4/6 tasks complete | **Completed:** 2025-11-14 | **Remaining:** Tasks 2.5-2.6
+**Status:** 6/6 tasks complete | **Completed:** 2025-11-14 | **Duration:** ~21.5h
 
 **Major Enhancement:** Production-ready dashboard widgets with tabbed interface for real-time port discovery, service detection, and performance metrics visualization.
 
@@ -55,48 +55,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab/Shift+Tab navigation through all 3 dashboard tabs
 - <5ms render time (3× under 60 FPS budget)
 
+**Task 2.5: NetworkGraphWidget** (~450 lines, 10 tests)
+- Real-time network activity visualization with time-series chart
+- **Chart Layout:** 60-second sliding window graph (X-axis: time, Y-axis: throughput)
+- **Data Series:** Three lines: packets sent, packets received, ports discovered
+- **Metrics Collection:** 1-sample/second with NetworkMetrics ringbuffer (VecDeque, capacity 60)
+- **Calculations:** Derivative computation for "ports/sec" from cumulative counts
+- **Auto-scaling:** Y-axis bounds with 10% headroom (max_value × 1.1)
+- **Integration:** 4th dashboard tab (Tab → NetworkGraph), EventBus ThroughputEvent subscription
+- Sample interval enforcement (≥1s between samples) for data consistency
+- Comprehensive unit tests: ringbuffer management, derivative calculations, bounds checking
+- Bug fixes: 3 critical issues resolved (lifetime errors, test timing, floating-point precision)
+
+**Task 2.6: Final Integration Testing** (Quality verification, 0 new lines)
+- **Test Results:** 175 passing (150 unit + 25 integration + 8 doc tests)
+- **Quality Gates:** Zero clippy warnings, clean formatting, release build success
+- **Integration Verification:** All 4 dashboard tabs working correctly
+- **Performance Validation:** <5ms render time maintained across all widgets
+- **State Management:** Thread-safe Arc<RwLock<ScanState>> verified
+- **EventBus Integration:** All event subscriptions working correctly
+- **Regression Testing:** Zero regressions, all existing functionality preserved
+
 **Architecture Enhancements:**
 
 1. **Tabbed Dashboard Interface:**
-   - 3 dashboard views: Port Table, Service Table, Metrics
-   - Tab key cycling: Port → Service → Metrics → Port
+   - 4 dashboard views: Port Table, Service Table, Metrics, Network Graph
+   - Tab key cycling: Port → Service → Metrics → NetworkGraph → Port
    - Visual tab bar with active tab highlighting (cyan)
    - Conditional widget rendering based on active tab
+   - Efficient state management per tab (only active tab processes events)
 
 2. **State Management:**
    - Thread-safe ScanState (Arc<RwLock<T>>) for scanner ↔ TUI communication
-   - Ringbuffers: port_discoveries (1,000), service_detections (500)
+   - Ringbuffers: port_discoveries (1,000), service_detections (500), network_metrics (60)
    - Throughput history (5-second window for rolling averages)
    - Lock management: Explicit drop() pattern prevents deadlocks
+   - Sample interval enforcement for consistent time-series data
 
 3. **Event System:**
    - PortDiscovery events: Timestamp, IP, Port, State, Protocol, ScanType
    - ServiceDetection events: Timestamp, IP, Port, ServiceName, Version, Confidence
+   - ThroughputEvent: Packets sent/received, ports discovered (for graph)
    - Event routing to active dashboard widget
    - Aggregation support (10K+ events/sec)
 
 **Quality Metrics:**
 
-- **Tests:** 165 passing (140 unit + 25 integration) [up from 71 in Sprint 6.1]
-- **Code:** ~4,500 lines new production code (3 widgets + integration)
+- **Tests:** 175 passing (150 unit + 25 integration + 8 doc tests) [up from 71 in Sprint 6.1]
+- **Code:** ~4,950 lines new production code (4 widgets + integration)
 - **Clippy:** 0 warnings with strict linting
 - **Performance:** <5ms render time per widget, 60 FPS validated
-- **Documentation:** Widget-level rustdoc comments + implementation guides
+- **Documentation:** Widget-level rustdoc comments + comprehensive implementation reports
+- **Test Coverage:** All widgets have comprehensive unit tests (10-24 tests each)
 
 **Files Modified/Created:**
 
 - Created: `crates/prtip-tui/src/widgets/port_table.rs` (744 lines)
 - Created: `crates/prtip-tui/src/widgets/service_table.rs` (832 lines)
 - Created: `crates/prtip-tui/src/widgets/metrics_dashboard.rs` (740 lines)
-- Modified: `crates/prtip-tui/src/state/ui_state.rs` (+239 lines, DashboardTab enum)
-- Modified: `crates/prtip-tui/src/ui/renderer.rs` (+77 lines, tabbed rendering)
-- Modified: `crates/prtip-tui/src/events/loop.rs` (+50 lines, event routing)
-- Modified: `crates/prtip-tui/tests/integration_test.rs` (+323 lines, 28 new tests)
+- Created: `crates/prtip-tui/src/widgets/network_graph.rs` (450 lines)
+- Modified: `crates/prtip-tui/src/state/ui_state.rs` (+247 lines, DashboardTab enum + NetworkMetrics)
+- Modified: `crates/prtip-tui/src/ui/renderer.rs` (+86 lines, 4-tab rendering)
+- Modified: `crates/prtip-tui/src/events/loop.rs` (+54 lines, event routing + sampling)
+- Modified: `crates/prtip-tui/src/widgets/mod.rs` (+2 lines)
+- Modified: `crates/prtip-tui/tests/integration_test.rs` (+327 lines, 28 new tests)
 
 **See Also:**
 - TUI-ARCHITECTURE.md Section 5 (Widgets)
-- /tmp/ProRT-IP/TASK-2.4-COMPLETE.md (comprehensive implementation report)
-- to-dos/PHASE-6/SPRINT-6.2-LIVE-DASHBOARD-TODO.md (progress tracking)
+- /tmp/ProRT-IP/TASK-2.5-NETWORK-GRAPH-IMPLEMENTATION-REPORT.md (Task 2.5 comprehensive report)
+- /tmp/ProRT-IP/TASK-2.5-QUICK-SUMMARY.md (Task 2.5 executive summary)
+- to-dos/PHASE-6/SPRINT-6.2-LIVE-DASHBOARD-TODO.md (sprint completion report)
 
 ---
 

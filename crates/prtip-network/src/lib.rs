@@ -27,8 +27,10 @@
 //! capture.close().unwrap();
 //! ```
 
+pub mod adaptive_batch;
 pub mod batch_sender;
 pub mod capture;
+pub mod cdn_detector;
 pub mod fragmentation;
 pub mod icmpv6;
 pub mod interface;
@@ -40,8 +42,12 @@ pub mod privilege;
 pub mod protocol_payloads;
 
 // Re-export commonly used items
-pub use batch_sender::{BatchReceiver, BatchSender, PacketBatch, ReceivedPacket, MAX_BATCH_SIZE};
+pub use adaptive_batch::{AdaptiveBatchSizer, AdaptiveConfig, PerformanceMonitor};
+pub use batch_sender::{
+    BatchReceiver, BatchSender, PacketBatch, PlatformCapabilities, ReceivedPacket, MAX_BATCH_SIZE,
+};
 pub use capture::{create_capture, PacketCapture};
+pub use cdn_detector::{CdnDetector, CdnProvider};
 pub use fragmentation::{
     defragment_packets, fragment_tcp_packet, validate_mtu, MIN_MTU, NMAP_F_MTU,
 };

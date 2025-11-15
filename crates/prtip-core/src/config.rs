@@ -201,6 +201,15 @@ pub struct NetworkConfig {
     pub interface: Option<String>,
     /// Source port to use (None = random)
     pub source_port: Option<u16>,
+    /// Skip scanning CDN IPs (reduces scan time by 30-70%)
+    #[serde(default)]
+    pub skip_cdn: bool,
+    /// CDN provider whitelist (only skip these providers)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cdn_whitelist: Option<Vec<String>>,
+    /// CDN provider blacklist (never skip these providers)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cdn_blacklist: Option<Vec<String>>,
 }
 
 /// Output configuration
@@ -248,6 +257,16 @@ impl std::fmt::Display for OutputFormat {
     }
 }
 
+/// Default minimum batch size for adaptive batching
+fn default_min_batch_size() -> usize {
+    1
+}
+
+/// Default maximum batch size for adaptive batching
+fn default_max_batch_size() -> usize {
+    1024
+}
+
 /// Performance configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PerformanceConfig {
@@ -264,6 +283,15 @@ pub struct PerformanceConfig {
     /// Enable NUMA optimization for multi-socket systems (Linux only)
     #[serde(default)]
     pub numa_enabled: bool,
+    /// Enable adaptive batch sizing for sendmmsg/recvmmsg (Sprint 6.3)
+    #[serde(default)]
+    pub adaptive_batch_enabled: bool,
+    /// Minimum batch size for adaptive batching (1-1024)
+    #[serde(default = "default_min_batch_size")]
+    pub min_batch_size: usize,
+    /// Maximum batch size for adaptive batching (1-1024)
+    #[serde(default = "default_max_batch_size")]
+    pub max_batch_size: usize,
 }
 
 impl Default for PerformanceConfig {
@@ -279,6 +307,9 @@ impl Default for PerformanceConfig {
             batch_size: None,
             requested_ulimit: None,
             numa_enabled: false, // Disabled by default for compatibility
+            adaptive_batch_enabled: false, // Disabled by default (opt-in)
+            min_batch_size: default_min_batch_size(),
+            max_batch_size: default_max_batch_size(),
         }
     }
 }

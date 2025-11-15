@@ -15,7 +15,7 @@ pub enum SelectedPane {
     Help,
 }
 
-/// Dashboard tab selection (Sprint 6.2 Task 2.3, extended in Task 2.4)
+/// Dashboard tab selection (Sprint 6.2 Task 2.3, extended in Task 2.4-2.5)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DashboardTab {
     /// Port discoveries table
@@ -24,6 +24,8 @@ pub enum DashboardTab {
     ServiceTable,
     /// Live metrics dashboard (Sprint 6.2 Task 2.4)
     Metrics,
+    /// Network activity graph (Sprint 6.2 Task 2.5)
+    NetworkGraph,
 }
 
 /// Local UI state (single-threaded, no locking needed)
@@ -114,16 +116,18 @@ impl UIState {
         self.active_dashboard_tab = match self.active_dashboard_tab {
             DashboardTab::PortTable => DashboardTab::ServiceTable,
             DashboardTab::ServiceTable => DashboardTab::Metrics,
-            DashboardTab::Metrics => DashboardTab::PortTable,
+            DashboardTab::Metrics => DashboardTab::NetworkGraph,
+            DashboardTab::NetworkGraph => DashboardTab::PortTable,
         };
     }
 
     /// Switch to previous dashboard tab (Shift+Tab key)
     pub fn prev_dashboard_tab(&mut self) {
         self.active_dashboard_tab = match self.active_dashboard_tab {
-            DashboardTab::PortTable => DashboardTab::Metrics,
+            DashboardTab::PortTable => DashboardTab::NetworkGraph,
             DashboardTab::ServiceTable => DashboardTab::PortTable,
             DashboardTab::Metrics => DashboardTab::ServiceTable,
+            DashboardTab::NetworkGraph => DashboardTab::Metrics,
         };
     }
 

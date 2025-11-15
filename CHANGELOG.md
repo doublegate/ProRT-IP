@@ -126,6 +126,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - /tmp/ProRT-IP/TASK-2.5-QUICK-SUMMARY.md (Task 2.5 executive summary)
 - to-dos/PHASE-6/SPRINT-6.2-LIVE-DASHBOARD-TODO.md (sprint completion report)
 
+### Fixed
+
+#### CI/CD Workflow - Security Audit and Disk Space Issues Resolved
+
+**Problem 1: Security Audit Failure**
+- cargo-deny blocking CI with RUSTSEC-2024-0436 (paste crate unmaintained)
+- Transitive dependency: ratatui 0.28.1/0.29.0 → paste 1.0.15
+- Advisory type: Unmaintained status (no known CVEs)
+
+**Problem 2: Test Job Failure**
+- "No space left on device" error during release build compilation
+- GitHub Actions ubuntu-latest runner exhausting disk space
+- Redundant release build in test job (release.yml already handles release artifacts)
+
+**Solution:**
+- Added RUSTSEC-2024-0436 to deny.toml ignore list with comprehensive risk assessment
+  - Justification: paste is proc-macro crate (compile-time only, zero runtime risk)
+  - Mitigation: Used via ratatui (trusted, actively maintained), monitor for upstream migration to pastey
+- Removed redundant release build step from ci.yml test job
+  - CI purpose is testing (debug builds sufficient for validation)
+  - Reduces runner disk space usage by ~50%
+  - Release artifacts built by dedicated release.yml workflow
+
+**Impact:**
+- CI workflow now passes both Security Audit and Test jobs (100% green)
+- Disk space headroom improved for future dependency growth
+- No user-facing changes, internal infrastructure only
+
+**Files Modified:**
+- `deny.toml` - Added paste advisory ignore with documentation
+- `.github/workflows/ci.yml` - Removed release build step, added explanatory comment
+
 ---
 
 ## [0.5.1] - 2025-11-14

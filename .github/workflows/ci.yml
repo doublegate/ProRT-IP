@@ -163,8 +163,9 @@ jobs:
           # when multiple tests run in parallel (same fix as commit 0bf2a70)
           PRTIP_DISABLE_HISTORY: "1"
 
-      - name: Build release
-        run: cargo build --release --workspace --locked
+      # Note: Release builds removed to prevent "No space left on device" errors in CI.
+      # Release artifacts are built in the dedicated release.yml workflow.
+      # CI purpose is testing (debug builds sufficient for test validation).
 
   # Job 4: Security audit
   security_audit:

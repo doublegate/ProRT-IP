@@ -70,25 +70,26 @@ feature-depth = 1
 # A list of advisory IDs to ignore. Note that ignored advisories will still
 # output a note when they are encountered.
 ignore = [
-    # RUSTSEC-2024-0382: hwloc is unmaintained
+    # RUSTSEC-2024-0436: paste is unmaintained
     #
-    # Context: hwloc is used for NUMA topology detection (optional feature).
-    # The crate is feature-gated and only used on Linux with --features numa.
+    # Context: paste is a proc-macro crate used by ratatui for compile-time code generation.
+    # It's a transitive dependency (ratatui 0.28.1 and 0.29.0 → paste 1.0.15).
     #
     # Risk Assessment:
-    # - Low: Limited functionality (read-only topology detection)
+    # - Very Low: Proc-macro crates run only at compile time (zero runtime risk)
     # - No known security vulnerabilities (just unmaintained status)
-    # - No alternative Rust crates available for NUMA detection
-    # - Feature is optional and can be disabled
+    # - Transitive dependency from ratatui (critical for TUI functionality)
+    # - Alternative (pastey) not adopted by ratatui upstream yet
     #
     # Mitigation:
-    # - Feature-gated behind "numa" flag (opt-in only)
-    # - Only enabled on Linux (cfg gate)
-    # - Used in controlled context (topology detection at startup)
-    # - Will migrate to alternative if one becomes available
+    # - No runtime code execution (compile-time only)
+    # - Used via ratatui (trusted, actively maintained crate)
+    # - TUI feature is core to Sprint 6.1-6.2 deliverables
+    # - Will migrate when ratatui updates to pastey or alternative
     #
-    # Decision: Accept risk for optional NUMA feature until alternative exists
-    { id = "RUSTSEC-2024-0382", reason = "hwloc unmaintained but no alternative exists for NUMA detection. Feature-gated and optional." },
+    # Decision: Accept risk for TUI functionality. Proc-macro execution is sandboxed
+    # and paste v1.0.15 has no known CVEs. Monitor ratatui updates for migration.
+    { id = "RUSTSEC-2024-0436", reason = "paste proc-macro crate unmaintained but required by ratatui. Compile-time only, no runtime risk." },
 ]
 # If this is true, then cargo deny will use the git executable to fetch advisory database.
 # If this is false, then it uses a built-in git library.

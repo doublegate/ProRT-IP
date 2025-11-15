@@ -1,0 +1,366 @@
+{
+  "benchmark_suite": "Batch I/O Performance (sendmmsg/recvmmsg)",
+  "version": "1.0.0",
+  "created": "2025-11-15",
+  "description": "Benchmark scenarios for validating sendmmsg/recvmmsg batch I/O throughput improvements on Linux",
+  "platform_requirements": {
+    "linux": {
+      "required": true,
+      "reason": "sendmmsg/recvmmsg syscalls are Linux-specific",
+      "kernel_version": ">=3.0"
+    },
+    "macos": {
+      "fallback_mode": true,
+      "reason": "Falls back to single send/recv per packet"
+    },
+    "windows": {
+      "fallback_mode": true,
+      "reason": "Falls back to single send/recv per packet"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scenario_1_baseline_single_syscall",
+      "name": "Baseline (Single send/recv per packet)",
+      "description": "Baseline performance using traditional single send/recv syscalls (no batching)",
+      "batch_io": {
+        "enabled": false,
+        "mode": "single",
+        "batch_size": 1
+      },
+      "target_config": {
+        "ip_count": 1000,
+        "ports_per_ip": 10,
+        "total_packets": 10000,
+        "scan_type": "SYN"
+      },
+      "expected_results": {
+        "throughput_pps": "10000-50000",
+        "syscalls_per_packet": 2.0,
+        "total_syscalls": 20000,
+        "latency_ms": "baseline"
+      },
+      "validation": {
+        "assert_no_batching": true,
+        "assert_one_syscall_per_packet": true,
+        "measure_baseline_pps": true
+      }
+    },
+    {
+      "id": "scenario_2_batch_size_32",
+      "name": "Batch I/O (Batch Size 32)",
+      "description": "Batch I/O with sendmmsg/recvmmsg using batch size of 32 packets per syscall",
+      "batch_io": {
+        "enabled": true,
+        "mode": "batch",
+        "batch_size": 32
+      },
+      "target_config": {
+        "ip_count": 1000,
+        "ports_per_ip": 10,
+        "total_packets": 10000,
+        "scan_type": "SYN"
+      },
+      "expected_results": {
+        "throughput_pps": "15000-75000",
+        "syscalls_per_packet": 0.0625,
+        "total_syscalls": 625,
+        "latency_ms": "<= baseline",
+        "improvement_percentage": "20-40%"
+      },
+      "validation": {
+        "assert_batching_enabled": true,
+        "assert_batch_size_32": true,
+        "assert_syscalls_reduced": true,
+        "assert_throughput_improvement_gte": 20.0
+      }
+    },
+    {
+      "id": "scenario_3_batch_size_256",
+      "name": "Batch I/O (Batch Size 256)",
+      "description": "Batch I/O with sendmmsg/recvmmsg using batch size of 256 packets per syscall",
+      "batch_io": {
+        "enabled": true,
+        "mode": "batch",
+        "batch_size": 256
+      },
+      "target_config": {
+        "ip_count": 1000,
+        "ports_per_ip": 10,
+        "total_packets": 10000,
+        "scan_type": "SYN"
+      },
+      "expected_results": {
+        "throughput_pps": "20000-100000",
+        "syscalls_per_packet": 0.0078,
+        "total_syscalls": 78,
+        "latency_ms": "<= baseline",
+        "improvement_percentage": "30-50%"
+      },
+      "validation": {
+        "assert_batching_enabled": true,
+        "assert_batch_size_256": true,
+        "assert_syscalls_reduced": true,
+        "assert_throughput_improvement_gte": 30.0
+      }
+    },
+    {
+      "id": "scenario_4_batch_size_1024",
+      "name": "Batch I/O (Batch Size 1024 - Maximum)",
+      "description": "Batch I/O with sendmmsg/recvmmsg using maximum batch size of 1024 packets per syscall",
+      "batch_io": {
+        "enabled": true,
+        "mode": "batch",
+        "batch_size": 1024
+      },
+      "target_config": {
+        "ip_count": 1000,
+        "ports_per_ip": 10,
+        "total_packets": 10000,
+        "scan_type": "SYN"
+      },
+      "expected_results": {
+        "throughput_pps": "25000-125000",
+        "syscalls_per_packet": 0.00195,
+        "total_syscalls": 20,
+        "latency_ms": "<= baseline * 1.05",
+        "improvement_percentage": "40-60%"
+      },
+      "validation": {
+        "assert_batching_enabled": true,
+        "assert_batch_size_1024": true,
+        "assert_syscalls_reduced": true,
+        "assert_throughput_improvement_gte": 40.0,
+        "assert_latency_acceptable": true
+      }
+    },
+    {
+      "id": "scenario_5_large_scale_10k_targets",
+      "name": "Large Scale (10K targets, Batch 1024)",
+      "description": "Large-scale scan with 10,000 targets using maximum batch size to measure scalability",
+      "batch_io": {
+        "enabled": true,
+        "mode": "batch",
+        "batch_size": 1024
+      },
+      "target_config": {
+        "ip_count": 10000,
+        "ports_per_ip": 10,
+        "total_packets": 100000,
+        "scan_type": "SYN"
+      },
+      "expected_results": {
+        "throughput_pps": "50000-150000",
+        "syscalls_per_packet": 0.00195,
+        "total_syscalls": 195,
+        "scan_duration_seconds": "< 2.0",
+        "improvement_percentage": "40-60%"
+      },
+      "validation": {
+        "assert_linear_scaling": true,
+        "assert_throughput_maintained": true,
+        "assert_memory_under_limit": true
+      }
+    },
+    {
+      "id": "scenario_6_ipv6_batch_io",
+      "name": "IPv6 Batch I/O (Batch Size 256)",
+      "description": "Validates batch I/O performance with IPv6 targets (larger packet headers)",
+      "batch_io": {
+        "enabled": true,
+        "mode": "batch",
+        "batch_size": 256
+      },
+      "target_config": {
+        "ip_count": 1000,
+        "ports_per_ip": 10,
+        "total_packets": 10000,
+        "scan_type": "SYN",
+        "ip_version": "IPv6"
+      },
+      "expected_results": {
+        "throughput_pps": "18000-90000",
+        "syscalls_per_packet": 0.0078,
+        "total_syscalls": 78,
+        "ipv6_overhead": "<= 10%",
+        "improvement_percentage": "25-45%"
+      },
+      "validation": {
+        "assert_ipv6_batching_works": true,
+        "assert_throughput_improvement_gte": 25.0,
+        "assert_ipv6_overhead_acceptable": true
+      }
+    },
+    {
+      "id": "scenario_7_mixed_batch_sizes",
+      "name": "Mixed Batch Sizes (Adaptive)",
+      "description": "Tests adaptive batch sizing with varying batch sizes based on target count",
+      "batch_io": {
+        "enabled": true,
+        "mode": "adaptive",
+        "batch_size_range": "32-1024"
+      },
+      "target_config": {
+        "ip_count": 5000,
+        "ports_per_ip": 10,
+        "total_packets": 50000,
+        "scan_type": "SYN"
+      },
+      "expected_results": {
+        "throughput_pps": "40000-120000",
+        "average_batch_size": "256-512",
+        "syscall_reduction": ">=90%",
+        "improvement_percentage": "35-55%"
+      },
+      "validation": {
+        "assert_adaptive_sizing": true,
+        "assert_optimal_batch_selection": true,
+        "assert_throughput_improvement_gte": 35.0
+      }
+    },
+    {
+      "id": "scenario_8_fallback_mode_macos",
+      "name": "Fallback Mode (macOS/Windows)",
+      "description": "Validates graceful fallback to single send/recv on non-Linux platforms",
+      "batch_io": {
+        "enabled": true,
+        "mode": "fallback",
+        "batch_size": 1
+      },
+      "target_config": {
+        "ip_count": 1000,
+        "ports_per_ip": 10,
+        "total_packets": 10000,
+        "scan_type": "SYN"
+      },
+      "expected_results": {
+        "throughput_pps": "10000-50000",
+        "syscalls_per_packet": 2.0,
+        "total_syscalls": 20000,
+        "fallback_confirmed": true
+      },
+      "validation": {
+        "assert_fallback_to_single": true,
+        "assert_no_performance_regression": true,
+        "assert_feature_detection_works": true
+      }
+    }
+  ],
+  "performance_targets": {
+    "throughput_improvement": {
+      "batch_32": "20-40%",
+      "batch_256": "30-50%",
+      "batch_1024": "40-60%",
+      "description": "Expected throughput improvement vs baseline (single send/recv)"
+    },
+    "syscall_reduction": {
+      "batch_32": "96.875%",
+      "batch_256": "99.219%",
+      "batch_1024": "99.805%",
+      "description": "Percentage of syscalls eliminated via batching"
+    },
+    "latency_impact": {
+      "target": "<= baseline",
+      "acceptable": "<= baseline * 1.05",
+      "description": "Latency should remain similar or improve (fewer context switches)"
+    },
+    "scalability": {
+      "linear_scaling": "1000-10000 targets",
+      "memory_overhead": "<= 10 MB",
+      "description": "Batch I/O should scale linearly without excessive memory usage"
+    }
+  },
+  "technical_details": {
+    "sendmmsg_syscall": {
+      "description": "Linux syscall for sending multiple messages in a single call",
+      "batch_limit": 1024,
+      "header_size": "sizeof(struct mmsghdr) * batch_size",
+      "performance_benefit": "Reduces user-kernel context switches from N to N/batch_size"
+    },
+    "recvmmsg_syscall": {
+      "description": "Linux syscall for receiving multiple messages in a single call",
+      "batch_limit": 1024,
+      "timeout_support": true,
+      "performance_benefit": "Amortizes syscall overhead across multiple packets"
+    },
+    "fallback_behavior": {
+      "linux_kernel_3plus": "Use sendmmsg/recvmmsg (batch mode)",
+      "linux_kernel_2": "Fall back to single send/recv (no batching)",
+      "macos": "Fall back to single send/recv (sendmmsg not available)",
+      "windows": "Fall back to WSASendMsg/WSARecvMsg (single message per call)"
+    }
+  },
+  "execution_notes": {
+    "test_methodology": "Measure packets/second throughput, syscall count, and scan duration",
+    "performance_measurement": "Use hyperfine for statistical accuracy, 10+ runs per scenario",
+    "validation_approach": "Compare batch I/O throughput vs baseline, verify syscall reduction",
+    "environment": "Requires ProRT-IP v0.5.2+ with BatchSender/BatchReceiver implementation",
+    "prerequisites": [
+      "Build release binary: cargo build --release",
+      "Linux kernel 3.0+ for batch I/O support",
+      "Root privileges for raw socket creation",
+      "strace for syscall counting (optional validation)"
+    ]
+  },
+  "sample_commands": {
+    "scenario_1_baseline": {
+      "command": "sudo ./target/release/prtip -sS -p 1-10 --batch-size 1 --target-file targets/1000-ips.txt --output-json baseline-results.json",
+      "description": "Baseline scan with single send/recv per packet"
+    },
+    "scenario_2_batch_32": {
+      "command": "sudo ./target/release/prtip -sS -p 1-10 --batch-size 32 --target-file targets/1000-ips.txt --output-json batch32-results.json",
+      "description": "Batch I/O scan with batch size 32"
+    },
+    "scenario_3_batch_256": {
+      "command": "sudo ./target/release/prtip -sS -p 1-10 --batch-size 256 --target-file targets/1000-ips.txt --output-json batch256-results.json",
+      "description": "Batch I/O scan with batch size 256"
+    },
+    "scenario_4_batch_1024": {
+      "command": "sudo ./target/release/prtip -sS -p 1-10 --batch-size 1024 --target-file targets/1000-ips.txt --output-json batch1024-results.json",
+      "description": "Batch I/O scan with maximum batch size 1024"
+    },
+    "scenario_5_large_scale": {
+      "command": "sudo ./target/release/prtip -sS -p 1-10 --batch-size 1024 --target-file targets/10000-ips.txt --output-json large-scale-results.json",
+      "description": "Large-scale scan (10K targets) with batch size 1024"
+    },
+    "scenario_6_ipv6": {
+      "command": "sudo ./target/release/prtip -sS -p 1-10 --batch-size 256 --target-file targets/1000-ipv6.txt --output-json ipv6-batch-results.json",
+      "description": "IPv6 batch I/O scan with batch size 256"
+    },
+    "strace_syscall_count": {
+      "command": "sudo strace -c ./target/release/prtip -sS -p 1-10 --batch-size 256 --target-file targets/1000-ips.txt",
+      "description": "Count syscalls to verify batch I/O reduces sendmmsg/recvmmsg calls"
+    }
+  },
+  "validation_scripts": {
+    "calculate_improvement": "improvement_pct = ((batch_pps - baseline_pps) / baseline_pps) * 100",
+    "calculate_syscall_reduction": "reduction_pct = (1 - (batch_syscalls / baseline_syscalls)) * 100",
+    "validate_throughput": "assert batch_pps >= baseline_pps * (1 + min_improvement_pct / 100)",
+    "validate_latency": "assert batch_latency <= baseline_latency * 1.05"
+  },
+  "expected_syscall_counts": {
+    "baseline_1000_ips_10_ports": {
+      "sendmsg": 10000,
+      "recvmsg": 10000,
+      "total": 20000
+    },
+    "batch_32_1000_ips_10_ports": {
+      "sendmmsg": 313,
+      "recvmmsg": 313,
+      "total": 626,
+      "reduction": "96.87%"
+    },
+    "batch_256_1000_ips_10_ports": {
+      "sendmmsg": 39,
+      "recvmmsg": 39,
+      "total": 78,
+      "reduction": "99.61%"
+    },
+    "batch_1024_1000_ips_10_ports": {
+      "sendmmsg": 10,
+      "recvmmsg": 10,
+      "total": 20,
+      "reduction": "99.90%"
+    }
+  }
+}

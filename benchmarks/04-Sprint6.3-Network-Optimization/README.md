@@ -9,7 +9,7 @@
 This directory contains benchmark scenarios for Sprint 6.3 Network Optimization features:
 
 1. **CDN IP Deduplication** - Validates CDN filtering effectiveness and performance
-2. **Batch I/O Performance** - Measures sendmmsg/recvmmsg throughput improvements (planned)
+2. **Batch I/O Performance** - Measures sendmmsg/recvmmsg throughput improvements on Linux
 3. **Adaptive Batch Sizing** - Tests dynamic batch size adjustments (planned)
 
 ## Benchmark Files
@@ -26,6 +26,25 @@ Comprehensive CDN filtering validation with 6 scenarios:
 | **Blacklist Mode** | Skip all except CF | ≥35% | <10% |
 | **IPv6 Filtering** | IPv6 CDN detection | ≥45% | <10% |
 | **Mixed IPv4/IPv6** | Dual-stack filtering | ≥45% | <10% |
+
+### 02-Batch-IO-Performance-Bench.json
+
+Batch I/O performance validation with 8 scenarios (Linux only):
+
+| Scenario | Description | Batch Size | Expected Improvement | Syscall Reduction |
+|----------|-------------|------------|---------------------|-------------------|
+| **Baseline** | Single send/recv per packet | 1 | 0% (reference) | 0% |
+| **Batch 32** | sendmmsg/recvmmsg batch=32 | 32 | 20-40% | 96.87% |
+| **Batch 256** | sendmmsg/recvmmsg batch=256 | 256 | 30-50% | 99.61% |
+| **Batch 1024** | Maximum batch size | 1024 | 40-60% | 99.90% |
+| **Large Scale** | 10K targets, batch=1024 | 1024 | 40-60% | 99.90% |
+| **IPv6 Batch** | IPv6 with batch=256 | 256 | 25-45% | 99.61% |
+| **Adaptive** | Dynamic batch sizing | 32-1024 | 35-55% | ≥90% |
+| **Fallback** | macOS/Windows fallback | 1 | 0% | 0% |
+
+**Platform Requirements:**
+- **Linux (kernel 3.0+):** Full batch I/O support (sendmmsg/recvmmsg)
+- **macOS/Windows:** Graceful fallback to single send/recv per packet
 
 ## Execution Instructions
 
@@ -102,6 +121,111 @@ sudo ./target/release/prtip -sS -p 80,443 \
   --output-json mixed-results.json
 ```
 
+### Running Batch I/O Benchmarks
+
+**Note:** Batch I/O benchmarks require Linux with kernel 3.0+ for sendmmsg/recvmmsg support. On macOS/Windows, the scanner gracefully falls back to single send/recv mode.
+
+**Scenario 1: Baseline (Single syscall per packet)**
+
+```bash
+# 1000 IPs, 10 ports each = 10,000 packets
+# Uses single send/recv per packet (no batching)
+sudo ./target/release/prtip -sS -p 1-10 \
+  --batch-size 1 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/baseline-1000.txt \
+  --output-json batch-baseline-results.json
+```
+
+**Scenario 2: Batch Size 32**
+
+```bash
+# 1000 IPs, 10 ports each = 10,000 packets
+# Batch size 32: ~625 syscalls (96.87% reduction)
+sudo ./target/release/prtip -sS -p 1-10 \
+  --batch-size 32 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/baseline-1000.txt \
+  --output-json batch-32-results.json
+```
+
+**Scenario 3: Batch Size 256**
+
+```bash
+# 1000 IPs, 10 ports each = 10,000 packets
+# Batch size 256: ~78 syscalls (99.61% reduction)
+sudo ./target/release/prtip -sS -p 1-10 \
+  --batch-size 256 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/baseline-1000.txt \
+  --output-json batch-256-results.json
+```
+
+**Scenario 4: Batch Size 1024 (Maximum)**
+
+```bash
+# 1000 IPs, 10 ports each = 10,000 packets
+# Batch size 1024: ~20 syscalls (99.90% reduction)
+sudo ./target/release/prtip -sS -p 1-10 \
+  --batch-size 1024 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/baseline-1000.txt \
+  --output-json batch-1024-results.json
+```
+
+**Scenario 5: Large Scale (10K targets)**
+
+```bash
+# 10,000 IPs, 10 ports each = 100,000 packets
+# Batch size 1024: ~195 syscalls
+# Note: Requires generating 10K target file first
+sudo ./target/release/prtip -sS -p 1-10 \
+  --batch-size 1024 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/large-scale-10k.txt \
+  --output-json batch-large-scale-results.json
+```
+
+**Scenario 6: IPv6 Batch I/O**
+
+```bash
+# 500 IPv6 IPs, 10 ports each = 5,000 packets
+# Batch size 256: ~39 syscalls (99.61% reduction)
+sudo ./target/release/prtip -sS -p 1-10 \
+  --batch-size 256 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/ipv6-500.txt \
+  --output-json batch-ipv6-results.json
+```
+
+**Scenario 7: Adaptive Batch Sizing**
+
+```bash
+# Adaptive batch sizing (automatically adjusts based on target count)
+# Note: Requires --adaptive-batch flag when implemented
+sudo ./target/release/prtip -sS -p 1-10 \
+  --adaptive-batch \
+  --min-batch-size 32 \
+  --max-batch-size 1024 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/baseline-1000.txt \
+  --output-json batch-adaptive-results.json
+```
+
+**Scenario 8: Fallback Mode (macOS/Windows)**
+
+```bash
+# On macOS/Windows, batch I/O automatically falls back to single send/recv
+# This scenario validates graceful degradation
+./target/release/prtip -sS -p 1-10 \
+  --batch-size 256 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/baseline-1000.txt \
+  --output-json batch-fallback-results.json
+```
+
+**Syscall Counting (Optional Validation)**
+
+```bash
+# Use strace to verify syscall reduction
+sudo strace -c ./target/release/prtip -sS -p 1-10 \
+  --batch-size 256 \
+  --target-file benchmarks/04-Sprint6.3-Network-Optimization/targets/baseline-1000.txt \
+  2>&1 | grep -E 'sendmmsg|recvmmsg|sendmsg|recvmsg'
+```
+
 ## Target IP Lists
 
 ### Required Files
@@ -166,44 +290,164 @@ Validate CDN IPs correctly detected:
 # Target: ≥ 99% accuracy
 ```
 
-## Expected Results
+### Batch I/O Throughput
 
-### Scenario 1: Baseline
+Measure packets per second (pps) throughput:
+
+```bash
+# Calculate throughput
+total_packets=$(jq '.summary.total_packets' results.json)
+scan_duration_ms=$(jq '.summary.scan_duration_ms' results.json)
+throughput_pps=$(echo "scale=2; ($total_packets / $scan_duration_ms) * 1000" | bc)
+
+echo "Throughput: ${throughput_pps} packets/second"
+```
+
+### Syscall Reduction
+
+Validate batch I/O reduces syscalls:
+
+```bash
+# Compare baseline vs batched syscalls
+baseline_syscalls=20000  # (10,000 packets × 2 syscalls)
+batch_256_syscalls=78    # (10,000 packets / 256 batch × 2 syscalls)
+reduction=$(echo "scale=2; (1 - ($batch_256_syscalls / $baseline_syscalls)) * 100" | bc)
+
+echo "Syscall reduction: ${reduction}%"
+# Expected: 99.61% for batch_size=256
+```
+
+### Latency Impact
+
+Measure latency changes from batching:
+
+```bash
+# Time baseline
+time1=$(jq '.summary.scan_duration_ms' batch-baseline-results.json)
+
+# Time batched
+time2=$(jq '.summary.scan_duration_ms' batch-256-results.json)
+
+# Calculate latency change
+latency_change=$(echo "scale=2; (($time2 - $time1) / $time1) * 100" | bc)
+
+echo "Latency change: ${latency_change}%"
+# Target: ≤ baseline (should be faster or similar)
+# Acceptable: ≤ baseline × 1.05 (5% acceptable overhead)
+```
+
+### Batch I/O Expected Results
+
+**Scenario 1: Baseline (Batch Size 1)**
+- **Total Packets**: 10,000 (1,000 IPs × 10 ports)
+- **Batch Size**: 1 (no batching)
+- **Syscalls**: 20,000 (10,000 sendmsg + 10,000 recvmsg)
+- **Syscall Reduction**: 0% (reference)
+- **Throughput**: 10,000-50,000 pps
+- **Improvement**: 0% (reference)
+- **Latency**: Baseline
+
+**Scenario 2: Batch Size 32**
+- **Total Packets**: 10,000 (1,000 IPs × 10 ports)
+- **Batch Size**: 32 packets per syscall
+- **Syscalls**: 625 (313 sendmmsg + 313 recvmmsg)
+- **Syscall Reduction**: 96.87% vs baseline
+- **Throughput**: 15,000-75,000 pps
+- **Improvement**: 20-40% vs baseline
+- **Latency**: ≤ baseline (faster due to fewer context switches)
+
+**Scenario 3: Batch Size 256**
+- **Total Packets**: 10,000 (1,000 IPs × 10 ports)
+- **Batch Size**: 256 packets per syscall
+- **Syscalls**: 78 (39 sendmmsg + 39 recvmmsg)
+- **Syscall Reduction**: 99.61% vs baseline
+- **Throughput**: 20,000-100,000 pps
+- **Improvement**: 30-50% vs baseline
+- **Latency**: ≤ baseline
+
+**Scenario 4: Batch Size 1024 (Maximum)**
+- **Total Packets**: 10,000 (1,000 IPs × 10 ports)
+- **Batch Size**: 1024 packets per syscall (Linux maximum)
+- **Syscalls**: 20 (10 sendmmsg + 10 recvmmsg)
+- **Syscall Reduction**: 99.90% vs baseline
+- **Throughput**: 25,000-125,000 pps
+- **Improvement**: 40-60% vs baseline
+- **Latency**: ≤ baseline × 1.05 (acceptable slight increase)
+
+**Scenario 5: Large Scale (10K targets)**
+- **Total Packets**: 100,000 (10,000 IPs × 10 ports)
+- **Batch Size**: 1024 packets per syscall
+- **Syscalls**: 195 (98 sendmmsg + 98 recvmmsg)
+- **Syscall Reduction**: 99.90% vs baseline
+- **Throughput**: 50,000-150,000 pps
+- **Improvement**: 40-60% vs baseline
+- **Scan Duration**: < 2.0 seconds total
+
+**Scenario 6: IPv6 Batch I/O**
+- **Total Packets**: 5,000 (500 IPv6 IPs × 10 ports)
+- **Batch Size**: 256 packets per syscall
+- **Syscalls**: 39 (20 sendmmsg + 20 recvmmsg)
+- **Syscall Reduction**: 99.61% vs baseline
+- **Throughput**: 18,000-90,000 pps (slight IPv6 header overhead)
+- **Improvement**: 25-45% vs baseline
+- **IPv6 Overhead**: ≤ 10% vs IPv4
+
+**Scenario 7: Adaptive Batch Sizing**
+- **Total Packets**: 50,000 (5,000 IPs × 10 ports)
+- **Batch Size**: Dynamic (32-1024 range)
+- **Average Batch Size**: 256-512 packets
+- **Syscall Reduction**: ≥ 90% vs baseline
+- **Throughput**: 40,000-120,000 pps
+- **Improvement**: 35-55% vs baseline
+- **Adaptation**: Automatically adjusts based on target count
+
+**Scenario 8: Fallback Mode (macOS/Windows)**
+- **Total Packets**: 10,000 (1,000 IPs × 10 ports)
+- **Batch Size**: 1 (graceful fallback)
+- **Syscalls**: 20,000 (10,000 send + 10,000 recv)
+- **Syscall Reduction**: 0% (no batching available)
+- **Throughput**: 10,000-50,000 pps (same as baseline)
+- **Improvement**: 0% (fallback mode)
+- **Platform**: macOS/Windows (no sendmmsg/recvmmsg support)
+
+### CDN Deduplication Expected Results
+
+**Scenario 1: Baseline**
 - **Total IPs**: 1000
 - **Scanned**: 1000
 - **Skipped**: 0
 - **Reduction**: 0%
 - **Overhead**: 0% (reference)
 
-### Scenario 2: Default Mode
+**Scenario 2: Default Mode**
 - **Total IPs**: 1000
 - **Scanned**: 500 (non-CDN only)
 - **Skipped**: 500 (all CDN providers)
 - **Reduction**: 50%
 - **Overhead**: < 5% (target), < 10% (acceptable)
 
-### Scenario 3: Whitelist Mode
+**Scenario 3: Whitelist Mode**
 - **Total IPs**: 1000
 - **Scanned**: 800 (non-CDN + Azure/Akamai/Fastly/Google)
 - **Skipped**: 200 (Cloudflare + AWS only)
 - **Reduction**: 20%
 - **Overhead**: < 5% (target), < 10% (acceptable)
 
-### Scenario 4: Blacklist Mode
+**Scenario 4: Blacklist Mode**
 - **Total IPs**: 1000
 - **Scanned**: 600 (non-CDN + Cloudflare)
 - **Skipped**: 400 (AWS/Azure/Akamai/Fastly/Google)
 - **Reduction**: 40%
 - **Overhead**: < 5% (target), < 10% (acceptable)
 
-### Scenario 5: IPv6 Filtering
+**Scenario 5: IPv6 Filtering**
 - **Total IPs**: 500
 - **Scanned**: 250 (non-CDN IPv6)
 - **Skipped**: 250 (CDN IPv6)
 - **Reduction**: 50%
 - **Overhead**: < 5% (target), < 10% (acceptable)
 
-### Scenario 6: Mixed IPv4/IPv6
+**Scenario 6: Mixed IPv4/IPv6**
 - **Total IPs**: 1000 (500 IPv4 + 500 IPv6)
 - **Scanned**: 500 (250 non-CDN IPv4 + 250 non-CDN IPv6)
 - **Skipped**: 500 (250 CDN IPv4 + 250 CDN IPv6)

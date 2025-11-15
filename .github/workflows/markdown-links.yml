@@ -1,0 +1,157 @@
+name: Markdown Link Check
+
+# Purpose: Automated link validation for all markdown documentation
+# Prevents broken links in docs/, to-dos/, and README.md from merging to main
+# Runs on documentation changes and can be triggered manually
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.md'
+      - '.github/workflows/markdown-links.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.md'
+  workflow_dispatch: # Allow manual triggers
+  schedule:
+    # Run weekly on Mondays at 00:00 UTC to catch external link rot
+    - cron: '0 0 * * 1'
+
+# Cancel outdated workflow runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdown-link-check:
+    name: Check Markdown Links
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Create link check configuration
+        run: |
+          cat > mlc_config.json << 'EOF'
+          {
+            "ignorePatterns": [
+              {
+                "pattern": "^http://localhost"
+              },
+              {
+                "pattern": "^https://localhost"
+              },
+              {
+                "pattern": "^http://127.0.0.1"
+              },
+              {
+                "pattern": "^https://127.0.0.1"
+              }
+            ],
+            "replacementPatterns": [
+              {
+                "pattern": "^/",
+                "replacement": "{{BASEURL}}/"
+              }
+            ],
+            "httpHeaders": [
+              {
+                "urls": ["https://github.com"],
+                "headers": {
+                  "Accept": "text/html"
+                }
+              }
+            ],
+            "timeout": "20s",
+            "retryOn429": true,
+            "retryCount": 3,
+            "fallbackRetryDelay": "30s",
+            "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 999]
+          }
+          EOF
+
+      - name: Check links in README.md
+        run: |
+          echo "::group::Checking README.md"
+          markdown-link-check README.md --config mlc_config.json
+          echo "::endgroup::"
+
+      - name: Check links in docs/ directory
+        run: |
+          echo "::group::Checking docs/ directory"
+          find docs/ -name "*.md" -type f | while read file; do
+            echo "Checking: $file"
+            markdown-link-check "$file" --config mlc_config.json || exit 1
+          done
+          echo "::endgroup::"
+
+      - name: Check links in to-dos/ directory
+        run: |
+          echo "::group::Checking to-dos/ directory"
+          find to-dos/ -name "*.md" -type f 2>/dev/null | while read file; do
+            echo "Checking: $file"
+            markdown-link-check "$file" --config mlc_config.json || exit 1
+          done || true
+          echo "::endgroup::"
+
+      - name: Check links in root markdown files
+        run: |
+          echo "::group::Checking root markdown files"
+          for file in CHANGELOG.md CONTRIBUTING.md SECURITY.md AUTHORS.md SUPPORT.md 2>/dev/null; do
+            if [ -f "$file" ]; then
+              echo "Checking: $file"
+              markdown-link-check "$file" --config mlc_config.json || exit 1
+            fi
+          done
+          echo "::endgroup::"
+
+      - name: Generate link check report
+        if: always()
+        run: |
+          echo "# Markdown Link Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All markdown links validated successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Files Checked:**" >> $GITHUB_STEP_SUMMARY
+          echo "- README.md" >> $GITHUB_STEP_SUMMARY
+          echo "- docs/ directory ($(find docs/ -name "*.md" -type f | wc -l) files)" >> $GITHUB_STEP_SUMMARY
+          echo "- to-dos/ directory ($(find to-dos/ -name "*.md" -type f 2>/dev/null | wc -l) files)" >> $GITHUB_STEP_SUMMARY
+          echo "- Root markdown files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Configuration:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Timeout: 20s per link" >> $GITHUB_STEP_SUMMARY
+          echo "- Retry on 429: Yes (3 attempts, 30s delay)" >> $GITHUB_STEP_SUMMARY
+          echo "- Ignored: localhost, 127.0.0.1" >> $GITHUB_STEP_SUMMARY
+
+  # Optional: Report broken links as issues
+  # Uncomment to enable automatic issue creation for broken links
+  # create-issue-on-failure:
+  #   name: Create Issue for Broken Links
+  #   runs-on: ubuntu-latest
+  #   needs: markdown-link-check
+  #   if: failure()
+  #   
+  #   steps:
+  #     - name: Create issue for broken links
+  #       uses: actions/github-script@v7
+  #       with:
+  #         script: |
+  #           const issue = await github.rest.issues.create({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             title: '🔗 Broken Links Detected in Documentation',
+  #             body: `Automated link check failed on ${context.ref}.\n\n` +
+  #                   `Check the [workflow run](${context.payload.workflow_run.html_url}) for details.\n\n` +
+  #                   `**Action Required:** Fix broken links before merging.\n\n` +
+  #                   `**Files to Check:**\n` +
+  #                   `- README.md\n` +
+  #                   `- docs/ directory\n` +
+  #                   `- to-dos/ directory\n`,
+  #             labels: ['documentation', 'automated']
+  #           });

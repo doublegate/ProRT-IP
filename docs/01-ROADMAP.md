@@ -418,7 +418,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [x] PostgreSQL Detection (ParameterStatus parsing, version extraction)
 - [x] Protocol priority system (1-5 execution order)
 - [x] Integration testing (23 new tests)
-- [x] Service Detection Guide (docs/24-SERVICE-DETECTION.md, 659 lines)
+- [x] Service Detection Guide (docs/24-SERVICE-DETECTION-GUIDE.md, 659 lines)
 
 **Deliverables:**
 - Detection rate improvement: 70-80% → 85-90% (+10-15 percentage points)

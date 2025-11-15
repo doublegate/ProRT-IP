@@ -2124,7 +2124,7 @@ prtip -sS -p 443 -sV subnet.example.com | grep -v "closed\|filtered"
 ### ProRT-IP Related Guides
 
 - [23-IPv6-GUIDE.md](23-IPv6-GUIDE.md) - IPv6 scanning comprehensive guide
-- [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md) - Service detection overview (HTTP, SSH, SMB, MySQL, PostgreSQL)
+- [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) - Service detection overview (HTTP, SSH, SMB, MySQL, PostgreSQL)
 - [25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md) - Idle scan (zombie) three-party relay architecture
 - [26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md) - Rate limiting (3-layer architecture, -1.8% overhead)
 - [00-ARCHITECTURE.md](00-ARCHITECTURE.md) - System architecture (hybrid scanning, async runtime)

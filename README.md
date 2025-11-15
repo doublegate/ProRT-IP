@@ -775,7 +775,7 @@ prtip -sS -p 1-1000 -oX scan.xml target.com
 prtip -sS --ports 1-1000 -oX scan.xml target.com
 ```
 
-**Full Documentation:** [docs/14-NMAP_COMPATIBILITY.md](docs/14-NMAP_COMPATIBILITY.md)
+**Full Documentation:** [docs/14-NMAP-COMPATIBILITY.md](docs/14-NMAP-COMPATIBILITY.md)
 
 ---
 
@@ -795,12 +795,12 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 - [Plugin System Guide](docs/30-PLUGIN-SYSTEM-GUIDE.md) - Plugin development (784 lines)
 - [Benchmarking Guide](docs/31-BENCHMARKING-GUIDE.md) - Performance testing (1,044 lines)
 - [Examples Gallery](docs/34-EXAMPLES-GALLERY.md) - 65 practical scenarios
-- [Nmap Compatibility](docs/14-NMAP_COMPATIBILITY.md) - Flag compatibility matrix
+- [Nmap Compatibility](docs/14-NMAP-COMPATIBILITY.md) - Flag compatibility matrix
 
 ### Technical References
 
 - [IPv6 Guide](docs/23-IPv6-GUIDE.md) - IPv6 100% implementation
-- [Service Detection](docs/24-SERVICE-DETECTION.md) - Detection engine details
+- [Service Detection](docs/24-SERVICE-DETECTION-GUIDE.md) - Detection engine details
 - [Idle Scan](docs/25-IDLE-SCAN-GUIDE.md) - Zombie scanning implementation
 - [Rate Limiting](docs/26-RATE-LIMITING-GUIDE.md) - Adaptive rate control
 - [TLS Certificate](docs/27-TLS-CERTIFICATE-GUIDE.md) - X.509v3 parsing

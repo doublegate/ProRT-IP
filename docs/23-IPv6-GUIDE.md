@@ -1940,7 +1940,7 @@ prtip -sS -p 80,443 $(cat dhcpv6-leases.txt)
 - [00-ARCHITECTURE.md](00-ARCHITECTURE.md) - System design with IPv6 notes
 - [04-IMPLEMENTATION-GUIDE.md](04-IMPLEMENTATION-GUIDE.md) - IPv6 packet building code examples
 - [06-TESTING.md](06-TESTING.md) - Cross-scanner IPv6 tests
-- [14-NMAP_COMPATIBILITY.md](14-NMAP_COMPATIBILITY.md) - IPv6 flag compatibility matrix
+- [14-NMAP-COMPATIBILITY.md](14-NMAP-COMPATIBILITY.md) - IPv6 flag compatibility matrix
 
 ### External Resources
 

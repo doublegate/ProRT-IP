@@ -490,7 +490,7 @@ PORT     STATE SERVICE    VERSION
 - **User Guide Use Case 3:** More service detection examples
 
 > **See Also:**
-> - [Service Detection Guide](24-SERVICE-DETECTION.md) - Deep-dive into detection algorithms
+> - [Service Detection Guide](24-SERVICE-DETECTION-GUIDE.md) - Deep-dive into detection algorithms
 > - [TLS Certificate Analysis](27-TLS-CERTIFICATE-GUIDE.md) - X.509v3 parsing details
 > - [Example: Service Fingerprinting](34-EXAMPLES-GALLERY.md#common_service_detection) - Production examples
 
@@ -610,7 +610,7 @@ PORT    STATE SERVICE VERSION
 - SMB 3.02 → Windows Server 2012 R2 / Windows 8.1
 - SMB 2.10 → Windows Server 2012 / Windows 8
 
-**See:** [24-SERVICE-DETECTION.md](24-SERVICE-DETECTION.md) for SMB details
+**See:** [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) for SMB details
 
 ---
 

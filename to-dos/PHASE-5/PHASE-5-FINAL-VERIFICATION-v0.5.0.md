@@ -419,7 +419,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Confidence scoring for service identification
 
 #### Documentation
-- docs/24-SERVICE-DETECTION.md (659 lines) - Detection methodology
+- docs/24-SERVICE-DETECTION-GUIDE.md (659 lines) - Detection methodology
 
 #### Tests
 - +[X] tests for protocol parsers
@@ -782,7 +782,7 @@ Phase 6: TUI Interface (Q2 2026)
   - Version references current
   - Examples accurate
   - Cross-references valid
-- [ ] docs/24-SERVICE-DETECTION.md (659 lines)
+- [ ] docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
   - Detection rates current (85-90%)
   - Parser list complete (5 parsers)
   - Examples work
@@ -1979,7 +1979,7 @@ Complete Phase 5 (Advanced Features) milestone with 10 sprints:
 **Sprint 5.2: Service Detection (12h)**
 - 85-90% detection rate
 - 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
-- docs/24-SERVICE-DETECTION.md (659 lines)
+- docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
 
 **Sprint 5.3: Idle Scan (18h)**
 - Full Nmap -sI parity
@@ -2130,7 +2130,7 @@ system with sandboxing).
 - Detection rate: 70-80% → 85-90% (approaching Nmap ~90%)
 - 5 new protocol parsers: HTTP, SSH, SMB, MySQL, PostgreSQL
 - Confidence scoring and banner analysis optimization
-- Complete: docs/24-SERVICE-DETECTION.md (659 lines)
+- Complete: docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
 
 **Idle Scan Implementation (Sprint 5.3)**
 - Full Nmap -sI flag parity (zombie host scanning)
@@ -2398,7 +2398,7 @@ prtip -sV -6 2001:db8::1 -p 80,443
 ### Sprint 5.2: Service Detection (12h)
 - **Detection rate:** 85-90% (approaching Nmap ~90%)
 - **Protocol parsers:** HTTP, SSH, SMB, MySQL, PostgreSQL (5 total)
-- **Documentation:** [docs/24-SERVICE-DETECTION.md](docs/24-SERVICE-DETECTION.md) (659 lines)
+- **Documentation:** [docs/24-SERVICE-DETECTION-GUIDE.md](docs/24-SERVICE-DETECTION-GUIDE.md) (659 lines)
 
 ### Sprint 5.3: Idle Scan (18h)
 - **Nmap parity:** Full -sI flag support
@@ -2485,7 +2485,7 @@ prtip -sV -6 2001:db8::1 -p 80,443
 
 ### Technical Guides
 - **[IPv6 Guide](docs/23-IPv6-GUIDE.md)** - Complete IPv6 support (1,958 lines)
-- **[Service Detection](docs/24-SERVICE-DETECTION.md)** - 85-90% accuracy (659 lines)
+- **[Service Detection](docs/24-SERVICE-DETECTION-GUIDE.md)** - 85-90% accuracy (659 lines)
 - **[Idle Scan Guide](docs/25-IDLE-SCAN-GUIDE.md)** - Nmap parity (650 lines)
 - **[Rate Limiting](docs/26-RATE-LIMITING-GUIDE.md)** - Industry-leading -1.8% (v2.0.0)
 - **[TLS Certificate](docs/27-TLS-CERTIFICATE-GUIDE.md)** - X.509v3 analysis (2,160 lines)

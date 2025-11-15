@@ -42,7 +42,7 @@
 - **Evasion Techniques:** IP fragmentation (-f, --mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoy scanning (-D RND:N, manual IPs + ME positioning), idle/zombie scan (-sI ZOMBIE)
 - **High Performance:** Asynchronous I/O with lock-free coordination, zero-copy packet building
 - **Cross-Platform:** Linux, Windows, macOS support with NUMA optimization
-- **Multiple Interfaces:** CLI (v1.0), TUI (Sprint 6.1 Complete), Web UI (planned), GUI (planned)
+- **Multiple Interfaces:** CLI (v1.0), TUI (Sprint 6.2 Partial - 4/6 tasks), Web UI (planned), GUI (planned)
 
 ### Introduction
 
@@ -1944,26 +1944,30 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 
 ## Terminal User Interface (TUI) 🎨
 
-**NEW in Sprint 6.1:** ProRT-IP now includes a production-ready Terminal User Interface for real-time scan visualization and interactive control.
+**UPDATED in Sprint 6.2:** ProRT-IP now includes production-ready dashboard widgets with tabbed interface for real-time port discovery, service detection, and performance metrics.
 
 ### TUI Features
 
 **Core Capabilities:**
+
 - **Real-Time Visualization:** Live scan progress with 60 FPS rendering
 - **Event-Driven Updates:** Integrated with EventBus for instant result updates (10K+ events/sec)
-- **4 Production Widgets:** StatusBar, MainWidget, LogWidget, HelpWidget
+- **7 Production Widgets:** StatusBar, MainWidget, LogWidget, HelpWidget + **3 Dashboard Widgets** (PortTable, ServiceTable, Metrics)
+- **Tabbed Dashboard Interface:** 3 real-time dashboards with Tab key switching
 - **Thread-Safe State:** Shared `Arc<RwLock<ScanState>>` for scanner integration
-- **Responsive Design:** Immediate mode rendering with <5ms frame time
+- **Responsive Design:** Immediate mode rendering with <5ms frame time per widget
 
 ### TUI Architecture
 
 **Technology Stack:**
+
 - **ratatui 0.29:** Modern TUI framework with immediate mode rendering
 - **crossterm 0.28:** Cross-platform terminal manipulation
 - **tokio async:** Event loop coordination with `tokio::select!` pattern
 - **parking_lot:** High-performance RwLock (2-3× faster than std::sync)
 
 **Performance:**
+
 - **Rendering:** 60 FPS (16.67ms frame budget, <5ms actual)
 - **Event Throughput:** 10,000+ events/second with aggregation
 - **Memory Overhead:** <10 MB (TUI framework + buffers)
@@ -1972,44 +1976,97 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 ### Keyboard Shortcuts
 
 **Global Controls:**
+
 - `q` / `Ctrl+C` - Quit TUI
 - `?` - Toggle help screen
-- `Tab` / `Shift+Tab` - Navigate between panes
+- `Tab` / `Shift+Tab` - **Switch between dashboards (Port Table ↔ Service Table ↔ Metrics)**
 
-**Navigation:**
-- `↑/↓` or `j/k` - Cursor up/down
+**Dashboard Navigation:**
+
+- `↑/↓` or `j/k` - Cursor up/down (table widgets)
 - `Page Up/Down` - Scroll by page
 - `Home/End` - Jump to start/end
 - `←/→` or `h/l` - Horizontal navigation (planned)
 
+**Port Table Shortcuts:**
+
+- `t` - Sort by timestamp
+- `i` - Sort by IP address
+- `p` - Sort by port number
+- `s` - Sort by state (open/closed/filtered)
+- `r` - Sort by protocol (TCP/UDP)
+- `c` - Sort by scan type
+- `a` - Toggle auto-scroll
+- `f` - Cycle state filter
+- `d` - Cycle protocol filter
+
+**Service Table Shortcuts:**
+
+- `1-6` - Sort by columns (Timestamp/IP/Port/Service/Version/Confidence)
+- `c` - Cycle confidence filter (All → Low≥50% → Medium≥75% → High≥90%)
+- `a` - Toggle auto-scroll
+
 ### Widget Overview
 
 **1. StatusBar Widget**
+
 - Real-time progress bar (0-100%, color-coded)
 - ETA calculation with smart formatting (HH:MM:SS)
 - Throughput display (K/s, M/s formatting)
 - Elapsed time tracking
 
 **2. MainWidget**
+
 - Sortable 4-column table (Port, State, Protocol, Service)
 - 8 sort combinations (4 columns × 2 orders)
 - Color-coded port states (open=green, filtered=yellow, closed=red)
 - Keyboard navigation (↑/↓, Page Up/Down, Home/End)
 
 **3. LogWidget**
+
 - Scrollable real-time event log with timestamps
 - 6 filter modes (All/Ports/Hosts/Services/Errors/Warnings)
 - Auto-scroll toggle
 - Ringbuffer (1,000 entries max, FIFO eviction)
 
 **4. HelpWidget**
+
 - Scrollable help with keyboard shortcuts
 - Context-sensitive mode (global vs contextual)
 - Color-coded sections (headers=yellow, shortcuts=green)
 
+**5. PortTableWidget** 📊 **NEW in Sprint 6.2**
+
+- Real-time port discovery visualization (1,000-entry ringbuffer)
+- Sortable 6-column table: Timestamp, IP, Port, State, Protocol, Scan Type
+- Triple filtering: State (Open/Closed/Filtered), Protocol (TCP/UDP), Search (IP/Port)
+- Color-coded states: Open=Green, Filtered=Yellow, Closed=Red
+- Auto-scroll toggle for following live discoveries
+- Keyboard shortcuts: t/i/p/s/r/c (sort), a (auto-scroll), f/d (filters)
+
+**6. ServiceTableWidget** 🔍 **NEW in Sprint 6.2**
+
+- Real-time service detection visualization (500-entry ringbuffer)
+- Sortable 6-column table: Timestamp, IP, Port, Service Name, Version, Confidence
+- Confidence-based color coding: Green ≥90%, Yellow 50-89%, Red <50%
+- Multi-level filtering: All, Low (≥50%), Medium (≥75%), High (≥90%)
+- Search by service name, port number, or IP address
+- Keyboard shortcuts: 1-6 (sort by column), c (cycle confidence filter), a (auto-scroll)
+
+**7. MetricsDashboardWidget** 📈 **NEW in Sprint 6.2**
+
+- Real-time performance metrics in 3-column layout
+- **Progress:** Scan percentage, completed/total, ETA calculation
+- **Throughput:** Current/average/peak ports/sec, packets/sec (5-second rolling average)
+- **Statistics:** Open ports, services, errors, scan duration, status indicator
+- Human-readable formatting: Durations ("1h 12m 45s"), Numbers ("12,345"), Throughput ("1.23K pps")
+- Color-coded status: Green (active), Yellow (paused), Red (error)
+- <5ms render time (3× under 60 FPS budget)
+
 ### Using the TUI
 
 **Launch TUI Mode:**
+
 ```bash
 # Start TUI with default scan
 prtip --tui -p 80,443 192.168.1.0/24
@@ -2022,23 +2079,35 @@ prtip --tui -sS -sV -O -p- 192.168.1.1
 ```
 
 **TUI Layout:**
+
 ```
-┌─────────────────────────────────────────┐
-│          Header (scan info)             │  10% height
-├─────────────────────────────────────────┤
-│         Main Area (results)             │  80% height
-├─────────────────────────────────────────┤
-│   Footer (help text, FPS, stats)        │  10% height
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│          Header (scan info)                                 │  10% height
+├─────────────────────────────────────────────────────────────┤
+│ Port Table | Service Table | Metrics                        │  Tab bar
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [Active Dashboard Widget Content]                          │  80% height
+│  - PortTableWidget (6-column sortable table)                │
+│  - ServiceTableWidget (6-column confidence-coded table)     │
+│  - MetricsDashboardWidget (3-column metrics layout)         │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│   Footer (help text, FPS, stats, active tab indicator)     │  10% height
+└─────────────────────────────────────────────────────────────┘
+
+Press Tab to switch dashboards: Port Table → Service Table → Metrics → Port Table
 ```
 
 **Quality Metrics:**
-- **Tests:** 71 passing (56 unit + 15 integration)
-- **Code:** ~3,638 lines production code
-- **Documentation:** 891-line TUI-ARCHITECTURE.md guide
-- **Performance:** Validated at 60 FPS with 10K+ events/sec
+
+- **Tests:** 165 passing (140 unit + 25 integration) [up from 71 in Sprint 6.1]
+- **Code:** ~8,138 lines production code (3,638 base + 4,500 dashboard widgets)
+- **Documentation:** 891-line TUI-ARCHITECTURE.md guide (v1.1.0 with Sprint 6.2 widgets)
+- **Performance:** <5ms render time per widget, validated at 60 FPS with 10K+ events/sec
 
 **See Also:**
+
 - **[TUI Architecture Guide](docs/TUI-ARCHITECTURE.md)** - Comprehensive 891-line design document
 - **[Sprint 6.1 Completion](CHANGELOG.md#sprint-61-tui-framework--event-integration---complete-100)** - Full implementation details
 

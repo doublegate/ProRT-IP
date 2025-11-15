@@ -1,8 +1,8 @@
 # TUI Architecture Documentation
 
-**Version:** 1.0.0
-**Last Updated:** 2025-11-13
-**Status:** Phase 6.1 Complete
+**Version:** 1.1.0
+**Last Updated:** 2025-11-14
+**Status:** Phase 6.2 Partial (4/6 tasks complete)
 
 ## Table of Contents
 
@@ -45,7 +45,7 @@ The ProRT-IP TUI (Terminal User Interface) is designed to provide real-time visu
 - **Event Throughput**: 10,000+ events/second
 - **Event Aggregation**: 16ms batching interval (60 FPS)
 - **Max Buffer Size**: 1,000 events before dropping
-- **Test Coverage**: 19+ tests (4 unit, 15 integration)
+- **Test Coverage**: 165 tests (140 unit, 25 integration) [Sprint 6.2]
 
 ---
 
@@ -383,6 +383,11 @@ pub fn render(frame: &mut Frame, scan_state: &ScanState, ui_state: &UIState) {
 
 ### 5. Widgets (`src/widgets/`)
 
+ProRT-IP TUI includes 7 production-ready widgets as of Sprint 6.2:
+
+- **Phase 6.1 Widgets** (4): StatusBar, MainWidget, LogWidget, HelpWidget
+- **Phase 6.2 Dashboard Widgets** (3): PortTableWidget, ServiceTableWidget, MetricsDashboardWidget
+
 #### Component Trait (`src/widgets/component.rs`)
 
 **Purpose**: Common interface for TUI components
@@ -401,12 +406,447 @@ pub trait Component {
 }
 ```
 
-**Future Components** (Phase 6.2+):
-- `MainWidget`: Port table, host list
-- `StatusBar`: Progress bar, throughput stats
-- `HelpWidget`: Keybindings, command help
-- `LogWidget`: Real-time event log
-- `ChartWidget`: Performance graphs
+---
+
+#### StatusBar Widget **[Phase 6.1]**
+
+**Purpose**: Header widget displaying scan metadata and overall progress
+
+**Location**: `src/widgets/status_bar.rs`
+
+**Features**:
+- Scan stage indicator (Initializing, Scanning, Complete, Error)
+- Target information (IP/CIDR range)
+- Scan type display (SYN, Connect, UDP, etc.)
+- Overall progress percentage
+- Color-coded status: Green (active), Yellow (warning), Red (error)
+
+**Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ProRT-IP Scanner | Target: 192.168.1.0/24 | Type: SYN | 45% │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Rendering**:
+- Fixed height: 3 lines (10% of terminal)
+- Horizontal layout with styled text spans
+- Immediate mode: Full redraw every frame
+
+**Tests**: Unit tests for status formatting, color selection
+
+---
+
+#### MainWidget **[Phase 6.1]**
+
+**Purpose**: Central content area displaying scan results summary
+
+**Location**: `src/widgets/main.rs`
+
+**Features**:
+- Live host count (discovered IPs)
+- Port statistics (open/closed/filtered counts)
+- Service detection summary
+- Error/warning counters
+- Scrollable content area
+
+**Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Discovered Hosts: 24                                        │
+│                                                             │
+│ Open Ports:     156                                         │
+│ Closed Ports:   12,844                                      │
+│ Filtered Ports: 0                                           │
+│                                                             │
+│ Services Detected: 89                                       │
+│ Errors: 0                                                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Rendering**:
+- Variable height: 80% of terminal (main area)
+- Paragraph widget with line-wrapped text
+- Responsive layout (adjusts to terminal width)
+
+**Tests**: Integration tests for state synchronization
+
+---
+
+#### LogWidget **[Phase 6.1]**
+
+**Purpose**: Real-time event log with scrolling and filtering
+
+**Location**: `src/widgets/log.rs`
+
+**Features**:
+- Circular buffer (1,000 most recent events)
+- Timestamped log entries
+- Event type filtering (Info, Warning, Error)
+- Auto-scroll toggle (follow mode)
+- Keyboard navigation (scroll, search)
+
+**Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [12:34:56] INFO   Port 80 open on 192.168.1.1              │
+│ [12:34:57] INFO   Service detected: nginx 1.18.0           │
+│ [12:34:58] WARN   Slow response from 192.168.1.10          │
+│ [12:34:59] INFO   Port 443 open on 192.168.1.1             │
+│ ...                                                         │
+│ [Auto-scroll: ON] | Filters: ALL | Lines: 156/1000         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Keyboard Shortcuts**:
+- `↑/↓` or `j/k`: Scroll up/down
+- `Page Up/Down`: Scroll by page
+- `Home/End`: Jump to start/end
+- `a`: Toggle auto-scroll
+
+**Rendering**:
+- List widget with stateful scrolling
+- Color-coded entries: Info=White, Warn=Yellow, Error=Red
+- Performance: <5ms for 1,000 entries
+
+**Tests**: Unit tests for circular buffer, filtering logic
+
+---
+
+#### HelpWidget **[Phase 6.1]**
+
+**Purpose**: Overlay widget showing keyboard shortcuts and commands
+
+**Location**: `src/widgets/help.rs`
+
+**Features**:
+- Comprehensive keybinding reference
+- Grouped by category (Navigation, Filtering, Views)
+- Centered popup overlay
+- Semi-transparent background (Clear widget)
+
+**Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     ┌───────────────────┐                   │
+│                     │  Keyboard Shortcuts │                 │
+│                     ├───────────────────┤                   │
+│                     │ q, Ctrl+C - Quit   │                 │
+│                     │ ?, F1     - Help   │                 │
+│                     │ Tab       - Switch │                 │
+│                     │ ↑/↓       - Scroll │                 │
+│                     │ ...                │                 │
+│                     │ Press ? to close   │                 │
+│                     └───────────────────┘                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Rendering**:
+- Block widget with border and title
+- Centered with Popup constraint (50% width × 60% height)
+- Rendered on top of main content (overlay)
+
+**Tests**: Integration tests for toggle visibility
+
+---
+
+#### PortTableWidget **[Phase 6.2 - Sprint 6.2]**
+
+**Purpose**: Real-time port discovery visualization with sortable table
+
+**Location**: `src/widgets/port_table.rs` (~700 lines, 14 tests)
+
+**Features**:
+- **Data Source**: 1,000-entry circular buffer (PortDiscovery events from EventBus)
+- **Columns** (6): Timestamp, IP Address, Port, State, Protocol, Scan Type
+- **Multi-Column Sorting**: All 6 columns × ascending/descending (12 sort modes)
+- **Triple Filtering**:
+  - State filter: All, Open, Closed, Filtered
+  - Protocol filter: All, TCP, UDP
+  - Search: Fuzzy match on IP address or port number
+- **Color Coding**: Open=Green, Closed=Red, Filtered=Yellow
+- **Auto-Scroll**: Follow mode for live discoveries
+
+**Data Structure**:
+```rust
+pub struct PortDiscovery {
+    pub timestamp: DateTime<Utc>,
+    pub ip: IpAddr,
+    pub port: u16,
+    pub state: PortState,    // Open, Closed, Filtered
+    pub protocol: Protocol,  // TCP, UDP
+    pub scan_type: ScanType, // SYN, Connect, UDP, etc.
+}
+```
+
+**Keyboard Shortcuts**:
+- `t`: Sort by timestamp
+- `i`: Sort by IP address
+- `p`: Sort by port number
+- `s`: Sort by state
+- `r`: Sort by protocol
+- `c`: Sort by scan type
+- `a`: Toggle auto-scroll
+- `f`: Cycle state filter
+- `d`: Cycle protocol filter
+- `/`: Search mode (IP or port)
+- `↑/↓`: Navigate rows
+- `Page Up/Down`: Scroll by page
+
+**Rendering Performance**:
+- Frame time: <5ms for 1,000 entries
+- Table widget with stateful selection
+- Row highlighting for selected item
+- Header with sort direction indicators (▲/▼)
+
+**Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Timestamp    │ IP Address    │ Port │ State │ Proto │ Type │
+├──────────────┼───────────────┼──────┼───────┼───────┼──────┤
+│ 12:34:56.123 │ 192.168.1.1   │   80 │ Open  │ TCP   │ SYN  │
+│ 12:34:56.234 │ 192.168.1.1   │  443 │ Open  │ TCP   │ SYN  │
+│ 12:34:56.345 │ 192.168.1.2   │   22 │ Filt  │ TCP   │ SYN  │
+│ 12:34:56.456 │ 192.168.1.3   │   53 │ Open  │ UDP   │ UDP  │
+│ ...                                                         │
+│ [Sort: Port ▲] | [Filter: Open+TCP] | 156/1000 | Auto: ON │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Integration**:
+- Subscribes to EventBus for PortDiscovery events
+- Updates ringbuffer in real-time (no blocking)
+- Renders in Dashboard Tab 1 (Port Table view)
+
+**Tests** (14):
+- Sorting: 6 columns × 2 directions = 12 tests
+- Filtering: State filter, protocol filter (2 tests)
+- Unit tests only (integration via App event loop)
+
+---
+
+#### ServiceTableWidget **[Phase 6.2 - Sprint 6.2]**
+
+**Purpose**: Real-time service detection visualization with confidence scoring
+
+**Location**: `src/widgets/service_table.rs` (~700 lines, 21 tests)
+
+**Features**:
+- **Data Source**: 500-entry circular buffer (ServiceDetection events from EventBus)
+- **Columns** (6): Timestamp, IP Address, Port, Service Name, Version, Confidence
+- **Confidence-Based Color Coding**:
+  - High (≥90%): Green
+  - Medium (50-89%): Yellow
+  - Low (<50%): Red
+- **Multi-Level Filtering**: All, Low (≥50%), Medium (≥75%), High (≥90%)
+- **Sorting**: All 6 columns with ascending/descending
+- **Search**: Fuzzy match on service name, IP, or port
+- **Auto-Scroll**: Follow mode for live detections
+
+**Data Structure**:
+```rust
+pub struct ServiceDetection {
+    pub timestamp: DateTime<Utc>,
+    pub ip: IpAddr,
+    pub port: u16,
+    pub service_name: String,     // "nginx", "ssh", "mysql"
+    pub service_version: String,  // "1.18.0", "OpenSSH_8.2p1"
+    pub confidence: u8,            // 0-100 (detection confidence %)
+}
+```
+
+**Keyboard Shortcuts**:
+- `1`: Sort by timestamp
+- `2`: Sort by IP address
+- `3`: Sort by port
+- `4`: Sort by service name
+- `5`: Sort by service version
+- `6`: Sort by confidence
+- `c`: Cycle confidence filter (All → Low → Medium → High)
+- `a`: Toggle auto-scroll
+- `/`: Search mode (service, IP, or port)
+- `↑/↓`: Navigate rows
+- `Page Up/Down`: Scroll by page
+
+**Rendering Performance**:
+- Frame time: <5ms for 500 entries
+- Table widget with confidence color styling
+- Row-level color application based on confidence
+- Header with sort indicators and active filter
+
+**Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Time     │ IP Address    │ Port │ Service │ Version  │ Conf │
+├──────────┼───────────────┼──────┼─────────┼──────────┼──────┤
+│ 12:34:56 │ 192.168.1.1   │   80 │ nginx   │ 1.18.0   │ 95%  │ (Green)
+│ 12:34:57 │ 192.168.1.1   │  443 │ nginx   │ 1.18.0   │ 95%  │ (Green)
+│ 12:34:58 │ 192.168.1.2   │   22 │ ssh     │ OpenSSH…│ 72%  │ (Yellow)
+│ 12:34:59 │ 192.168.1.3   │ 3306 │ mysql   │ 5.7.31   │ 42%  │ (Red)
+│ ...                                                         │
+│ [Sort: Conf ▼] | [Filter: High ≥90%] | 89/500 | Auto: ON  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Integration**:
+- Subscribes to EventBus for ServiceDetection events
+- Confidence calculation from service detection engine
+- Renders in Dashboard Tab 2 (Service Table view)
+
+**Tests** (21):
+- Sorting: 6 columns × 2 directions = 12 tests
+- Filtering: 4 confidence levels = 4 tests
+- Color coding: 3 confidence ranges = 3 tests
+- Search: 2 tests (service name, port)
+
+---
+
+#### MetricsDashboardWidget **[Phase 6.2 - Sprint 6.2]**
+
+**Purpose**: Real-time performance metrics and scan statistics
+
+**Location**: `src/widgets/metrics_dashboard.rs` (~740 lines, 24 tests)
+
+**Features**:
+- **3-Column Layout**: Progress | Throughput | Statistics
+- **Progress Column**:
+  - Scan percentage (0-100%)
+  - Completed/total ports
+  - ETA calculation (based on 5-second rolling average)
+  - Scan stage indicator
+- **Throughput Column**:
+  - Current ports/second (instantaneous)
+  - Average ports/second (5-second window)
+  - Peak ports/second (session max)
+  - Current packets/second
+  - Average packets/second
+- **Statistics Column**:
+  - Open ports count
+  - Detected services count
+  - Error count
+  - Scan duration (HH:MM:SS format)
+  - Status indicator (Active, Paused, Error)
+
+**Data Source**: Reads from `Arc<RwLock<ScanState>>` shared state
+
+**Throughput Calculation**:
+```rust
+// 5-second rolling average
+pub struct ThroughputSample {
+    pub timestamp: Instant,
+    pub ports_per_second: f64,
+    pub packets_per_second: f64,
+}
+
+// Keep last 5 samples (1-second intervals)
+// Average = sum(samples) / sample_count
+```
+
+**Human-Readable Formatting**:
+- **Durations**: "1h 12m 45s", "23m 15s", "45s"
+- **Numbers**: "12,345" (comma separators)
+- **Throughput**: "1.23K pps", "456.7 pps", "12.3M pps"
+
+**Color Coding**:
+- **Status**: Green (Active), Yellow (Paused), Red (Error)
+- **ETA**: White (normal), Yellow (>1h remaining), Red (stalled)
+- **Throughput**: Green (≥target), Yellow (50-99%), Red (<50%)
+
+**Keyboard Shortcuts**:
+- No interactive controls (read-only metrics display)
+- Auto-updates every frame (60 FPS)
+
+**Rendering Performance**:
+- Frame time: <5ms (3× under 16.67ms budget)
+- 3 Block widgets with bordered panels
+- Paragraph widgets for metric text
+- Gauge widget for progress percentage
+
+**Layout**:
+```
+┌──────────────────┬──────────────────┬──────────────────┐
+│    PROGRESS      │   THROUGHPUT     │   STATISTICS     │
+├──────────────────┼──────────────────┼──────────────────┤
+│ Scan:       45%  │ Current:  1.2K/s │ Open Ports:  156 │
+│ ████████░░░░░░░░ │ Average:  1.1K/s │ Services:     89 │
+│ Completed: 2,925 │ Peak:     2.3K/s │ Errors:        0 │
+│ Total:     6,500 │                  │ Duration: 2m 15s │
+│ ETA:      5m 12s │ Packets:  4.5K/s │ Status:   Active │
+│ Stage: Scanning  │ Avg Pkt:  4.2K/s │                  │
+└──────────────────┴──────────────────┴──────────────────┘
+```
+
+**Integration**:
+- Reads shared `ScanState` every frame
+- Calculates derived metrics (ETA, averages, throughput)
+- Renders in Dashboard Tab 3 (Metrics view)
+
+**Tests** (24):
+- Throughput calculations: 5 tests
+- ETA calculations: 5 tests
+- Human-readable formatting: 8 tests (durations, numbers, throughput)
+- Color selection: 3 tests (status, ETA, throughput)
+- Edge cases: 3 tests (zero values, overflow, no data)
+
+---
+
+#### Tabbed Dashboard Interface **[Phase 6.2 - Sprint 6.2]**
+
+**Architecture**: 3-tab dashboard with keyboard navigation
+
+**Tab Switching**:
+```rust
+pub enum DashboardTab {
+    PortTable,      // Tab 1: Real-time port discoveries
+    ServiceTable,   // Tab 2: Service detection results
+    Metrics,        // Tab 3: Performance metrics
+}
+
+impl UIState {
+    pub fn switch_tab(&mut self) {
+        self.active_tab = match self.active_tab {
+            DashboardTab::PortTable => DashboardTab::ServiceTable,
+            DashboardTab::ServiceTable => DashboardTab::Metrics,
+            DashboardTab::Metrics => DashboardTab::PortTable,  // Cycle
+        };
+    }
+}
+```
+
+**Keyboard Shortcuts**:
+- `Tab`: Switch to next dashboard (Port → Service → Metrics → Port)
+- `Shift+Tab`: Switch to previous dashboard (reverse direction)
+
+**Rendering**:
+- Tabs widget at top (shows all 3 tab names, highlights active)
+- Conditional rendering: Only active tab widget is rendered
+- Each widget receives full dashboard area (80% of terminal)
+
+**Visual Tab Bar**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [Port Table] | Service Table | Metrics                      │
+├─────────────────────────────────────────────────────────────┤
+│ [Active Dashboard Widget Content]                           │
+│ ...                                                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Event Routing**:
+- Active tab receives keyboard events (sorting, filtering, navigation)
+- Inactive tabs do not process events (performance optimization)
+
+**Integration Tests** (3):
+- Tab switching sequence (Port → Service → Metrics → Port)
+- Event routing to active tab only
+- State persistence across tab switches
+
+---
+
+**Future Components** (Phase 6.3+):
+- **ChartWidget**: Sparkline throughput graph (real-time performance visualization)
+- **ConfigWidget**: Interactive scan parameter editor (pause, adjust timing, change targets)
+- **ExportWidget**: Live results export to JSON/XML/CSV during scan
 
 ---
 
@@ -773,16 +1213,23 @@ fn test_scan_state_shared() {
 
 ### Test Metrics
 
+**Phase 6.2 (Sprint 6.2 Complete):**
+
 ```
 Test Type         Count    Status    Coverage
 ─────────         ─────    ──────    ────────
-Unit Tests        4        ✓ Pass    Aggregator logic
-Integration       15       ✓ Pass    App, State, Events
+Unit Tests        140      ✓ Pass    Aggregator, Widgets (59 dashboard widget tests)
+Integration       25       ✓ Pass    App, State, Events, Tab switching
 Doctests          2        ✓ Pass    Public API examples
                   1        Ignored   Future Component trait
 
-Total             22       21 Pass   Comprehensive
+Total             168      165 Pass  Comprehensive (3 ignored)
 ```
+
+**Widget Test Breakdown** (59 unit tests):
+- PortTableWidget: 14 tests (sorting, filtering)
+- ServiceTableWidget: 21 tests (sorting, filtering, color coding)
+- MetricsDashboardWidget: 24 tests (calculations, formatting, edge cases)
 
 ---
 

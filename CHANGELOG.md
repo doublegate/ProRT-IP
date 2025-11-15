@@ -7,6 +7,97 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Sprint 6.2: Live Dashboard & Real-Time Metrics - IN PROGRESS (67% Complete)
+
+**Status:** 4/6 tasks complete | **Completed:** 2025-11-14 | **Remaining:** Tasks 2.5-2.6
+
+**Major Enhancement:** Production-ready dashboard widgets with tabbed interface for real-time port discovery, service detection, and performance metrics visualization.
+
+**Completed Deliverables:**
+
+**Task 2.1: PortTableWidget** (~700 lines, 14 tests)
+- Real-time port discovery visualization with sortable 6-column table
+- Columns: Timestamp, IP, Port, State, Protocol, Scan Type
+- Multi-column sorting (6 columns × ascending/descending)
+- Triple filtering: State (Open/Closed/Filtered), Protocol (TCP/UDP), Search (IP/Port)
+- Keyboard navigation: Sort (t/i/p/s/r/c), Toggle filters (a/f/d), Scroll (Up/Down)
+- Auto-scroll toggle for following live discoveries
+- Ringbuffer integration (MAX_PORT_DISCOVERIES = 1,000)
+
+**Task 2.2: Event Handling Integration** (~135 lines)
+- Integrated PortTableWidget into main App event loop (`events/loop.rs`)
+- Added rendering pipeline integration (`ui/renderer.rs`)
+- Event routing for keyboard shortcuts to widget
+- Lock management pattern (explicit drop() prevents deadlocks)
+- 3 integration tests validating live data updates
+
+**Task 2.3: ServiceTableWidget + Tabbed Interface** (~1,143 lines, 21 tests)
+- Real-time service detection visualization with 6-column table
+- Columns: Timestamp, IP, Port, Service Name, Version, Confidence
+- Confidence-based color coding: Green ≥90%, Yellow 50-89%, Red <50%
+- Multi-column sorting + confidence filtering (All/Low≥50%/Medium≥75%/High≥90%)
+- **Tabbed Interface:** DashboardTab enum (PortTable, ServiceTable)
+- Tab key switching between Port Table and Service Table dashboards
+- Visual tab indicator with ratatui Tabs widget (cyan highlighting)
+- Event routing to active tab's widget
+- 14 unit tests + 7 integration tests (tab switching, filtering, sorting)
+
+**Task 2.4: MetricsDashboardWidget** (~740 lines, 24 tests)
+- Real-time performance metrics with 3-column dashboard layout
+- **Progress Column:** Scan percentage, completed/total, ETA calculation
+- **Throughput Column:** Current/average/peak ports/sec, packets/sec
+- **Statistics Column:** Open ports, services, errors, scan duration, status indicator
+- Human-readable formatting: Durations ("1h 12m 45s"), Numbers ("12,345"), Throughput ("1.23K pps")
+- 5-second rolling averages for throughput smoothing
+- Color-coded status: Green (active), Yellow (paused), Red (error)
+- Tab/Shift+Tab navigation through all 3 dashboard tabs
+- <5ms render time (3× under 60 FPS budget)
+
+**Architecture Enhancements:**
+
+1. **Tabbed Dashboard Interface:**
+   - 3 dashboard views: Port Table, Service Table, Metrics
+   - Tab key cycling: Port → Service → Metrics → Port
+   - Visual tab bar with active tab highlighting (cyan)
+   - Conditional widget rendering based on active tab
+
+2. **State Management:**
+   - Thread-safe ScanState (Arc<RwLock<T>>) for scanner ↔ TUI communication
+   - Ringbuffers: port_discoveries (1,000), service_detections (500)
+   - Throughput history (5-second window for rolling averages)
+   - Lock management: Explicit drop() pattern prevents deadlocks
+
+3. **Event System:**
+   - PortDiscovery events: Timestamp, IP, Port, State, Protocol, ScanType
+   - ServiceDetection events: Timestamp, IP, Port, ServiceName, Version, Confidence
+   - Event routing to active dashboard widget
+   - Aggregation support (10K+ events/sec)
+
+**Quality Metrics:**
+
+- **Tests:** 165 passing (140 unit + 25 integration) [up from 71 in Sprint 6.1]
+- **Code:** ~4,500 lines new production code (3 widgets + integration)
+- **Clippy:** 0 warnings with strict linting
+- **Performance:** <5ms render time per widget, 60 FPS validated
+- **Documentation:** Widget-level rustdoc comments + implementation guides
+
+**Files Modified/Created:**
+
+- Created: `crates/prtip-tui/src/widgets/port_table.rs` (744 lines)
+- Created: `crates/prtip-tui/src/widgets/service_table.rs` (832 lines)
+- Created: `crates/prtip-tui/src/widgets/metrics_dashboard.rs` (740 lines)
+- Modified: `crates/prtip-tui/src/state/ui_state.rs` (+239 lines, DashboardTab enum)
+- Modified: `crates/prtip-tui/src/ui/renderer.rs` (+77 lines, tabbed rendering)
+- Modified: `crates/prtip-tui/src/events/loop.rs` (+50 lines, event routing)
+- Modified: `crates/prtip-tui/tests/integration_test.rs` (+323 lines, 28 new tests)
+
+**See Also:**
+- TUI-ARCHITECTURE.md Section 5 (Widgets)
+- /tmp/ProRT-IP/TASK-2.4-COMPLETE.md (comprehensive implementation report)
+- to-dos/PHASE-6/SPRINT-6.2-LIVE-DASHBOARD-TODO.md (progress tracking)
+
 ---
 
 ## [0.5.1] - 2025-11-14

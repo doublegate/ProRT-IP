@@ -120,7 +120,7 @@ impl MainWidget {
 
     /// Convert PortInfo to table row
     fn port_info_to_row(port_info: &crate::state::PortInfo, is_selected: bool) -> Row<'static> {
-        use crate::state::{PortState, Protocol};
+        use crate::state::{ScanPortState as PortState, ScanProtocol as Protocol};
 
         // State color
         let state_color = match port_info.state {
@@ -301,7 +301,10 @@ pub fn handle_main_widget_event(event: Event, ui_state: &mut UIState) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::{PortInfo, PortState, Protocol, SortColumn, SortOrder, UIState};
+    use crate::state::{
+        PortInfo, ScanPortState as PortState, ScanProtocol as Protocol, SortColumn, SortOrder,
+        UIState,
+    };
 
     fn create_test_ports() -> Vec<PortInfo> {
         vec![

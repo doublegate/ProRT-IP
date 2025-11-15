@@ -1,10 +1,35 @@
 # Sprint 6.2: Live Dashboard & Real-Time Display
 
-**Status:** 📋 Planned (Q2 2026)
-**Effort Estimate:** 12-18 hours
+**Status:** 🔄 IN PROGRESS (Tasks 2.1-2.4 COMPLETE - 4/6 tasks, ~60%)
+**Effort Estimate:** 12-18 hours (Actual: ~18h so far)
 **Timeline:** Weeks 3-4 (2 weeks)
-**Dependencies:** Sprint 6.1 (TUI Framework) COMPLETE
+**Dependencies:** Sprint 6.1 (TUI Framework) COMPLETE ✅
 **Priority:** HIGH (Critical Path)
+
+## Progress Update (2025-11-14)
+
+**Completed Tasks**:
+- ✅ Task 2.1: PortTableWidget (interactive port list with sorting/filtering)
+- ✅ Task 2.2: Event Handling Infrastructure (keyboard navigation, Tab switching)
+- ✅ Task 2.3: ServiceTableWidget (interactive service list with sorting/filtering)
+- ✅ Task 2.4: MetricsDashboardWidget (real-time metrics with 3-column layout)
+
+**Implementation Details**:
+- 3-tab dashboard system (Port Table | Service Table | Metrics)
+- Tab/Shift+Tab navigation between widgets
+- Real-time metrics display (progress, throughput, statistics)
+- 5-second rolling average calculations
+- Human-readable formatting (durations, numbers, throughput)
+- Color-coded status indicators
+- All 165 tests passing (140 unit + 25 integration)
+- Zero clippy warnings
+- Clean formatting
+
+**Files Modified**: 6 files (~800 lines total)
+- Created: `widgets/metrics_dashboard.rs` (~740 lines, 24 tests)
+- Modified: `widgets/mod.rs`, `state/ui_state.rs`, `ui/renderer.rs`, `events/loop.rs`, `tests/integration_test.rs`
+
+**Next Steps**: Tasks 2.5-2.6 (Network Activity Graph, Final Integration Testing)
 
 ## Sprint Overview
 

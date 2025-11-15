@@ -94,12 +94,9 @@ impl App {
         // Main event loop
         loop {
             // Render the UI
-            {
-                let scan_state = self.scan_state.read();
-                terminal.draw(|frame| {
-                    ui::render(frame, &scan_state, &self.ui_state);
-                })?;
-            }
+            terminal.draw(|frame| {
+                ui::render(frame, Arc::clone(&self.scan_state), &self.ui_state);
+            })?;
 
             // Update FPS counter
             frame_count += 1;

@@ -12,7 +12,8 @@ use tokio::time::interval;
 
 use crate::events::aggregator::EventAggregator;
 use crate::events::handlers::handle_scan_event;
-use crate::state::{ScanState, UIState};
+use crate::state::{DashboardTab, ScanState, UIState};
+use crate::widgets::{handle_port_table_event, handle_service_table_event};
 
 /// Event loop states
 pub enum LoopControl {
@@ -70,12 +71,9 @@ pub async fn process_events(
                             ui_state.toggle_help();
                         }
 
-                        // Tab navigation
-                        (KeyCode::Tab, KeyModifiers::NONE) => {
-                            ui_state.next_pane();
-                        }
-                        (KeyCode::BackTab, _) => {
-                            ui_state.prev_pane();
+                        // Tab navigation - Switch dashboard tabs (Sprint 6.2 Task 2.3)
+                        (KeyCode::Tab, KeyModifiers::NONE) | (KeyCode::BackTab, _) => {
+                            ui_state.next_dashboard_tab();
                         }
 
                         // Vim navigation (placeholder for Sprint 6.2+)
@@ -92,7 +90,33 @@ pub async fn process_events(
                             // TODO: Sprint 6.2 - horizontal scroll
                         }
 
-                        _ => {}
+                        // Sprint 6.2 Task 2.3-2.4: Route events to active dashboard widget
+                        _ => {
+                            // Route to active widget based on dashboard tab
+                            let handled = match ui_state.active_dashboard_tab {
+                                DashboardTab::PortTable => {
+                                    handle_port_table_event(
+                                        CrosstermEvent::Key(key),
+                                        ui_state,
+                                        &scan_state,
+                                    )
+                                }
+                                DashboardTab::ServiceTable => {
+                                    handle_service_table_event(
+                                        CrosstermEvent::Key(key),
+                                        ui_state,
+                                        &scan_state,
+                                    )
+                                }
+                                DashboardTab::Metrics => {
+                                    // Metrics dashboard is read-only, no event handling
+                                    false
+                                }
+                            };
+
+                            // If not handled, ignore (fall through)
+                            let _ = handled;
+                        }
                     }
                 }
 

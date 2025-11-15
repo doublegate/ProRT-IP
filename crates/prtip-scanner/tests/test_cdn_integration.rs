@@ -408,7 +408,7 @@ async fn test_cdn_disabled_scans_all_ips() {
 
     // May not have results for both if Cloudflare is unreachable, but at least localhost
     assert!(
-        unique_ips.len() >= 1,
+        !unique_ips.is_empty(),
         "Should scan at least localhost when CDN disabled"
     );
 }

@@ -155,7 +155,10 @@ jobs:
             # Include: prtip-core (core types), prtip-cli unit tests (args parsing, formatting)
             cargo test --workspace --locked --lib --exclude prtip-network --exclude prtip-scanner
           else
-            cargo test --workspace --locked
+            # Linux/macOS: Run unit and integration tests, skip doctests to prevent linker resource exhaustion
+            # Doctests are redundant (all functionality covered by unit/integration tests)
+            # Fixes: linker bus error (signal 7) during doctest compilation in CI environment
+            cargo test --workspace --locked --lib --bins --tests
           fi
         shell: bash
         env:

@@ -116,17 +116,20 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 ### Recent Achievements
 
 **Sprint 6.2 COMPLETE (2025-11-14):** Live Dashboard & Real-Time Metrics
+
 - 4-tab dashboard interface (Port Table, Service Table, Metrics, Network Graph)
 - Real-time port discovery and service detection visualization
 - Performance metrics with 5-second rolling averages
 - Network activity time-series chart (60-second sliding window)
 - 175 tests passing (150 unit + 25 integration)
 
-**Sprint 6.3 PARTIAL (3/6 task areas):**
-- CDN IP Deduplication (30-70% target reduction)
-- Adaptive Batch Sizing (20-40% throughput improvement)
-- Integration Testing (comprehensive test coverage)
-- Remaining: Batch I/O Implementation, Scheduler Integration, Production Benchmarks
+**Sprint 6.3 Production Benchmarks COMPLETE (2025-11-16):**
+
+- **CDN IP Deduplication:** 80-100% filtering achieved, -22.8% performance improvement (whitelist mode)
+- **Critical Bug Fixed:** `--skip-cdn` flag now functional (38-line fix to execute_scan_ports())
+- **Batch I/O Optimization:** Optimal batch size 1024 validated, -3.1% improvement
+- **Comprehensive Benchmarks:** 10 scenarios executed (6 CDN + 4 Batch I/O)
+- **Documentation:** Performance characteristics, architecture, and benchmark reports updated
 
 ### Phase 5 + 5.5 Archive
 
@@ -145,6 +148,7 @@ ProRT-IP completed Phase 5 (Advanced Features) and Phase 5.5 (Pre-TUI Enhancemen
 ### Installation
 
 **Pre-built binaries** (5 production platforms):
+
 ```bash
 # Download latest release
 wget https://github.com/doublegate/ProRT-IP/releases/latest/download/prtip-linux-x86_64
@@ -153,6 +157,7 @@ sudo mv prtip-linux-x86_64 /usr/local/bin/prtip
 ```
 
 **Build from source:**
+
 ```bash
 git clone https://github.com/doublegate/ProRT-IP.git
 cd ProRT-IP
@@ -193,9 +198,14 @@ prtip --tui -sS -p 1-1000 192.168.1.0/24
 
 ### Network Optimizations (Sprint 6.3)
 
-- **CDN Deduplication:** Intelligent filtering of CDN infrastructure IPs (30-70% reduction target)
-- **Adaptive Batching:** Dynamic batch size adjustment based on network performance (20-40% throughput improvement)
-- **Batch I/O:** sendmmsg/recvmmsg support for high-performance packet transmission (pending implementation)
+- **CDN Deduplication:** ✅ Production-ready filtering of CDN infrastructure IPs (80-100% reduction achieved, <5% overhead)
+  - Supports: Cloudflare, AWS CloudFront, Azure CDN, Akamai, Fastly, Google Cloud CDN
+  - Whitelist mode: -22.8% performance improvement vs baseline
+  - Skip-all mode: +37.5% overhead (acceptable for 100% target reduction)
+- **Batch I/O Optimization:** ✅ sendmmsg/recvmmsg with optimal batch size 1024 (-3.1% improvement)
+  - Linux-only feature (macOS/Windows use single-packet fallback)
+  - Lowest variance: ±0.7ms (vs ±2.6ms for size 16)
+- **Adaptive Batching:** Future enhancement (deferred to Phase 6.4)
 
 ### Quality Assurance
 
@@ -224,6 +234,7 @@ ProRT-IP includes a production-ready TUI for real-time scan visualization and mo
 ### Dashboard Widgets (Sprint 6.2)
 
 **1. Port Table Widget**
+
 - Real-time port discovery visualization (1,000-entry ringbuffer)
 - Sortable 6-column table: Timestamp, IP, Port, State, Protocol, Scan Type
 - Triple filtering: State, Protocol, Search (IP/Port)
@@ -231,6 +242,7 @@ ProRT-IP includes a production-ready TUI for real-time scan visualization and mo
 - Keyboard: t/i/p/s/r/c (sort), a (auto-scroll), f/d (filters)
 
 **2. Service Table Widget**
+
 - Real-time service detection visualization (500-entry ringbuffer)
 - Sortable 6-column table: Timestamp, IP, Port, Service, Version, Confidence
 - Confidence-based color coding: Green ≥90%, Yellow 50-89%, Red <50%
@@ -238,6 +250,7 @@ ProRT-IP includes a production-ready TUI for real-time scan visualization and mo
 - Keyboard: 1-6 (sort by column), c (cycle filter), a (auto-scroll)
 
 **3. Metrics Dashboard Widget**
+
 - Real-time performance metrics in 3-column layout
 - Progress: Scan percentage, completed/total, ETA calculation
 - Throughput: Current/average/peak ports/sec, packets/sec (5-second rolling average)
@@ -245,6 +258,7 @@ ProRT-IP includes a production-ready TUI for real-time scan visualization and mo
 - Human-readable formatting with color-coded status
 
 **4. Network Graph Widget**
+
 - Real-time network activity time-series chart (60-second sliding window)
 - Three data series: packets sent (cyan), packets received (green), ports discovered (yellow)
 - Auto-scaling Y-axis bounds with 10% headroom
@@ -380,6 +394,7 @@ prtip -sS -4 -p 80,443 example.com              # Force IPv4 (prefer A records)
 ```
 
 **IPv6 Features:**
+
 - Protocol Support: ICMPv6 (Echo 128/129), NDP (135/136), TCP/UDP over IPv6
 - Address Types: Global unicast, link-local (fe80::), ULA (fd00::), multicast (ff00::)
 - Decoy Generation: Random Interface Identifiers within target's /64 subnet
@@ -477,6 +492,7 @@ prtip -T4 -p 1-1000 192.168.1.0/24              # Aggressive (uses rate limiting
 ```
 
 **Rate Limiting Performance:**
+
 | Rate (pps) | Overhead | Status |
 |------------|----------|--------|
 | 10K        | **-8.2%** | ✅ Faster than no limiting |
@@ -558,6 +574,7 @@ cd benchmarks/05-Sprint5.9-Benchmarking-Framework
 ```
 
 **8 Core Scenarios:**
+
 1. SYN Scan: 1,000 ports (validates "10M+ pps" claim) - Target: <100ms
 2. Connect Scan: 3 common ports (80,443,8080) - Target: <50ms
 3. UDP Scan: 3 UDP services (DNS, SNMP, NTP) - Target: <500ms
@@ -568,6 +585,7 @@ cd benchmarks/05-Sprint5.9-Benchmarking-Framework
 8. TLS Parsing: Certificate parsing - Target: ~1.33μs
 
 **Regression Detection:**
+
 - **PASS:** <5% slower (within noise)
 - **WARN:** 5-10% slower (investigate)
 - **FAIL:** >10% slower (regression, CI fails)
@@ -614,11 +632,13 @@ prtip -sS -p 80,443 --plugin banner-analyzer,ssl-checker 192.168.1.0/24
 ### Example Plugins
 
 **banner-analyzer** (Detection Plugin)
+
 - Detects: HTTP, SSH, FTP, SMTP, MySQL, PostgreSQL, Redis, MongoDB
 - 85-90% detection accuracy
 - No capabilities required (passive analysis)
 
 **ssl-checker** (Detection Plugin)
+
 - SSL/TLS protocol detection
 - Certificate validation
 - Requires: `network` capability
@@ -737,6 +757,7 @@ ProRT-IP maintains significant speed advantages while supporting nmap syntax:
 | Full port scan (65535) | ~18min | ~3-5min | **3-6x faster** |
 
 **Performance Features:**
+
 - **Throughput:** 10M+ packets/second (stateless SYN scan, theoretical)
 - **Zero-Copy:** 100% allocation elimination in hot path (15% improvement)
 - **NUMA Optimization:** 20-30% improvement on multi-socket systems
@@ -850,12 +871,14 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 ### System Requirements
 
 **Minimum:**
+
 - CPU: 2 cores @ 2.0 GHz
 - RAM: 2 GB
 - Storage: 100 MB
 - Network: 100 Mbps
 
 **Recommended:**
+
 - CPU: 8+ cores @ 3.0 GHz
 - RAM: 16 GB
 - Storage: 1 GB SSD
@@ -1203,12 +1226,14 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
 This project is licensed under the GNU General Public License v3.0 - see [LICENSE](LICENSE) for details.
 
 **GPLv3 allows you to:**
+
 - ✅ Use the software for any purpose
 - ✅ Study and modify the source code
 - ✅ Distribute copies
 - ✅ Distribute modified versions
 
 **Under the conditions:**
+
 - ⚠️ Disclose source code of modifications
 - ⚠️ License modifications under GPLv3
 - ⚠️ State changes made to the code
@@ -1223,6 +1248,7 @@ ProRT-IP WarScan is developed by security researchers and Rust developers passio
 ### Inspirations
 
 This project builds on the pioneering work of:
+
 - **[Nmap](https://nmap.org/)** - Gordon "Fyodor" Lyon
 - **[Masscan](https://github.com/robertdavidgraham/masscan)** - Robert Graham
 - **[RustScan](https://github.com/RustScan/RustScan)** - RustScan Community

@@ -4,7 +4,7 @@ authors = ["ProRT-IP Contributors"]
 description = "Modern network scanner combining Masscan speed with Nmap depth"
 language = "en"
 multilingual = false
-src = "docs"
+src = "src"
 
 [build]
 build-dir = "book"

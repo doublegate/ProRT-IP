@@ -127,4 +127,4 @@ This project is licensed under the GNU General Public License v3.0.
 
 ⚠️ **IMPORTANT:** Only scan networks you own or have explicit written permission to test. Unauthorized scanning may violate laws (CFAA, CMA, etc.).
 
-**Last Updated:** 2025-11-15
+**Last Updated:** 2025-11-16

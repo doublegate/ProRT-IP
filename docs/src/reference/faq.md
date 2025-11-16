@@ -61,7 +61,7 @@ See [Platform Support](../features/platform-support.md) for detailed installatio
 **Safety First:**
 - Memory-safe Rust prevents buffer overflows, use-after-free, data races
 - Compile-time guarantees eliminate entire vulnerability classes
-- Comprehensive test suite (2,100+ tests, 54.92% coverage)
+- Comprehensive test suite (2,111 tests, 54.92% coverage)
 
 **Performance:**
 - 10-100x faster than traditional scanners for large-scale scans

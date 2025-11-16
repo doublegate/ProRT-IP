@@ -108,7 +108,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current:** Phase 6 (3/8 sprints complete, 38%)
+**Current:** Phase 6 (2.5/8 sprints complete, 31%)
 **Version:** v0.5.2 (Released 2025-11-14, Updated 2025-11-16)
 **Tests:** 2,111 passing (100%)
 **Coverage:** 54.92%
@@ -123,13 +123,13 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Network activity time-series chart (60-second sliding window)
 - 175 tests passing (150 unit + 25 integration)
 
-**Sprint 6.3 Production Benchmarks COMPLETE (2025-11-16):**
+**Sprint 6.3 PARTIAL (2025-11-16):** Network Optimizations
 
-- **CDN IP Deduplication:** 80-100% filtering achieved, -22.8% performance improvement (whitelist mode)
-- **Critical Bug Fixed:** `--skip-cdn` flag now functional (38-line fix to execute_scan_ports())
-- **Batch I/O Optimization:** Optimal batch size 1024 validated, -3.1% improvement
-- **Comprehensive Benchmarks:** 10 scenarios executed (6 CDN + 4 Batch I/O)
-- **Documentation:** Performance characteristics, architecture, and benchmark reports updated
+- **Status:** PARTIAL COMPLETE (3/6 task areas, ~60% of estimate)
+- **Completed:** CDN IP deduplication (80-100% reduction), adaptive batch sizing (1024 optimal), integration tests (6 scenarios)
+- **Remaining:** Scanner integration (4-6h), production benchmarks (4-6h), estimated 2-3 days completion
+- **Quality:** 2,111/2,111 tests passing, 0 clippy warnings, clean formatting
+- **Expected Impact:** 20-40% throughput improvement (pending validation)
 
 ### Phase 5 + 5.5 Archive
 
@@ -140,6 +140,53 @@ ProRT-IP completed Phase 5 (Advanced Features) and Phase 5.5 (Pre-TUI Enhancemen
 **For Phase 4 history, see:** [docs/archive/PHASE-4-README-ARCHIVE.md](docs/archive/PHASE-4-README-ARCHIVE.md)
 
 **For Phase 6 current sprint details, see:** [docs/archive/PHASE-6-README-ARCHIVE.md](docs/archive/PHASE-6-README-ARCHIVE.md)
+
+## mdBook Documentation System
+
+ProRT-IP includes comprehensive documentation built with mdBook, providing professional-quality searchable documentation with full navigation.
+
+**Location:** `docs/book/` (generated HTML output)
+**Source:** `docs/src/` (markdown source files, 110 files)
+**Build Command:** `mdbook build docs/`
+
+### Features
+
+- **Searchable Documentation:** Full-text search across all documentation
+- **Hierarchical Navigation:** Organized by section with nested chapters
+- **Mobile Responsive:** Professional documentation accessible on all devices
+- **Cross-References:** Extensive linking between related topics
+- **Code Examples:** Syntax-highlighted examples throughout
+
+### Content Organization
+
+- **Getting Started:** Installation, quick start, configuration
+- **User Guide:** Complete usage guide with examples
+- **Features:** Detailed feature documentation (scan types, protocols, evasion)
+- **Advanced:** Performance tuning, benchmarking, profiling
+- **Reference:** Database schema, packet formats, protocol analysis
+- **Development:** Architecture, implementation guides, testing
+- **Project:** Roadmap, status, planning documents
+- **Security:** Audit checklists, compliance, responsible use
+
+### Viewing Documentation
+
+**Option 1: Build and Serve Locally**
+```bash
+cd docs/
+mdbook serve --open
+# Opens browser at http://localhost:3000
+```
+
+**Option 2: Static HTML**
+```bash
+mdbook build docs/
+# Generated HTML in docs/book/
+firefox docs/book/index.html
+```
+
+**Production Quality:** 98/100 readiness score, 79 HTML pages, zero build errors.
+
+See `docs/book/` for the complete generated documentation.
 
 ---
 
@@ -1286,6 +1333,6 @@ This project builds on the pioneering work of:
 
 ---
 
-**Last Updated:** 2025-11-15
+**Last Updated:** 2025-11-16
 **Current Version:** v0.5.2
-**Phase:** 6 Sprint 6.3 PARTIAL (3/8 sprints, 38%)
+**Phase:** 6 Sprint 6.3 PARTIAL (2.5/8 sprints, 31%)

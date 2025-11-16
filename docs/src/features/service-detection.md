@@ -595,6 +595,6 @@ prtip -sS --no-service-detect target.com
 
 **Sprint 5.2 Achievement:**
 - Detection rate improvement: +10-15pp (70-80% → 85-90%)
-- Test coverage: 23 new unit tests (198 total passing)
+- Test coverage: 23 new unit tests (2,111 total passing as of Phase 6)
 - Performance overhead: <1% vs regex-only detection
 - New protocol modules: 5 (HTTP, SSH, SMB, MySQL, PostgreSQL)

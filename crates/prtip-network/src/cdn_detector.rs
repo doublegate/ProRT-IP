@@ -28,7 +28,8 @@
 //! ```
 
 use pnet::ipnetwork::{Ipv4Network, Ipv6Network};
-use std::net::IpAddr;
+use std::collections::HashMap;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 /// CDN/Cloud provider identification
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -70,6 +71,10 @@ pub struct CdnDetector {
     whitelist: Option<Vec<CdnProvider>>,
     /// Blacklisted providers (these are never considered CDNs)
     blacklist: Vec<CdnProvider>,
+    /// Hash map for O(1) IPv4 /24 prefix lookups (prefix → provider)
+    ipv4_prefix_map: HashMap<u32, CdnProvider>,
+    /// Hash map for O(1) IPv6 /48 prefix lookups (prefix → provider)
+    ipv6_prefix_map: HashMap<u128, CdnProvider>,
 }
 
 impl Default for CdnDetector {
@@ -81,62 +86,226 @@ impl Default for CdnDetector {
 impl CdnDetector {
     /// Create a new CDN detector with default provider ranges
     pub fn new() -> Self {
-        Self {
+        let mut detector = Self {
             ranges: Self::default_ranges(),
             whitelist: None,
             blacklist: Vec::new(),
-        }
+            ipv4_prefix_map: HashMap::new(),
+            ipv6_prefix_map: HashMap::new(),
+        };
+        detector.build_prefix_maps();
+        detector
     }
 
     /// Create detector with specific whitelisted providers
     ///
     /// Only the specified providers will be considered CDNs.
     pub fn with_whitelist(providers: Vec<CdnProvider>) -> Self {
-        Self {
+        let mut detector = Self {
             ranges: Self::default_ranges(),
             whitelist: Some(providers),
             blacklist: Vec::new(),
-        }
+            ipv4_prefix_map: HashMap::new(),
+            ipv6_prefix_map: HashMap::new(),
+        };
+        detector.build_prefix_maps();
+        detector
     }
 
     /// Create detector with specific blacklisted providers
     ///
     /// The specified providers will never be considered CDNs.
     pub fn with_blacklist(providers: Vec<CdnProvider>) -> Self {
-        Self {
+        let mut detector = Self {
             ranges: Self::default_ranges(),
             whitelist: None,
             blacklist: providers,
-        }
+            ipv4_prefix_map: HashMap::new(),
+            ipv6_prefix_map: HashMap::new(),
+        };
+        detector.build_prefix_maps();
+        detector
     }
 
     /// Set whitelist (replaces existing)
     pub fn set_whitelist(&mut self, providers: Vec<CdnProvider>) {
         self.whitelist = Some(providers);
+        self.build_prefix_maps(); // Rebuild maps when whitelist changes
     }
 
     /// Clear whitelist
     pub fn clear_whitelist(&mut self) {
         self.whitelist = None;
+        self.build_prefix_maps(); // Rebuild maps when whitelist changes
     }
 
     /// Add provider to blacklist
     pub fn add_to_blacklist(&mut self, provider: CdnProvider) {
         if !self.blacklist.contains(&provider) {
             self.blacklist.push(provider);
+            self.build_prefix_maps(); // Rebuild maps when blacklist changes
         }
     }
 
     /// Remove provider from blacklist
     pub fn remove_from_blacklist(&mut self, provider: CdnProvider) {
         self.blacklist.retain(|p| *p != provider);
+        self.build_prefix_maps(); // Rebuild maps when blacklist changes
+    }
+
+    /// Build hash maps for O(1) prefix lookups
+    ///
+    /// Pre-computes /24 prefixes (IPv4) and /48 prefixes (IPv6) for all active
+    /// CDN ranges, respecting whitelist/blacklist configuration.
+    fn build_prefix_maps(&mut self) {
+        self.ipv4_prefix_map.clear();
+        self.ipv6_prefix_map.clear();
+
+        for (provider, ipv4_ranges, ipv6_ranges) in &self.ranges {
+            // Skip blacklisted providers
+            if self.blacklist.contains(provider) {
+                continue;
+            }
+
+            // Skip non-whitelisted providers (if whitelist is set)
+            if let Some(ref whitelist) = self.whitelist {
+                if !whitelist.contains(provider) {
+                    continue;
+                }
+            }
+
+            // Build IPv4 prefix map (/24 prefixes)
+            for network in ipv4_ranges {
+                let prefixes = Self::expand_ipv4_network_to_24_prefixes(*network);
+                for prefix in prefixes {
+                    // First provider wins (no overwriting)
+                    self.ipv4_prefix_map.entry(prefix).or_insert(*provider);
+                }
+            }
+
+            // Build IPv6 prefix map (/48 prefixes)
+            for network in ipv6_ranges {
+                let prefixes = Self::expand_ipv6_network_to_48_prefixes(*network);
+                for prefix in prefixes {
+                    // First provider wins (no overwriting)
+                    self.ipv6_prefix_map.entry(prefix).or_insert(*provider);
+                }
+            }
+        }
+    }
+
+    /// Convert IPv4 address to /24 prefix (top 24 bits)
+    fn ipv4_to_prefix24(ip: Ipv4Addr) -> u32 {
+        let octets = ip.octets();
+        u32::from_be_bytes([octets[0], octets[1], octets[2], 0])
+    }
+
+    /// Convert IPv6 address to /48 prefix (top 48 bits)
+    fn ipv6_to_prefix48(ip: Ipv6Addr) -> u128 {
+        let segments = ip.segments();
+        // Take first 3 segments (48 bits) and zero out the rest
+        u128::from(segments[0]) << 112
+            | u128::from(segments[1]) << 96
+            | u128::from(segments[2]) << 80
+    }
+
+    /// Expand IPv4 network to all /24 prefixes it contains
+    fn expand_ipv4_network_to_24_prefixes(network: Ipv4Network) -> Vec<u32> {
+        let prefix_len = network.prefix();
+
+        if prefix_len >= 24 {
+            // Network is /24 or smaller - single prefix
+            vec![Self::ipv4_to_prefix24(network.network())]
+        } else {
+            // Network is larger than /24 - generate all /24 prefixes
+            let start_ip = u32::from(network.network());
+            let end_ip = u32::from(network.broadcast());
+
+            // Calculate number of /24 networks in this range
+            let start_prefix24 = start_ip & 0xFFFFFF00; // Mask to /24
+            let end_prefix24 = end_ip & 0xFFFFFF00;
+
+            let mut prefixes = Vec::new();
+            let mut current = start_prefix24;
+
+            while current <= end_prefix24 {
+                prefixes.push(current);
+                current = current.saturating_add(256); // Next /24
+                if current == 0 || current < start_prefix24 {
+                    // Wrapped around or overflow
+                    break;
+                }
+            }
+
+            prefixes
+        }
+    }
+
+    /// Expand IPv6 network to all /48 prefixes it contains
+    fn expand_ipv6_network_to_48_prefixes(network: Ipv6Network) -> Vec<u128> {
+        let prefix_len = network.prefix();
+
+        if prefix_len >= 48 {
+            // Network is /48 or smaller - single prefix
+            vec![Self::ipv6_to_prefix48(network.network())]
+        } else {
+            // Network is larger than /48 - generate all /48 prefixes
+            // For IPv6, we only generate prefixes for reasonable ranges (< /32)
+            // to avoid memory exhaustion
+            if prefix_len < 32 {
+                // Too large to enumerate - just use network prefix
+                return vec![Self::ipv6_to_prefix48(network.network())];
+            }
+
+            let start_ip = u128::from(network.network());
+            let network_mask = !0u128 << (128 - prefix_len);
+            let prefix48_mask = !0u128 << 80; // /48 mask
+
+            let start_prefix48 = start_ip & prefix48_mask;
+            let num_prefixes = 1u128 << (48 - prefix_len);
+
+            // Limit to reasonable size (max 65536 prefixes)
+            let num_prefixes = num_prefixes.min(65536);
+
+            let mut prefixes = Vec::new();
+            for i in 0..num_prefixes {
+                let prefix = start_prefix48 | (i << 80);
+                // Check if prefix is still within the original network
+                if (prefix & network_mask) == (start_ip & network_mask) {
+                    prefixes.push(prefix);
+                }
+            }
+
+            prefixes
+        }
     }
 
     /// Detect if an IP belongs to a CDN provider
     ///
     /// Returns `Some(provider)` if the IP belongs to a CDN, respecting
     /// whitelist/blacklist configuration.
+    ///
+    /// Uses O(1) hash map lookups for /24 (IPv4) or /48 (IPv6) prefixes,
+    /// with fallback to linear search for edge cases not in hash maps.
     pub fn detect(&self, ip: &IpAddr) -> Option<CdnProvider> {
+        // Try O(1) hash lookup first
+        match ip {
+            IpAddr::V4(ipv4) => {
+                let prefix = Self::ipv4_to_prefix24(*ipv4);
+                if let Some(provider) = self.ipv4_prefix_map.get(&prefix) {
+                    return Some(*provider);
+                }
+            }
+            IpAddr::V6(ipv6) => {
+                let prefix = Self::ipv6_to_prefix48(*ipv6);
+                if let Some(provider) = self.ipv6_prefix_map.get(&prefix) {
+                    return Some(*provider);
+                }
+            }
+        }
+
+        // Fallback to linear search for edge cases (rare)
+        // This handles CIDR ranges larger than our prefix granularity
         for (provider, ipv4_ranges, ipv6_ranges) in &self.ranges {
             // Check blacklist
             if self.blacklist.contains(provider) {
@@ -613,5 +782,206 @@ mod tests {
             );
             assert!(detector.is_cdn(&ip));
         }
+    }
+
+    // Hash-based optimization tests
+    #[test]
+    fn test_ipv4_prefix_extraction() {
+        // Test /24 prefix extraction (top 24 bits)
+        let test_cases = vec![
+            ("192.168.1.100", 0xC0A80100),  // 192.168.1.0
+            ("10.0.0.1", 0x0A000000),       // 10.0.0.0
+            ("172.16.255.254", 0xAC10FF00), // 172.16.255.0
+            ("104.16.132.229", 0x68108400), // 104.16.132.0 (Cloudflare)
+        ];
+
+        for (ip_str, expected_prefix) in test_cases {
+            let ip: Ipv4Addr = ip_str.parse().unwrap();
+            let prefix = CdnDetector::ipv4_to_prefix24(ip);
+            assert_eq!(
+                prefix, expected_prefix,
+                "IPv4 {} should extract to prefix 0x{:08X}",
+                ip_str, expected_prefix
+            );
+        }
+    }
+
+    #[test]
+    fn test_ipv6_prefix_extraction() {
+        // Test /48 prefix extraction (top 48 bits positioned at bits 127-80)
+        let test_cases = vec![
+            (
+                "2606:4700:20::1",
+                0x26064700002000000000000000000000u128, // 2606:4700:20::/48
+            ),
+            (
+                "2600:9000:1234:5678::1",
+                0x26009000123400000000000000000000u128, // 2600:9000:1234::/48
+            ),
+            (
+                "2a04:4e40:abcd:ef01::1",
+                0x2a044e40abcd00000000000000000000u128, // 2a04:4e40:abcd::/48
+            ),
+        ];
+
+        for (ip_str, expected_prefix) in test_cases {
+            let ip: Ipv6Addr = ip_str.parse().unwrap();
+            let prefix = CdnDetector::ipv6_to_prefix48(ip);
+            assert_eq!(
+                prefix, expected_prefix,
+                "IPv6 {} should extract to prefix 0x{:032X}",
+                ip_str, expected_prefix
+            );
+        }
+    }
+
+    #[test]
+    fn test_ipv4_network_expansion_exact_24() {
+        // Test /24 network - should produce single prefix
+        let network: Ipv4Network = "192.168.1.0/24".parse().unwrap();
+        let prefixes = CdnDetector::expand_ipv4_network_to_24_prefixes(network);
+
+        assert_eq!(prefixes.len(), 1);
+        assert_eq!(prefixes[0], 0xC0A80100); // 192.168.1.0
+    }
+
+    #[test]
+    fn test_ipv4_network_expansion_larger_than_24() {
+        // Test /16 network - should produce 256 /24 prefixes
+        let network: Ipv4Network = "192.168.0.0/16".parse().unwrap();
+        let prefixes = CdnDetector::expand_ipv4_network_to_24_prefixes(network);
+
+        assert_eq!(prefixes.len(), 256);
+        assert_eq!(prefixes[0], 0xC0A80000); // 192.168.0.0
+        assert_eq!(prefixes[255], 0xC0A8FF00); // 192.168.255.0
+
+        // Test /13 network (Cloudflare 104.16.0.0/13) - should produce 2048 /24 prefixes
+        let network: Ipv4Network = "104.16.0.0/13".parse().unwrap();
+        let prefixes = CdnDetector::expand_ipv4_network_to_24_prefixes(network);
+
+        assert_eq!(prefixes.len(), 2048);
+        assert_eq!(prefixes[0], 0x68100000); // 104.16.0.0
+                                             // Last prefix should be 104.23.255.0
+        assert!(prefixes[prefixes.len() - 1] >= 0x68170000);
+    }
+
+    #[test]
+    fn test_ipv6_network_expansion_exact_48() {
+        // Test /48 network - should produce single prefix
+        let network: Ipv6Network = "2606:4700:20::/48".parse().unwrap();
+        let prefixes = CdnDetector::expand_ipv6_network_to_48_prefixes(network);
+
+        assert_eq!(prefixes.len(), 1);
+        assert_eq!(prefixes[0], 0x26064700002000000000000000000000u128);
+    }
+
+    #[test]
+    fn test_ipv6_network_expansion_larger_than_48() {
+        // Test /32 network - should produce multiple /48 prefixes
+        let network: Ipv6Network = "2606:4700::/32".parse().unwrap();
+        let prefixes = CdnDetector::expand_ipv6_network_to_48_prefixes(network);
+
+        // /32 to /48 = 2^16 = 65536 prefixes, but we cap at 65536
+        assert!(!prefixes.is_empty());
+        assert!(prefixes.len() <= 65536);
+
+        // First prefix should be 2606:4700::/48
+        assert_eq!(prefixes[0], 0x26064700000000000000000000000000u128);
+    }
+
+    #[test]
+    fn test_hash_maps_populated_on_init() {
+        let detector = CdnDetector::new();
+
+        // Hash maps should be non-empty after initialization
+        assert!(!detector.ipv4_prefix_map.is_empty());
+        assert!(!detector.ipv6_prefix_map.is_empty());
+
+        // Should contain entries for Cloudflare (known large provider)
+        let cf_ip: IpAddr = "104.16.132.229".parse().unwrap();
+        assert_eq!(detector.detect(&cf_ip), Some(CdnProvider::Cloudflare));
+    }
+
+    #[test]
+    fn test_hash_maps_rebuilt_on_whitelist_change() {
+        let mut detector = CdnDetector::new();
+
+        // Initially, hash maps contain all providers
+        let original_ipv4_size = detector.ipv4_prefix_map.len();
+        let original_ipv6_size = detector.ipv6_prefix_map.len();
+
+        // Set whitelist to only Cloudflare
+        detector.set_whitelist(vec![CdnProvider::Cloudflare]);
+
+        // Hash maps should be rebuilt with fewer entries
+        let new_ipv4_size = detector.ipv4_prefix_map.len();
+        let new_ipv6_size = detector.ipv6_prefix_map.len();
+
+        assert!(new_ipv4_size < original_ipv4_size);
+        assert!(new_ipv6_size < original_ipv6_size);
+
+        // Cloudflare should still be detected
+        let cf_ip: IpAddr = "104.16.132.229".parse().unwrap();
+        assert_eq!(detector.detect(&cf_ip), Some(CdnProvider::Cloudflare));
+
+        // AWS should NOT be detected
+        let aws_ip: IpAddr = "13.32.1.1".parse().unwrap();
+        assert_eq!(detector.detect(&aws_ip), None);
+    }
+
+    #[test]
+    fn test_hash_maps_rebuilt_on_blacklist_change() {
+        let mut detector = CdnDetector::new();
+
+        // Initially, Cloudflare should be detected
+        let cf_ip: IpAddr = "104.16.132.229".parse().unwrap();
+        assert_eq!(detector.detect(&cf_ip), Some(CdnProvider::Cloudflare));
+
+        // Add Cloudflare to blacklist
+        detector.add_to_blacklist(CdnProvider::Cloudflare);
+
+        // Hash maps should be rebuilt without Cloudflare
+        let cf_prefix = CdnDetector::ipv4_to_prefix24("104.16.132.229".parse().unwrap());
+        assert!(!detector.ipv4_prefix_map.contains_key(&cf_prefix));
+
+        // Cloudflare should NOT be detected
+        assert_eq!(detector.detect(&cf_ip), None);
+
+        // Remove from blacklist
+        detector.remove_from_blacklist(CdnProvider::Cloudflare);
+
+        // Hash maps should be rebuilt with Cloudflare again
+        assert_eq!(detector.detect(&cf_ip), Some(CdnProvider::Cloudflare));
+    }
+
+    #[test]
+    fn test_hash_lookup_performance() {
+        use std::time::Instant;
+
+        let detector = CdnDetector::new();
+
+        // Test 1000 lookups (should be very fast with hash maps)
+        let test_ips: Vec<IpAddr> = vec![
+            "104.16.132.229".parse().unwrap(), // Cloudflare
+            "13.32.1.1".parse().unwrap(),      // AWS CloudFront
+            "151.101.1.1".parse().unwrap(),    // Fastly
+            "192.168.1.1".parse().unwrap(),    // Non-CDN
+        ];
+
+        let start = Instant::now();
+        for _ in 0..1000 {
+            for ip in &test_ips {
+                let _ = detector.detect(ip);
+            }
+        }
+        let elapsed = start.elapsed();
+
+        // 4000 lookups should complete in < 10ms with O(1) hash lookups
+        // (vs ~100-200ms with O(N*M) linear search)
+        assert!(
+            elapsed.as_millis() < 10,
+            "4000 hash lookups took {:?} (expected < 10ms)",
+            elapsed
+        );
     }
 }

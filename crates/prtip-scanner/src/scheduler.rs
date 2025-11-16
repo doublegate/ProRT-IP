@@ -656,7 +656,47 @@ impl ScanScheduler {
         let total_scan_ports = total_ports;
 
         for target in targets {
-            let hosts = target.expand_hosts();
+            let original_hosts = target.expand_hosts();
+
+            // Filter CDN IPs if enabled
+            let hosts = if let Some(ref detector) = self.cdn_detector {
+                let mut filtered = Vec::new();
+                let mut skipped = 0;
+                let mut provider_counts: std::collections::HashMap<CdnProvider, usize> =
+                    std::collections::HashMap::new();
+
+                for host in original_hosts {
+                    if let Some(provider) = detector.detect(&host) {
+                        // Track statistics
+                        *provider_counts.entry(provider).or_insert(0) += 1;
+                        skipped += 1;
+                        debug!("Skipping CDN IP {}: {:?}", host, provider);
+                    } else {
+                        filtered.push(host);
+                    }
+                }
+
+                // Log statistics
+                if skipped > 0 {
+                    let total = filtered.len() + skipped;
+                    let reduction_pct = (skipped * 100) / total;
+                    info!(
+                        "Filtered {} CDN IPs ({}% reduction): {:?}",
+                        skipped, reduction_pct, provider_counts
+                    );
+                }
+
+                // Check if all hosts were filtered
+                if filtered.is_empty() {
+                    debug!("All hosts filtered (CDN detection), continuing to next target");
+                    continue;
+                }
+
+                debug!("Scanning {} hosts after CDN filtering", filtered.len());
+                filtered
+            } else {
+                original_hosts
+            };
 
             for (host_idx, host) in hosts.iter().enumerate() {
                 // Rate limiter

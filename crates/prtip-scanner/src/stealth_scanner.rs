@@ -54,9 +54,13 @@
 //! ```
 
 use crate::AdaptiveRateLimiterV2;
+use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanType};
-use prtip_network::{create_capture, with_buffer, PacketCapture, TcpFlags, TcpPacketBuilder};
+use prtip_network::{
+    adaptive_batch::AdaptiveConfig, create_capture, with_buffer, PacketCapture,
+    PlatformCapabilities, TcpFlags, TcpPacketBuilder,
+};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
 use std::time::{Duration, Instant, SystemTime};
@@ -68,8 +72,16 @@ use uuid::Uuid;
 use crate::pcapng::{Direction, PcapngWriter};
 use std::sync::Mutex as StdMutex;
 
+/// Connection tracking state for batch stealth scanning
+/// Sprint 6.3 Task 2.3: Added for batch I/O integration
+/// Note: Target IP, port, source port, and scan type are stored in the DashMap key
+#[derive(Debug, Clone)]
+struct ConnectionState {
+    sent_time: Instant,
+}
+
 /// Type of stealth scan to perform
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum StealthScanType {
     /// FIN scan - only FIN flag set
     Fin,
@@ -101,6 +113,17 @@ impl StealthScanType {
             StealthScanType::Ack => "ACK",
         }
     }
+
+    /// Convert to ScanType for event publishing
+    /// Sprint 6.3 Task 2.3: Added for event system integration
+    pub fn to_scan_type(&self) -> ScanType {
+        match self {
+            StealthScanType::Fin => ScanType::Fin,
+            StealthScanType::Null => ScanType::Null,
+            StealthScanType::Xmas => ScanType::Xmas,
+            StealthScanType::Ack => ScanType::Ack,
+        }
+    }
 }
 
 /// Stealth scanner
@@ -122,6 +145,9 @@ pub struct StealthScanner {
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
     /// Optional event bus for real-time progress updates
     event_bus: Option<Arc<EventBus>>,
+    /// Connection tracking for batch I/O (Sprint 6.3 Task 2.3)
+    /// Key: (target_ip, target_port, source_port, scan_type)
+    connections: Arc<DashMap<(IpAddr, u16, u16, StealthScanType), ConnectionState>>,
 }
 
 impl StealthScanner {
@@ -138,6 +164,7 @@ impl StealthScanner {
             local_ipv6,
             adaptive_limiter: None,
             event_bus: None,
+            connections: Arc::new(DashMap::new()), // Sprint 6.3 Task 2.3: Batch I/O connection tracking
         })
     }
 
@@ -188,6 +215,147 @@ impl StealthScanner {
                 prtip_core::Error::Config("No IPv6 address available for IPv6 scan".to_string())
             }),
         }
+    }
+
+    /// Scan multiple ports using batch I/O operations
+    /// Sprint 6.3 Task 2.3: Added for batch I/O integration
+    pub async fn scan_ports(
+        &self,
+        target: IpAddr,
+        ports: Vec<u16>,
+        scan_type: StealthScanType,
+    ) -> Result<Vec<ScanResult>> {
+        // Generate scan ID for event tracking (Sprint 6.3 Task 2.3)
+        let scan_id = Uuid::new_v4();
+        // Step 1: Check ICMP backoff (if adaptive rate limiting enabled)
+        if let Some(limiter) = &self.adaptive_limiter {
+            if limiter.is_target_backed_off(target) {
+                debug!(
+                    "Skipping {} ports on {} (ICMP backoff active)",
+                    ports.len(),
+                    target
+                );
+                return Ok(ports
+                    .iter()
+                    .map(|&port| ScanResult::new(target, port, PortState::Filtered))
+                    .collect());
+            }
+        }
+
+        // Step 2: Detect platform capabilities
+        let caps = PlatformCapabilities::detect();
+
+        // Step 3: Use fallback for platforms without sendmmsg/recvmmsg
+        if !caps.has_sendmmsg || !caps.has_recvmmsg {
+            return self.scan_ports_fallback(target, ports, scan_type).await;
+        }
+
+        // Step 4: Calculate optimal batch size
+        let batch_size = self.calculate_batch_size(1, ports.len());
+
+        // Step 5: Get network interface
+        let interface = self.config.network.interface.as_deref().unwrap_or("eth0");
+
+        // Step 6: Create adaptive config if enabled
+        let adaptive_config = if self.config.performance.adaptive_batch_enabled {
+            Some(AdaptiveConfig {
+                min_batch_size: self.config.performance.min_batch_size,
+                max_batch_size: self.config.performance.max_batch_size,
+                increase_threshold: 0.95,
+                decrease_threshold: 0.85,
+                memory_limit: 100_000_000, // 100 MB
+                window_size: Duration::from_secs(5),
+            })
+        } else {
+            None
+        };
+
+        // Step 7: Create BatchSender and BatchReceiver
+        let mut sender = prtip_network::BatchSender::new(interface, batch_size, adaptive_config)
+            .map_err(|e| {
+                prtip_core::Error::Network(format!("Failed to create BatchSender: {}", e))
+            })?;
+
+        let mut receiver =
+            prtip_network::BatchReceiver::new(interface, batch_size).map_err(|e| {
+                prtip_core::Error::Network(format!("Failed to create BatchReceiver: {}", e))
+            })?;
+
+        // Step 8: Process ports in batches
+        let mut all_results = Vec::new();
+        let timeout_ms = self.config.timing().timeout_ms();
+
+        for chunk in ports.chunks(batch_size) {
+            // Step 8a: Prepare batch packets
+            let packets = self.prepare_batch(target, chunk, scan_type)?;
+
+            // Step 8b: Add packets to sender
+            for packet in &packets {
+                sender.add_packet(packet.clone()).map_err(|e| {
+                    prtip_core::Error::Network(format!("Failed to add packet: {}", e))
+                })?;
+            }
+
+            // Step 8c: Flush batch (with 3 retries)
+            sender
+                .flush(3)
+                .await
+                .map_err(|e| prtip_core::Error::Network(format!("Failed to flush batch: {}", e)))?;
+
+            // Step 8d: Receive batch responses
+            let responses = receiver
+                .receive_batch(timeout_ms as u32)
+                .await
+                .map_err(|e| {
+                    prtip_core::Error::Network(format!("Failed to receive batch: {}", e))
+                })?;
+
+            // Step 8e: Process responses
+            let response_data: Vec<Vec<u8>> = responses.into_iter().map(|r| r.data).collect();
+            let batch_results = self
+                .process_batch_responses(response_data, scan_type, scan_id)
+                .await?;
+            all_results.extend(batch_results);
+
+            // Step 8f: Mark remaining ports as open|filtered (no RST = open|filtered for stealth)
+            let responded_ports: std::collections::HashSet<u16> = all_results
+                .iter()
+                .filter(|r| r.target_ip == target)
+                .map(|r| r.port)
+                .collect();
+
+            for &port in chunk {
+                if !responded_ports.contains(&port) {
+                    // No RST received = port is open or filtered
+                    all_results.push(ScanResult::new(target, port, PortState::Open));
+                }
+            }
+        }
+
+        Ok(all_results)
+    }
+
+    /// Fallback scan_ports for macOS/Windows (no batch I/O support)
+    /// Sprint 6.3 Task 2.3: Added for platform compatibility
+    async fn scan_ports_fallback(
+        &self,
+        target: IpAddr,
+        ports: Vec<u16>,
+        scan_type: StealthScanType,
+    ) -> Result<Vec<ScanResult>> {
+        let mut results = Vec::new();
+
+        for port in ports {
+            match self.scan_port(target, port, scan_type).await {
+                Ok(result) => results.push(result),
+                Err(e) => {
+                    debug!("Error scanning {}:{} - {}", target, port, e);
+                    results.push(ScanResult::new(target, port, PortState::Filtered));
+                }
+            }
+        }
+
+        Ok(results)
     }
 
     /// Scan a single port with specified stealth technique
@@ -795,6 +963,238 @@ impl StealthScanner {
         }
 
         Ok(None)
+    }
+
+    /// Prepare a batch of stealth packets for sending
+    /// Sprint 6.3 Task 2.3: Added for batch I/O integration
+    fn prepare_batch(
+        &self,
+        target: IpAddr,
+        ports: &[u16],
+        scan_type: StealthScanType,
+    ) -> Result<Vec<Vec<u8>>> {
+        let mut packets = Vec::with_capacity(ports.len());
+
+        for &port in ports {
+            // Generate random source port
+            let src_port = {
+                use rand::Rng;
+                rand::thread_rng().gen_range(32768..=61000)
+            };
+
+            // Build packet based on target IP version
+            let packet = match target {
+                IpAddr::V4(dst_ipv4) => self.build_stealth_ipv4_packet(
+                    self.local_ipv4,
+                    dst_ipv4,
+                    src_port,
+                    port,
+                    scan_type,
+                )?,
+                IpAddr::V6(dst_ipv6) => {
+                    let src_ipv6 = self.local_ipv6.ok_or_else(|| {
+                        prtip_core::Error::Network(
+                            "IPv6 scan requested but no local IPv6 address available".to_string(),
+                        )
+                    })?;
+                    self.build_stealth_ipv6_packet(src_ipv6, dst_ipv6, src_port, port, scan_type)?
+                }
+            };
+
+            // Track connection state
+            let state = ConnectionState {
+                sent_time: Instant::now(),
+            };
+            self.connections
+                .insert((target, port, src_port, scan_type), state);
+
+            packets.push(packet);
+        }
+
+        Ok(packets)
+    }
+
+    /// Build IPv4 stealth packet with specified flags
+    /// Sprint 6.3 Task 2.3: Added for batch I/O integration
+    fn build_stealth_ipv4_packet(
+        &self,
+        src_ipv4: Ipv4Addr,
+        dst_ipv4: Ipv4Addr,
+        src_port: u16,
+        dst_port: u16,
+        scan_type: StealthScanType,
+    ) -> Result<Vec<u8>> {
+        with_buffer(|buffer_pool| {
+            let mut builder = TcpPacketBuilder::new()
+                .source_ip(src_ipv4)
+                .dest_ip(dst_ipv4)
+                .source_port(src_port)
+                .dest_port(dst_port)
+                .flags(scan_type.flags())
+                .sequence(0)
+                .acknowledgment(0)
+                .window(1024);
+
+            if let Some(ttl) = self.config.evasion.ttl {
+                builder = builder.ttl(ttl);
+            }
+
+            if self.config.evasion.bad_checksums {
+                builder = builder.bad_checksum(true);
+            }
+
+            let packet_slice = builder.build_ip_packet_with_buffer(buffer_pool)?;
+            let packet = packet_slice.to_vec();
+            buffer_pool.reset();
+
+            Ok::<Vec<u8>, prtip_core::Error>(packet)
+        })
+    }
+
+    /// Build IPv6 stealth packet with specified flags
+    /// Sprint 6.3 Task 2.3: Added for batch I/O integration
+    fn build_stealth_ipv6_packet(
+        &self,
+        src_ipv6: Ipv6Addr,
+        dst_ipv6: Ipv6Addr,
+        src_port: u16,
+        dst_port: u16,
+        scan_type: StealthScanType,
+    ) -> Result<Vec<u8>> {
+        let mut builder = TcpPacketBuilder::new()
+            .source_port(src_port)
+            .dest_port(dst_port)
+            .flags(scan_type.flags())
+            .sequence(0)
+            .acknowledgment(0)
+            .window(1024);
+
+        if let Some(ttl) = self.config.evasion.ttl {
+            builder = builder.ttl(ttl);
+        }
+
+        if self.config.evasion.bad_checksums {
+            builder = builder.bad_checksum(true);
+        }
+
+        builder.build_ipv6_packet(src_ipv6, dst_ipv6).map_err(|e| {
+            prtip_core::Error::Network(format!("Failed to build IPv6 stealth packet: {}", e))
+        })
+    }
+
+    /// Calculate optimal batch size based on platform capabilities and port count
+    /// Sprint 6.3 Task 2.3: Added for batch I/O integration
+    fn calculate_batch_size(&self, _parallelism: usize, port_count: usize) -> usize {
+        let caps = PlatformCapabilities::detect();
+
+        let max_batch = if caps.has_sendmmsg && caps.has_recvmmsg {
+            self.config.performance.max_batch_size
+        } else {
+            1 // Fallback mode: no batching
+        };
+
+        // Use configured batch size (default 256), capped by max and port count
+        let batch_size = self
+            .config
+            .performance
+            .batch_size
+            .unwrap_or(256)
+            .min(max_batch);
+        batch_size.min(port_count).max(1)
+    }
+
+    /// Process batch of received stealth responses
+    /// Sprint 6.3 Task 2.3: Added for batch I/O integration
+    async fn process_batch_responses(
+        &self,
+        responses: Vec<Vec<u8>>,
+        scan_type: StealthScanType,
+        scan_id: Uuid,
+    ) -> Result<Vec<ScanResult>> {
+        let mut results = Vec::new();
+
+        for response_data in responses {
+            // Parse response to extract target info
+            if let Some((target_ip, target_port, src_port)) =
+                self.parse_stealth_response(&response_data, scan_type)
+            {
+                // Look up connection state
+                let key = (target_ip, target_port, src_port, scan_type);
+                if let Some((_, state)) = self.connections.remove(&key) {
+                    let response_time = state.sent_time.elapsed();
+
+                    // For stealth scans, RST = closed, no response = open|filtered
+                    // This response indicates a RST was received
+                    let result = ScanResult::new(target_ip, target_port, PortState::Closed)
+                        .with_response_time(response_time);
+
+                    // Publish event if event bus available
+                    if let Some(ref bus) = self.event_bus {
+                        bus.publish(ScanEvent::PortFound {
+                            scan_id,
+                            ip: target_ip,
+                            port: target_port,
+                            state: PortState::Closed,
+                            protocol: Protocol::Tcp,
+                            scan_type: scan_type.to_scan_type(),
+                            timestamp: std::time::SystemTime::now(),
+                        })
+                        .await;
+                    }
+
+                    results.push(result);
+                }
+            }
+        }
+
+        Ok(results)
+    }
+
+    /// Parse stealth response to extract connection info
+    /// Sprint 6.3 Task 2.3: Added for batch I/O integration
+    fn parse_stealth_response(
+        &self,
+        data: &[u8],
+        _scan_type: StealthScanType,
+    ) -> Option<(IpAddr, u16, u16)> {
+        // Minimum IPv4 header (20) + TCP header (20) = 40 bytes
+        if data.len() < 40 {
+            return None;
+        }
+
+        // Check IP version
+        let version = (data[0] >> 4) & 0x0F;
+
+        match version {
+            4 => {
+                // IPv4: Extract source IP, source port, dest port
+                let src_ip = Ipv4Addr::new(data[12], data[13], data[14], data[15]);
+                let tcp_offset = 20; // IPv4 header size
+                let src_port = u16::from_be_bytes([data[tcp_offset], data[tcp_offset + 1]]);
+                let dst_port = u16::from_be_bytes([data[tcp_offset + 2], data[tcp_offset + 3]]);
+
+                Some((IpAddr::V4(src_ip), dst_port, src_port))
+            }
+            6 => {
+                // IPv6: Extract source IP, source port, dest port
+                let src_ip = Ipv6Addr::new(
+                    u16::from_be_bytes([data[8], data[9]]),
+                    u16::from_be_bytes([data[10], data[11]]),
+                    u16::from_be_bytes([data[12], data[13]]),
+                    u16::from_be_bytes([data[14], data[15]]),
+                    u16::from_be_bytes([data[16], data[17]]),
+                    u16::from_be_bytes([data[18], data[19]]),
+                    u16::from_be_bytes([data[20], data[21]]),
+                    u16::from_be_bytes([data[22], data[23]]),
+                );
+                let tcp_offset = 40; // IPv6 header size
+                let src_port = u16::from_be_bytes([data[tcp_offset], data[tcp_offset + 1]]);
+                let dst_port = u16::from_be_bytes([data[tcp_offset + 2], data[tcp_offset + 3]]);
+
+                Some((IpAddr::V6(src_ip), dst_port, src_port))
+            }
+            _ => None,
+        }
     }
 }
 

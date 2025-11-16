@@ -1,7 +1,7 @@
 # ProRT-IP WarScan: Development Setup Guide
 
 **Version:** 1.0
-**Last Updated:** October 2025
+**Last Updated:** 2025-11-16
 
 ---
 

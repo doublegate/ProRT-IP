@@ -213,8 +213,8 @@ All code contributions must include:
 ### Test Coverage Requirements
 
 - **>90% coverage** for core modules (`prtip-core`, `prtip-network`)
-- **>60% coverage** for overall codebase (currently 61.92%, target met!)
-- **Current Status:** 789 tests passing, 61.92% line coverage (15,397 / 24,814 lines)
+- **>60% coverage** for overall codebase (currently 54.92%)
+- **Current Status:** 2,111 tests passing, 54.92% line coverage
 - Run coverage with:
 
   ```bash

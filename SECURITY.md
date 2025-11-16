@@ -378,5 +378,5 @@ Security researchers will be credited in:
 
 ---
 
-**Last Updated**: 2025-10-07
+**Last Updated**: 2025-11-16
 **Security Policy Version**: 1.0

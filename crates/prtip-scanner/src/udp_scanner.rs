@@ -49,10 +49,12 @@
 //! ```
 
 use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
+use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanType};
 use prtip_network::{
-    create_capture, get_udp_payload, with_buffer, PacketCapture, UdpPacketBuilder,
+    adaptive_batch::AdaptiveConfig, create_capture, get_udp_payload, with_buffer, PacketCapture,
+    PlatformCapabilities, UdpPacketBuilder,
 };
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
@@ -64,6 +66,14 @@ use uuid::Uuid;
 // PCAPNG packet capture support
 use crate::pcapng::{Direction, PcapngWriter};
 use std::sync::Mutex as StdMutex;
+
+/// Connection tracking state for batch UDP operations
+/// Sprint 6.3 Task 2.2: Added for batch I/O integration
+/// Note: Target IP, port, and source port are stored in the DashMap key
+#[derive(Debug, Clone)]
+struct ConnectionState {
+    sent_time: Instant,
+}
 
 /// UDP scanner with dual-stack IPv4/IPv6 support
 /// Sprint 5.1 Phase 2.1: Enhanced for IPv6 scanning
@@ -86,6 +96,9 @@ pub struct UdpScanner {
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
     /// Optional event bus for real-time progress updates
     event_bus: Option<Arc<EventBus>>,
+    /// Connection tracking for batch I/O (Sprint 6.3 Task 2.2)
+    /// Key: (target_ip, target_port, source_port)
+    connections: Arc<DashMap<(IpAddr, u16, u16), ConnectionState>>,
 }
 
 impl UdpScanner {
@@ -103,6 +116,7 @@ impl UdpScanner {
             hostgroup_limiter: None,
             adaptive_limiter: None,
             event_bus: None,
+            connections: Arc::new(DashMap::new()), // Sprint 6.3 Task 2.2: Batch I/O connection tracking
         })
     }
 
@@ -134,6 +148,176 @@ impl UdpScanner {
         capture.open(None)?;
         *self.capture.lock() = Some(capture);
         Ok(())
+    }
+
+    /// Scan multiple UDP ports with batch I/O optimization
+    /// Sprint 6.3 Task 2.2: Batch I/O integration for UDP scanner
+    ///
+    /// Uses sendmmsg/recvmmsg on Linux for 20-40% throughput improvement.
+    /// Falls back to sequential scanning on macOS/Windows.
+    pub async fn scan_ports(&self, target: IpAddr, ports: Vec<u16>) -> Result<Vec<ScanResult>> {
+        // Generate scan ID for event tracking
+        let scan_id = Uuid::new_v4();
+
+        // 1. Acquire hostgroup permit (if enabled)
+        let _permit = if let Some(limiter) = &self.hostgroup_limiter {
+            Some(limiter.acquire_target().await)
+        } else {
+            None
+        };
+
+        // 2. Check ICMP backoff (if adaptive rate limiting enabled)
+        if let Some(limiter) = &self.adaptive_limiter {
+            if limiter.is_target_backed_off(target) {
+                debug!("Skipping {} (ICMP backoff active)", target);
+                return Ok(ports
+                    .iter()
+                    .map(|&port| ScanResult::new(target, port, PortState::Filtered))
+                    .collect());
+            }
+        }
+
+        // 3. Detect platform capabilities and fallback if needed
+        let caps = PlatformCapabilities::detect();
+        if !caps.has_sendmmsg || !caps.has_recvmmsg {
+            debug!("Platform lacks sendmmsg/recvmmsg support, using fallback mode for UDP scan");
+            return self.scan_ports_fallback(target, ports, scan_id).await;
+        }
+
+        // 4. Calculate optimal batch size
+        let parallelism = self.config.performance.parallelism;
+        let batch_size = self.calculate_batch_size(parallelism, ports.len());
+
+        debug!(
+            "Scanning {} UDP ports on {} with batch_size={}",
+            ports.len(),
+            target,
+            batch_size
+        );
+
+        // 5. Get interface name
+        let interface = self.config.network.interface.as_deref().unwrap_or("eth0");
+
+        // 6. Create adaptive config if enabled
+        let adaptive_config = if self.config.performance.adaptive_batch_enabled {
+            Some(AdaptiveConfig {
+                min_batch_size: self.config.performance.min_batch_size,
+                max_batch_size: self.config.performance.max_batch_size,
+                increase_threshold: 0.95,
+                decrease_threshold: 0.85,
+                memory_limit: 100_000_000, // 100 MB
+                window_size: Duration::from_secs(5),
+            })
+        } else {
+            None
+        };
+
+        // 7. Create BatchSender and BatchReceiver
+        let mut sender = prtip_network::BatchSender::new(interface, batch_size, adaptive_config)
+            .map_err(|e| {
+                prtip_core::Error::Network(format!("Failed to create BatchSender: {}", e))
+            })?;
+
+        let mut receiver =
+            prtip_network::BatchReceiver::new(interface, batch_size).map_err(|e| {
+                prtip_core::Error::Network(format!("Failed to create BatchReceiver: {}", e))
+            })?;
+
+        // 8. Process ports in batches
+        let mut results = Vec::with_capacity(ports.len());
+        let timeout_ms = self.config.scan.timeout_ms;
+
+        for chunk in ports.chunks(batch_size) {
+            // 8a. Prepare batch packets
+            let batch_packets = self.prepare_batch(target, chunk, batch_size).await?;
+
+            // 8b. Add packets to sender
+            for packet in batch_packets {
+                sender.add_packet(packet).map_err(|e| {
+                    prtip_core::Error::Network(format!("Failed to add packet to batch: {}", e))
+                })?;
+            }
+
+            // 8c. Flush batch (with retry logic)
+            for retry in 0..3 {
+                match sender.flush(3).await {
+                    Ok(_) => {
+                        trace!("Batch flush successful (retry {})", retry);
+                        break;
+                    }
+                    Err(e) if retry < 2 => {
+                        warn!("Batch flush retry {} failed: {}", retry, e);
+                        tokio::time::sleep(Duration::from_millis(10)).await;
+                    }
+                    Err(e) => {
+                        return Err(prtip_core::Error::Network(format!(
+                            "Batch flush failed after 3 retries: {}",
+                            e
+                        )))
+                    }
+                }
+            }
+
+            // 8d. Receive batch responses
+            let responses = receiver
+                .receive_batch(timeout_ms as u32)
+                .await
+                .map_err(|e| {
+                    prtip_core::Error::Network(format!("Failed to receive batch: {}", e))
+                })?;
+
+            // 8e. Process responses
+            self.process_batch_responses(responses, &mut results, scan_id)
+                .await?;
+
+            // 8f. Mark remaining ports as filtered
+            for &port in chunk {
+                if !results
+                    .iter()
+                    .any(|r| r.port == port && r.target_ip == target)
+                {
+                    results.push(ScanResult::new(target, port, PortState::Filtered));
+                }
+            }
+        }
+
+        debug!(
+            "UDP batch scan complete: {} results for {}",
+            results.len(),
+            target
+        );
+
+        Ok(results)
+    }
+
+    /// Fallback UDP scan for platforms without sendmmsg/recvmmsg support
+    /// Sprint 6.3 Task 2.2: Sequential scanning fallback for macOS/Windows
+    async fn scan_ports_fallback(
+        &self,
+        target: IpAddr,
+        ports: Vec<u16>,
+        _scan_id: Uuid,
+    ) -> Result<Vec<ScanResult>> {
+        debug!(
+            "Using fallback mode for {} UDP ports on {}",
+            ports.len(),
+            target
+        );
+
+        let mut results = Vec::with_capacity(ports.len());
+
+        // Sequential scanning using existing scan_port method
+        for port in ports {
+            match self.scan_port(target, port).await {
+                Ok(result) => results.push(result),
+                Err(e) => {
+                    warn!("UDP scan failed for {}:{} - {}", target, port, e);
+                    results.push(ScanResult::new(target, port, PortState::Unknown));
+                }
+            }
+        }
+
+        Ok(results)
     }
 
     /// Detect local IPv4 address for the interface
@@ -684,6 +868,197 @@ impl UdpScanner {
         }
 
         Ok(None)
+    }
+
+    /// Calculate optimal batch size based on platform capabilities and port count
+    /// Sprint 6.3 Task 2.2: Platform-aware batch sizing for UDP scanner
+    fn calculate_batch_size(&self, _parallelism: usize, port_count: usize) -> usize {
+        let caps = PlatformCapabilities::detect();
+
+        let max_batch = if caps.has_sendmmsg && caps.has_recvmmsg {
+            self.config.performance.max_batch_size
+        } else {
+            1 // Fallback mode: no batching
+        };
+
+        // Use configured batch size (default 256), capped by max and port count
+        let batch_size = self
+            .config
+            .performance
+            .batch_size
+            .unwrap_or(256)
+            .min(max_batch);
+        batch_size.min(port_count).max(1)
+    }
+
+    /// Prepare batch of UDP packets for sending
+    /// Sprint 6.3 Task 2.2: UDP batch packet preparation with connection tracking
+    async fn prepare_batch(
+        &self,
+        target: IpAddr,
+        ports: &[u16],
+        batch_size: usize,
+    ) -> Result<Vec<Vec<u8>>> {
+        use rand::Rng;
+        let mut packets = Vec::with_capacity(batch_size.min(ports.len()));
+
+        for &port in ports.iter().take(batch_size) {
+            // Use configured source port or generate random
+            let src_port: u16 = self
+                .config
+                .network
+                .source_port
+                .unwrap_or_else(|| rand::thread_rng().gen_range(1024..65535));
+
+            // Get protocol-specific payload
+            let payload = get_udp_payload(port).unwrap_or_default();
+
+            // Build packet based on IP version
+            let packet = match target {
+                IpAddr::V4(dst_ipv4) => {
+                    let src_ipv4 = self.local_ipv4;
+                    self.build_udp_ipv4_packet(src_ipv4, dst_ipv4, src_port, port, &payload)?
+                }
+                IpAddr::V6(dst_ipv6) => {
+                    let src_ipv6 = self.local_ipv6.ok_or_else(|| {
+                        prtip_core::Error::Config(
+                            "No IPv6 address available for IPv6 scan".to_string(),
+                        )
+                    })?;
+                    self.build_udp_ipv6_packet(src_ipv6, dst_ipv6, src_port, port, &payload)?
+                }
+            };
+
+            // Track connection state (target IP, port, src_port are in DashMap key)
+            let conn_state = ConnectionState {
+                sent_time: Instant::now(),
+            };
+
+            self.connections
+                .insert((target, port, src_port), conn_state);
+            packets.push(packet);
+        }
+
+        Ok(packets)
+    }
+
+    /// Build IPv4 UDP packet for batch sending
+    /// Sprint 6.3 Task 2.2: Helper for batch packet building
+    fn build_udp_ipv4_packet(
+        &self,
+        src_ipv4: Ipv4Addr,
+        dst_ipv4: Ipv4Addr,
+        src_port: u16,
+        dst_port: u16,
+        payload: &[u8],
+    ) -> Result<Vec<u8>> {
+        with_buffer(|buffer_pool| {
+            let mut builder = UdpPacketBuilder::new()
+                .source_ip(src_ipv4)
+                .dest_ip(dst_ipv4)
+                .source_port(src_port)
+                .dest_port(dst_port)
+                .payload(payload.to_vec());
+
+            // Apply TTL if configured
+            if let Some(ttl) = self.config.evasion.ttl {
+                builder = builder.ttl(ttl);
+            }
+
+            // Apply bad checksum if configured
+            if self.config.evasion.bad_checksums {
+                builder = builder.bad_checksum(true);
+            }
+
+            let packet_slice = builder.build_ip_packet_with_buffer(buffer_pool)?;
+            let packet = packet_slice.to_vec();
+
+            // Reset buffer for next packet
+            buffer_pool.reset();
+
+            Ok::<Vec<u8>, prtip_core::Error>(packet)
+        })
+    }
+
+    /// Build IPv6 UDP packet for batch sending
+    /// Sprint 6.3 Task 2.2: Helper for batch packet building
+    fn build_udp_ipv6_packet(
+        &self,
+        src_ipv6: Ipv6Addr,
+        dst_ipv6: Ipv6Addr,
+        src_port: u16,
+        dst_port: u16,
+        payload: &[u8],
+    ) -> Result<Vec<u8>> {
+        let mut builder = UdpPacketBuilder::new()
+            .source_port(src_port)
+            .dest_port(dst_port)
+            .payload(payload.to_vec());
+
+        // Apply hop limit if configured (IPv6 equivalent of TTL)
+        if let Some(ttl) = self.config.evasion.ttl {
+            builder = builder.ttl(ttl);
+        }
+
+        // Apply bad checksum if configured
+        if self.config.evasion.bad_checksums {
+            builder = builder.bad_checksum(true);
+        }
+
+        builder.build_ipv6_packet(src_ipv6, dst_ipv6).map_err(|e| {
+            prtip_core::Error::Network(format!("Failed to build IPv6 UDP packet: {}", e))
+        })
+    }
+
+    /// Process batch of received responses
+    /// Sprint 6.3 Task 2.2: UDP batch response processing with ICMP/ICMPv6 handling
+    async fn process_batch_responses(
+        &self,
+        responses: Vec<prtip_network::ReceivedPacket>,
+        results: &mut Vec<ScanResult>,
+        scan_id: Uuid,
+    ) -> Result<()> {
+        for response in responses {
+            // Get all connection keys for matching
+            let conn_keys: Vec<_> = self.connections.iter().map(|entry| *entry.key()).collect();
+
+            for (target, port, src_port) in conn_keys {
+                if let Some(state) = self.parse_response(&response.data, target, port, src_port)? {
+                    // Remove connection from tracking
+                    let conn = self
+                        .connections
+                        .remove(&(target, port, src_port))
+                        .map(|(_, v)| v);
+                    let response_time = conn
+                        .map(|c| c.sent_time.elapsed())
+                        .unwrap_or(Duration::from_millis(0));
+
+                    let result =
+                        ScanResult::new(target, port, state).with_response_time(response_time);
+
+                    // Emit PortFound event for open ports
+                    if state == PortState::Open {
+                        if let Some(bus) = &self.event_bus {
+                            bus.publish(ScanEvent::PortFound {
+                                scan_id,
+                                ip: target,
+                                port,
+                                state,
+                                protocol: Protocol::Udp,
+                                scan_type: ScanType::Udp,
+                                timestamp: SystemTime::now(),
+                            })
+                            .await;
+                        }
+                    }
+
+                    results.push(result);
+                    break;
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 

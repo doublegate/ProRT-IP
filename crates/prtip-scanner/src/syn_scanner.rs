@@ -44,8 +44,8 @@ use prtip_core::{
     Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanStage, ScanType,
 };
 use prtip_network::{
-    create_capture, packet_buffer::with_buffer, PacketCapture, PlatformCapabilities, TcpFlags,
-    TcpOption, TcpPacketBuilder,
+    adaptive_batch::AdaptiveConfig, create_capture, packet_buffer::with_buffer, PacketCapture,
+    PlatformCapabilities, TcpFlags, TcpOption, TcpPacketBuilder,
 };
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
@@ -1179,37 +1179,51 @@ impl SynScanner {
         // 5. Get interface name (use default if not configured)
         let interface = self.config.network.interface.as_deref().unwrap_or("eth0");
 
-        // 6. Create BatchSender/BatchReceiver
-        let mut sender = prtip_network::BatchSender::new(
-            interface, batch_size, None, // No adaptive config for SYN scanner
-        )
-        .map_err(|e| prtip_core::Error::Network(format!("Failed to create BatchSender: {}", e)))?;
+        // 6. Create adaptive config if enabled (Sprint 6.3 Task Area 3)
+        let adaptive_config = if self.config.performance.adaptive_batch_enabled {
+            Some(AdaptiveConfig {
+                min_batch_size: self.config.performance.min_batch_size,
+                max_batch_size: self.config.performance.max_batch_size,
+                increase_threshold: 0.95,
+                decrease_threshold: 0.85,
+                memory_limit: 100_000_000, // 100 MB
+                window_size: Duration::from_secs(5),
+            })
+        } else {
+            None
+        };
+
+        // 7. Create BatchSender/BatchReceiver
+        let mut sender = prtip_network::BatchSender::new(interface, batch_size, adaptive_config)
+            .map_err(|e| {
+                prtip_core::Error::Network(format!("Failed to create BatchSender: {}", e))
+            })?;
 
         let mut receiver =
             prtip_network::BatchReceiver::new(interface, batch_size).map_err(|e| {
                 prtip_core::Error::Network(format!("Failed to create BatchReceiver: {}", e))
             })?;
 
-        // 7. Process ports in batches
+        // 8. Process ports in batches
         let mut results = Vec::new();
         for chunk in ports.chunks(batch_size) {
-            // 7a. Prepare batch of SYN packets
+            // 8a. Prepare batch of SYN packets
             let batch_packets = self.prepare_batch(target, chunk, batch_size).await?;
 
-            // 7b. Add packets to sender batch
+            // 8b. Add packets to sender batch
             for packet in batch_packets {
                 sender.add_packet(packet).map_err(|e| {
                     prtip_core::Error::Network(format!("Failed to add packet to batch: {}", e))
                 })?;
             }
 
-            // 7c. Flush batch with retry logic
+            // 8c. Flush batch with retry logic
             sender
                 .flush(3) // 3 retries
                 .await
                 .map_err(|e| prtip_core::Error::Network(format!("Failed to flush batch: {}", e)))?;
 
-            // 7d. Receive batch responses with timeout
+            // 8d. Receive batch responses with timeout
             let timeout_ms = Duration::from_millis(self.config.scan.timeout_ms);
             let responses = receiver
                 .receive_batch(timeout_ms.as_millis() as u32)
@@ -1218,11 +1232,11 @@ impl SynScanner {
                     prtip_core::Error::Network(format!("Failed to receive batch: {}", e))
                 })?;
 
-            // 7e. Process responses and update results
+            // 8e. Process responses and update results
             self.process_batch_responses(responses, &mut results, scan_id)
                 .await?;
 
-            // 7f. Mark remaining ports in chunk as filtered (no response received)
+            // 8f. Mark remaining ports in chunk as filtered (no response received)
             for &port in chunk {
                 if !results.iter().any(|r| r.port == port) {
                     results.push(
@@ -1233,7 +1247,7 @@ impl SynScanner {
             }
         }
 
-        // 7. Calculate final statistics
+        // 9. Calculate final statistics
         let open_count = results
             .iter()
             .filter(|r| r.state == PortState::Open)
@@ -1247,7 +1261,7 @@ impl SynScanner {
             .filter(|r| r.state == PortState::Filtered)
             .count();
 
-        // 8. Emit ScanCompleted event
+        // 10. Emit ScanCompleted event
         if let Some(bus) = &self.event_bus {
             bus.publish(ScanEvent::ScanCompleted {
                 scan_id,

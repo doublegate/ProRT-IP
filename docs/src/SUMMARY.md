@@ -46,10 +46,10 @@
 
 # Feature Guides
 
-- [IPv6 Scanning](./features/ipv6-scanning.md)
-  - [IPv6 Fundamentals](./features/ipv6-scanning.md#ipv6-fundamentals)
-  - [IPv6 Discovery](./features/ipv6-scanning.md#ipv6-discovery)
-  - [Performance Considerations](./features/ipv6-scanning.md#performance-considerations)
+- [IPv6 Scanning](./features/ipv6.md)
+  - [IPv6 Fundamentals](./features/ipv6.md#ipv6-fundamentals)
+  - [IPv6 Discovery](./features/ipv6.md#ipv6-discovery)
+  - [Performance Considerations](./features/ipv6.md#performance-considerations)
 - [Service Detection](./features/service-detection.md)
   - [Detection Methods](./features/service-detection.md#detection-methods)
   - [Supported Services](./features/service-detection.md#supported-services)

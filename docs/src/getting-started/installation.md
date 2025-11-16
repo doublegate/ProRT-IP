@@ -254,7 +254,7 @@ cd prtip-warscan
 
 ### Project Structure
 
-```
+```text
 prtip-warscan/
 ├── Cargo.toml           # Workspace manifest
 ├── Cargo.lock           # Dependency lock file
@@ -589,7 +589,7 @@ export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
 
 **Windows:**
 
-```
+```text
 Ensure Npcap SDK is installed and NPCAP_SDK environment variable is set
 ```
 
@@ -640,7 +640,7 @@ sudo dseditgroup -o edit -a $(whoami) -t user access_bpf
 
 **Windows:**
 
-```
+```text
 Run terminal as Administrator
 ```
 

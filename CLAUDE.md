@@ -1,47 +1,43 @@
 # CLAUDE.md
 
-Guidance for Claude Code (claude.ai/code) working with ProRT-IP.
+ProRT-IP project guidance for Claude Code.
 
 ## Project Overview
 
-**ProRT-IP WarScan**: Modern network scanner combining Masscan/ZMap speed with Nmap detection depth.
+**ProRT-IP WarScan**: Network scanner combining Masscan/ZMap speed with Nmap detection depth.
 
-**Status**: Phase 5 IN PROGRESS (Sprint 5.5 COMPLETE). 868 tests (100%), 62.5% coverage, TLS certificate analysis, OS fingerprinting, service detection 85-90%, 8 scan types, 6 evasion techniques, industry-leading -1.8% overhead rate limiting. CI/CD 7/7 passing, 8/8 release targets.
+**Status**: Phase 6 Sprint 6.3 COMPLETE (v0.5.2, 2,111 tests, 54.92% coverage, 8 scan types, production-ready TUI)
 
-**Repository**: <https://github.com/doublegate/ProRT-IP>
-**License**: GPL-3.0
-**Updated**: 2025-11-04
+**Repository**: <https://github.com/doublegate/ProRT-IP> | **License**: GPL-3.0 | **Updated**: 2025-11-16
 
 ## Architecture
 
-### Hybrid Scanning Approach
+**Hybrid Approach**: Fast stateless discovery (Masscan speed) + Deep stateful enumeration (Nmap detection)
+**Performance**: 10M+ pps stateless, internet-scale IPv4/IPv6, stream to disk
 
-1. **Fast Discovery**: Stateless scanning at Masscan speeds
-2. **Deep Enumeration**: Stateful connections with Nmap-style detection
+**Key Decisions**:
+- **Async**: Tokio multi-threaded, CPU-core workers, lock-free crossbeam
+- **Packets**: Cross-platform raw sockets (AF_PACKET/Npcap/BPF), pnet crate
+- **Privileges**: Create elevated → drop immediately → run unprivileged
 
-**Performance:** 10M+ pps stateless, internet-scale IPv4 sweep, stream to disk
+## Capabilities
 
-**Key Decisions:**
-- **Async:** Tokio multi-threaded, CPU-core workers, lock-free crossbeam
-- **Packets:** Cross-platform raw sockets (AF_PACKET/Npcap/BPF), pnet crate
-- **Privileges:** Create elevated → drop immediately → run unprivileged
-
-## Scanning Capabilities
-
-**TCP**: SYN (default), Connect, FIN/NULL/Xmas (stealth), ACK (firewall), Idle (anonymity)
-**UDP**: Protocol payloads (DNS, SNMP, NetBIOS), ICMP interpretation, ~10-100x slower
-**Detection**: Service (nmap-service-probes, 187 probes), OS fingerprinting (16-probe, 2,600+ DB)
-**Timing**: T0-T5 (paranoid→insane), packet fragmentation, decoy scanning, randomization
+| Category | Details |
+|----------|---------|
+| **TCP** | SYN (default), Connect, FIN/NULL/Xmas (stealth), ACK (firewall), Idle (anonymity) |
+| **UDP** | Protocol payloads (DNS, SNMP, NetBIOS), ICMP interpretation, ~10-100x slower |
+| **Detection** | Service (187 probes, 85-90%), OS fingerprinting (16-probe, 2,600+ DB) |
+| **Timing** | T0-T5 (paranoid→insane), packet fragmentation, decoy scanning |
+| **TUI** | 60 FPS, 4-tab dashboard, 10K+ events/sec, real-time metrics |
 
 ## Implementation Status
 
 | Phase | Status | Tests | Key Features |
 |-------|--------|-------|--------------|
-| 1-3 | ✅ COMPLETE | 391 | Core scanning, protocols, detection |
-| 4: Performance | ✅ COMPLETE | 1,166 | Testing infra, zero-copy, NUMA, PCAPNG, evasion, IPv6 foundation |
-| **5: Advanced** | **🔄 IN PROGRESS** | **868** | **IPv6 100%, Idle scan, Service detection 85-90%, Rate limiting -1.8%, TLS cert analysis** |
-
-**Custom Commands** (15): /rust-check, /bench-compare, /sprint-*, /perf-profile, /module-create, /doc-update, /test-quick, /ci-status, /bug-report, /inspire-me, /daily-log, /next-sprint, /mem-reduce
+| 1-3 | ✅ | 391 | Core scanning, protocols, detection |
+| 4 | ✅ | 1,166 | Zero-copy, NUMA, PCAPNG, evasion, IPv6 foundation |
+| 5 | ✅ | 868 | IPv6 100%, Idle scan, Service detection, Rate limiting -1.8%, TLS |
+| **6** | **🔄** | **2,111** | **TUI (60 FPS), Dashboard, CDN filtering, Network optimizations** |
 
 ## Critical Dependencies
 
@@ -50,43 +46,21 @@ tokio = "1.35"     # Async runtime
 pnet = "0.34"      # Packets
 clap = "4.4"       # CLI
 sqlx = "0.7"       # Async SQL
+ratatui = "0.29"   # TUI
 ```
 
 **System**: Linux 4.15+, Windows 10+, macOS 11.0+ | Memory 4GB min (16GB rec)
-**Build**: opt-level=3, lto="fat", codegen-units=1
 
 ## Security Requirements
 
-### Input Validation
-- `IpAddr::parse()` for IPs, `ipnetwork` for CIDR
-- Allowlist at API boundaries
-- **Never** construct shell commands from user input
-
-### Privilege Pattern
-```rust
-let socket = create_raw_socket()?;      // 1. Create privileged
-drop_privileges("scanner", "scanner")?; // 2. Drop IMMEDIATELY
-run_scan_engine(socket)?;               // 3. Run unprivileged
-```
-
-### Packet Parsing
-- Use pnet/etherparse bounds checking (never panic)
-- Return Option/Result on malformed packets
-- Resource limits: max concurrent, per-target rates, timeouts
-
-### DoS Prevention
-- Bound via `tokio::sync::Semaphore`
-- Stream results to disk immediately
-- Adaptive rate limiting
-
-## Database Schema
-
-SQLite/PostgreSQL storage: scans (metadata), scan_results (port/service/banner). WAL mode, batch inserts (1K-10K/tx), indexes on scan_id/target_ip/port.
+**Input Validation**: `IpAddr::parse()` for IPs, `ipnetwork` for CIDR, allowlist at boundaries
+**Privilege Pattern**: Create elevated → drop immediately → run unprivileged
+**Packet Parsing**: pnet/etherparse bounds checking, return Option/Result on malformed
+**DoS Prevention**: `tokio::sync::Semaphore` bounds, stream to disk, adaptive rate limiting
 
 ## CLI Design
 
-**Binary**: `prtip`
-**Nmap Compatibility**: 50+ flags (`-sS`, `-sT`, `-sU`, `-p`, `-F`, `-oN`, `-oX`, `-oG`, `-v`, `-A`, `-f`, `--mtu`, `--ttl`, `-D`, `--badsum`, `-g`, etc.)
+**Binary**: `prtip` | **Nmap Compatibility**: 50+ flags (`-sS`, `-sT`, `-sU`, `-p`, `-F`, `-oN`, `-oX`, `-oG`, `-v`, `-A`, `-f`, `--mtu`, `--ttl`, `-D`, `--badsum`, `-g`, etc.)
 
 ```bash
 prtip -sS -p 1-1000 10.0.0.0/24          # SYN scan
@@ -94,46 +68,38 @@ prtip -F 192.168.1.1                      # Fast (top 100)
 prtip -A -p 80,443 target.com             # Aggressive
 ```
 
-**Output Formats**: Text (colorized), JSON, XML (nmap), Greppable, PCAPNG, SQL
+**Output**: Text (colorized), JSON, XML (nmap), Greppable, PCAPNG, SQL
 
 ## Documentation Structure
 
-**Root-Level**: README (overview), ROADMAP (phases), CONTRIBUTING (guidelines), SECURITY (reporting), SUPPORT (help index), AUTHORS, CHANGELOG
+**Root**: README, ROADMAP, CONTRIBUTING, SECURITY, SUPPORT, AUTHORS, CHANGELOG
 
 **Technical Docs** (`docs/`):
 - 00-ARCHITECTURE: System design
 - 01-ROADMAP: 8 phases, 20 weeks
-- 03-DEV-SETUP: Environment setup
+- 03-DEV-SETUP: Environment
 - 04-IMPLEMENTATION-GUIDE: Code structure
 - 06-TESTING: 5 test levels, coverage
 - 08-SECURITY: Audit checklist
 - 10-PROJECT-STATUS: Task tracking
+- TUI-ARCHITECTURE: Event-driven TUI
 
-**Reference** (`ref-docs/`): Technical specifications (36KB-190KB comprehensive guides)
+**Reference** (`ref-docs/`): Technical specifications (36KB-190KB guides)
 
-**Quick Start**: 00-ARCHITECTURE → 03-DEV-SETUP → 10-PROJECT-STATUS → 04-IMPLEMENTATION-GUIDE → 08-SECURITY
+**Quick Start**: 00-ARCHITECTURE → 03-DEV-SETUP → 10-PROJECT-STATUS → 04-IMPLEMENTATION-GUIDE
 
 ## Important Notes
 
-**Security**: Penetration testing/red team tool. Include: user confirmation (internet-scale), audit logging, rate limiting (prevent DoS)
-
+**Security**: Penetration testing/red team tool. User confirmation (internet-scale), audit logging, rate limiting (prevent DoS)
 **Performance**: Zero-copy >10KB, sendmmsg/recvmmsg @1M+ pps, NUMA penalties need IRQ affinity
-
-**Cross-Platform**: Windows Npcap init (90s loss old versions), macOS ChmodBPF/root, FIN/NULL/Xmas fail Windows/Cisco, UDP 10-100x slower (ICMP limiting)
+**Cross-Platform**: Windows Npcap init (90s loss old versions), macOS ChmodBPF/root, FIN/NULL/Xmas fail Windows/Cisco
 
 ## Release Standards
 
-**Tag Messages** (100-150 lines min): Executive summary, features, performance metrics, technical details, files changed, testing, docs, strategic value, future work
-
+**Tag Messages** (100-150 lines): Executive summary, features, performance metrics, technical details, files changed, testing, strategic value
 **GitHub Releases** (150-200 lines): All tag content + links, installation, platform matrix, known issues, asset downloads
-
-**Process**: Read /tmp/ProRT-IP/RELEASE-NOTES-v*.md → Read SPRINT-*-COMPLETE.md → Review commits → Create tag (100-150 lines) → Create GitHub release (150-200 lines) → Verify vs quality standard → Push
-
+**Process**: Read /tmp/ProRT-IP/RELEASE-NOTES-v*.md → Read SPRINT-*-COMPLETE.md → Review commits → Create tag → Create release → Verify → Push
 **Reference**: v0.3.7-v0.3.9, v0.4.0-v0.4.5 (extensive, technically detailed)
-
-## Input Validation
-
-✅ IP parsing (IPv4/IPv6) | ✅ CIDR (0-32/0-128) | ✅ Ports (1-65535) | ✅ Filename sanitization | ✅ Rate limits (anti-DoS) | ✅ Memory bounds
 
 ## Maintenance
 

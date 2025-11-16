@@ -466,7 +466,7 @@ pub async fn scan_target(addr: SocketAddr) -> Result<PortState> {
 - **Latency:** +0-25% (network-dependent)
 - **Throughput:** -3% at 1Gbps (negligible)
 
-See [IPv6 Support Guide](../features/ipv6-scanning.md) for comprehensive IPv6 scanning documentation.
+See [IPv6 Support Guide](../features/ipv6.md) for comprehensive IPv6 scanning documentation.
 
 ## Data Flow
 
@@ -800,4 +800,4 @@ impl Scanner<Configured> {
 - [CI/CD Pipeline](./ci-cd.md) - GitHub Actions and automation
 - [Technical Specifications](../../reference/tech-spec-v2.md) - Detailed technical specs
 - [Rate Limiting Guide](../features/rate-limiting.md) - Comprehensive rate limiting documentation
-- [IPv6 Support Guide](../features/ipv6-scanning.md) - IPv6 scanning capabilities
+- [IPv6 Support Guide](../features/ipv6.md) - IPv6 scanning capabilities

@@ -1345,7 +1345,6 @@ Use ossec, wazuh, or custom scripts to alert on:
 
 1. **Antirez (1998):** "New TCP Scan Method" (original idle scan publication)
    - URL: https://github.com/antirez/hping/blob/master/docs/SPOOFED_SCAN.txt
-   - Original URL (unavailable): www.kyuzz.org/antirez/papers/dumbscan.html
    - Key contribution: First description of IPID-based scanning
 
 2. **Ofir Arkin (2001):** "ICMP Usage in Scanning" (Version 3.0)

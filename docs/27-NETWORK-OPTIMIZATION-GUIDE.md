@@ -2134,7 +2134,7 @@ prtip -sS --skip-cdn <target>
 
 **Npcap Requirements:**
 - **Version:** 1.70+ (older versions have 90s initialization overhead)
-- **Install:** https://npcap.com/dist/npcap-1.70.exe
+- **Install:** https://npcap.com/#download
 - **Privileges:** Administrator required for raw sockets
 
 **Fallback Implementation:**
@@ -2598,7 +2598,7 @@ sudo prtip -sS -p 80 192.168.1.0/24
 # Control Panel → Programs → Npcap
 
 # Fix: Install Npcap 1.70+
-# https://npcap.com/dist/npcap-1.70.exe
+# https://npcap.com/#download
 
 # Run as Administrator
 prtip.exe -sS -p 80 192.168.1.0/24

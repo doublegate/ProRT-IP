@@ -87,7 +87,7 @@ brew install libpcap
 ```
 
 **Windows:**
-Download and install Npcap from <https://npcap.com/dist/npcap-1.70.exe>
+Download and install Npcap from <https://npcap.com/#download>
 
 ### Q: Build fails with OpenSSL errors
 
@@ -324,7 +324,7 @@ echo "* hard nofile 65535" | sudo tee -a /etc/security/limits.conf
 
 **Solution:**
 
-1. Download Npcap: <https://npcap.com/dist/npcap-1.70.exe>
+1. Download Npcap: <https://npcap.com/#download>
 2. During installation, check "Install Npcap in WinPcap API-compatible mode"
 3. Restart terminal/IDE after installation
 

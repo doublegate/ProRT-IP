@@ -5,7 +5,7 @@
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-2,111%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 [![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)](https://codecov.io/gh/doublegate/ProRT-IP)
-[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](../../LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
 **Modern network scanner combining Masscan/ZMap speed with Nmap detection depth.**
@@ -105,7 +105,7 @@ prtip --tui -sS -p 1-1000 192.168.1.0/24
 - **GitHub:** <https://github.com/doublegate/ProRT-IP>
 - **Issues:** <https://github.com/doublegate/ProRT-IP/issues>
 - **Security:** <https://github.com/doublegate/ProRT-IP/security/advisories>
-- **Changelog:** [../CHANGELOG.md](../CHANGELOG.md)
+- **Changelog:** [../../CHANGELOG.md](../../CHANGELOG.md)
 
 ## License
 

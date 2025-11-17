@@ -36,36 +36,36 @@ This comprehensive documentation package provides everything needed to develop P
 
 ### For Developers (First Time)
 
-1. **[00-ARCHITECTURE.md](00-ARCHITECTURE.md)** - Understand the system
-2. **[03-DEV-SETUP.md](03-DEV-SETUP.md)** - Set up your environment
-3. **[04-IMPLEMENTATION-GUIDE.md](04-IMPLEMENTATION-GUIDE.md)** - Learn code structure
-4. **[05-API-REFERENCE.md](05-API-REFERENCE.md)** - API documentation
-5. **[10-PROJECT-STATUS.md](10-PROJECT-STATUS.md)** - Find a task
-6. **[06-TESTING.md](06-TESTING.md)** - Write tests
-7. **[08-SECURITY.md](08-SECURITY.md)** - Follow security practices
+1. **[00-ARCHITECTURE.md](../00-ARCHITECTURE.md)** - Understand the system
+2. **[03-DEV-SETUP.md](../03-DEV-SETUP.md)** - Set up your environment
+3. **[04-IMPLEMENTATION-GUIDE.md](../04-IMPLEMENTATION-GUIDE.md)** - Learn code structure
+4. **[05-API-REFERENCE.md](../05-API-REFERENCE.md)** - API documentation
+5. **[10-PROJECT-STATUS.md](../10-PROJECT-STATUS.md)** - Find a task
+6. **[06-TESTING.md](../06-TESTING.md)** - Write tests
+7. **[08-SECURITY.md](../08-SECURITY.md)** - Follow security practices
 
 ### For Project Managers
 
-1. **[01-ROADMAP.md](01-ROADMAP.md)** - Timeline and phases
-2. **[10-PROJECT-STATUS.md](10-PROJECT-STATUS.md)** - Current progress
-3. **[01-ROADMAP.md#milestones](01-ROADMAP.md#milestones-and-deliverables)** - Success criteria
+1. **[01-ROADMAP.md](../01-ROADMAP.md)** - Timeline and phases
+2. **[10-PROJECT-STATUS.md](../10-PROJECT-STATUS.md)** - Current progress
+3. **[01-ROADMAP.md#milestones](../01-ROADMAP.md#milestones-and-deliverables)** - Success criteria
 
 ### For Performance Engineers
 
-1. **[07-PERFORMANCE.md](07-PERFORMANCE.md)** - Targets and techniques
-2. **[00-ARCHITECTURE.md#data-flow](00-ARCHITECTURE.md#data-flow)** - Hot paths
-3. **[07-PERFORMANCE.md#profiling](07-PERFORMANCE.md#profiling-and-measurement)** - Tools
+1. **[07-PERFORMANCE.md](../07-PERFORMANCE.md)** - Targets and techniques
+2. **[00-ARCHITECTURE.md#data-flow](../00-ARCHITECTURE.md#data-flow)** - Hot paths
+3. **[07-PERFORMANCE.md#profiling](../07-PERFORMANCE.md#profiling-and-measurement)** - Tools
 
 ### For Security Auditors
 
-1. **[08-SECURITY.md](08-SECURITY.md)** - Security implementation
-2. **[08-SECURITY.md#audit-checklist](08-SECURITY.md#security-audit-checklist)** - Checklist
-3. **[06-TESTING.md#fuzz-testing](06-TESTING.md#5-fuzz-testing)** - Fuzz testing
+1. **[08-SECURITY.md](../08-SECURITY.md)** - Security implementation
+2. **[08-SECURITY.md#audit-checklist](../08-SECURITY.md#security-audit-checklist)** - Checklist
+3. **[06-TESTING.md#fuzz-testing](../06-TESTING.md#5-fuzz-testing)** - Fuzz testing
 
 ### For End Users
 
-1. **[09-FAQ.md](09-FAQ.md)** - Common questions
-2. **[09-FAQ.md#troubleshooting](09-FAQ.md#troubleshooting-guide)** - Problem solving
+1. **[09-FAQ.md](../09-FAQ.md)** - Common questions
+2. **[09-FAQ.md#troubleshooting](../09-FAQ.md#troubleshooting-guide)** - Problem solving
 
 ---
 
@@ -573,4 +573,4 @@ These were the source materials used to generate this structured documentation.
 **Date:** October 2025
 **Status:** ✅ Ready for development
 
-**Questions?** See [README.md](README.md) for navigation or [09-FAQ.md](09-FAQ.md) for answers.
+**Questions?** See [README.md](../../README.md) for navigation or [09-FAQ.md](../09-FAQ.md) for answers.

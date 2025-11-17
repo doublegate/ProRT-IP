@@ -682,5 +682,5 @@ Performance and characteristics relative to Linux x86_64 baseline:
 - [Architecture](./architecture.md) - System architecture and component design
 - [Implementation](./implementation.md) - Code organization and key components
 - [API Reference](../reference/api-reference.md) - Complete public API documentation
-- [Performance Characteristics](../../34-PERFORMANCE-CHARACTERISTICS.md) - Performance metrics and KPIs
+- [Performance Characteristics](../34-PERFORMANCE-CHARACTERISTICS.md) - Performance metrics and KPIs
 - [Platform Support](../features/platform-support.md) - Platform-specific installation

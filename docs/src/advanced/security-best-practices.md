@@ -874,7 +874,7 @@ cargo clippy -- -W clippy::arithmetic_side_effects \
 If you discover a security vulnerability in ProRT-IP:
 
 1. **Do not** disclose publicly until coordinated disclosure timeline agreed
-2. Email security report to: [security@proRT-IP.org](mailto:security@proRT-IP.org)
+2. Report via [GitHub Security Advisories](https://github.com/doublegate/ProRT-IP/security/advisories/new)
 3. Include:
    - Vulnerability description
    - Steps to reproduce

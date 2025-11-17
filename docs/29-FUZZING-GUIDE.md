@@ -775,7 +775,7 @@ Before marking fuzzing complete:
 - [ ] Coverage measured (`cargo fuzz coverage`)
 - [ ] Crashes triaged and fixed (if any)
 - [ ] Regression tests added for crashes
-- [ ] Documentation complete (`docs/29-FUZZ-TESTING-GUIDE.md`)
+- [ ] Documentation complete (`docs/29-FUZZING-GUIDE.md`)
 
 ---
 

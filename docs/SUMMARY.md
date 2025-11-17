@@ -57,13 +57,13 @@
 
 ## Feature Guides
 
-- [IPv6 Support](23-IPv6-IMPLEMENTATION-GUIDE.md)
+- [IPv6 Support](23-IPv6-GUIDE.md)
 - [Service Detection](24-SERVICE-DETECTION-GUIDE.md)
 - [Idle Scan](25-IDLE-SCAN-GUIDE.md)
 - [Rate Limiting](26-RATE-LIMITING-GUIDE.md)
 - [TLS Certificate Analysis](27-TLS-CERTIFICATE-GUIDE.md)
-- [CI/CD Integration](28-CI-CD-GUIDE.md)
-- [Fuzz Testing](29-FUZZ-TESTING-GUIDE.md)
+- [CI/CD Integration](28-CI-CD-COVERAGE.md)
+- [Fuzz Testing](29-FUZZING-GUIDE.md)
 - [Plugin System](30-PLUGIN-SYSTEM-GUIDE.md)
 - [Benchmarking](31-BENCHMARKING-GUIDE.md)
 
@@ -71,18 +71,15 @@
 
 ## API Reference
 
-- [prtip-core API](<!-- docs.rs/prtip-core (not yet published) -->)
-- [prtip-network API](<!-- docs.rs/prtip-network (not yet published) -->)
-- [prtip-scanner API](<!-- docs.rs/prtip-scanner (not yet published) -->)
-- [prtip-cli API](<!-- docs.rs/prtip-cli (not yet published) -->)
+- prtip-core API (not yet published on docs.rs)
+- prtip-network API (not yet published on docs.rs)
+- prtip-scanner API (not yet published on docs.rs)
+- prtip-cli API (not yet published on docs.rs)
 
 ## Reference Materials
 
 - [Performance Benchmarks](../benchmarks/README.md)
 - [Test Documentation](06-TESTING.md)
-- [Database Schema](../ref_docs/database-schema.md)
-- [Packet Formats](../ref_docs/packet-formats.md)
-- [Protocol Analysis](../ref_docs/protocol-analysis.md)
 
 # Contributing
 
@@ -94,5 +91,5 @@
 
 - [Changelog](../CHANGELOG.md)
 - [License](../LICENSE)
-- [Authors](../AUTHORS)
+- [Authors](../AUTHORS.md)
 - [Security Policy](../SECURITY.md)

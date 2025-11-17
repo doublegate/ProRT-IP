@@ -2313,7 +2313,7 @@ cargo test
 
 **A:** **Responsible Disclosure Process:**
 
-1. **Email:** security@proRT-IP.io (private disclosure)
+1. **Report via GitHub:** Use [Security Advisories](https://github.com/doublegate/ProRT-IP/security/advisories/new) for private disclosure
 2. **Include:**
    - Vulnerability description
    - Steps to reproduce
@@ -2682,7 +2682,7 @@ prtip -sS -p 1-65535 192.168.1.0/24 --batch-size 10000
 
 **API Reference:**
 - [05-API-REFERENCE.md](05-API-REFERENCE.md) - Public API documentation
-- [rustdoc](<!-- docs.rs/prtip (not yet published) -->) - Complete API docs (future)
+- rustdoc (docs.rs/prtip - not yet published) - Complete API docs (future)
 
 ### Get Help
 
@@ -2690,7 +2690,6 @@ prtip -sS -p 1-65535 192.168.1.0/24 --batch-size 10000
 - **Documentation:** https://github.com/doublegate/ProRT-IP/tree/main/docs
 - **Issues:** https://github.com/doublegate/ProRT-IP/issues
 - **Discussions:** https://github.com/doublegate/ProRT-IP/discussions
-- **Email:** support@proRT-IP.io
 
 ### Contribute
 

@@ -1,8 +1,8 @@
 # CI/CD & Coverage Pipeline
 
-**Document Version:** 1.1.0
-**Last Updated:** 2025-11-06
-**Sprint:** 5.6 - Code Coverage Enhancement + CI/CD Optimization
+**Document Version:** 1.2.0
+**Last Updated:** 2025-11-16
+**Sprint:** 6.3 - Network Optimization Benchmarks + CI/CD Integration
 **Author:** ProRT-IP Development Team
 
 ---
@@ -18,7 +18,8 @@
 7. [Badge Documentation](#badge-documentation)
 8. [Troubleshooting](#troubleshooting)
 9. [Platform Considerations](#platform-considerations)
-10. [Future Improvements](#future-improvements)
+10. [Performance Benchmark Regression Testing](#performance-benchmark-regression-testing) **(NEW - Sprint 6.3)**
+11. [Future Improvements](#future-improvements)
 
 ---
 
@@ -42,6 +43,7 @@ ProRT-IP uses **GitHub Actions** for continuous integration and automated covera
 |----------|---------|----------|----------|--------|
 | **CI** | Build, test, lint across platforms | Push, PR (code only) | ~4-5 min | ✅ 7/7 jobs |
 | **Coverage** | Generate and track test coverage | Release tags only | ~8-12 min | ✅ OPTIMIZED |
+| **Benchmarks** | Performance regression testing | Weekly, manual | ~5-10 min | ✅ Sprint 6.3 |
 | **Release** | Build and publish releases | Tag, manual | ~15-20 min | ✅ 8/8 targets |
 | **CodeQL** | Security analysis | Schedule, PR (code only) | ~8-10 min | ✅ CACHED |
 | **Fuzz** | Fuzzing tests (nightly) | Nightly schedule | ~10 min | ✅ 5 targets |
@@ -1025,6 +1027,226 @@ git add . && git commit -m "fix: update core"
 git push origin main
 # SHOULD trigger CI/CodeQL
 ```
+
+---
+
+## Performance Benchmark Regression Testing
+
+**Added:** Sprint 6.3 (2025-11-16)
+**Workflow:** `.github/workflows/benchmarks.yml`
+**Purpose:** Automated performance validation and regression detection for network optimizations
+
+### Overview
+
+Sprint 6.3 introduced comprehensive benchmark automation for validating network optimization features, including batch I/O improvements, CDN IP deduplication, and adaptive batch sizing. The benchmark workflow ensures performance gains are maintained across releases and detects regressions early in the development cycle.
+
+### Benchmark Workflow Features
+
+| Feature | Description | Implementation |
+|---------|-------------|----------------|
+| **Multi-Mode Execution** | Quick/Full/CI modes | `run-sprint63-benchmarks.sh --quick\|--full\|--ci` |
+| **Baseline Management** | Save/compare/clean baselines | `manage-baselines.sh save\|compare\|list\|clean` |
+| **Regression Detection** | 5%/10% warning/critical thresholds | Exit codes 0/1/2 for success/warning/critical |
+| **Artifact Storage** | 90-day retention of JSON results | GitHub Actions artifacts |
+| **Scheduled Execution** | Weekly Sunday 00:00 UTC | Cron trigger `0 0 * * 0` |
+| **Manual Trigger** | On-demand benchmark runs | `workflow_dispatch` |
+
+### Execution Modes
+
+**1. Quick Mode (`--quick`)**
+- **Duration:** <2 minutes
+- **Purpose:** Fast PR validation
+- **Scenarios:** 3 benchmarks (baseline, batch I/O, CDN filtering)
+- **Runs:** 3 iterations with 1 warmup
+- **Platform:** Linux-only (batch I/O)
+- **Use Case:** Pre-commit checks, PR validation
+
+**2. CI Mode (`--ci`)**
+- **Duration:** 2-5 minutes
+- **Purpose:** Automated regression detection
+- **Scenarios:** 3 core performance tests
+- **Runs:** 3 iterations with 1 warmup
+- **Platform:** Ubuntu GitHub Actions runners
+- **Use Case:** Weekly scheduled runs, manual triggers
+
+**3. Full Mode (`--full`)**
+- **Duration:** 8-10 minutes
+- **Purpose:** Comprehensive performance validation
+- **Scenarios:** 12+ benchmarks (CDN, batch I/O, IPv6, adaptive)
+- **Runs:** 5 iterations with 2 warmups
+- **Platform:** Linux-only (batch I/O requires sendmmsg/recvmmsg)
+- **Use Case:** Release validation, performance analysis
+
+### Benchmark Scenarios
+
+**Sprint 6.3 Network Optimization Benchmarks:**
+
+| Scenario | Description | Expected Improvement | Regression Threshold |
+|----------|-------------|---------------------|---------------------|
+| **Baseline** | Standard send/recv (batch=1) | 0% (reference) | N/A |
+| **Batch 32** | sendmmsg/recvmmsg batch=32 | +20-40% | >10% degradation |
+| **Batch 256** | sendmmsg/recvmmsg batch=256 | +30-50% | >10% degradation |
+| **Batch 1024** | Maximum batch size | +40-60% | >10% degradation |
+| **CDN Baseline** | No CDN filtering | 0% (reference) | N/A |
+| **CDN Default** | Skip all CDN providers | 45-90% fewer scans | >20% increase in scans |
+| **CDN Whitelist** | Skip Cloudflare + AWS only | 18-30% fewer scans | >20% increase in scans |
+| **IPv6 Batch** | IPv6 with batch=256 | +25-45% | >15% degradation |
+| **Adaptive Batch** | Dynamic batch sizing | +35-55% | >10% degradation |
+
+### Baseline Management
+
+**Save Baseline (After Release):**
+```bash
+cd benchmarks/04-Sprint6.3-Network-Optimization/scripts
+./manage-baselines.sh save v0.5.2
+```
+
+**Compare Against Baseline:**
+```bash
+./manage-baselines.sh compare baseline-v0.5.2-20241116-120000
+```
+
+**List Available Baselines:**
+```bash
+./manage-baselines.sh list
+```
+
+**Clean Old Baselines:**
+```bash
+./manage-baselines.sh clean --keep 10  # Keep latest 10
+```
+
+### Regression Detection Thresholds
+
+| Threshold | Percentage | Exit Code | Action |
+|-----------|------------|-----------|--------|
+| **Acceptable** | 0-5% | 0 (success) | Continue workflow |
+| **Warning** | 5-10% | 1 (warning) | GitHub warning annotation |
+| **Critical** | >10% | 2 (failure) | Fail workflow, block PR |
+
+### GitHub Actions Integration
+
+**Workflow Triggers:**
+```yaml
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly Sunday 00:00 UTC
+  # Optional: Uncomment for PR validation
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+```
+
+**Job Steps:**
+1. **Setup:** Checkout, Rust toolchain, hyperfine installation
+2. **Build:** `cargo build --release`
+3. **Sprint 5.9 Benchmarks:** Legacy benchmark suite
+4. **Sprint 6.3 Benchmarks:** `run-sprint63-benchmarks.sh --ci`
+5. **Baseline Comparison:** `manage-baselines.sh compare <latest>`
+6. **Upload Results:** GitHub Actions artifacts (90-day retention)
+7. **Regression Check:** Fail on >10% degradation
+
+### Local Execution
+
+**Prerequisites:**
+```bash
+# Build release binary
+cargo build --release
+
+# Install hyperfine
+cargo install hyperfine --version 1.18.0
+
+# Requires root for raw sockets
+sudo -v
+```
+
+**Run Benchmarks:**
+```bash
+cd benchmarks/04-Sprint6.3-Network-Optimization/scripts
+
+# Quick validation (2 minutes)
+sudo ./run-sprint63-benchmarks.sh --quick
+
+# Full benchmark suite (10 minutes)
+sudo ./run-sprint63-benchmarks.sh --full
+
+# CI mode (5 minutes)
+sudo ./run-sprint63-benchmarks.sh --ci
+```
+
+**Results Location:**
+- **JSON Results:** `benchmarks/04-Sprint6.3-Network-Optimization/results/*.json`
+- **Summary Output:** Terminal table with mean/stddev/runs
+- **Artifacts (CI):** GitHub Actions artifacts (90 days)
+
+### Platform Support
+
+| Platform | Batch I/O | CDN Filtering | Adaptive Batch | Notes |
+|----------|-----------|---------------|----------------|-------|
+| **Linux (kernel 3.0+)** | ✅ Full | ✅ Full | ✅ Full | sendmmsg/recvmmsg available |
+| **macOS** | ⚠️ Fallback | ✅ Full | ⚠️ Fallback | Single send/recv per packet |
+| **Windows** | ⚠️ Fallback | ✅ Full | ⚠️ Fallback | Single send/recv per packet |
+| **GitHub Actions** | ✅ Ubuntu | ✅ Ubuntu | ✅ Ubuntu | Linux runners only |
+
+### Troubleshooting
+
+**Issue: Benchmarks require sudo**
+```bash
+# Solution: Run with sudo
+sudo ./run-sprint63-benchmarks.sh --quick
+```
+
+**Issue: hyperfine not found**
+```bash
+# Solution: Install hyperfine
+cargo install hyperfine --version 1.18.0
+```
+
+**Issue: No baselines for comparison**
+```bash
+# Solution: Create baseline after running benchmarks
+./manage-baselines.sh save $(git rev-parse --short HEAD)
+```
+
+**Issue: GitHub Actions fails on sudo**
+```bash
+# This is expected for privilege-required features
+# CI runs with limited benchmarks that don't require privileges
+# Full benchmark validation happens on tagged releases
+```
+
+### Future Enhancements
+
+**Planned for Phase 6.4+ (Zero-Copy Optimizations):**
+- [ ] io_uring benchmark suite (Linux 5.1+)
+- [ ] AF_XDP benchmark suite (Linux 4.18+)
+- [ ] Scatter-gather I/O benchmarks
+- [ ] NUMA-aware buffer pool benchmarks
+- [ ] sendfile/splice zero-copy benchmarks
+- [ ] tokio-uring async zero-copy benchmarks
+
+**Planned for Sprint 6.5 (Configuration Profiles):**
+- [ ] Profile-specific benchmark suites
+- [ ] Automated tuning recommendations
+- [ ] Benchmark result visualization
+- [ ] Historical trend analysis
+- [ ] Multi-version comparison reports
+
+### References
+
+**Benchmark Documentation:**
+- [27-NETWORK-OPTIMIZATION-GUIDE.md](27-NETWORK-OPTIMIZATION-GUIDE.md) - Comprehensive optimization guide
+- [benchmarks/04-Sprint6.3-Network-Optimization/README.md](../benchmarks/04-Sprint6.3-Network-Optimization/README.md) - Benchmark details
+- [31-BENCHMARKING.md](31-BENCHMARKING.md) - General benchmarking guide
+
+**Related Workflows:**
+- `.github/workflows/benchmarks.yml` - Benchmark workflow
+- `.github/workflows/ci.yml` - Main CI workflow
+- `.github/workflows/release.yml` - Release workflow
+
+**Tools:**
+- [hyperfine](https://github.com/sharkdp/hyperfine) - Command-line benchmarking tool
+- [jq](https://stedolan.github.io/jq/) - JSON processing (for comparisons)
 
 ---
 

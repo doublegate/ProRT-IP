@@ -1131,7 +1131,7 @@ Complete IPv6 support with ICMPv6 handling, Neighbor Discovery Protocol, dual-st
 
 **Nmap IPv6:**
 - `tcpip.cc`: IPv6 implementation
-- Nmap IPv6 guide: https://nmap.org/book/osdetect-ipv6.html
+- Nmap IPv6 guide: https://nmap.org/book/osdetect-ipv6-methods.html
 
 ---
 
@@ -1320,7 +1320,7 @@ Create comprehensive usage examples library, common scenarios guide, update all 
 
 **Nmap Examples:**
 - Nmap book: https://nmap.org/book/man.html (examples section)
-- Nmap tutorial: https://nmap.org/book/man-tutorial.html
+- Nmap tutorial: https://nmap.org/book/intro.html
 
 **Documentation Best Practices:**
 - Write the Docs: https://www.writethedocs.org/guide/

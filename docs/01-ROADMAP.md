@@ -10,11 +10,10 @@
 
 1. [Overview](#overview)
 2. [Development Phases](#development-phases)
-3. [Phase Details](#phase-details)
-4. [Sprint Planning](#sprint-planning)
-5. [Milestones and Deliverables](#milestones-and-deliverables)
-6. [Risk Management](#risk-management)
-7. [Success Metrics](#success-metrics)
+3. [Sprint Planning](#sprint-planning)
+4. [Milestones and Deliverables](#milestones-and-deliverables)
+5. [Risk Management](#risk-management)
+6. [Success Metrics](#success-metrics)
 
 ---
 

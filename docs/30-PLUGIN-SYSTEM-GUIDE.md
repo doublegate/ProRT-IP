@@ -1125,4 +1125,3 @@ GPL-3.0
 For support, see:
 - **Issues**: https://github.com/doublegate/ProRT-IP/issues
 - **Discussions**: https://github.com/doublegate/ProRT-IP/discussions
-- **Email**: support@prtip.org

@@ -2225,6 +2225,7 @@ dependencies = [
  "prtip-core",
  "prtip-network",
  "prtip-scanner",
+ "prtip-tui",
  "quick-xml",
  "serde",
  "serde_json",

@@ -23,6 +23,7 @@ numa = ["prtip-scanner/numa", "prtip-network/numa"]
 prtip-core = { path = "../prtip-core" }
 prtip-network = { path = "../prtip-network" }
 prtip-scanner = { path = "../prtip-scanner" }
+prtip-tui = { path = "../prtip-tui" }
 
 # Async runtime
 tokio = { workspace = true }

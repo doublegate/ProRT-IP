@@ -107,9 +107,13 @@ impl HistoryManager {
     /// Create a new history manager
     ///
     /// This will:
-    /// 1. Create `~/.prtip/` directory if it doesn't exist
-    /// 2. Load existing history from `~/.prtip/history.json`
-    /// 3. Create empty history file if it doesn't exist
+    /// 1. Create `~/.prtip/` directory if it doesn't exist (if enabled)
+    /// 2. Load existing history from `~/.prtip/history.json` (if enabled)
+    /// 3. Create empty history file if it doesn't exist (if enabled)
+    ///
+    /// # Arguments
+    ///
+    /// * `enabled` - Whether to actually save history to disk. If false, operates in memory-only mode.
     ///
     /// # Errors
     ///
@@ -117,10 +121,10 @@ impl HistoryManager {
     /// - Home directory cannot be determined
     /// - Directory creation fails
     /// - History file is corrupted (invalid JSON)
-    pub fn new() -> Result<Self> {
-        // Check if history is disabled (for testing or CI environments)
+    pub fn new(enabled: bool) -> Result<Self> {
+        // Check if history is disabled (for testing, CI environments, or user preference)
         // This prevents file I/O conflicts when tests run in parallel
-        if std::env::var("PRTIP_DISABLE_HISTORY").is_ok() {
+        if std::env::var("PRTIP_DISABLE_HISTORY").is_ok() || !enabled {
             // Return in-memory-only manager with dummy path
             return Ok(Self {
                 history_path: PathBuf::from("/dev/null"),

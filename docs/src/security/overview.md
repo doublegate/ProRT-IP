@@ -947,7 +947,7 @@ ProRT-IP takes security vulnerabilities seriously.
 **Instead:**
 
 1. **Email:** security@prtip.example.com (replace with actual contact)
-2. **PGP Key:** Available at https://prtip.example.com/pgp.txt
+2. **PGP Key:** Available at https://github.com/doublegate/ProRT-IP/security/policy
 3. **Expected Response:** Within 48 hours
 
 ### Report Should Include

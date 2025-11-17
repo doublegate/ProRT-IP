@@ -1063,7 +1063,7 @@ Create a GitHub issue with:
 
 - **FAQ:** [Frequently Asked Questions](faq.md)
 - **Development Guide:** [Implementation Details](../development/implementation.md)
-- **Architecture:** [System Architecture](../advanced/architecture.md)
+- **Architecture:** [System Architecture](../development/architecture.md)
 - **Performance:** [Performance Tuning](../advanced/performance-tuning.md)
 
 ---

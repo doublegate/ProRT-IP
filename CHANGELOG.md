@@ -6927,7 +6927,7 @@ prtip --scan-type syn -p 80,443 -oN output.txt target.com
 #### Documentation
 
 **New Documentation:**
-- `docs/NMAP_COMPATIBILITY.md` (19KB) - Comprehensive nmap compatibility guide
+- `docs/14-NMAP-COMPATIBILITY.md` (19KB) - Comprehensive nmap compatibility guide
 - Integration test script: `scripts/test-nmap-compat.sh` (150+ lines)
 - README.md: Added comprehensive "Nmap Compatibility" section (~200 lines)
 - Updated all documentation to reference v0.3.5
@@ -6992,7 +6992,7 @@ prtip -sS --ports 1-1000 target.com
 - Default ports: Top 100 (nmap: top 1000)
 - Greppable format: Simplified (full parity in v0.4.0)
 
-See [docs/NMAP_COMPATIBILITY.md](docs/NMAP_COMPATIBILITY.md) for full details.
+See [docs/14-NMAP-COMPATIBILITY.md](docs/14-NMAP-COMPATIBILITY.md) for full details.
 
 #### Roadmap
 
@@ -9659,4 +9659,3 @@ For detailed project status, see [docs/10-PROJECT-STATUS.md](docs/10-PROJECT-STA
 [0.4.2]: https://github.com/doublegate/ProRT-IP/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/doublegate/ProRT-IP/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/doublegate/ProRT-IP/compare/v0.3.9...v0.4.0
-[0.0.1]: https://github.com/doublegate/ProRT-IP/releases/tag/v0.0.1

@@ -225,7 +225,7 @@ prtip -sS -O -sV -A target.com
 - At least one closed port
 - Elevated privileges (root/capabilities)
 
-See [OS Fingerprinting](../features/os-detection.md) for detailed information.
+See [OS Fingerprinting](../features/index.md) for detailed information.
 
 ### Can I save results to a file?
 
@@ -303,7 +303,7 @@ Performance depends on mode and hardware:
 | **Service Detection** | 100-500 ports/sec | Probe-dependent |
 | **OS Fingerprinting** | 50-100 hosts/min | 16-probe sequence |
 
-See [Performance Characteristics](../advanced/performance-characteristics.md) for detailed benchmarks.
+See [Performance Characteristics](../../../34-PERFORMANCE-CHARACTERISTICS.md) for detailed benchmarks.
 
 ### Does scanning faster improve performance?
 

@@ -2682,7 +2682,7 @@ prtip -sS -p 1-65535 192.168.1.0/24 --batch-size 10000
 
 **API Reference:**
 - [05-API-REFERENCE.md](05-API-REFERENCE.md) - Public API documentation
-- [rustdoc](https://docs.rs/prtip) - Complete API docs (future)
+- [rustdoc](<!-- docs.rs/prtip (not yet published) -->) - Complete API docs (future)
 
 ### Get Help
 

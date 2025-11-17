@@ -71,10 +71,10 @@
 
 ## API Reference
 
-- [prtip-core API](https://docs.rs/prtip-core)
-- [prtip-network API](https://docs.rs/prtip-network)
-- [prtip-scanner API](https://docs.rs/prtip-scanner)
-- [prtip-cli API](https://docs.rs/prtip-cli)
+- [prtip-core API](<!-- docs.rs/prtip-core (not yet published) -->)
+- [prtip-network API](<!-- docs.rs/prtip-network (not yet published) -->)
+- [prtip-scanner API](<!-- docs.rs/prtip-scanner (not yet published) -->)
+- [prtip-cli API](<!-- docs.rs/prtip-cli (not yet published) -->)
 
 ## Reference Materials
 

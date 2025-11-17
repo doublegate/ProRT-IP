@@ -747,7 +747,7 @@ This hybrid approach combines ProRT-IP's speed (165x faster) with Nmap's depth (
 - [Nmap Official Documentation](https://nmap.org/book/)
 - [ProRT-IP User Guide](../../user-guide/index.md)
 - [Service Detection](../../features/service-detection.md)
-- [OS Fingerprinting](../../features/os-detection.md)
+- [OS Fingerprinting](../../features/index.md)
 - [Performance Tuning](../../advanced/performance-tuning.md)
 - [Masscan Comparison](masscan.md) - Speed-focused alternative
 - [RustScan Comparison](rustscan.md) - Rust-based rapid scanner

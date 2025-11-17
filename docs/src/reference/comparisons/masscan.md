@@ -843,9 +843,9 @@ nmap -sS -sV -sC -O -A --script vuln critical-hosts.txt -oX phase3-deep.xml
 - [ProRT-IP vs RustScan](rustscan.md) - Comparison with modern Rust-based scanner
 - [ProRT-IP vs Naabu](naabu.md) - Comparison with ProjectDiscovery Go scanner
 - [Scanner Comparison Overview](overview.md) - Executive comparison of all major scanners
-- [Performance Characteristics](../advanced/performance-characteristics.md) - Detailed performance analysis
-- [Benchmarking Guide](../advanced/benchmarking.md) - Benchmarking methodology and results
+- [Performance Characteristics](../../../34-PERFORMANCE-CHARACTERISTICS.md) - Detailed performance analysis
+- [Benchmarking Guide](../../../31-BENCHMARKING-GUIDE.md) - Benchmarking methodology and results
 - [Service Detection](../../features/service-detection.md) - ProRT-IP service detection capabilities
-- [OS Fingerprinting](../../features/os-detection.md) - ProRT-IP OS detection implementation
+- [OS Fingerprinting](../../features/index.md) - ProRT-IP OS detection implementation
 - [Database Storage](../../features/database-storage.md) - Database features and queries
-- [TUI Architecture](../../development/tui-architecture.md) - Real-time terminal UI design
+- [TUI Architecture](../../../TUI-ARCHITECTURE.md) - Real-time terminal UI design

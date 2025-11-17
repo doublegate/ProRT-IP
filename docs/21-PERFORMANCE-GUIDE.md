@@ -11,7 +11,7 @@
 1. [Quick Start](#quick-start)
 2. [Performance Tuning](#performance-tuning)
 3. [Scan Type Selection](#scan-type-selection)
-4. [Timing Templates](#timing-templates)
+4. [Timing Templates](../../docs/14-NMAP-COMPATIBILITY.md)
 5. [Hardware Recommendations](#hardware-recommendations)
 6. [Troubleshooting](#troubleshooting)
 7. [Advanced Optimizations](#advanced-optimizations)
@@ -776,7 +776,7 @@ prtip --no-numa -sS -p 80,443 target.com
 - **Quad-socket:** 30-40% improvement (25-35% fewer cache misses)
 - **Single-socket:** <5% difference (within noise, not recommended)
 
-**See Also:** [NUMA Optimization for Multi-Socket Systems](#numa-optimization-for-multi-socket-systems) in Hardware Recommendations for comprehensive documentation, including:
+**See Also:** [NUMA Optimization for Multi-Socket Systems](#numa-optimization) in Hardware Recommendations for comprehensive documentation, including:
 - When to use NUMA (system requirements, use cases)
 - Performance validation (hyperfine benchmarks, perf stat)
 - Troubleshooting (permissions, verification)

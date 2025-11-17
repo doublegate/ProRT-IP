@@ -530,7 +530,7 @@ prtip --batch-size 128 [args]
 - **Quad-socket**: 30-40% improvement
 - **Single-socket**: <5% (within noise, not recommended)
 
-**See Also**: [Performance Tuning](../user-guide/performance-tuning.md#numa-optimization) for usage details.
+**See Also**: [Performance Tuning](../user-guide/timing-performance.md#numa-optimization) for usage details.
 
 ## Platform-Specific Analysis
 
@@ -688,5 +688,5 @@ prtip --max-rate 5000 [args]
 
 - [Performance Characteristics](performance-characteristics.md) - Detailed performance metrics and scaling analysis
 - [Benchmarking](benchmarking.md) - Comprehensive benchmarking guide with scenario library
-- [Performance Tuning](../user-guide/performance-tuning.md) - User-facing optimization guide
+- [Performance Tuning](../user-guide/timing-performance.md) - User-facing optimization guide
 - [Architecture](../reference/architecture.md) - System design for performance

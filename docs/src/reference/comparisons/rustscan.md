@@ -1193,5 +1193,5 @@ Both tools leverage Rust's memory safety and zero-cost abstractions, making them
 - [ProRT-IP vs ZMap](./zmap.md) - Comparison with academic Internet measurement tool
 - [ProRT-IP vs Naabu](./naabu.md) - Comparison with Project Discovery scanner
 - [Scanner Comparison Overview](./overview.md) - All scanner comparisons in one place
-- [CLI Reference](../user-guide/cli-reference.md) - Complete ProRT-IP command-line reference
-- [Performance Characteristics](../../advanced/performance-characteristics.md) - Detailed benchmark data
+- [CLI Reference](../../user-guide/cli-reference.md) - Complete ProRT-IP command-line reference
+- [Performance Characteristics](../../../../34-PERFORMANCE-CHARACTERISTICS.md) - Detailed benchmark data

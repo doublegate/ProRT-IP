@@ -1364,4 +1364,4 @@ pub type Result<T> = std::result::Result<T, Error>;
 - [Technical Specifications](tech-spec-v2.md) - System requirements, protocols, packet formats
 - [User Guide](../user-guide/cli-reference.md) - CLI usage examples
 - [Architecture](../development/architecture.md) - System design overview
-- [Plugin Development](../development/plugin-guide.md) - Creating custom plugins
+- [Plugin Development](../features/plugin-system.md) - Creating custom plugins

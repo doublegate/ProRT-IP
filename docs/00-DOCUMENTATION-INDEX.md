@@ -98,12 +98,12 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
 
 | Feature | User Guide | Tutorial | Examples | Technical Guide | API Docs |
 |---------|-----------|----------|----------|----------------|----------|
-| **IPv6 Scanning** | ✅ [UC 5](32-USER-GUIDE.md#use-case-5-ipv6-scanning) | ✅ [T4](33-TUTORIALS.md#tutorial-4-multi-protocol-scanning-ipv4--ipv6) | ✅ 8 examples | ✅ [23-IPv6](23-IPv6-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-network/latest/prtip_network/ipv6/) |
-| **Service Detection** | ✅ [UC 3](32-USER-GUIDE.md#use-case-3-service-detection) | ✅ [T3](33-TUTORIALS.md#tutorial-3-service-detection) | ✅ 12 examples | ✅ [24-SERVICE](24-SERVICE-DETECTION-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/service_detector/) |
-| **Idle Scan** | ✅ [UC 19](32-USER-GUIDE.md#use-case-19-idle-scan-anonymous-scanning) | ✅ [T5](33-TUTORIALS.md#tutorial-5-stealth-scanning-techniques) | ✅ 6 examples | ✅ [25-IDLE](25-IDLE-SCAN-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/idle/) |
-| **Rate Limiting V3** | ✅ [UC 6c](32-USER-GUIDE.md#6c-rate-limiting) | ✅ [T6](33-TUTORIALS.md#tutorial-6-large-scale-scanning) | ✅ 5 examples | ✅ [26-RATE](26-RATE-LIMITING-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/adaptive_rate_limiter_v3/) |
-| **TLS Certificates** | ✅ [UC 13](32-USER-GUIDE.md#use-case-13-tls-certificate-analysis) | ✅ [T3](33-TUTORIALS.md#tutorial-3-service-detection) | ✅ 7 examples | ✅ [27-TLS](27-TLS-CERTIFICATE-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/tls_certificate/) |
-| **Plugin System** | ✅ [UC 10](32-USER-GUIDE.md#use-case-10-plugin-system) | ✅ [T7](33-TUTORIALS.md#tutorial-7-plugin-development) | ✅ 4 examples | ✅ [30-PLUGIN](30-PLUGIN-SYSTEM-GUIDE.md) | ✅ [rustdoc](https://docs.rs/prtip-scanner/latest/prtip_scanner/plugin/) |
+| **IPv6 Scanning** | ✅ [UC 5](32-USER-GUIDE.md#use-case-5-ipv6-scanning) | ✅ [T4](33-TUTORIALS.md#tutorial-4-multi-protocol-scanning-ipv4--ipv6) | ✅ 8 examples | ✅ [23-IPv6](23-IPv6-GUIDE.md) | ✅ [rustdoc](<!-- docs.rs/prtip-network (not yet published) -->/latest/prtip_network/ipv6/) |
+| **Service Detection** | ✅ [UC 3](32-USER-GUIDE.md#use-case-3-service-detection) | ✅ [T3](33-TUTORIALS.md#tutorial-3-service-detection) | ✅ 12 examples | ✅ [24-SERVICE](24-SERVICE-DETECTION-GUIDE.md) | ✅ [rustdoc](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/service_detector/) |
+| **Idle Scan** | ✅ [UC 19](32-USER-GUIDE.md#use-case-19-idle-scan-anonymous-scanning) | ✅ [T5](33-TUTORIALS.md#tutorial-5-stealth-scanning-techniques) | ✅ 6 examples | ✅ [25-IDLE](25-IDLE-SCAN-GUIDE.md) | ✅ [rustdoc](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/idle/) |
+| **Rate Limiting V3** | ✅ [UC 6c](32-USER-GUIDE.md#6c-rate-limiting) | ✅ [T6](33-TUTORIALS.md#tutorial-6-large-scale-scanning) | ✅ 5 examples | ✅ [26-RATE](26-RATE-LIMITING-GUIDE.md) | ✅ [rustdoc](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/adaptive_rate_limiter_v3/) |
+| **TLS Certificates** | ✅ [UC 13](32-USER-GUIDE.md#use-case-13-tls-certificate-analysis) | ✅ [T3](33-TUTORIALS.md#tutorial-3-service-detection) | ✅ 7 examples | ✅ [27-TLS](27-TLS-CERTIFICATE-GUIDE.md) | ✅ [rustdoc](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/tls_certificate/) |
+| **Plugin System** | ✅ [UC 10](32-USER-GUIDE.md#use-case-10-plugin-system) | ✅ [T7](33-TUTORIALS.md#tutorial-7-plugin-development) | ✅ 4 examples | ✅ [30-PLUGIN](30-PLUGIN-SYSTEM-GUIDE.md) | ✅ [rustdoc](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/plugin/) |
 | **Benchmarking** | ✅ [UC 20](32-USER-GUIDE.md#use-case-20-performance-benchmarking) | ❌ N/A | ✅ 3 examples | ✅ [31-BENCH](31-BENCHMARKING-GUIDE.md) | ❌ CLI tool |
 
 ### 2.2 Coverage Summary
@@ -352,7 +352,7 @@ This index serves as the **central navigation hub** for all ProRT-IP documentati
    - Review: [30-PLUGIN-SYSTEM-GUIDE.md#lua-api-reference](30-PLUGIN-SYSTEM-GUIDE.md#lua-api-reference)
    - Explore: Available functions, data structures
    - Understand: Capabilities and restrictions
-   - Check rustdoc: [plugin module](https://docs.rs/prtip-scanner/latest/prtip_scanner/plugin/)
+   - Check rustdoc: [plugin module](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/plugin/)
 
 4. **Build Your Plugin** (45-60 min)
    - Design: Plugin functionality
@@ -407,7 +407,7 @@ Complete IPv6 support across all 6 scanner types with 100% feature parity to IPv
 
 - **API Documentation:**
   - Module: `prtip_network::ipv6`
-  - Online: [docs.rs/prtip-network/latest/prtip_network/ipv6/](https://docs.rs/prtip-network/latest/prtip_network/ipv6/)
+  - Online: [docs.rs/prtip-network/latest/prtip_network/ipv6/](<!-- docs.rs/prtip-network (not yet published) -->/latest/prtip_network/ipv6/)
 
 - **Quick Start:** `cargo run --example ipv6_basic_scan`
 
@@ -455,7 +455,7 @@ Complete IPv6 support across all 6 scanner types with 100% feature parity to IPv
 
 - **API Documentation:**
   - Module: `prtip_scanner::service_detector`
-  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/service_detector/](https://docs.rs/prtip-scanner/latest/prtip_scanner/service_detector/)
+  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/service_detector/](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/service_detector/)
   - See Also: [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md), [32-USER-GUIDE.md#use-case-3](32-USER-GUIDE.md#use-case-3-service-detection)
 
 - **Quick Start:** `sudo cargo run --example common_service_detection`
@@ -499,7 +499,7 @@ Maximum anonymity scanning via third-party relay with 99.5% accuracy, full Nmap 
 - **API Documentation:**
   - Module: `prtip_scanner::idle`
   - Submodules: `idle_scanner`, `zombie_discovery`
-  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/idle/](https://docs.rs/prtip-scanner/latest/prtip_scanner/idle/)
+  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/idle/](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/idle/)
   - See Also: [25-IDLE-SCAN-GUIDE.md](25-IDLE-SCAN-GUIDE.md), [32-USER-GUIDE.md#use-case-10](32-USER-GUIDE.md#use-case-10-idle-zombie-scan), [26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md)
 
 - **Quick Start:** `sudo cargo run --example idle_zombie_discovery`
@@ -542,7 +542,7 @@ Industry-leading -1.8% average overhead with two-tier adaptive architecture (hos
 
 - **API Documentation:**
   - Module: `prtip_scanner::adaptive_rate_limiter_v3`
-  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/adaptive_rate_limiter_v3/](https://docs.rs/prtip-scanner/latest/prtip_scanner/adaptive_rate_limiter_v3/)
+  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/adaptive_rate_limiter_v3/](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/adaptive_rate_limiter_v3/)
   - See Also: [26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md), [32-USER-GUIDE.md#use-case-9](32-USER-GUIDE.md#use-case-9-advanced-rate-limiting), [31-BENCHMARKING-GUIDE.md](31-BENCHMARKING-GUIDE.md)
 
 - **Quick Start:** `cargo run --example rate_limiting_adaptive`
@@ -588,8 +588,8 @@ X.509v3 certificate parsing with SNI support, chain validation, and 1.33μs perf
 - **API Documentation:**
   - Modules: `prtip_scanner::tls_handshake`, `prtip_scanner::tls_certificate`
   - Online:
-    - [tls_handshake](https://docs.rs/prtip-scanner/latest/prtip_scanner/tls_handshake/)
-    - [tls_certificate](https://docs.rs/prtip-scanner/latest/prtip_scanner/tls_certificate/)
+    - [tls_handshake](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/tls_handshake/)
+    - [tls_certificate](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/tls_certificate/)
   - See Also: [27-TLS-CERTIFICATE-GUIDE.md](27-TLS-CERTIFICATE-GUIDE.md), [32-USER-GUIDE.md#use-case-13](32-USER-GUIDE.md#use-case-13-tls-certificate-analysis), [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md)
 
 - **Quick Start:** `cargo run --example tls_basic_cert_extract`
@@ -635,7 +635,7 @@ Lua 5.4-based plugin infrastructure with capabilities model, sandboxing, and 3 p
 - **API Documentation:**
   - Module: `prtip_scanner::plugin`
   - Submodules: `plugin_manager`, `lua_api`, `sandbox`
-  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/plugin/](https://docs.rs/prtip-scanner/latest/prtip_scanner/plugin/)
+  - Online: [docs.rs/prtip-scanner/latest/prtip_scanner/plugin/](<!-- docs.rs/prtip-scanner (not yet published) -->/latest/prtip_scanner/plugin/)
   - See Also: [30-PLUGIN-SYSTEM-GUIDE.md](30-PLUGIN-SYSTEM-GUIDE.md), [32-USER-GUIDE.md#use-case-14-plugin](32-USER-GUIDE.md#use-case-14-plugin), `lua_api` module
 
 - **Quick Start:** `cargo run --example plugin_load_execute`

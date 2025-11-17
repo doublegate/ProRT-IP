@@ -109,6 +109,23 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
    cargo test
    ```
 
+5. **Set up pre-commit hooks** (recommended):
+
+   ```bash
+   # Configure Git to use custom hooks directory
+   git config core.hooksPath .githooks
+
+   # Or manually copy hook to .git/hooks/
+   cp .githooks/pre-commit .git/hooks/pre-commit
+   chmod +x .git/hooks/pre-commit
+   ```
+
+   The pre-commit hook automatically checks markdown links before commits. Requires `markdown-link-check`:
+
+   ```bash
+   npm install -g markdown-link-check
+   ```
+
 ## Coding Standards
 
 ### Rust Style Guide

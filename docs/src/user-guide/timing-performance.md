@@ -669,7 +669,7 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 ```
 
 > **See Also:**
-> - [Benchmarking Guide](../features/benchmarking.md) - Complete benchmark reference
+> - [Benchmarking Guide](../features/index.md) - Complete benchmark reference
 > - [Examples: Performance](../getting-started/examples.md#performance) - Performance examples
 > - [Advanced Topics: Performance Tuning](../advanced/performance-tuning.md) - Deep dive
 
@@ -731,7 +731,7 @@ sudo prtip -sS -F --max-rate 500 -T3 TARGET -oG results.gnmap
 **Deep Dives:**
 - [Rate Limiting Guide](../features/rate-limiting.md) - V3 algorithm internals
 - [Performance Tuning](../advanced/performance-tuning.md) - Optimization strategies
-- [Benchmarking Guide](../features/benchmarking.md) - Validation framework
+- [Benchmarking Guide](../features/index.md) - Validation framework
 
 **See Also:**
 - [Quick Start Guide](../getting-started/quick-start.md) - Get started quickly

@@ -248,7 +248,7 @@ sudo prtip --adaptive-rate -p 1-1000 192.168.1.0/24
 sudo prtip --adaptive-batch --min-batch-size 10 --max-batch-size 512 -p 1-1000 192.168.1.0/24
 ```
 
-**See Also:** [Performance Tuning Guide](../advanced/performance.md)
+**See Also:** [Performance Tuning Guide](../advanced/performance-analysis.md)
 
 ### `--max-concurrent <COUNT>`
 
@@ -291,7 +291,7 @@ sudo prtip --batch-size 1000 -p 1-1000 192.168.1.0/24
 sudo prtip --numa -p 1-65535 192.168.1.0/24
 ```
 
-**See Also:** [Performance Tuning Guide](../advanced/performance.md#numa-optimization)
+**See Also:** [Performance Tuning Guide](../advanced/performance-analysis.md#numa-optimization)
 
 ### `--max-hostgroup <SIZE>`
 
@@ -458,7 +458,7 @@ prtip --cdn-whitelist cloudflare,aws -p 80,443 example.com
 prtip --skip-cdn --cdn-blacklist cloudflare -p 80,443 example.com
 ```
 
-**See Also:** [CDN Detection Guide](../features/cdn-detection.md)
+**See Also:** [CDN Detection Guide](../features/index.md)
 
 ---
 
@@ -983,7 +983,7 @@ sudo prtip -A -p 1-1000 192.168.1.1
 prtip -Pn -p 80,443 192.168.1.1
 ```
 
-**See Also:** [Nmap Compatibility Guide](../user-guide/nmap-compatibility.md)
+**See Also:** [Nmap Compatibility Guide](../../14-NMAP-COMPATIBILITY.md)
 
 ---
 
@@ -1077,7 +1077,7 @@ sudo prtip --zombie-quality 192.168.1.5
 ```
 
 **See Also:**
-- [Evasion Techniques Guide](../features/evasion.md)
+- [Evasion Techniques Guide](../advanced/evasion-techniques.md)
 - [Idle Scan Guide](../features/idle-scan.md)
 
 ---
@@ -1246,7 +1246,7 @@ sudo prtip --event-log scan-events.db -p 1-1000 192.168.1.0/24
 sudo prtip --live-results -p 1-1000 192.168.1.0/24
 ```
 
-**See Also:** [Event System Guide](../advanced/event-system.md)
+**See Also:** [Event System Guide](../advanced/index.md)
 
 ---
 
@@ -1366,8 +1366,8 @@ prtip --dual-stack -p 80,443 example.com
 - [Idle Scan](../features/idle-scan.md) - Anonymous scanning technique
 - [Rate Limiting](../features/rate-limiting.md) - Adaptive rate limiting
 - [IPv6 Guide](../features/ipv6.md) - IPv6 scanning capabilities
-- [Evasion Techniques](../features/evasion.md) - Firewall/IDS evasion
-- [Performance Tuning](../advanced/performance.md) - Optimization techniques
+- [Evasion Techniques](../advanced/evasion-techniques.md) - Firewall/IDS evasion
+- [Performance Tuning](../advanced/performance-analysis.md) - Optimization techniques
 
 ---
 

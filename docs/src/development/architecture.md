@@ -798,6 +798,6 @@ impl Scanner<Configured> {
 - [Implementation Guide](./implementation.md) - Code organization and key components
 - [Testing Strategy](./testing.md) - Unit, integration, and property-based testing
 - [CI/CD Pipeline](./ci-cd.md) - GitHub Actions and automation
-- [Technical Specifications](../../reference/tech-spec-v2.md) - Detailed technical specs
+- [Technical Specifications](../../../02-TECHNICAL-SPECS.md) - Detailed technical specs
 - [Rate Limiting Guide](../features/rate-limiting.md) - Comprehensive rate limiting documentation
 - [IPv6 Support Guide](../features/ipv6.md) - IPv6 scanning capabilities

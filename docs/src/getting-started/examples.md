@@ -4,9 +4,9 @@ Comprehensive collection of 65 runnable examples demonstrating ProRT-IP capabili
 
 ## Quick Navigation
 
-- **[Tier 1: Feature-Complete Examples](#tier-1-feature-complete-examples)** (20 examples) - Production-ready use cases
-- **[Tier 2: Focused Demonstrations](#tier-2-focused-demonstrations)** (30 examples) - Specific feature showcases
-- **[Tier 3: Skeleton Templates](#tier-3-skeleton-templates)** (15 examples) - Development starting points
+- **[Tier 1: Feature-Complete Examples](#feature-complete-examples)** (20 examples) - Production-ready use cases
+- **[Tier 2: Focused Demonstrations](#focused-demonstrations)** (30 examples) - Specific feature showcases
+- **[Tier 3: Skeleton Templates](#skeleton-templates)** (15 examples) - Development starting points
 
 ## How to Run Examples
 

@@ -1365,7 +1365,7 @@ GROUP BY worker;
 
 **Reference:**
 - [Command Reference](../reference/command-reference.md) - Distributed scanning CLI flags
-- [Configuration Files](../reference/configuration-files.md) - Multi-instance configuration
+- [Configuration Files](../user-guide/configuration.md) - Multi-instance configuration
 
 **External Resources:**
 - **Kubernetes:** https://kubernetes.io/docs/ (container orchestration)

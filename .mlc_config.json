@@ -1,0 +1,33 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^http://localhost"
+    },
+    {
+      "pattern": "^https://localhost"
+    },
+    {
+      "pattern": "^http://127.0.0.1"
+    },
+    {
+      "pattern": "^https://127.0.0.1"
+    },
+    {
+      "comment": "Ignore glossary internal anchor links (validated separately)",
+      "pattern": "docs/src/appendices/glossary.md#"
+    },
+    {
+      "comment": "Ignore TODO comments for not-yet-created content",
+      "pattern": "<!-- TODO:"
+    },
+    {
+      "comment": "Ignore commented-out links (placeholders for future content)",
+      "pattern": "<!--.*-->"
+    }
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 999]
+}

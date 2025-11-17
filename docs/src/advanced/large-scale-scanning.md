@@ -1307,9 +1307,9 @@ After 3 minutes: 4m 10s (@ 103K pps, optimal rate achieved)
 - [Output Formats](../user-guide/output-formats.md) - JSON, XML, database output
 
 **Feature Guides:**
-- [Port Scanning](../features/port-scanning.md) - Port specification and strategies
+- [Port Scanning](../features/index.md) - Port specification and strategies
 - [Rate Limiting](../features/rate-limiting.md) - Adaptive rate limiting V3
-- [IPv6 Support](../features/ipv6-support.md) - IPv6 scanning capabilities
+- [IPv6 Support](../features/ipv6.md) - IPv6 scanning capabilities
 
 **Advanced Topics:**
 - [Performance Tuning](./performance-tuning.md) - System and ProRT-IP optimization

@@ -398,4 +398,4 @@ prtip -q -sS -p 80,443 192.168.1.0/24
 - [TUI Architecture](../advanced/tui-architecture.md) - Live dashboard implementation
 - [Performance Tuning](../advanced/performance-tuning.md) - Optimization guide
 - [CLI Reference](../user-guide/cli-reference.md#verbosity-progress) - Progress flags
-- [Benchmarking](../advanced/benchmarking.md) - Performance validation
+- [Benchmarking](../../../31-BENCHMARKING-GUIDE.md) - Performance validation

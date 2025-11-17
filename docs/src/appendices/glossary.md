@@ -6,6 +6,14 @@ Comprehensive glossary of networking, security, and ProRT-IP-specific terms used
 
 ## Quick Navigation
 
+**By Category:**
+- Network Scanning (35 terms)
+- TCP/IP Protocols (28 terms)
+- Security & Evasion (22 terms)
+- Performance & Optimization (18 terms)
+- ProRT-IP Specific (15 terms)
+- General Networking (20 terms)
+
 **Alphabetical:** A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z
 
 ---

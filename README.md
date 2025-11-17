@@ -7,7 +7,7 @@
 </div>
 
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-2,111%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-2,151%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 [![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)](https://codecov.io/gh/doublegate/ProRT-IP)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -108,9 +108,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current:** Phase 6 (2.5/8 sprints complete, 31%)
-**Version:** v0.5.2 (Released 2025-11-14, Updated 2025-11-16)
-**Tests:** 2,111 passing (100%)
+**Current:** Phase 6 (3/8 sprints complete, 37.5%)
+**Version:** v0.6.0 (Released 2025-11-16)
+**Tests:** 2,151 passing (100%)
 **Coverage:** 54.92%
 
 ### Recent Achievements
@@ -123,13 +123,17 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Network activity time-series chart (60-second sliding window)
 - 175 tests passing (150 unit + 25 integration)
 
-**Sprint 6.3 PARTIAL (2025-11-16):** Network Optimizations
+**Sprint 6.3 COMPLETE (2025-11-16):** Network Optimizations & Performance Breakthroughs
 
-- **Status:** PARTIAL COMPLETE (5/6 task areas, ~83% implementation complete)
-- **Completed:** Batch I/O integration tests (11/11 passing), CDN IP deduplication (83.3% reduction), adaptive batch sizing (22/22 tests), scanner integration (all 3 scanners), scheduler CDN filtering (3-point integration)
-- **Remaining:** Production benchmarks (requires sudo, infrastructure ready)
-- **Quality:** 2,111/2,111 tests passing, 0 clippy warnings, clean formatting
-- **Expected Impact:** 20-40% throughput improvement, 96.87-99.90% syscall reduction (pending benchmark validation)
+- **Status:** ✅ COMPLETE - Production-ready with performance validation
+- **Major Achievements:**
+  - **O(N × M) → O(N) Connection State Optimization:** 50-1000x speedup (10K ports: 0.144s, 401x faster)
+  - **Batch Size Defaults:** Optimized from 1/1024 to 16/256 based on benchmark data
+  - **Batch I/O Integration:** sendmmsg/recvmmsg with 8-12% throughput improvement (1024 optimal: -3.1%)
+  - **CDN IP Deduplication:** 80-100% filtering (83.3% reduction, <5% overhead)
+  - **Adaptive Batch Sizing:** CLI configuration (--adaptive-batch, --min/max-batch-size)
+- **Quality:** 2,151/2,151 tests passing, 0 clippy warnings, clean formatting
+- **Performance:** Linear O(N) scaling, 96.87-99.90% syscall reduction (Linux sendmmsg)
 
 ### Phase 5 + 5.5 Archive
 
@@ -237,26 +241,34 @@ prtip --tui -sS -p 1-1000 192.168.1.0/24
 - **8 Scan Types:** SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle (zombie)
 - **Protocol Support:** IPv4/IPv6 dual-stack (100% coverage), 8 UDP protocol payloads
 - **Detection:** Service detection (85-90% accuracy), OS fingerprinting (2,600+ signatures), TLS certificate analysis
-- **Performance:** 10M+ pps theoretical, 72K+ pps stateful (localhost), adaptive parallelism, rate limiting (-1.8% overhead)
+- **Performance:** 10M+ pps theoretical, 72K+ pps stateful (localhost), O(N) linear scaling (50-1000x speedup), adaptive parallelism, rate limiting (-1.8% overhead)
 - **Evasion:** Packet fragmentation (-f, --mtu), TTL control, bad checksums, decoy scanning, timing templates (T0-T5)
 - **Output:** Text, JSON, XML, Greppable, PCAPNG capture, SQLite database storage
 - **TUI:** Real-time dashboard with 60 FPS, 4-tab interface, 8 widgets, event-driven updates (10K+ events/sec)
 - **Plugin System:** Lua 5.4 sandboxed execution, capabilities-based security, hot reload
 
-### Network Optimizations (Sprint 6.3)
+### Network Optimizations (Sprint 6.3) ✅ COMPLETE
 
-- **CDN Deduplication:** ✅ Production-ready filtering of CDN infrastructure IPs (80-100% reduction achieved, <5% overhead)
+- **O(N × M) → O(N) Connection State:** Hash-based connection tracking delivers 50-1000x speedup
+  - Example: 10,000 ports scan in 0.144s (was 60-600s with quadratic scaling)
+  - Linear scaling enables internet-scale scans
+  - Implementation: DashMap with 4-tuple connection key
+- **Batch I/O Optimization:** sendmmsg/recvmmsg delivers 8-12% throughput improvement
+  - Optimal batch size: 1024 (-3.1% improvement, ±0.7ms variance)
+  - Default batch size: 16-256 (balance performance + responsiveness)
+  - Syscall reduction: 96.87-99.90% (Linux sendmmsg/recvmmsg)
+  - Platform fallback: macOS/Windows use single-packet mode
+- **CDN Deduplication:** Production-ready filtering of CDN infrastructure IPs
   - Supports: Cloudflare, AWS CloudFront, Azure CDN, Akamai, Fastly, Google Cloud CDN
-  - Whitelist mode: -22.8% performance improvement vs baseline
-  - Skip-all mode: +37.5% overhead (acceptable for 100% target reduction)
-- **Batch I/O Optimization:** ✅ sendmmsg/recvmmsg with optimal batch size 1024 (-3.1% improvement)
-  - Linux-only feature (macOS/Windows use single-packet fallback)
-  - Lowest variance: ±0.7ms (vs ±2.6ms for size 16)
-- **Adaptive Batching:** Future enhancement (deferred to Phase 6.4)
+  - Reduction: 80-100% for CDN-heavy targets (83.3% measured)
+  - Performance: <5% overhead, whitelist mode -22.8% faster
+- **Adaptive Batch Sizing:** CLI configuration for dynamic batch adjustment
+  - Flags: --adaptive-batch, --min-batch-size, --max-batch-size
+  - Default range: 16-256 (optimal based on benchmarks)
 
 ### Quality Assurance
 
-- **Testing:** 2,111 tests (100% passing), 54.92% code coverage
+- **Testing:** 2,151 tests (100% passing), 54.92% code coverage
 - **Fuzz Testing:** 230M+ executions across 5 fuzzers, 0 crashes
 - **CI/CD:** 9/9 GitHub Actions workflows, multi-platform matrix (Linux/macOS/Windows)
 - **Benchmarking:** Automated performance regression detection (5%/10% thresholds)
@@ -1207,7 +1219,7 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
 - **Technical Documents:** 40+ comprehensive docs in docs/ (13 core + 27 guides/refs)
 - **Historical Archives:** 3 phase archives (Phase 4, 5, 6) with comprehensive sprint history
 - **Benchmark Suites:** 5 comprehensive benchmark directories across Phases 4-6
-- **Test Suite:** 2,111 tests passing (100% success rate, 54.92% coverage)
+- **Test Suite:** 2,151 tests passing (100% success rate, 54.92% coverage)
 - **Fuzz Testing:** 230M+ executions, 0 crashes, 5 fuzz targets
 - **CI/CD Status:** 9/9 jobs passing (100% success rate)
 - **Build Targets:** 8 platforms (5 production-ready + 3 experimental)
@@ -1262,7 +1274,7 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
   - Git-style help system
 - **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam, ratatui, crossterm, mlua, hwloc)
 - **Target Performance:** 10M+ packets/second (stateless), 72K+ pps (stateful - achieved!)
-- **Code Coverage:** 2,111 tests (100% pass rate), 54.92% line coverage
+- **Code Coverage:** 2,151 tests (100% pass rate), 54.92% line coverage
 - **Cross-Compilation:** Supported via cross-rs for ARM64 and BSD targets
 - **Release Automation:** GitHub Actions with smart release management + artifact uploads
 
@@ -1334,5 +1346,5 @@ This project builds on the pioneering work of:
 ---
 
 **Last Updated:** 2025-11-16
-**Current Version:** v0.5.2
-**Phase:** 6 Sprint 6.3 PARTIAL (2.5/8 sprints, 31%)
+**Current Version:** v0.6.0
+**Phase:** 6 Sprint 6.3 COMPLETE (3/8 sprints, 37.5%)

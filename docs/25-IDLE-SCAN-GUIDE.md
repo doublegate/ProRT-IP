@@ -1344,11 +1344,12 @@ Use ossec, wazuh, or custom scripts to alert on:
 ### Academic Papers
 
 1. **Antirez (1998):** "New TCP Scan Method" (original idle scan publication)
-   - URL: http://www.kyuzz.org/antirez/papers/dumbscan.html
+   - URL: https://github.com/antirez/hping/blob/master/docs/SPOOFED_SCAN.txt
+   - Original URL (unavailable): www.kyuzz.org/antirez/papers/dumbscan.html
    - Key contribution: First description of IPID-based scanning
 
 2. **Ofir Arkin (2001):** "ICMP Usage in Scanning" (Version 3.0)
-   - URL: http://www.sys-security.com/archive/papers/ICMP_Scanning_v3.0.pdf
+   - URL: https://www.cs.dartmouth.edu/~sergey/netreads/ICMP_Scanning_v3.0.pdf
    - Relevant: IPID behavior in different OS
 
 3. **Fyodor (2002):** "Idle Scanning and Related IPID Games"
@@ -1389,7 +1390,7 @@ Use ossec, wazuh, or custom scripts to alert on:
    - Version: 7.94+ (latest as of 2024)
 
 2. **hping3:** Manual IPID testing
-   - URL: http://www.hping.org/
+   - URL: https://github.com/antirez/hping
    - Usage: `hping3 -c 10 -S -p 80 --keep ZOMBIE_IP`
 
 3. **Wireshark:** Packet analysis

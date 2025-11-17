@@ -6,15 +6,7 @@ Comprehensive glossary of networking, security, and ProRT-IP-specific terms used
 
 ## Quick Navigation
 
-**By Category:**
-- [Network Scanning](#network-scanning) (35 terms)
-- [TCP/IP Protocols](#tcpip-protocols) (28 terms)
-- [Security & Evasion](#security--evasion) (22 terms)
-- [Performance & Optimization](#performance--optimization) (18 terms)
-- [ProRT-IP Specific](#prtip-specific) (15 terms)
-- [General Networking](#general-networking) (20 terms)
-
-**Alphabetical:** [A](#a) | [B](#b) | [C](#c) | [D](#d) | [E](#e) | [F](#f) | [G](#g) | [H](#h) | [I](#i) | [J](#j) | [K](#k) | [L](#l) | [M](#m) | [N](#n) | [O](#o) | [P](#p) | [Q](#q) | [R](#r) | [S](#s) | [T](#t) | [U](#u) | [V](#v) | [W](#w) | [X](#x) | [Y](#y) | [Z](#z)
+**Alphabetical:** A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z
 
 ---
 
@@ -30,7 +22,7 @@ TCP ACK scan (`-sA`) sends packets with the ACK flag set to determine firewall r
 prtip -sA -p 80,443 target.com
 ```
 
-**Related Terms:** [SYN Scan](#syn-scan), [Firewall Detection](#firewall-detection), [Stateful Firewall](#stateful-firewall)
+**Related Terms:** SYN Scan, Firewall Detection, Stateful Firewall
 
 ---
 
@@ -41,7 +33,7 @@ ProRT-IP feature that dynamically adjusts batch sizes based on system performanc
 
 **Implementation:** PerformanceMonitor + AdaptiveBatchSizer in `prtip-network/src/adaptive_batch.rs`
 
-**Related Terms:** [Batch I/O](#batch-io), [sendmmsg](#sendmmsg), [Performance Tuning](#performance-tuning)
+**Related Terms:** Batch I/O, sendmmsg, Performance Tuning
 
 ---
 
@@ -57,7 +49,7 @@ Protocol for mapping IP addresses to MAC addresses on local networks. ProRT-IP u
 - Protocol Address Length (1 byte): 4 for IPv4
 - Operation (2 bytes): Request = 1, Reply = 2
 
-**Related Terms:** [Host Discovery](#host-discovery), [MAC Address](#mac-address), [Ethernet](#ethernet)
+**Related Terms:** Host Discovery, MAC Address, Ethernet
 
 ---
 
@@ -71,7 +63,7 @@ I/O operations that don't block the calling thread, allowing concurrent executio
 - **Low Overhead:** ~2KB per task vs ~8MB per OS thread
 - **Efficient:** Event-driven architecture with epoll/kqueue/IOCP
 
-**Related Terms:** [Tokio](#tokio), [Event Loop](#event-loop), [Futures](#futures)
+**Related Terms:** Tokio, Event Loop, Futures
 
 ---
 
@@ -87,7 +79,7 @@ prtip -sS -p 80 target.com --audit-log /var/log/prtip/audit.log
 
 **Format:** See [secure-configuration.md](../security/secure-configuration.md#security-monitoring)
 
-**Related Terms:** [Compliance](#compliance), [GDPR](#gdpr), [Incident Response](#incident-response)
+**Related Terms:** Compliance, GDPR, Incident Response
 
 ---
 
@@ -103,7 +95,7 @@ Unsolicited responses received from hosts that were not directly scanned. Often 
 - Reflection/amplification attacks
 - Misconfigured firewalls
 
-**Related Terms:** [Stateless Scan](#stateless-scan), [IP Spoofing](#ip-spoofing), [Firewall](#firewall)
+**Related Terms:** Stateless Scan, IP Spoofing, Firewall
 
 ---
 
@@ -117,7 +109,7 @@ Technique for retrieving service identification information by connecting to a p
 - HTTP: `Server: Apache/2.4.41 (Ubuntu)`
 - SMTP: `220 mail.example.com ESMTP Postfix`
 
-**Related Terms:** [Service Detection](#service-detection), [Version Detection](#version-detection), [Fingerprinting](#fingerprinting)
+**Related Terms:** Service Detection, Version Detection, Fingerprinting
 
 ---
 
@@ -131,7 +123,7 @@ Sending or receiving multiple packets in a single system call. ProRT-IP uses `se
 - Better cache locality
 - Improved throughput (50K pps → 70K pps)
 
-**Related Terms:** [sendmmsg](#sendmmsg), [recvmmsg](#recvmmsg), [Adaptive Batch Sizing](#adaptive-batch-sizing)
+**Related Terms:** sendmmsg, recvmmsg, Adaptive Batch Sizing
 
 ---
 
@@ -142,7 +134,7 @@ Kernel-level packet filtering mechanism used by libpcap. ProRT-IP uses BPF on ma
 
 **Access:** macOS users must join `access_bpf` group for non-root packet capture.
 
-**Related Terms:** [libpcap](#libpcap), [Packet Capture](#packet-capture), [Raw Sockets](#raw-sockets)
+**Related Terms:** libpcap, Packet Capture, Raw Sockets
 
 ---
 
@@ -160,7 +152,7 @@ burst_size = 100     # Allow 100-packet bursts
 
 **Trade-off:** Higher burst = faster initial scans, but higher risk of packet loss
 
-**Related Terms:** [Rate Limiting](#rate-limiting), [Token Bucket](#token-bucket), [Packet Loss](#packet-loss)
+**Related Terms:** Rate Limiting, Token Bucket, Packet Loss
 
 ---
 
@@ -176,7 +168,7 @@ Distributed network of servers that deliver content based on geographic location
 - IP range databases
 - Reverse DNS patterns
 
-**Related Terms:** [IP Deduplication](#ip-deduplication), [ASN](#asn), [Reverse DNS](#reverse-dns)
+**Related Terms:** IP Deduplication, ASN, Reverse DNS
 
 ---
 
@@ -192,7 +184,7 @@ Method for allocating IP addresses and routing using prefix notation. ProRT-IP s
 
 **Calculation:** `/24` = 32-24 = 8 host bits = 2^8 = 256 addresses
 
-**Related Terms:** [Subnet Mask](#subnet-mask), [IP Address](#ip-address), [Target Specification](#target-specification)
+**Related Terms:** Subnet Mask, IP Address, Target Specification
 
 ---
 
@@ -212,7 +204,7 @@ TCP Connect scan (`-sT`) completes the full three-way handshake using the operat
 - Targets with IDS that detect half-open scans
 - Windows (SYN scan requires Npcap)
 
-**Related Terms:** [SYN Scan](#syn-scan), [Three-Way Handshake](#three-way-handshake), [Privileges](#privileges)
+**Related Terms:** SYN Scan, Three-Way Handshake, Privileges
 
 ---
 
@@ -228,7 +220,7 @@ Percentage of source code executed by tests. ProRT-IP maintains **54.92% coverag
 
 **Improvement:** Sprint 5.6 increased coverage from 37% → 54.92% (+17.66pp)
 
-**Related Terms:** [Testing](#testing), [Fuzzing](#fuzzing), [CI/CD](#cicd)
+**Related Terms:** Testing, Fuzzing, CI/CD
 
 ---
 
@@ -253,7 +245,7 @@ prtip -sS -D RND:10 target.com
 - SYN-ACK responses go to decoy IPs (stateless mode only)
 - Some ISPs block spoofed packets
 
-**Related Terms:** [IP Spoofing](#ip-spoofing), [Stateless Scan](#stateless-scan), [IDS Evasion](#ids-evasion)
+**Related Terms:** IP Spoofing, Stateless Scan, IDS Evasion
 
 ---
 
@@ -266,7 +258,7 @@ Protocol for automatically assigning IP addresses and network configuration. Not
 - UDP 67 (server)
 - UDP 68 (client)
 
-**Related Terms:** [UDP](#udp), [Network Discovery](#network-discovery), [IP Address](#ip-address)
+**Related Terms:** UDP, Network Discovery, IP Address
 
 ---
 
@@ -284,7 +276,7 @@ Hierarchical naming system that translates domain names to IP addresses. ProRT-I
 
 **Ports:** UDP/TCP 53
 
-**Related Terms:** [Reverse DNS](#reverse-dns), [IPv4](#ipv4), [IPv6](#ipv6)
+**Related Terms:** Reverse DNS, IPv4, IPv6
 
 ---
 
@@ -299,7 +291,7 @@ Attack that makes a system unavailable by overwhelming it with traffic or resour
 - Target confirmation for internet scans
 - Automatic privilege drop
 
-**Related Terms:** [Rate Limiting](#rate-limiting), [Resource Limits](#resource-limits), [Firewall](#firewall)
+**Related Terms:** Rate Limiting, Resource Limits, Firewall
 
 ---
 
@@ -317,7 +309,7 @@ Data link layer protocol for local area networks. ProRT-IP constructs Ethernet f
 - Payload (46-1500 bytes)
 - FCS checksum (4 bytes)
 
-**Related Terms:** [MAC Address](#mac-address), [ARP](#arp), [Raw Sockets](#raw-sockets)
+**Related Terms:** MAC Address, ARP, Raw Sockets
 
 ---
 
@@ -333,7 +325,7 @@ Publish-subscribe architecture for real-time scan event notification. ProRT-IP's
 
 **Architecture:** EventBus + ProgressCollector + TUI integration
 
-**Related Terms:** [TUI](#tui), [Progress Monitoring](#progress-monitoring), [Metrics](#metrics)
+**Related Terms:** TUI, Progress Monitoring, Metrics
 
 ---
 
@@ -349,7 +341,7 @@ Methods to avoid detection by firewalls, IDS/IPS, and security monitoring system
 5. **TTL Manipulation** (`--ttl`): Set specific TTL values
 6. **Bad Checksums** (`--badsum`): Invalid checksums (IDS testing)
 
-**Related Terms:** [IDS](#ids), [IPS](#ips), [Firewall](#firewall)
+**Related Terms:** IDS, IPS, Firewall
 
 ---
 
@@ -371,7 +363,7 @@ PORT    STATE      SERVICE
 80/tcp  filtered   http
 ```
 
-**Related Terms:** [Open Port](#open-port), [Closed Port](#closed-port), [Firewall](#firewall)
+**Related Terms:** Open Port, Closed Port, Firewall
 
 ---
 
@@ -389,7 +381,7 @@ Stealth scan (`-sF`) that sends packets with only the FIN flag set. Exploits RFC
 - Fails against Cisco IOS (drops all FIN packets)
 - Open|filtered ambiguity (both produce no response)
 
-**Related Terms:** [NULL Scan](#null-scan), [Xmas Scan](#xmas-scan), [Stealth Scanning](#stealth-scanning)
+**Related Terms:** NULL Scan, Xmas Scan, Stealth Scanning
 
 ---
 
@@ -408,7 +400,7 @@ Technique for identifying systems, services, or protocols based on their unique 
 - Probe matching (187 service probes)
 - 85-90% accuracy
 
-**Related Terms:** [OS Detection](#os-detection), [Service Detection](#service-detection), [Banner Grabbing](#banner-grabbing)
+**Related Terms:** OS Detection, Service Detection, Banner Grabbing
 
 ---
 
@@ -434,7 +426,7 @@ Network security device that monitors and controls traffic based on rules. ProRT
 
 **Detection:** Use `-sA` (ACK scan) to map firewall rules
 
-**Related Terms:** [Filtered Port](#filtered-port), [IDS](#ids), [Evasion Techniques](#evasion-techniques)
+**Related Terms:** Filtered Port, IDS, Evasion Techniques
 
 ---
 
@@ -462,7 +454,7 @@ prtip -sS --mtu 24 -p 80 target.com
 - Can reduce scan speed
 - Not all IDS systems are vulnerable
 
-**Related Terms:** [MTU](#mtu), [IDS Evasion](#ids-evasion), [Packet](#packet)
+**Related Terms:** MTU, IDS Evasion, Packet
 
 ---
 
@@ -480,7 +472,7 @@ Automated testing with random/invalid inputs to discover crashes and undefined b
 
 **Tool:** cargo-fuzz with libFuzzer
 
-**Related Terms:** [Testing](#testing), [Coverage](#coverage), [Property-Based Testing](#property-based-testing)
+**Related Terms:** Testing, Coverage, Property-Based Testing
 
 ---
 
@@ -508,7 +500,7 @@ include_banners = false
 - Default: 30 days scan data, 90 days audit logs
 - Configurable via `retention_days`
 
-**Related Terms:** [Audit Log](#audit-log), [Compliance](#compliance), [PCI DSS](#pci-dss)
+**Related Terms:** Audit Log, Compliance, PCI DSS
 
 ---
 
@@ -524,9 +516,9 @@ Another term for SYN scan. Called "half-open" because it doesn't complete the th
 2. Receive SYN-ACK (open) or RST (closed)
 3. Send RST (abort handshake)
 
-**Synonym:** [SYN Scan](#syn-scan)
+**Synonym:** SYN Scan
 
-**Related Terms:** [Three-Way Handshake](#three-way-handshake), [Stealth Scanning](#stealth-scanning)
+**Related Terms:** Three-Way Handshake, Stealth Scanning
 
 ---
 
@@ -544,7 +536,7 @@ Process of identifying active hosts on a network before port scanning. ProRT-IP 
 
 **Disable:** `-Pn` (skip host discovery)
 
-**Related Terms:** [Ping](#ping), [ICMP](#icmp), [ARP](#arp)
+**Related Terms:** Ping, ICMP, ARP
 
 ---
 
@@ -566,7 +558,7 @@ Protocol for diagnostic and error messages. ProRT-IP uses ICMP for host discover
 
 **ICMPv6:** IPv6 equivalent with additional functionality (Neighbor Discovery)
 
-**Related Terms:** [Ping](#ping), [UDP Scan](#udp-scan), [Host Discovery](#host-discovery)
+**Related Terms:** Ping, UDP Scan, Host Discovery
 
 ---
 
@@ -588,7 +580,7 @@ Advanced stealth scan (`-sI`) that uses a "zombie" host to scan targets without 
 - Zombie idle (no other traffic)
 - Spoofing capability
 
-**Related Terms:** [IP Spoofing](#ip-spoofing), [IP ID](#ip-id), [Stealth Scanning](#stealth-scanning)
+**Related Terms:** IP Spoofing, IP ID, Stealth Scanning
 
 ---
 
@@ -608,7 +600,7 @@ System that monitors network traffic for malicious activity and policy violation
 
 **Evasion:** `-f` (fragmentation), `-D` (decoys), `--scan-delay` (slow scan)
 
-**Related Terms:** [IPS](#ips), [Firewall](#firewall), [Evasion Techniques](#evasion-techniques)
+**Related Terms:** IPS, Firewall, Evasion Techniques
 
 ---
 
@@ -629,7 +621,7 @@ Numerical label assigned to devices on a network. ProRT-IP supports both IPv4 an
 - Range: `::` - `ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff`
 - Total: 340 undecillion addresses
 
-**Related Terms:** [IPv4](#ipv4), [IPv6](#ipv6), [CIDR](#cidr)
+**Related Terms:** IPv4, IPv6, CIDR
 
 ---
 
@@ -648,7 +640,7 @@ Feature that removes duplicate IPs from scan targets to improve efficiency. ProR
 - Lower bandwidth usage
 - Fewer duplicate results
 
-**Related Terms:** [CDN](#cdn), [Anycast](#anycast), [Target Specification](#target-specification)
+**Related Terms:** CDN, Anycast, Target Specification
 
 ---
 
@@ -664,7 +656,7 @@ Feature that removes duplicate IPs from scan targets to improve efficiency. ProR
 
 **Idle Scan:** ProRT-IP analyzes IP ID increments to infer port states
 
-**Related Terms:** [Idle Scan](#idle-scan), [IP Spoofing](#ip-spoofing), [IPv4](#ipv4)
+**Related Terms:** Idle Scan, IP Spoofing, IPv4
 
 ---
 
@@ -687,7 +679,7 @@ prtip -sI zombie.com -p 80 target.com
 prtip -sS -D 10.0.0.1,10.0.0.2,ME target.com
 ```
 
-**Related Terms:** [Idle Scan](#idle-scan), [Decoy Scanning](#decoy-scanning), [BCP 38](#bcp-38)
+**Related Terms:** Idle Scan, Decoy Scanning, BCP 38
 
 ---
 
@@ -704,7 +696,7 @@ Active security device that detects AND blocks malicious traffic. More aggressiv
 
 **Evasion:** Requires multiple techniques (fragmentation + timing + decoys)
 
-**Related Terms:** [IDS](#ids), [Firewall](#firewall), [Rate Limiting](#rate-limiting)
+**Related Terms:** IDS, Firewall, Rate Limiting
 
 ---
 
@@ -726,7 +718,7 @@ Internet Protocol version 4. 32-bit addresses, most widely deployed protocol.
 - Source IP (32 bits)
 - Destination IP (32 bits)
 
-**Related Terms:** [IPv6](#ipv6), [TCP](#tcp), [UDP](#udp)
+**Related Terms:** IPv6, TCP, UDP
 
 ---
 
@@ -752,7 +744,7 @@ Internet Protocol version 6. 128-bit addresses, successor to IPv4. ProRT-IP achi
 
 **Overhead:** -1.9% vs IPv4 (exceeds +15% documented expectation)
 
-**Related Terms:** [IPv4](#ipv4), [ICMPv6](#icmpv6), [NDP](#ndp)
+**Related Terms:** IPv4, ICMPv6, NDP
 
 ---
 
@@ -785,7 +777,7 @@ Output format for structured scan results. ProRT-IP supports JSON output via `-o
 - Integration-friendly
 - Structured querying (jq)
 
-**Related Terms:** [Output Formats](#output-formats), [XML](#xml), [Greppable](#greppable)
+**Related Terms:** Output Formats, XML, Greppable
 
 ---
 
@@ -803,7 +795,7 @@ Technique for moving packet processing from kernel to userspace, reducing contex
 
 **Trade-off:** Complexity vs performance (future consideration)
 
-**Related Terms:** [Performance Tuning](#performance-tuning), [Zero-Copy](#zero-copy), [libpcap](#libpcap)
+**Related Terms:** Performance Tuning, Zero-Copy, libpcap
 
 ---
 
@@ -825,7 +817,7 @@ Cross-platform library for packet capture. ProRT-IP uses libpcap (via pnet crate
 - `pcap_setfilter()`: Apply filter
 - `pcap_next_ex()`: Read packet
 
-**Related Terms:** [BPF](#bpf), [Npcap](#npcap), [Raw Sockets](#raw-sockets)
+**Related Terms:** BPF, Npcap, Raw Sockets
 
 ---
 
@@ -845,7 +837,7 @@ Scripting language for ProRT-IP plugins. Plugin System (Sprint 5.8) uses Lua 5.4
 - Restricted I/O access
 - No dangerous functions (os.execute, io.popen)
 
-**Related Terms:** [Plugin System](#plugin-system), [Sandboxing](#sandboxing), [NSE](#nse)
+**Related Terms:** Plugin System, Sandboxing, NSE
 
 ---
 
@@ -864,7 +856,7 @@ Media Access Control address. 48-bit hardware identifier for network interfaces.
 
 **Usage:** ARP protocol, local network host discovery
 
-**Related Terms:** [ARP](#arp), [Ethernet](#ethernet), [Host Discovery](#host-discovery)
+**Related Terms:** ARP, Ethernet, Host Discovery
 
 ---
 
@@ -878,7 +870,7 @@ High-speed port scanner (6M+ pps) that inspired ProRT-IP's stateless mode. Uses 
 - **Features:** ProRT-IP more comprehensive (OS detection, service detection, IPv6)
 - **Safety:** ProRT-IP memory-safe (Rust vs C)
 
-**Related Terms:** [Stateless Scan](#stateless-scan), [Performance Tuning](#performance-tuning), [Nmap](#nmap)
+**Related Terms:** Stateless Scan, Performance Tuning, Nmap
 
 ---
 
@@ -894,7 +886,7 @@ Largest packet size that can be transmitted without fragmentation.
 
 **Fragmentation:** ProRT-IP uses `--mtu` flag to set custom MTU for IDS evasion
 
-**Related Terms:** [Fragmentation](#fragmentation), [Ethernet](#ethernet), [Packet](#packet)
+**Related Terms:** Fragmentation, Ethernet, Packet
 
 ---
 
@@ -917,7 +909,7 @@ IPv6 equivalent of ARP. ProRT-IP uses NDP for IPv6 host discovery and link-layer
 - Type 135: Neighbor Solicitation (ARP equivalent)
 - Type 136: Neighbor Advertisement
 
-**Related Terms:** [IPv6](#ipv6), [ICMPv6](#icmpv6), [ARP](#arp)
+**Related Terms:** IPv6, ICMPv6, ARP
 
 ---
 
@@ -940,7 +932,7 @@ Industry-standard network scanner (25+ years). ProRT-IP aims for Nmap-compatible
 
 **Compatibility:** ProRT-IP supports 50+ Nmap flags (`-sS`, `-sT`, `-sU`, `-O`, `-sV`, `-p`, `-T0-T5`, `-oN`, `-oX`, etc.)
 
-**Related Terms:** [NSE](#nse), [Service Detection](#service-detection), [OS Detection](#os-detection)
+**Related Terms:** NSE, Service Detection, OS Detection
 
 ---
 
@@ -956,7 +948,7 @@ Packet capture library for Windows (WinPcap successor). Required for ProRT-IP on
 
 **Installation:** Download from https://npcap.com/, enable "WinPcap API-compatible mode"
 
-**Related Terms:** [libpcap](#libpcap), [Windows](#windows), [Packet Capture](#packet-capture)
+**Related Terms:** libpcap, Windows, Packet Capture
 
 ---
 
@@ -974,7 +966,7 @@ Lua-based scripting engine in Nmap with 600+ scripts. ProRT-IP's Plugin System p
 
 **ProRT-IP Equivalent:** Lua plugin system with sandboxing (Sprint 5.8)
 
-**Related Terms:** [Nmap](#nmap), [Lua](#lua), [Plugin System](#plugin-system)
+**Related Terms:** Nmap, Lua, Plugin System
 
 ---
 
@@ -991,7 +983,7 @@ Stealth scan (`-sN`) that sends packets with no flags set. Exploits RFC 793 requ
 - Same as FIN scan (Windows, Cisco incompatibility)
 - Open|filtered ambiguity
 
-**Related Terms:** [FIN Scan](#fin-scan), [Xmas Scan](#xmas-scan), [Stealth Scanning](#stealth-scanning)
+**Related Terms:** FIN Scan, Xmas Scan, Stealth Scanning
 
 ---
 
@@ -1012,7 +1004,7 @@ PORT    STATE  SERVICE
 80/tcp  open   http
 ```
 
-**Related Terms:** [Closed Port](#closed-port), [Filtered Port](#filtered-port), [Port Scanning](#port-scanning)
+**Related Terms:** Closed Port, Filtered Port, Port Scanning
 
 ---
 
@@ -1037,7 +1029,7 @@ Identifying the operating system of a target by analyzing TCP/IP stack behavior.
 
 **Accuracy:** 70-90% depending on signature coverage
 
-**Related Terms:** [Fingerprinting](#fingerprinting), [Service Detection](#service-detection), [Nmap](#nmap)
+**Related Terms:** Fingerprinting, Service Detection, Nmap
 
 ---
 
@@ -1054,7 +1046,7 @@ ProRT-IP supports 5 output formats:
 
 **Database Storage:** SQLite via `--with-db` flag
 
-**Related Terms:** [JSON](#json), [XML](#xml), [Greppable](#greppable)
+**Related Terms:** JSON, XML, Greppable
 
 ---
 
@@ -1076,7 +1068,7 @@ Unit of data transmitted over a network. ProRT-IP constructs raw packets for sca
 - IPv4 packet: 65,535 bytes (theoretical)
 - IPv6 packet: 65,575 bytes (including extension headers)
 
-**Related Terms:** [Ethernet](#ethernet), [IPv4](#ipv4), [TCP](#tcp)
+**Related Terms:** Ethernet, IPv4, TCP
 
 ---
 
@@ -1091,7 +1083,7 @@ Recording network packets for analysis. ProRT-IP uses libpcap for packet capture
 
 **ProRT-IP:** Supports PCAPNG export via `--capture-raw-responses` flag
 
-**Related Terms:** [libpcap](#libpcap), [PCAPNG](#pcapng), [Wireshark](#wireshark)
+**Related Terms:** libpcap, PCAPNG, Wireshark
 
 ---
 
@@ -1110,7 +1102,7 @@ prtip -sS -sV -p 1-65535 --output-format pci-dss --scan-type quarterly-external 
 prtip -sS -sV -O -A -p- --scan-type annual-pentest target.com
 ```
 
-**Related Terms:** [Compliance](#compliance), [GDPR](#gdpr), [NIST CSF](#nist-csf)
+**Related Terms:** Compliance, GDPR, NIST CSF
 
 ---
 
@@ -1136,7 +1128,7 @@ Optimizing ProRT-IP for maximum speed and efficiency. Key parameters:
 - `--max-retries`: Retry attempts (default 3)
 - `--timeout`: Per-probe timeout
 
-**Related Terms:** [Rate Limiting](#rate-limiting), [Timing Templates](#timing-templates), [Adaptive Parallelism](#adaptive-parallelism)
+**Related Terms:** Rate Limiting, Timing Templates, Adaptive Parallelism
 
 ---
 
@@ -1155,7 +1147,7 @@ ICMP Echo Request used to test host reachability. ProRT-IP uses ping for host di
 
 **Alternatives:** TCP SYN ping (`-PS`), TCP ACK ping (`-PA`)
 
-**Related Terms:** [ICMP](#icmp), [Host Discovery](#host-discovery), [Firewall](#firewall)
+**Related Terms:** ICMP, Host Discovery, Firewall
 
 ---
 
@@ -1183,7 +1175,7 @@ function detect(response)
 end
 ```
 
-**Related Terms:** [Lua](#lua), [NSE](#nse), [Sandboxing](#sandboxing)
+**Related Terms:** Lua, NSE, Sandboxing
 
 ---
 
@@ -1202,7 +1194,7 @@ end
 - **Closed:** No application listening
 - **Filtered:** Firewall blocking access
 
-**Related Terms:** [TCP](#tcp), [UDP](#udp), [Open Port](#open-port)
+**Related Terms:** TCP, UDP, Open Port
 
 ---
 
@@ -1221,7 +1213,7 @@ Process of probing ports to determine state (open/closed/filtered). ProRT-IP's c
 7. **ACK Scan (`-sA`):** Firewall detection
 8. **Idle Scan (`-sI`):** Maximum anonymity via zombie
 
-**Related Terms:** [SYN Scan](#syn-scan), [TCP](#tcp), [UDP](#udp)
+**Related Terms:** SYN Scan, TCP, UDP
 
 ---
 
@@ -1244,7 +1236,7 @@ Access rights required for raw packet operations. ProRT-IP requires elevated pri
 
 **Security:** ProRT-IP drops privileges immediately after socket creation
 
-**Related Terms:** [Capabilities](#capabilities), [Privilege Drop](#privilege-drop), [Connect Scan](#connect-scan)
+**Related Terms:** Capabilities, Privilege Drop, Connect Scan
 
 ---
 
@@ -1265,7 +1257,7 @@ Network mechanism for prioritizing traffic. Relevant for understanding scan impa
 
 **ProRT-IP:** Does not manipulate QoS fields (future consideration)
 
-**Related Terms:** [IPv4](#ipv4), [IPv6](#ipv6), [Traffic Shaping](#traffic-shaping)
+**Related Terms:** IPv4, IPv6, Traffic Shaping
 
 ---
 
@@ -1289,7 +1281,7 @@ burst_size = 100       # Allow 100-packet bursts
 adaptive = true        # Adjust on packet loss
 ```
 
-**Related Terms:** [Token Bucket](#token-bucket), [Burst Size](#burst-size), [Adaptive Rate Limiting](#adaptive-rate-limiting)
+**Related Terms:** Token Bucket, Burst Size, Adaptive Rate Limiting
 
 ---
 
@@ -1312,7 +1304,7 @@ Low-level socket API for constructing custom packets. ProRT-IP uses raw sockets 
 - Windows: Winsock raw sockets (via Npcap)
 - macOS/BSD: BPF (Berkeley Packet Filter)
 
-**Related Terms:** [libpcap](#libpcap), [Privileges](#privileges), [BPF](#bpf)
+**Related Terms:** libpcap, Privileges, BPF
 
 ---
 
@@ -1332,7 +1324,7 @@ Information gathering phase of security assessment. ProRT-IP provides comprehens
 - OS fingerprinting
 - Banner grabbing
 
-**Related Terms:** [Port Scanning](#port-scanning), [Service Detection](#service-detection), [OS Detection](#os-detection)
+**Related Terms:** Port Scanning, Service Detection, OS Detection
 
 ---
 
@@ -1348,7 +1340,7 @@ DNS PTR record lookup to obtain hostname from IP address.
 
 **ProRT-IP:** Performs reverse DNS during scanning for hostname identification
 
-**Related Terms:** [DNS](#dns), [PTR Record](#ptr-record), [Hostname](#hostname)
+**Related Terms:** DNS, PTR Record, Hostname
 
 ---
 
@@ -1369,7 +1361,7 @@ Isolating plugin execution to prevent malicious behavior. ProRT-IP's Plugin Syst
 
 **Capabilities:** Explicit permissions for specific operations
 
-**Related Terms:** [Plugin System](#plugin-system), [Lua](#lua), [Security](#security)
+**Related Terms:** Plugin System, Lua, Security
 
 ---
 
@@ -1392,7 +1384,7 @@ int sendmmsg(int sockfd, struct mmsghdr *msgvec,
 
 **Platform:** Linux only (macOS/Windows use single-packet `send()`)
 
-**Related Terms:** [recvmmsg](#recvmmsg), [Batch I/O](#batch-io), [Performance Tuning](#performance-tuning)
+**Related Terms:** recvmmsg, Batch I/O, Performance Tuning
 
 ---
 
@@ -1424,7 +1416,7 @@ PORT    STATE  SERVICE  VERSION
 - 7: Default (balance)
 - 9: All probes (slowest, most accurate)
 
-**Related Terms:** [Banner Grabbing](#banner-grabbing), [Version Detection](#version-detection), [nmap-service-probes](#nmap-service-probes)
+**Related Terms:** Banner Grabbing, Version Detection, nmap-service-probes
 
 ---
 
@@ -1447,7 +1439,7 @@ Default TCP scan method (`-sS`) that sends SYN packets without completing handsh
 - Root/sudo privileges
 - Or capabilities (Linux)
 
-**Related Terms:** [Half-Open Scan](#half-open-scan), [Three-Way Handshake](#three-way-handshake), [Connect Scan](#connect-scan)
+**Related Terms:** Half-Open Scan, Three-Way Handshake, Connect Scan
 
 ---
 
@@ -1475,7 +1467,7 @@ Connection-oriented transport protocol with reliability, ordering, and error che
 2. Server: SYN-ACK
 3. Client: ACK
 
-**Related Terms:** [SYN Scan](#syn-scan), [Three-Way Handshake](#three-way-handshake), [UDP](#udp)
+**Related Terms:** SYN Scan, Three-Way Handshake, UDP
 
 ---
 
@@ -1503,7 +1495,7 @@ TCP connection establishment process.
 
 **SYN Scan:** Aborts after step 2 by sending RST
 
-**Related Terms:** [TCP](#tcp), [SYN Scan](#syn-scan), [Connect Scan](#connect-scan)
+**Related Terms:** TCP, SYN Scan, Connect Scan
 
 ---
 
@@ -1527,7 +1519,7 @@ Predefined timing configurations (`-T0` to `-T5`) for different scanning scenari
 - **Slower (T0-T2):** More accurate, less detected, slower
 - **Faster (T4-T5):** Less accurate, more detected, faster
 
-**Related Terms:** [Rate Limiting](#rate-limiting), [Performance Tuning](#performance-tuning), [IDS Evasion](#ids-evasion)
+**Related Terms:** Rate Limiting, Performance Tuning, IDS Evasion
 
 ---
 
@@ -1551,7 +1543,7 @@ prtip -sS -sV --tls-cert-analysis -p 443 target.com
 
 **SNI (Server Name Indication):** Supported for virtual hosts
 
-**Related Terms:** [X.509](#x509), [SNI](#sni), [HTTPS](#https)
+**Related Terms:** X.509, SNI, HTTPS
 
 ---
 
@@ -1572,7 +1564,7 @@ Asynchronous runtime for Rust. ProRT-IP uses Tokio for all async I/O operations.
 
 **ProRT-IP Usage:** All scanners, network I/O, event system
 
-**Related Terms:** [Asynchronous I/O](#asynchronous-io), [Event Loop](#event-loop), [Futures](#futures)
+**Related Terms:** Asynchronous I/O, Event Loop, Futures
 
 ---
 
@@ -1598,7 +1590,7 @@ refill_rate: 100,000 tokens/sec (max_rate)
 - Enforces long-term rate (courteous)
 - Simple and efficient (-1.8% overhead)
 
-**Related Terms:** [Rate Limiting](#rate-limiting), [Burst Size](#burst-size), [Leaky Bucket](#leaky-bucket)
+**Related Terms:** Rate Limiting, Burst Size, Leaky Bucket
 
 ---
 
@@ -1619,7 +1611,7 @@ refill_rate: 100,000 tokens/sec (max_rate)
 
 **ProRT-IP:** `--ttl` flag for custom TTL (evasion technique)
 
-**Related Terms:** [IPv4](#ipv4), [Traceroute](#traceroute), [Evasion Techniques](#evasion-techniques)
+**Related Terms:** IPv4, Traceroute, Evasion Techniques
 
 ---
 
@@ -1644,7 +1636,7 @@ Real-time terminal-based dashboard for scan monitoring. ProRT-IP's TUI Framework
 prtip --live -sS -p- target.com
 ```
 
-**Related Terms:** [Event System](#event-system), [Progress Monitoring](#progress-monitoring), [ratatui](#ratatui)
+**Related Terms:** Event System, Progress Monitoring, ratatui
 
 ---
 
@@ -1672,7 +1664,7 @@ Connectionless transport protocol. Faster than TCP but unreliable (no ordering, 
 - Open vs filtered ambiguity
 - Many services silent (don't respond to random data)
 
-**Related Terms:** [TCP](#tcp), [ICMP](#icmp), [UDP Scan](#udp-scan)
+**Related Terms:** TCP, ICMP, UDP Scan
 
 ---
 
@@ -1697,7 +1689,7 @@ prtip -sV --version-intensity 2 -p 80 target.com
 prtip -sV --version-intensity 9 -p 80 target.com
 ```
 
-**Related Terms:** [Service Detection](#service-detection), [Banner Grabbing](#banner-grabbing), [nmap-service-probes](#nmap-service-probes)
+**Related Terms:** Service Detection, Banner Grabbing, nmap-service-probes
 
 ---
 
@@ -1717,7 +1709,7 @@ prtip -sS -p 80,443 --capture-raw-responses target.com
 wireshark scan-12345.pcapng
 ```
 
-**Related Terms:** [PCAPNG](#pcapng), [Packet Capture](#packet-capture), [libpcap](#libpcap)
+**Related Terms:** PCAPNG, Packet Capture, libpcap
 
 ---
 
@@ -1740,7 +1732,7 @@ Standard for public key certificates used in TLS/SSL. ProRT-IP parses X.509v3 ce
 
 **Parsing:** ProRT-IP uses `x509-parser` crate for 1.33μs parsing speed
 
-**Related Terms:** [TLS](#tls), [SNI](#sni), [Certificate Authority](#certificate-authority)
+**Related Terms:** TLS, SNI, Certificate Authority
 
 ---
 
@@ -1764,7 +1756,7 @@ Stealth scan (`-sX`) that sends packets with FIN, PSH, and URG flags set (packet
 
 **Performance:** Fastest scan type in ProRT-IP benchmarks (9.7ms for 65K ports, 103K pps)
 
-**Related Terms:** [FIN Scan](#fin-scan), [NULL Scan](#null-scan), [Stealth Scanning](#stealth-scanning)
+**Related Terms:** FIN Scan, NULL Scan, Stealth Scanning
 
 ---
 
@@ -1795,7 +1787,7 @@ Output format for scan results. ProRT-IP's XML output (`-oX`) is Nmap-compatible
 - Tool integration (Metasploit, Burp Suite)
 - Historical comparison
 
-**Related Terms:** [JSON](#json), [Nmap](#nmap), [Output Formats](#output-formats)
+**Related Terms:** JSON, Nmap, Output Formats
 
 ---
 
@@ -1815,7 +1807,7 @@ Avoiding data copies between userspace and kernel space for improved performance
 
 **Future:** AF_XDP sockets for userspace packet processing without kernel copies
 
-**Related Terms:** [Performance Tuning](#performance-tuning), [Kernel Bypass](#kernel-bypass), [mmap](#mmap)
+**Related Terms:** Performance Tuning, Kernel Bypass, mmap
 
 ---
 
@@ -1839,7 +1831,7 @@ prtip -sI zombie.com -p 80,443 target.com
 - Idle servers
 - Test systems
 
-**Related Terms:** [Idle Scan](#idle-scan), [IP ID](#ip-id), [IP Spoofing](#ip-spoofing)
+**Related Terms:** Idle Scan, IP ID, IP Spoofing
 
 ---
 

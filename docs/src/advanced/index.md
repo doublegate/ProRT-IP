@@ -9,5 +9,4 @@ Advanced usage and optimization techniques.
 - [Evasion Techniques](evasion-techniques.md)
 - [Security Best Practices](security-best-practices.md)
 - [Distributed Scanning](distributed-scanning.md)
-- [Event System](event-system.md)
 - [Performance Characteristics](performance-characteristics.md)

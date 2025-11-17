@@ -1578,7 +1578,7 @@ prtip -sV -p 80,443 --plugin vulnerability_scanner.lua 192.168.1.0/24
 
 - [Architecture](../development/architecture.md) - System architecture and design decisions
 - [API Reference](./api-reference.md) - Complete public API documentation
-- [Performance Characteristics](../../../34-PERFORMANCE-CHARACTERISTICS.md) - Performance metrics and KPIs
+- [Performance Characteristics](../../34-PERFORMANCE-CHARACTERISTICS.md) - Performance metrics and KPIs
 - [Nmap Compatibility](./comparisons/nmap.md) - Nmap compatibility guide
 - [FAQ](./faq.md) - Frequently asked questions
 - [Troubleshooting](./troubleshooting.md) - Common issues and solutions

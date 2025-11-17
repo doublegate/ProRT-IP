@@ -375,29 +375,10 @@ async fn run() -> Result<()> {
     // Calculate total ports for progress display
     let total_ports = targets.len() * ports.count();
 
-    // Launch TUI if requested
-    if args.tui {
-        if let Some(ref bus) = event_bus {
-            info!("Launching TUI dashboard");
-            let mut tui_app = prtip_tui::App::new(bus.clone());
-
-            // Spawn TUI in a separate task
-            let _tui_handle = tokio::spawn(async move {
-                if let Err(e) = tui_app.run().await {
-                    eprintln!("TUI error: {}", e);
-                }
-            });
-
-            // Continue with scan execution...
-            // The TUI will automatically update via EventBus
-            info!("TUI dashboard launched");
-
-            // Store handle (will be joined at the end of scan)
-            // For now, we'll just continue - TUI runs independently
-        } else {
-            warn!("TUI requires event tracking (cannot use with --quiet mode)");
-            bail!("Cannot use --tui flag in quiet mode. Remove --quiet or remove --tui.");
-        }
+    // Validate TUI mode early (actual launch happens later)
+    if args.tui && event_bus.is_none() {
+        warn!("TUI requires event tracking (cannot use with --quiet mode)");
+        bail!("Cannot use --tui flag in quiet mode. Remove --quiet or remove --tui.");
     }
 
     // Initialize ProgressDisplay (event-driven) - skip if TUI is active
@@ -566,7 +547,60 @@ async fn run() -> Result<()> {
         }
     }
 
-    // Execute scan
+    // Launch TUI if requested - TUI takes over as primary interface
+    if args.tui {
+        if let Some(ref bus) = event_bus {
+            info!("Launching TUI dashboard");
+
+            // Create TUI app
+            let mut tui_app = prtip_tui::App::new(bus.clone());
+
+            // Run TUI and scanner concurrently using tokio::join!
+            // The scanner runs in the background, TUI runs in foreground
+            // TUI exits on 'q' or Ctrl+C, then scanner is dropped/cancelled
+            let scan_future = async {
+                info!("Starting scan...");
+                let scan_start = std::time::Instant::now();
+
+                let results = if args.should_perform_host_discovery() {
+                    info!("Performing host discovery before port scanning");
+                    scheduler
+                        .execute_scan_with_discovery(targets, pcapng_writer)
+                        .await
+                        .context("Scan with discovery failed")
+                } else {
+                    let expanded_targets = expand_targets_with_ports(targets, &ports)
+                        .context("Failed to expand targets with ports")?;
+                    scheduler
+                        .execute_scan_ports(expanded_targets, &ports)
+                        .await
+                        .context("Scan failed")
+                };
+
+                let scan_duration = scan_start.elapsed();
+                info!("Scan complete in {:?}", scan_duration);
+
+                results
+            };
+
+            info!("TUI dashboard launched, scanner running concurrently");
+
+            // Run both concurrently, TUI controls when to exit
+            let (tui_result, scan_result) = tokio::join!(tui_app.run(), scan_future);
+
+            // Check results
+            if let Err(e) = scan_result {
+                warn!("Scan failed: {}", e);
+            } else {
+                info!("Scan completed successfully");
+            }
+
+            // Return TUI result (terminal should be properly restored)
+            return tui_result.map_err(|e| anyhow::anyhow!("TUI error: {}", e));
+        }
+    }
+
+    // Non-TUI mode: Execute scan normally
     info!("Starting scan...");
     let scan_start = std::time::Instant::now();
     println!(

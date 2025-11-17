@@ -109,7 +109,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 ## Project Status
 
 **Current:** Phase 6 (3/8 sprints complete, 37.5%)
-**Version:** v0.6.0 (Released 2025-11-16)
+**Version:** v0.5.3 (Released 2025-11-17)
 **Tests:** 2,151 passing (100%)
 **Coverage:** 54.92%
 
@@ -123,7 +123,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 - Network activity time-series chart (60-second sliding window)
 - 175 tests passing (150 unit + 25 integration)
 
-**Sprint 6.3 COMPLETE (2025-11-16):** Network Optimizations & Performance Breakthroughs
+**Sprint 6.3 COMPLETE (2025-11-17):** Network Optimizations & Performance Breakthroughs
 
 - **Status:** ✅ COMPLETE - Production-ready with performance validation
 - **Major Achievements:**
@@ -1345,6 +1345,6 @@ This project builds on the pioneering work of:
 
 ---
 
-**Last Updated:** 2025-11-16
-**Current Version:** v0.6.0
+**Last Updated:** 2025-11-17
+**Current Version:** v0.5.3
 **Phase:** 6 Sprint 6.3 COMPLETE (3/8 sprints, 37.5%)

@@ -535,7 +535,7 @@ Based on verification reports and completion documentation, the remaining work f
 
 **Tasks:**
 - [ ] **4.3.1** Update CI/CD documentation
-  - **File:** `docs/28-CI-CD-COVERAGE.md` (extend)
+  - **File:** `docs/28-CI-CD-GUIDE.md` (extend)
   - Add "Benchmark Regression Testing" section (~150 lines)
   - Cover: Workflow triggers, baseline management, interpretation
   - **Estimated Time:** 0.25h
@@ -772,7 +772,7 @@ Sprint 6.3 will be considered **100% COMPLETE** when:
 - [ ] `docs/CONFIGURATION-PROFILES.md` (300-400 lines, if Task 5 executed)
 - [ ] `docs/PERFORMANCE-TUNING-GUIDE.md` (400-500 lines, if Task 5 executed)
 - [ ] `docs/34-PERFORMANCE-CHARACTERISTICS.md` (updated with internet-scale section)
-- [ ] `docs/28-CI-CD-COVERAGE.md` (updated with benchmark section, if Task 4 executed)
+- [ ] `docs/28-CI-CD-GUIDE.md` (updated with benchmark section, if Task 4 executed)
 - [ ] `CHANGELOG.md` (updated with Sprint 6.3 COMPLETE entry)
 
 ### Benchmark Results

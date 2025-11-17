@@ -46,8 +46,8 @@ Complete Phase 5 with comprehensive documentation overhaul to achieve profession
 
 1. **API Reference** (rustdoc + mdBook)
 2. **User Guide** (docs/32-USER-GUIDE.md, ~800-1,200 lines)
-3. **Tutorials** (docs/33-TUTORIALS.md, ~600-800 lines)
-4. **Example Gallery** (docs/34-EXAMPLES.md, ~500-700 lines)
+3. **Tutorials** (docs/34-EXAMPLES-GALLERY.md, ~600-800 lines)
+4. **Example Gallery** (docs/34-EXAMPLES-GALLERY.md, ~500-700 lines)
 5. **Documentation Polish** (cross-reference validation, link checking, formatting)
 6. **Memory Bank Updates** (CHANGELOG, README, ROADMAP, STATUS, CLAUDE.local.md)
 
@@ -597,7 +597,7 @@ docs/
   - Solutions provided with explanations
 
 **Deliverables:**
-- docs/33-TUTORIALS.md (600-800 lines)
+- docs/34-EXAMPLES-GALLERY.md (600-800 lines)
 - 7+ complete tutorials
 - 5+ practice exercises with solutions
 - Progressive difficulty
@@ -706,7 +706,7 @@ docs/
   - Example 36: Plugin usage
 
 **Deliverables:**
-- docs/34-EXAMPLES.md (500-700 lines)
+- docs/34-EXAMPLES-GALLERY.md (500-700 lines)
 - 36+ examples documented
 - All commands tested
 - Performance data included
@@ -1080,8 +1080,8 @@ docs/
 
 ### User Guides
 - **[User Guide](docs/32-USER-GUIDE.md)** - Complete guide from installation to advanced usage
-- **[Tutorials](docs/33-TUTORIALS.md)** - 7+ interactive walkthroughs (beginner → advanced)
-- **[Examples](docs/34-EXAMPLES.md)** - 36+ real-world scenarios with copy-paste commands
+- **[Tutorials](docs/34-EXAMPLES-GALLERY.md)** - 7+ interactive walkthroughs (beginner → advanced)
+- **[Examples](docs/34-EXAMPLES-GALLERY.md)** - 36+ real-world scenarios with copy-paste commands
 
 ### Technical Guides
 - **[IPv6 Guide](docs/23-IPv6-GUIDE.md)** - Complete IPv6 support (1,958 lines)
@@ -1089,7 +1089,7 @@ docs/
 - **[Idle Scan Guide](docs/25-IDLE-SCAN-GUIDE.md)** - Nmap parity (650 lines)
 - **[Rate Limiting](docs/26-RATE-LIMITING-GUIDE.md)** - Industry-leading -1.8% (v2.0.0)
 - **[TLS Certificate](docs/27-TLS-CERTIFICATE-GUIDE.md)** - X.509v3 analysis (2,160 lines)
-- **[Fuzzing Guide](docs/29-FUZZING-GUIDE.md)** - 230M+ executions (784 lines)
+- **[Fuzzing Guide](docs/29-FUZZ-TESTING-GUIDE.md)** - 230M+ executions (784 lines)
 - **[Plugin System](docs/30-PLUGIN-SYSTEM-GUIDE.md)** - Lua scripting (784 lines)
 - **[Benchmarking](docs/31-BENCHMARKING-GUIDE.md)** - Performance validation (900+ lines)
 

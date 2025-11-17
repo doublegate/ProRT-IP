@@ -60,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Validates both relative and external links
   - **Impact:** Maintains documentation quality standards automatically
 
-## [0.6.0] - 2025-11-16
+## [0.5.3] - 2025-11-17
 
 ### Major Performance Breakthroughs 🚀
 

@@ -498,7 +498,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Professional execution (A+ grade)
 
 #### Documentation
-- docs/28-CI-CD-COVERAGE.md (866 lines) - Coverage infrastructure guide
+- docs/28-CI-CD-GUIDE.md (866 lines) - Coverage infrastructure guide
 
 ---
 
@@ -513,7 +513,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - TCP parser, UDP parser, IPv6 parser, ICMPv6 parser, TLS parser
 
 #### Documentation
-- docs/29-FUZZING-GUIDE.md (784 lines) - Complete fuzzing guide
+- docs/29-FUZZ-TESTING-GUIDE.md (784 lines) - Complete fuzzing guide
 
 #### Quality
 - Zero crashes found (production-ready parsers)
@@ -561,8 +561,8 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 ### Sprint 5.10: Documentation Polish (Completion, Nov 2025)
 #### Added
 - docs/32-USER-GUIDE.md (1,180 lines) - Comprehensive user guide
-- docs/33-TUTORIALS.md (760 lines) - 7+ interactive tutorials
-- docs/34-EXAMPLES.md (680 lines) - 39 real-world examples
+- docs/34-EXAMPLES-GALLERY.md (760 lines) - 7+ interactive tutorials
+- docs/34-EXAMPLES-GALLERY.md (680 lines) - 39 real-world examples
 - API reference with rustdoc + mdBook integration
 - Fixed 40 rustdoc warnings
 
@@ -798,11 +798,11 @@ Phase 6: TUI Interface (Q2 2026)
   - Parse time: 1.33μs
   - SNI support documented
   - Examples current
-- [ ] docs/28-CI-CD-COVERAGE.md (866 lines)
+- [ ] docs/28-CI-CD-GUIDE.md (866 lines)
   - Coverage: 54.92%
   - CI/CD workflows current
   - Codecov integration documented
-- [ ] docs/29-FUZZING-GUIDE.md (784 lines)
+- [ ] docs/29-FUZZ-TESTING-GUIDE.md (784 lines)
   - Execution count: 230M+
   - Crash count: 0
   - Fuzz targets: 5
@@ -821,11 +821,11 @@ Phase 6: TUI Interface (Q2 2026)
   - Installation current
   - Examples tested
   - FAQ current
-- [ ] docs/33-TUTORIALS.md (760 lines)
+- [ ] docs/34-EXAMPLES-GALLERY.md (760 lines)
   - Tutorial count: 7+
   - Examples tested
   - Steps accurate
-- [ ] docs/34-EXAMPLES.md (680 lines)
+- [ ] docs/34-EXAMPLES-GALLERY.md (680 lines)
   - Example count: 39
   - Commands copy-paste ready
   - All examples tested
@@ -1008,8 +1008,8 @@ Commit all changes, create release tag, and publish v0.5.0 to GitHub with compre
 **If Not Committed:**
 - [ ] Stage Sprint 5.10 files
   - docs/32-USER-GUIDE.md
-  - docs/33-TUTORIALS.md
-  - docs/34-EXAMPLES.md
+  - docs/34-EXAMPLES-GALLERY.md
+  - docs/34-EXAMPLES-GALLERY.md
   - Any other Sprint 5.10 deliverables
 - [ ] Create commit
   ```bash
@@ -1018,8 +1018,8 @@ Commit all changes, create release tag, and publish v0.5.0 to GitHub with compre
 
   Comprehensive documentation overhaul completing Phase 5:
   - User Guide (docs/32-USER-GUIDE.md, 1,180 lines)
-  - Tutorials (docs/33-TUTORIALS.md, 760 lines)
-  - Examples Gallery (docs/34-EXAMPLES.md, 680 lines, 39 examples)
+  - Tutorials (docs/34-EXAMPLES-GALLERY.md, 760 lines)
+  - Examples Gallery (docs/34-EXAMPLES-GALLERY.md, 680 lines, 39 examples)
   - API reference setup (rustdoc + mdBook)
   - Fixed 40 rustdoc warnings
 
@@ -2003,13 +2003,13 @@ Complete Phase 5 (Advanced Features) milestone with 10 sprints:
 - 37% → 54.92% (+17.66pp)
 - +149 tests
 - CI/CD automation (Codecov integration)
-- docs/28-CI-CD-COVERAGE.md (866 lines)
+- docs/28-CI-CD-GUIDE.md (866 lines)
 
 **Sprint 5.7: Fuzz Testing (7.5h)**
 - 230M+ executions, 0 crashes
 - 5 fuzz targets, 807 seeds
 - cargo-fuzz integration
-- docs/29-FUZZING-GUIDE.md (784 lines)
+- docs/29-FUZZ-TESTING-GUIDE.md (784 lines)
 
 **Sprint 5.8: Plugin System (3h)**
 - Lua 5.4 scripting
@@ -2026,8 +2026,8 @@ Complete Phase 5 (Advanced Features) milestone with 10 sprints:
 
 **Sprint 5.10: Documentation Polish (completion)**
 - docs/32-USER-GUIDE.md (1,180 lines)
-- docs/33-TUTORIALS.md (760 lines)
-- docs/34-EXAMPLES.md (680 lines, 39 examples)
+- docs/34-EXAMPLES-GALLERY.md (760 lines)
+- docs/34-EXAMPLES-GALLERY.md (680 lines, 39 examples)
 - API reference (rustdoc + mdBook)
 - 200+ page equivalent documentation
 
@@ -2158,14 +2158,14 @@ system with sandboxing).
 - +149 new tests across all modules
 - CI/CD automation with Codecov integration
 - Zero bugs introduced during coverage sprint
-- Complete: docs/28-CI-CD-COVERAGE.md (866 lines)
+- Complete: docs/28-CI-CD-GUIDE.md (866 lines)
 
 **Fuzz Testing Infrastructure (Sprint 5.7)**
 - 230M+ executions with 0 crashes (production-ready validation)
 - 5 fuzz targets: TCP, UDP, IPv6, ICMPv6, TLS parsers
 - Structure-aware fuzzing with arbitrary crate
 - 807 seed corpus files for comprehensive coverage
-- Complete: docs/29-FUZZING-GUIDE.md (784 lines)
+- Complete: docs/29-FUZZ-TESTING-GUIDE.md (784 lines)
 
 **Plugin System Foundation (Sprint 5.8)**
 - Lua 5.4 scripting integration (mlua 0.11, thread-safe)
@@ -2185,8 +2185,8 @@ system with sandboxing).
 
 **Documentation Polish (Sprint 5.10)**
 - docs/32-USER-GUIDE.md (1,180 lines) - Comprehensive user guide
-- docs/33-TUTORIALS.md (760 lines) - 7+ interactive tutorials
-- docs/34-EXAMPLES.md (680 lines) - 39 real-world examples
+- docs/34-EXAMPLES-GALLERY.md (760 lines) - 7+ interactive tutorials
+- docs/34-EXAMPLES-GALLERY.md (680 lines) - 39 real-world examples
 - API reference with rustdoc + mdBook integration
 - Fixed 40 rustdoc warnings, zero broken links
 - 200+ page equivalent documentation
@@ -2421,13 +2421,13 @@ prtip -sV -6 2001:db8::1 -p 80,443
 - **Coverage improvement:** 37% → 54.92% (+17.66pp)
 - **Test growth:** +149 new tests
 - **CI/CD automation:** Codecov integration, 50% threshold
-- **Documentation:** [docs/28-CI-CD-COVERAGE.md](docs/28-CI-CD-COVERAGE.md) (866 lines)
+- **Documentation:** [docs/28-CI-CD-GUIDE.md](docs/28-CI-CD-GUIDE.md) (866 lines)
 
 ### Sprint 5.7: Fuzz Testing (7.5h)
 - **Executions:** 230M+ with 0 crashes
 - **Targets:** TCP, UDP, IPv6, ICMPv6, TLS parsers (5 total)
 - **Corpus:** 807 seed files
-- **Documentation:** [docs/29-FUZZING-GUIDE.md](docs/29-FUZZING-GUIDE.md) (784 lines)
+- **Documentation:** [docs/29-FUZZ-TESTING-GUIDE.md](docs/29-FUZZ-TESTING-GUIDE.md) (784 lines)
 
 ### Sprint 5.8: Plugin System (3h)
 - **Lua 5.4:** Thread-safe scripting (mlua 0.11)
@@ -2443,8 +2443,8 @@ prtip -sV -6 2001:db8::1 -p 80,443
 
 ### Sprint 5.10: Documentation Polish (completion)
 - **User Guide:** [docs/32-USER-GUIDE.md](docs/32-USER-GUIDE.md) (1,180 lines)
-- **Tutorials:** [docs/33-TUTORIALS.md](docs/33-TUTORIALS.md) (760 lines, 7+ tutorials)
-- **Examples:** [docs/34-EXAMPLES.md](docs/34-EXAMPLES.md) (680 lines, 39 examples)
+- **Tutorials:** [docs/34-EXAMPLES-GALLERY.md](docs/34-EXAMPLES-GALLERY.md) (760 lines, 7+ tutorials)
+- **Examples:** [docs/34-EXAMPLES-GALLERY.md](docs/34-EXAMPLES-GALLERY.md) (680 lines, 39 examples)
 - **Quality:** 200+ page equivalent, 0 broken links
 
 ---
@@ -2480,8 +2480,8 @@ prtip -sV -6 2001:db8::1 -p 80,443
 
 ### User Guides
 - **[User Guide](docs/32-USER-GUIDE.md)** - Complete guide from installation to advanced usage (1,180 lines)
-- **[Tutorials](docs/33-TUTORIALS.md)** - 7+ interactive walkthroughs (beginner → advanced, 760 lines)
-- **[Examples](docs/34-EXAMPLES.md)** - 39 real-world scenarios with copy-paste commands (680 lines)
+- **[Tutorials](docs/34-EXAMPLES-GALLERY.md)** - 7+ interactive walkthroughs (beginner → advanced, 760 lines)
+- **[Examples](docs/34-EXAMPLES-GALLERY.md)** - 39 real-world scenarios with copy-paste commands (680 lines)
 
 ### Technical Guides
 - **[IPv6 Guide](docs/23-IPv6-GUIDE.md)** - Complete IPv6 support (1,958 lines)
@@ -2489,8 +2489,8 @@ prtip -sV -6 2001:db8::1 -p 80,443
 - **[Idle Scan Guide](docs/25-IDLE-SCAN-GUIDE.md)** - Nmap parity (650 lines)
 - **[Rate Limiting](docs/26-RATE-LIMITING-GUIDE.md)** - Industry-leading -1.8% (v2.0.0)
 - **[TLS Certificate](docs/27-TLS-CERTIFICATE-GUIDE.md)** - X.509v3 analysis (2,160 lines)
-- **[Coverage Guide](docs/28-CI-CD-COVERAGE.md)** - CI/CD automation (866 lines)
-- **[Fuzzing Guide](docs/29-FUZZING-GUIDE.md)** - 230M+ executions (784 lines)
+- **[Coverage Guide](docs/28-CI-CD-GUIDE.md)** - CI/CD automation (866 lines)
+- **[Fuzzing Guide](docs/29-FUZZ-TESTING-GUIDE.md)** - 230M+ executions (784 lines)
 - **[Plugin System](docs/30-PLUGIN-SYSTEM-GUIDE.md)** - Lua scripting (784 lines)
 - **[Benchmarking](docs/31-BENCHMARKING-GUIDE.md)** - Regression detection (1,044 lines)
 

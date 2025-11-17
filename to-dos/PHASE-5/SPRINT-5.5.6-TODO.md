@@ -2160,15 +2160,15 @@ Track progress in `/tmp/ProRT-IP/SPRINT-5.5.6-PROGRESS.md`:
 
 ### External Tools
 
-- **once_cell:** https://crates.io/crates/once_cell (lazy static initialization)
-- **regex:** https://crates.io/crates/regex (regular expressions)
+- **once_cell:** https://docs.rs/once_cell/latest/once_cell/ (lazy static initialization)
+- **regex:** https://docs.rs/regex/latest/regex/ (regular expressions)
 - **hyperfine:** https://github.com/sharkdp/hyperfine (benchmarking)
 
 ### Optimization Guides
 
 - Rust Performance Book: https://nnethercote.github.io/perf-book/
 - SIMD in Rust: https://rust-lang.github.io/packed_simd/packed_simd_2/
-- Buffer Pooling Patterns: https://without.boats/blog/async-std/
+- Buffer Pooling Patterns: https://without.boats/blog/
 - Rayon (Parallelism): https://github.com/rayon-rs/rayon
 
 ---

@@ -12,7 +12,7 @@ use std::path::PathBuf;
 ///
 /// A high-performance network scanner written in Rust, combining the speed
 /// of Masscan with the depth of Nmap.
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 #[command(
     name = "prtip",
     version,

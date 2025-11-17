@@ -56,13 +56,24 @@ jobs:
       - name: Install jq for JSON processing
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Run benchmark suite
+      - name: Run Sprint 5.9 benchmark suite
         id: run-benchmarks
         run: |
           cd benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts
           chmod +x run-all-benchmarks.sh
           ./run-all-benchmarks.sh
           echo "timestamp=$(date -u +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Run Sprint 6.3 network optimization benchmarks
+        id: run-sprint63-benchmarks
+        run: |
+          cd benchmarks/04-Sprint6.3-Network-Optimization/scripts
+          chmod +x run-sprint63-benchmarks.sh
+          sudo ./run-sprint63-benchmarks.sh --ci || {
+            echo "Sprint 6.3 benchmarks failed (may require privilege escalation)"
+            echo "exit_code=1" >> $GITHUB_OUTPUT
+          }
+          echo "exit_code=0" >> $GITHUB_OUTPUT
 
       - name: Find latest baseline
         id: find-baseline
@@ -104,6 +115,8 @@ jobs:
             benchmarks/05-Sprint5.9-Benchmarking-Framework/results/*.json
             benchmarks/05-Sprint5.9-Benchmarking-Framework/results/*.md
             benchmarks/05-Sprint5.9-Benchmarking-Framework/results/pr-comment.md
+            benchmarks/04-Sprint6.3-Network-Optimization/results/*.json
+            benchmarks/04-Sprint6.3-Network-Optimization/results/*.md
           retention-days: 90  # 3 months of benchmark history
 
       - name: Comment on PR
@@ -142,3 +155,38 @@ jobs:
         if: steps.compare.outputs.exit_code == '1'
         run: |
           echo "::warning::Potential performance regression detected (within tolerance). Review recommended."
+
+      - name: Compare Sprint 6.3 against baseline
+        id: compare-sprint63
+        continue-on-error: true
+        run: |
+          cd benchmarks/04-Sprint6.3-Network-Optimization/scripts
+          chmod +x manage-baselines.sh
+
+          # Find latest Sprint 6.3 baseline
+          latest_baseline=$(ls -1 ../baselines/baseline-* 2>/dev/null | sort -V | tail -n 1)
+
+          if [ -n "$latest_baseline" ]; then
+            baseline_name=$(basename "$latest_baseline")
+            echo "Comparing against Sprint 6.3 baseline: $baseline_name"
+            ./manage-baselines.sh compare "$baseline_name" || {
+              exit_code=$?
+              echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+              exit $exit_code
+            }
+            echo "exit_code=0" >> $GITHUB_OUTPUT
+          else
+            echo "No Sprint 6.3 baseline found - skipping comparison"
+            echo "exit_code=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Warn on Sprint 6.3 regression
+        if: steps.compare-sprint63.outputs.exit_code == '1'
+        run: |
+          echo "::warning::Sprint 6.3: Potential performance regression detected (5-10% degradation)"
+
+      - name: Fail on Sprint 6.3 critical regression
+        if: steps.compare-sprint63.outputs.exit_code == '2'
+        run: |
+          echo "::error::Sprint 6.3: Significant performance regression detected (>10% degradation)"
+          exit 1

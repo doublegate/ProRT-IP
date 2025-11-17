@@ -1194,4 +1194,4 @@ Both tools leverage Rust's memory safety and zero-cost abstractions, making them
 - [ProRT-IP vs Naabu](./naabu.md) - Comparison with Project Discovery scanner
 - [Scanner Comparison Overview](./overview.md) - All scanner comparisons in one place
 - [CLI Reference](../../user-guide/cli-reference.md) - Complete ProRT-IP command-line reference
-- [Performance Characteristics](../../../../34-PERFORMANCE-CHARACTERISTICS.md) - Detailed benchmark data
+- [Performance Characteristics](../../../34-PERFORMANCE-CHARACTERISTICS.md) - Detailed benchmark data

@@ -437,6 +437,6 @@ Each comparison includes:
 
 - [Technical Specification](../tech-spec-v2.md) - ProRT-IP architecture deep-dive
 - [FAQ](../faq.md) - Common questions about scanner comparisons
-- [Performance Characteristics](../../../../34-PERFORMANCE-CHARACTERISTICS.md) - Detailed benchmarks
+- [Performance Characteristics](../../../34-PERFORMANCE-CHARACTERISTICS.md) - Detailed benchmarks
 - [Installation Guide](../../getting-started/installation.md) - Get started with ProRT-IP
-- [CLI Reference](../../../user-guide/cli-reference.md) - Command-line options
+- [CLI Reference](../../user-guide/cli-reference.md) - Command-line options

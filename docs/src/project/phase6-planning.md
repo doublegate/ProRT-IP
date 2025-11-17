@@ -1384,8 +1384,8 @@ Q2 2026 (Apr-Jun)
 
 - [TUI Architecture Guide](../advanced/tui-architecture.md)
 - [Event System Guide](../features/event-system.md)
-- [Benchmarking Guide](../../../31-BENCHMARKING-GUIDE.md)
-- [Performance Characteristics](../../../34-PERFORMANCE-CHARACTERISTICS.md)
+- [Benchmarking Guide](../../31-BENCHMARKING-GUIDE.md)
+- [Performance Characteristics](../../34-PERFORMANCE-CHARACTERISTICS.md)
 
 ### Sprint Documentation
 

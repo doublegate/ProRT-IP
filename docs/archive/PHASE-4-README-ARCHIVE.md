@@ -19,7 +19,7 @@ This document archives detailed Phase 4 content that was previously in the root-
 
 **For the current README, see:** [`/README.md`](../../README.md)
 
-**For Phase 5 planning, see:** [`docs/v0.5.0-PHASE5-DEVELOPMENT-PLAN.md`](../v0.5.0-PHASE5-DEVELOPMENT-PLAN.md)
+**For Phase 5 planning, see:** [`to-dos/PHASE-5/v0.5.0-PHASE5-DEVELOPMENT-PLAN.md`](../../to-dos/PHASE-5/v0.5.0-PHASE5-DEVELOPMENT-PLAN.md)
 
 **For Phase 5 sprints, see:** `to-dos/SPRINT-5.*-PLAN.md`
 
@@ -663,7 +663,7 @@ Benchmarked 2025-10-28 on localhost (CachyOS Linux, i9-10850K):
 **Related Documents:**
 - [README.md](../../README.md) - Current state (v0.4.3, Phase 5)
 - [CHANGELOG.md](../../CHANGELOG.md) - Version history
-- [docs/v0.5.0-PHASE5-DEVELOPMENT-PLAN.md](../v0.5.0-PHASE5-DEVELOPMENT-PLAN.md) - Phase 5 planning (180KB, 30K words)
+- [to-dos/PHASE-5/v0.5.0-PHASE5-DEVELOPMENT-PLAN.md](../../to-dos/PHASE-5/v0.5.0-PHASE5-DEVELOPMENT-PLAN.md) - Phase 5 planning (180KB, 30K words)
 - [docs/01-ROADMAP.md](../01-ROADMAP.md) - Complete roadmap
 - [to-dos/SPRINT-5.*-PLAN.md](../../to-dos/) - Phase 5 sprint plans
 

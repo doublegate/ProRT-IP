@@ -689,4 +689,4 @@ prtip --max-rate 5000 [args]
 - [Performance Characteristics](performance-characteristics.md) - Detailed performance metrics and scaling analysis
 - [Benchmarking](benchmarking.md) - Comprehensive benchmarking guide with scenario library
 - [Performance Tuning](../user-guide/timing-performance.md) - User-facing optimization guide
-- [Architecture](../reference/architecture.md) - System design for performance
+- [Architecture](../development/architecture.md) - System design for performance

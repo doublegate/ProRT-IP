@@ -400,7 +400,7 @@ Research publications on network scanning, performance optimization, and securit
 - **The Matter of Heartbleed**
   Zakir Durumeric, Frank Li, James Kasten, Johanna Amann, Jethro Beekman, Mathias Payer, Nicolas Weaver, David Adrian, Vern Paxson, Michael Bailey, J. Alex Halderman
   ACM IMC, 2014
-  [PDF](<!-- PDF link unavailable -->)
+  (PDF link unavailable)
   Internet-wide scanning to measure Heartbleed vulnerability exposure.
 
 ### IPv6 Security
@@ -414,7 +414,7 @@ Research publications on network scanning, performance optimization, and securit
 - **IPv6 Security: Attacks and Countermeasures in a Nutshell**
   Johanna Ullrich, Edgar Weippl
   USENIX ;login:, 2014
-  [PDF](<!-- PDF link unavailable -->)
+  (PDF link unavailable)
   IPv6-specific attack vectors (ICMPv6, NDP, Router Advertisements).
 
 ### Performance Optimization
@@ -428,7 +428,7 @@ Research publications on network scanning, performance optimization, and securit
 - **Fast and Memory-Efficient Network Scanning using Masscan**
   Robert Graham
   DEF CON 22, 2014
-  [Slides](<!-- PDF link unavailable -->)
+  (Slides unavailable)
   Masscan's transmission scheduler and asynchronous I/O design.
 
 ### Rust Async Performance

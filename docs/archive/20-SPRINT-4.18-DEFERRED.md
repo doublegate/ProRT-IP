@@ -2447,7 +2447,7 @@ async fn test_query_performance() {
 1. Use mature `pcap-file` crate (abstracts complexity)
 2. Start with minimal implementation (SHB + IDB + EPB only)
 3. Test with Wireshark early (catch compatibility issues)
-4. Reference PCAPNG spec: https://pcapng.github.io/pcapng/
+4. Reference PCAPNG spec: https://pcapng.com/
 
 **Fallback:** If pcap-file has issues, switch to legacy PCAP format (simpler, less metadata)
 

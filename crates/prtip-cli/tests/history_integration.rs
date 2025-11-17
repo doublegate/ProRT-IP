@@ -106,7 +106,7 @@ fn test_persistence_across_manager_instances() {
 
     // Create first manager and add entries
     {
-        let mut manager = HistoryManager::new().unwrap();
+        let mut manager = HistoryManager::new(true).unwrap();
 
         manager
             .add_entry(
@@ -137,7 +137,7 @@ fn test_persistence_across_manager_instances() {
 
     // Create second manager and verify entries persisted
     {
-        let manager = HistoryManager::new().unwrap();
+        let manager = HistoryManager::new(true).unwrap();
 
         assert_eq!(manager.len(), 2);
         let entries = manager.list_entries();

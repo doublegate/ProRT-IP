@@ -619,6 +619,15 @@ pub struct Args {
     #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
     pub stats_file: Option<PathBuf>,
 
+    /// Save command history to ~/.prtip/history.json (opt-in)
+    ///
+    /// When enabled, saves executed commands with timestamps and result summaries
+    /// to ~/.prtip/history.json for replay and auditing purposes.
+    ///
+    /// Example: prtip --save-history -sS -p 80,443 192.168.1.1
+    #[arg(long, help_heading = "OUTPUT")]
+    pub save_history: bool,
+
     /// Capture raw service responses for debugging (increases memory usage)
     ///
     /// Stores the raw bytes returned by services when probed. Useful for diagnosing
@@ -1220,6 +1229,16 @@ pub struct Args {
     /// Example: prtip -sS -p 1-65535 --live-results 192.168.1.1
     #[arg(long, help_heading = "OUTPUT")]
     pub live_results: bool,
+
+    /// Launch interactive TUI (Text User Interface) dashboard
+    ///
+    /// Displays a real-time dashboard with scan progress, discovered ports/services,
+    /// performance metrics, and network statistics. Provides an interactive view
+    /// of ongoing scans with 60 FPS updates.
+    ///
+    /// Example: prtip --tui -sS -p 1-10000 192.168.1.0/24
+    #[arg(long, help_heading = "OUTPUT")]
+    pub tui: bool,
 }
 
 /// IP Version selection for scanning

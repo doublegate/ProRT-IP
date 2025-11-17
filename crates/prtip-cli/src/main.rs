@@ -375,17 +375,46 @@ async fn run() -> Result<()> {
     // Calculate total ports for progress display
     let total_ports = targets.len() * ports.count();
 
-    // Initialize ProgressDisplay (event-driven)
-    let progress_display = if let Some(ref bus) = event_bus {
-        // Determine display style (compact by default, can be extended later)
-        let style = ProgressStyle::Compact;
-        let display = ProgressDisplay::new(bus.clone(), style, args.quiet);
+    // Launch TUI if requested
+    if args.tui {
+        if let Some(ref bus) = event_bus {
+            info!("Launching TUI dashboard");
+            let mut tui_app = prtip_tui::App::new(bus.clone());
 
-        // Start the display task
-        let _display_task = display.start().await;
+            // Spawn TUI in a separate task
+            let _tui_handle = tokio::spawn(async move {
+                if let Err(e) = tui_app.run().await {
+                    eprintln!("TUI error: {}", e);
+                }
+            });
 
-        info!("Progress display initialized ({} total ports)", total_ports);
-        Some(display)
+            // Continue with scan execution...
+            // The TUI will automatically update via EventBus
+            info!("TUI dashboard launched");
+
+            // Store handle (will be joined at the end of scan)
+            // For now, we'll just continue - TUI runs independently
+        } else {
+            warn!("TUI requires event tracking (cannot use with --quiet mode)");
+            bail!("Cannot use --tui flag in quiet mode. Remove --quiet or remove --tui.");
+        }
+    }
+
+    // Initialize ProgressDisplay (event-driven) - skip if TUI is active
+    let progress_display = if !args.tui {
+        if let Some(ref bus) = event_bus {
+            // Determine display style (compact by default, can be extended later)
+            let style = ProgressStyle::Compact;
+            let display = ProgressDisplay::new(bus.clone(), style, args.quiet);
+
+            // Start the display task
+            let _display_task = display.start().await;
+
+            info!("Progress display initialized ({} total ports)", total_ports);
+            Some(display)
+        } else {
+            None
+        }
     } else {
         None
     };
@@ -592,8 +621,8 @@ async fn run() -> Result<()> {
     // Print summary with scan statistics
     print_summary(&results, scan_duration);
 
-    // Record command in history
-    record_scan_history(&argv, &results, scan_duration, 0)?;
+    // Record command in history (if enabled via --save-history flag)
+    record_scan_history(&argv, &results, scan_duration, 0, args.save_history)?;
 
     Ok(())
 }
@@ -893,7 +922,8 @@ fn handle_interface_list() -> Result<()> {
 
 /// Handle history subcommand
 async fn handle_history_command(args: &[String]) -> Result<()> {
-    let manager = HistoryManager::new()?;
+    // Always enable history for history commands
+    let manager = HistoryManager::new(true)?;
 
     // Parse arguments
     if args.is_empty() {
@@ -998,7 +1028,8 @@ async fn handle_history_command(args: &[String]) -> Result<()> {
 
 /// Handle replay subcommand
 async fn handle_replay_command(args: &[String]) -> Result<()> {
-    let manager = HistoryManager::new()?;
+    // Always enable history for replay commands
+    let manager = HistoryManager::new(true)?;
 
     if manager.is_empty() {
         bail!(
@@ -1102,11 +1133,17 @@ fn record_scan_history(
     results: &[prtip_core::ScanResult],
     duration: std::time::Duration,
     exit_code: i32,
+    save_history: bool,
 ) -> Result<()> {
     use std::collections::HashSet;
 
     // Skip recording if this is a replay (would create duplicate entries)
     if std::env::var("PRTIP_REPLAY_ARGS").is_ok() {
+        return Ok(());
+    }
+
+    // Skip if history saving is disabled
+    if !save_history {
         return Ok(());
     }
 
@@ -1136,11 +1173,9 @@ fn record_scan_history(
         duration_str
     );
 
-    // Add to history (skip if running in test mode)
-    if std::env::var("PRTIP_DISABLE_HISTORY").is_err() {
-        let mut manager = HistoryManager::new()?;
-        manager.add_entry(argv.to_vec(), summary, exit_code)?;
-    }
+    // Add to history
+    let mut manager = HistoryManager::new(true)?;
+    manager.add_entry(argv.to_vec(), summary, exit_code)?;
 
     Ok(())
 }

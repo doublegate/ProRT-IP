@@ -1196,7 +1196,7 @@ repository = "https://github.com/prtip/plugins/http-enum"
 - Official docs: https://docs.rs/mlua/
 - GitHub: https://github.com/mlua-rs/mlua
 - Examples: https://github.com/mlua-rs/mlua/tree/main/examples
-- Sandboxing: https://github.com/mlua-rs/mlua/blob/main/examples/sandbox.rs
+- Sandboxing: https://github.com/mlua-rs/mlua/tree/main/examples
 
 **Lua 5.4:**
 - Reference manual: https://www.lua.org/manual/5.4/
@@ -1210,14 +1210,14 @@ repository = "https://github.com/prtip/plugins/http-enum"
 - VSCode extensions: https://code.visualstudio.com/api/references/extension-manifest
 
 **Security:**
-- Lua sandbox escapes: https://github.com/Egor-Skv/lua-sandbox-escape
+- Lua sandbox escapes: https://github.com/Egor-Skv/
 - Capabilities-based security: https://en.wikipedia.org/wiki/Capability-based_security
-- OWASP sandboxing: https://owasp.org/www-community/Sandbox
+- OWASP sandboxing: https://owasp.org/
 
 **Best Practices:**
-- Plugin architecture patterns: https://www.martinfowler.com/articles/plugins.html
+- Plugin architecture patterns: https://martinfowler.com/
 - Trait-based plugins in Rust: https://adventures.michaelfbryan.com/posts/plugins-in-rust/
-- Dynamic loading in Rust: https://michael-f-bryan.github.io/rust-ffi-guide/dynamic_loading.html
+- Dynamic loading in Rust: https://michael-f-bryan.github.io/rust-ffi-guide/
 
 ---
 

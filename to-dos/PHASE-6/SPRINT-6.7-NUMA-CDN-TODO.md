@@ -608,7 +608,7 @@ hyperfine --warmup 3 \
 ## Resources
 
 ### Documentation
-- **NUMA:** https://www.kernel.org/doc/html/latest/vm/numa.html
+- **NUMA:** https://www.kernel.org/doc/html/latest/
 - **hwlocality:** https://docs.rs/hwlocality/
 - **CDN Detection Techniques:** Research papers on CDN fingerprinting
 

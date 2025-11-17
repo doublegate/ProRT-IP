@@ -238,7 +238,7 @@ A comprehensive example gallery serves dual purposes: user education AND integra
    - **Acceptance:** 100% Phase 5 feature coverage, <30s discoverability
 
 4. **Tutorial Enhancement** (3-4h)
-   - [ ] Review `docs/33-TUTORIALS.md` (760 lines from Sprint 5.10)
+   - [ ] Review `docs/34-EXAMPLES-GALLERY.md` (760 lines from Sprint 5.10)
    - [ ] Expand beginner → intermediate → advanced flow:
      - **Beginner** (0-2h experience):
        - [ ] First scan (single host, common ports)

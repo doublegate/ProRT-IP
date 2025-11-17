@@ -441,7 +441,7 @@
 ### Fuzzing Guide (1h)
 
 - [ ] **Task 6.1.1:** Create comprehensive fuzzing guide (60m)
-  - File: `docs/29-FUZZING-GUIDE.md`
+  - File: `docs/29-FUZZ-TESTING-GUIDE.md`
   - Section 1: Fuzzing overview (why, how, when) (~50 lines)
   - Section 2: ProRT-IP fuzzing infrastructure (~80 lines)
   - Section 3: Running fuzzers locally (~100 lines)
@@ -472,11 +472,11 @@
 
 - [ ] **Task 6.2.3:** Update docs/06-TESTING.md (5m)
   - Section 6: Add fuzzing reference
-  - Link: Point to docs/29-FUZZING-GUIDE.md
+  - Link: Point to docs/29-FUZZ-TESTING-GUIDE.md
   - Deliverable: ~10 lines
 
 **Deliverables:**
-- [ ] `docs/29-FUZZING-GUIDE.md` (NEW, ~400 lines)
+- [ ] `docs/29-FUZZ-TESTING-GUIDE.md` (NEW, ~400 lines)
 - [ ] `CHANGELOG.md` (+40 lines)
 - [ ] `README.md` (+5 lines)
 - [ ] `docs/06-TESTING.md` (+10 lines)
@@ -532,7 +532,7 @@
 ### Documentation Requirements
 
 **Comprehensive Guides:**
-- [ ] Fuzzing guide complete (docs/29-FUZZING-GUIDE.md, ~400 lines)
+- [ ] Fuzzing guide complete (docs/29-FUZZ-TESTING-GUIDE.md, ~400 lines)
 - [ ] Crash reproduction documented (fuzz/CRASH-REPRODUCTION.md, ~150 lines)
 - [ ] Corpus management documented (fuzz/corpus/README.md, ~100 lines)
 
@@ -574,7 +574,7 @@
 ### Documentation Deliverables
 
 **New Documentation:**
-1. `docs/29-FUZZING-GUIDE.md` (NEW, ~400 lines)
+1. `docs/29-FUZZ-TESTING-GUIDE.md` (NEW, ~400 lines)
 2. `fuzz/corpus/README.md` (NEW, ~100 lines)
 3. `fuzz/CRASH-REPRODUCTION.md` (NEW, ~150 lines)
 4. `fuzz/CRASH-REPORT-TEMPLATE.md` (NEW, ~50 lines)
@@ -614,7 +614,7 @@
 8. `.github/workflows/fuzz.yml` (~120 lines)
 
 **Documentation (6 files):**
-9. `docs/29-FUZZING-GUIDE.md` (~400 lines)
+9. `docs/29-FUZZ-TESTING-GUIDE.md` (~400 lines)
 10. `fuzz/corpus/README.md` (~100 lines)
 11. `fuzz/CRASH-REPRODUCTION.md` (~150 lines)
 12. `fuzz/CRASH-REPORT-TEMPLATE.md` (~50 lines)
@@ -876,7 +876,7 @@ cargo +nightly fuzz run ${{ matrix.target }} \
 
 **cargo-fuzz Documentation:**
 - Official docs: https://rust-fuzz.github.io/book/cargo-fuzz.html
-- Cargo: https://crates.io/crates/cargo-fuzz
+- Cargo: https://rust-fuzz.github.io/book/cargo-fuzz.html
 - GitHub: https://github.com/rust-fuzz/cargo-fuzz
 
 **libFuzzer:**
@@ -886,7 +886,7 @@ cargo +nightly fuzz run ${{ matrix.target }} \
 **Arbitrary Crate:**
 - Docs: https://docs.rs/arbitrary/
 - GitHub: https://github.com/rust-fuzz/arbitrary
-- Custom derives: https://rust-fuzz.github.io/book/arbitrary.html
+- Custom derives: https://rust-fuzz.github.io/book/
 
 **Best Practices:**
 - Google fuzzing guide: https://github.com/google/fuzzing

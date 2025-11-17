@@ -11,9 +11,9 @@
 
 1. [Project Overview](#project-overview)
 2. [Current Status](#current-status)
-3. [Phase 1 Tasks](#phase-1-tasks-core-infrastructure)
-4. [Phase 2 Tasks](#phase-2-tasks-advanced-scanning)
-5. [Phase 3 Tasks](#phase-3-tasks-detection-systems)
+3. Phase 1 Tasks
+4. Phase 2 Tasks
+5. Phase 3 Tasks
 6. [Phase 4 Tasks](#phase-4-tasks-performance-optimization)
 7. [Phase 5 Tasks](#phase-5-tasks-advanced-features)
 8. [Phase 6 Tasks](#phase-6-tasks-tui-interface)
@@ -27,7 +27,7 @@
 ## Project Overview
 
 **Project Name:** ProRT-IP WarScan
-**Repository:** <https://github.com/YOUR_ORG/prtip-warscan> (TBD)
+**Repository:** <https://github.com/doublegate/ProRT-IP> (TBD)
 **License:** GPLv3
 **Language:** Rust 1.70+
 **Target Platforms:** Linux, Windows, macOS
@@ -1223,7 +1223,7 @@ All Phase 4 and Phase 5 (Sprint 5.1-5.4) issues have been resolved. CI is 7/7 pa
 
 For future issue tracking and bug reports, see:
 - **GitHub Issues**: https://github.com/doublegate/ProRT-IP/issues
-- **Security Issues**: security@proRT-IP.io (private disclosure)
+- **Security Issues**: [GitHub Security Advisories](https://github.com/doublegate/ProRT-IP/security/advisories) (private disclosure)
 - **Bug Report Command**: `/bug-report` (custom command)
 
 ---

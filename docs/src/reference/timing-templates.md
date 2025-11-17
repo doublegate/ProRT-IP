@@ -1646,7 +1646,7 @@ sudo prtip -T2 -p 1-10000 production-server.internal
 - **[Command Reference](./command-reference.md)** - Complete CLI flag reference
   - Section: Timing and Performance Flags (`-T`, `--min-rtt`, `--max-rtt`, etc.)
 
-- **[Performance Guide](../advanced/performance.md)** - Performance tuning and optimization
+- **[Performance Guide](../advanced/performance-analysis.md)** - Performance tuning and optimization
   - Section: Scan Rate Optimization
   - Section: Network Bottleneck Analysis
   - Section: Benchmarking Methodology

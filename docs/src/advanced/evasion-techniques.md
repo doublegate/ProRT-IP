@@ -2094,8 +2094,8 @@ prtip -sS -D RND:3 -T2 -p 1-1000 TARGET
 
 **Feature Guides:**
 - [Stealth Scanning](../features/stealth-scanning.md) - User-facing introduction to evasion techniques
-- [Port Scanning](../features/port-scanning.md) - Port specification and scan strategies
-- [Idle Scan](../features/idle-scanning.md) - Complete source IP anonymity via zombie hosts
+- [Port Scanning](../features/index.md) - Port specification and scan strategies
+- [Idle Scan](../features/idle-scan.md) - Complete source IP anonymity via zombie hosts
 - [Service Detection](../features/service-detection.md) - Combining evasion with service fingerprinting
 
 **Advanced Topics:**

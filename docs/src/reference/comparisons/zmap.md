@@ -760,6 +760,6 @@ nmap -sS -sV -sC --script vuln -iL interesting-hosts.txt -oX vuln-scan.xml
 - [ProRT-IP vs Nmap](nmap.md) - Comparison with the gold standard scanner
 - [ProRT-IP vs Masscan](masscan.md) - Comparison with the Internet-scale speed champion
 - [Technical Specification](../tech-spec-v2.md) - ProRT-IP architecture details
-- [Performance Characteristics](../../advanced/performance-characteristics.md) - Benchmarks and analysis
+- [Performance Characteristics](../../../../34-PERFORMANCE-CHARACTERISTICS.md) - Benchmarks and analysis
 - [ZMap Project](https://zmap.io/) - Official ZMap documentation
 - [Censys](https://search.censys.io/) - Public Internet search powered by ZMap infrastructure

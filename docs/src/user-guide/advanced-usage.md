@@ -553,7 +553,7 @@ prtip -sS -sV -p 80 127.0.0.1 --plugin my-detector
 
 > **See Also:**
 > - [Plugin System Guide](../features/plugin-system.md)
-> - [Plugin API Reference](../reference/plugin-api.md)
+> - [Plugin API Reference](../features/plugin-system.md)
 
 ---
 
@@ -738,7 +738,7 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 - User + System << mean (I/O-bound or waiting)
 
 > **See Also:**
-> - [Benchmarking Guide](../advanced/benchmarking.md)
+> - [Benchmarking Guide](../../../31-BENCHMARKING-GUIDE.md)
 > - [Performance Analysis](../advanced/performance-tuning.md)
 
 ---
@@ -1045,8 +1045,8 @@ prtip -sS -p 1-65535 192.168.1.0/24 --batch-size 10000
 - [Examples](../getting-started/examples.md) - 65 runnable examples
 
 **Get Help:**
-- [Troubleshooting](../appendices/troubleshooting.md)
-- [FAQ](../appendices/faq.md)
+- [Troubleshooting](../reference/troubleshooting.md)
+- [FAQ](../reference/faq.md)
 - [Community Discussions](https://github.com/doublegate/ProRT-IP/discussions)
 
 **Contribute:**

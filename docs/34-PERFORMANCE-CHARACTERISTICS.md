@@ -987,8 +987,8 @@ Duration (sec) = (Hosts × Ports) / Throughput_pps
 
 - [Benchmarking Guide](31-BENCHMARKING-GUIDE.md) - Framework usage
 - [Architecture](00-ARCHITECTURE.md) - System design
-- [Rate Limiting](26-RATE-LIMITING.md) - V3 algorithm details
-- [IPv6 Guide](23-IPV6-GUIDE.md) - IPv6 implementation
+- [Rate Limiting](26-RATE-LIMITING-GUIDE.md) - V3 algorithm details
+- [IPv6 Guide](23-IPv6-GUIDE.md) - IPv6 implementation
 - [Service Detection](24-SERVICE-DETECTION-GUIDE.md) - Probe matching
 
 ### Sprint References

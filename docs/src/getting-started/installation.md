@@ -248,7 +248,7 @@ brew install --cask wireshark
 ### Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_ORG/prtip-warscan.git
+git clone https://github.com/doublegate/ProRT-IP.git
 cd prtip-warscan
 ```
 
@@ -827,7 +827,7 @@ After completing setup:
 3. Review [Architecture Overview](../development/architecture.md)
 4. Check [Technical Specifications](../development/technical-specs.md) for implementation details
 5. Begin development following [Roadmap](../project/roadmap.md)
-6. Review [CI/CD Workflows](.github/workflows/README.md) for automation details
+6. Review [CI/CD Workflows](<!-- .github/workflows/README.md (not yet created) -->) for automation details
 
 ---
 
@@ -836,5 +836,5 @@ After completing setup:
 - **Documentation:** See `docs/` directory
 - **Issues:** GitHub Issues for bug reports
 - **Discussions:** GitHub Discussions for questions
-- **CI/CD:** `.github/workflows/README.md` for workflow documentation
+- **CI/CD:** `<!-- .github/workflows/README.md (not yet created) -->` for workflow documentation
 - **Chat:** Join project Discord/Matrix (TBD)

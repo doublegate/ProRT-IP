@@ -586,15 +586,15 @@ Now that you've completed your first scans:
 - [User Guide](../user-guide/basic-usage.md) - Comprehensive usage guide
 - [Feature Guides](../features/) - Deep dives into specific features
 - [Advanced Topics](../advanced/) - Performance and optimization
-- [FAQ](../appendices/faq.md) - Frequently asked questions
+- [FAQ](../reference/faq.md) - Frequently asked questions
 
 **Community:**
 - GitHub Issues: [https://github.com/doublegate/ProRT-IP/issues](https://github.com/doublegate/ProRT-IP/issues)
 - Discussions: [https://github.com/doublegate/ProRT-IP/discussions](https://github.com/doublegate/ProRT-IP/discussions)
 
 **Support:**
-- [Troubleshooting Guide](../appendices/troubleshooting.md)
-- [Error Reference](../appendices/error-codes.md)
+- [Troubleshooting Guide](../reference/troubleshooting.md)
+- [Error Reference](../reference/error-codes.md)
 
 ---
 

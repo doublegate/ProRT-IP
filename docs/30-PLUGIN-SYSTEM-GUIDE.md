@@ -645,7 +645,7 @@ Include:
 
 Consider submitting to the ProRT-IP plugin repository:
 ```bash
-git clone https://github.com/doublegate/ProRT-IP-plugins
+git clone https://github.com/doublegate/ProRT-IP/tree/main/examples/plugins
 cd ProRT-IP-plugins
 cp -r ~/.prtip/plugins/my-plugin plugins/
 git add plugins/my-plugin
@@ -1006,7 +1006,7 @@ Want to contribute? Here's how:
 
 1. **Plugin Ideas**: Share at https://github.com/doublegate/ProRT-IP/discussions
 2. **API Requests**: Open feature request with use case
-3. **Plugin Repository**: Submit to https://github.com/doublegate/ProRT-IP-plugins
+3. **Plugin Repository**: Submit to https://github.com/doublegate/ProRT-IP/tree/main/examples/plugins
 4. **Documentation**: Improve this guide via PR
 
 ---

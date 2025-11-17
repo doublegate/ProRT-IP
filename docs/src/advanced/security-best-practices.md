@@ -890,6 +890,6 @@ If you discover a security vulnerability in ProRT-IP:
 ## See Also
 
 - [Testing Strategy](../development/testing.md) - Security testing methodologies
-- [Architecture](../getting-started/architecture.md) - Security boundaries and design
+- [Architecture](../development/architecture.md) - Security boundaries and design
 - [Fuzzing](../development/fuzzing.md) - Comprehensive fuzzing guide
 - [Rate Limiting](../features/rate-limiting.md) - DoS prevention and rate control

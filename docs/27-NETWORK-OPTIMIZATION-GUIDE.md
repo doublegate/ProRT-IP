@@ -10,7 +10,7 @@
 ## Table of Contents
 
 1. [Executive Summary](#1-executive-summary)
-2. [Batch I/O Deep Dive (sendmmsg/recvmmsg)](#2-batch-io-deep-dive-sendmmsgsendmmsg)
+2. [Batch I/O Deep Dive (sendmmsg/recvmmsg)](#batch-io-deep-dive)
 3. [CDN IP Deduplication](#3-cdn-ip-deduplication)
 4. [Adaptive Batch Sizing](#4-adaptive-batch-sizing)
 5. [Zero-Copy Techniques](#5-zero-copy-techniques)
@@ -2029,7 +2029,7 @@ else
 fi
 ```
 
-**CI/CD Integration:** See [Section 7.4: GitHub Actions Benchmarking](#74-github-actions-benchmarking)
+**CI/CD Integration:** See [Section 7.4: GitHub Actions Benchmarking](#github-actions-benchmarking)
 
 ---
 
@@ -2412,7 +2412,7 @@ prtip -sS -p- --batch-size 1024 --numa-node 0 --io-uring <target_list>
 **1. Localhost Benchmarking:**
 - **Problem:** Small target sets (5-10 IPs) don't validate internet-scale claims
 - **Impact:** Performance characteristics differ (localhost vs internet latency)
-- **Mitigation:** Use ≥25K targets for production validation (see [Section 10.2](#102-internet-scale-validation))
+- **Mitigation:** Use ≥25K targets for production validation (see [Section 10.2](#internet-scale-validation))
 
 **2. IPv6 Dual-Stack Overhead:**
 - **Problem:** +117-291% overhead for mixed IPv4/IPv6 scans

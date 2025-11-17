@@ -1225,7 +1225,7 @@ prtip -sS -p 80,443 $(cat dhcpv6-leases.txt)
 - **[Nmap Compatibility](./nmap-compatibility.md)** - IPv6 flag compatibility
 
 **External Resources:**
-- [Nmap IPv6 Documentation](https://nmap.org/book/ipv6.html)
+- [Nmap IPv6 Documentation](https://nmap.org/book/)
 - [IANA IPv6 Address Space](https://www.iana.org/assignments/ipv6-address-space/)
 - [RFC 8200: IPv6 Specification](https://tools.ietf.org/html/rfc8200)
 - [RFC 4861: NDP Protocol](https://tools.ietf.org/html/rfc4861)

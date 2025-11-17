@@ -428,7 +428,7 @@ for target in targets {
 
 **Technical Papers:**
 - **Masscan Throttler:** Robert Graham's algorithm (circular buffer approach, inspiration for V2)
-- **Nmap Hostgroup:** https://nmap.org/book/performance-max-parallelism.html
+- **Nmap Hostgroup:** https://nmap.org/book/man-performance.html
 - **ICMP RFC:** RFC 792 (ICMPv4), RFC 4443 (ICMPv6)
 - **Memory Ordering:** Rust Atomics and Locks (O'Reilly, 2023) - Relaxed ordering semantics
 

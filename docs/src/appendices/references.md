@@ -211,7 +211,7 @@ Network scanning, packet analysis, and security tools referenced by ProRT-IP.
   Author: Robert Graham
   Asynchronous TCP scanner achieving 10M+ pps with custom TCP/IP stack. ProRT-IP targets similar performance.
   - [Masscan Documentation](https://github.com/robertdavidgraham/masscan/blob/master/doc/masscan.8)
-  - [Transmission Scheduler](https://github.com/robertdavidgraham/masscan/blob/master/doc/algorithm.txt)
+  - [Transmission Scheduler](https://github.com/robertdavidgraham/masscan/tree/master/doc)
 
 - **[ZMap](https://zmap.io/)** - Fast Internet Scanner
   Authors: University of Michigan
@@ -222,7 +222,7 @@ Network scanning, packet analysis, and security tools referenced by ProRT-IP.
 - **[RustScan](https://github.com/RustScan/RustScan)** - Modern Port Scanner
   Language: Rust
   Ports Nmap's capabilities to Rust with modern UX (ProRT-IP took inspiration for TUI design).
-  - [RustScan Docs](https://rustscan.github.io/RustScan/)
+  - [RustScan Docs](https://github.com/RustScan/RustScan)
 
 - **[Naabu](https://github.com/projectdiscovery/naabu)** - Fast Port Scanner
   Language: Go
@@ -394,13 +394,13 @@ Research publications on network scanning, performance optimization, and securit
 - **A Search Engine Backed by Internet-Wide Scanning**
   Zakir Durumeric, David Adrian, Ariana Mirian, Michael Bailey, J. Alex Halderman
   ACM CCS, 2015
-  [PDF](https://censys.io/static/censys.pdf)
+  [PDF](https://censys.io/)
   Censys.io research platform for Internet measurements.
 
 - **The Matter of Heartbleed**
   Zakir Durumeric, Frank Li, James Kasten, Johanna Amann, Jethro Beekman, Mathias Payer, Nicolas Weaver, David Adrian, Vern Paxson, Michael Bailey, J. Alex Halderman
   ACM IMC, 2014
-  [PDF](https://www.ieee-security.org/TC/SP2014/papers/TheMatterofHeartbleed.pdf)
+  [PDF](<!-- PDF link unavailable -->)
   Internet-wide scanning to measure Heartbleed vulnerability exposure.
 
 ### IPv6 Security
@@ -414,7 +414,7 @@ Research publications on network scanning, performance optimization, and securit
 - **IPv6 Security: Attacks and Countermeasures in a Nutshell**
   Johanna Ullrich, Edgar Weippl
   USENIX ;login:, 2014
-  [PDF](https://www.usenix.org/system/files/login/articles/login_1410_09_ullrich.pdf)
+  [PDF](<!-- PDF link unavailable -->)
   IPv6-specific attack vectors (ICMPv6, NDP, Router Advertisements).
 
 ### Performance Optimization
@@ -428,7 +428,7 @@ Research publications on network scanning, performance optimization, and securit
 - **Fast and Memory-Efficient Network Scanning using Masscan**
   Robert Graham
   DEF CON 22, 2014
-  [Slides](https://www.defcon.org/images/defcon-22/dc-22-presentations/Graham/DEFCON-22-Graham-Mass-Scanning-the-Internet.pdf)
+  [Slides](<!-- PDF link unavailable -->)
   Masscan's transmission scheduler and asynchronous I/O design.
 
 ### Rust Async Performance
@@ -542,7 +542,7 @@ Libraries and frameworks used by ProRT-IP.
   Version: 0.29+
   Immediate-mode rendering, 60 FPS performance (ProRT-IP TUI framework).
   - [ratatui Docs](https://docs.rs/ratatui/latest/ratatui/)
-  - [ratatui Book](https://ratatui.rs/introduction/)
+  - [ratatui Book](https://ratatui.rs/)
 
 - **[crossterm](https://github.com/crossterm-rs/crossterm)** - Terminal Manipulation
   Version: 0.28+

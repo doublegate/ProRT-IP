@@ -222,7 +222,7 @@ See [SECURITY.md](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md) 
 - GitHub Actions CI/CD workflows (ci.yml, release.yml, dependency-review.yml, codeql.yml)
 - Multi-platform automated release builds (Linux gnu/musl, Windows, macOS)
 - CI/CD badges in README.md
-- Workflow documentation (.github/workflows/README.md)
+- Workflow documentation (<!-- .github/workflows/README.md (not yet created) -->)
 
 #### Fixed
 

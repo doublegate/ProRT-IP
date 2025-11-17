@@ -1013,7 +1013,7 @@ sudo prtip -sI 192.168.1.50 -p 1-1000 --max-parallel 8 TARGET
 - **[Service Detection](./service-detection.md)** - Identify services on open ports (reduces anonymity)
 - **[User Guide: Scan Types](../user-guide/scan-types.md)** - Overview of all scan types
 - **[Advanced Topics: Evasion Techniques](../advanced/evasion-techniques.md)** - IDS/IPS evasion strategies
-- **[Security Guide](../appendices/security.md)** - Security best practices and legal considerations
+- **[Security Guide](../security/overview.md)** - Security best practices and legal considerations
 
 **External Resources:**
 - **Nmap Idle Scan Documentation** - https://nmap.org/book/idlescan.html

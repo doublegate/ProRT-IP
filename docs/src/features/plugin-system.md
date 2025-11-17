@@ -1012,7 +1012,7 @@ prtip -sS -p 80,443,8080 target.com --plugin http-version-detector
 **External Resources:**
 - **Lua 5.4 Manual**: https://www.lua.org/manual/5.4/
 - **mlua Documentation**: https://docs.rs/mlua/latest/mlua/
-- **Plugin Repository**: https://github.com/doublegate/ProRT-IP-plugins
+- **Plugin Repository**: https://github.com/doublegate/ProRT-IP/tree/main/examples/plugins
 
 ---
 

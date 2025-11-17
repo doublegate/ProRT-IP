@@ -1088,8 +1088,8 @@ fi
 - **[Command Reference](./command-reference.md)** - Complete CLI reference with all flags
 - **[Timing Templates](./timing-templates.md)** - Timing options for performance tuning
 - **[Port Specification](./port-specification.md)** - Port syntax and validation rules
-- **[Troubleshooting Guide](../appendices/troubleshooting.md)** - Common issues and solutions
-- **[FAQ](../appendices/faq.md)** - Frequently asked questions
+- **[Troubleshooting Guide](../reference/troubleshooting.md)** - Common issues and solutions
+- **[FAQ](../reference/faq.md)** - Frequently asked questions
 
 **External Resources:**
 - **errno(3) man page** - Unix error codes

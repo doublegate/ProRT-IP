@@ -974,7 +974,7 @@ Contribute code for unimplemented nmap flags:
 - Add unit and integration tests
 - Update documentation
 
-**Example PR:** https://github.com/doublegate/ProRT-IP/pull/XXX
+**Example PR:** <!-- TODO: Add PR link when created -->
 
 #### 4. Write Scripts
 

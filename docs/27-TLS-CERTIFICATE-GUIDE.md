@@ -2113,7 +2113,7 @@ prtip -sS -p 443 -sV subnet.example.com | grep -v "closed\|filtered"
 ### Industry Standards
 
 **PCI DSS:**
-- [PCI DSS v3.2.1 Information Supplement: Migrating from SSL and Early TLS](https://www.pcisecuritystandards.org/documents/Migrating_from_SSL_Early_TLS_Info_Supplement_v1_1.pdf) (Requirement 4.1, TLS 1.2 minimum)
+- [PCI DSS v3.2.1 Information Supplement: Migrating from SSL and Early TLS](https://www.pcisecuritystandards.org/) (Requirement 4.1, TLS 1.2 minimum)
 
 **CA/Browser Forum:**
 - [Baseline Requirements for the Issuance and Management of Publicly-Trusted Certificates](https://cabforum.org/baseline-requirements-documents/) (398-day certificate validity)

@@ -738,7 +738,7 @@ Benchmark 1: prtip -sS -p 1-1000 127.0.0.1
 - User + System << mean (I/O-bound or waiting)
 
 > **See Also:**
-> - [Benchmarking Guide](../../31-BENCHMARKING-GUIDE.md)
+> - [Benchmarking Guide](../31-BENCHMARKING-GUIDE.md)
 > - [Performance Analysis](../advanced/performance-tuning.md)
 
 ---

@@ -294,4 +294,4 @@ prtip -sS -p- --min-hostgroup 4 --max-hostgroup 32 targets.txt
 - [Timing & Performance](../advanced/performance-tuning.md) - Performance optimization guide
 - [Nmap Compatibility](./nmap-compatibility.md) - Flag compatibility reference
 - [CLI Reference](../user-guide/cli-reference.md#rate-limiting) - Complete flag documentation
-- [Benchmarking](../../31-BENCHMARKING-GUIDE.md) - Performance validation
+- [Benchmarking](../31-BENCHMARKING-GUIDE.md) - Performance validation

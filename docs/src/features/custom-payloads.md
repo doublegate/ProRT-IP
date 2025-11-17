@@ -640,7 +640,7 @@ Targets may validate payload authenticity:
 
 - **[UDP Scan Guide](../user-guide/scan-types.md#udp-scan--su)** - Complete UDP scanning documentation
 - **[Service Detection](./service-detection.md)** - Version detection for UDP services
-- **[Technical Specifications](../../02-TECHNICAL-SPECS.md#protocol-specific-payloads)** - Byte-level payload structures
+- **[Technical Specifications](../02-TECHNICAL-SPECS.md#protocol-specific-payloads)** - Byte-level payload structures
 - **[Timing & Performance](../user-guide/timing-performance.md)** - Optimize UDP scan speed
 - **[Tutorials](../getting-started/tutorials.md)** - Hands-on UDP scanning examples
 

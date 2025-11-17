@@ -303,7 +303,7 @@ Performance depends on mode and hardware:
 | **Service Detection** | 100-500 ports/sec | Probe-dependent |
 | **OS Fingerprinting** | 50-100 hosts/min | 16-probe sequence |
 
-See [Performance Characteristics](../../34-PERFORMANCE-CHARACTERISTICS.md) for detailed benchmarks.
+See [Performance Characteristics](../34-PERFORMANCE-CHARACTERISTICS.md) for detailed benchmarks.
 
 ### Does scanning faster improve performance?
 

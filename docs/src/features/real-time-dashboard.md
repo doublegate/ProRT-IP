@@ -814,7 +814,7 @@ tokio::select! {
 - **[Service Detection](./service-detection.md)** - Understanding service detection in Service Table tab
 - **[OS Fingerprinting](./os-fingerprinting.md)** - OS detection results visualization (future widget)
 - **[TUI Architecture](../../TUI-ARCHITECTURE.md)** - Complete technical specification (1,338 lines)
-- **[Performance Guide](../../21-PERFORMANCE-GUIDE.md)** - Optimizing TUI performance for large scans
+- **[Performance Guide](../21-PERFORMANCE-GUIDE.md)** - Optimizing TUI performance for large scans
 
 **External Resources:**
 - **ratatui Documentation** - https://ratatui.rs/

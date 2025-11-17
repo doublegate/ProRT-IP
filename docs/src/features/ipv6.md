@@ -1221,7 +1221,7 @@ prtip -sS -p 80,443 $(cat dhcpv6-leases.txt)
 
 - **[Stealth Scanning](./stealth-scanning.md)** - Evasion techniques work with IPv6
 - **[User Guide: Basic Usage](../user-guide/basic-usage.md)** - IPv6 target specification
-- **[Architecture](../../00-ARCHITECTURE.md)** - IPv6 packet building design
+- **[Architecture](../00-ARCHITECTURE.md)** - IPv6 packet building design
 - **[Nmap Compatibility](./nmap-compatibility.md)** - IPv6 flag compatibility
 
 **External Resources:**

@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Sprint 6.3 Level 3 Implementation** (2025-11-17)
+  - Internet-scale validation infrastructure with target generation scripts
+  - Generated 200,000 test IPs across 3 target lists (100K IPv4, 50K CDN-heavy, 50K dual-stack)
+  - Zero-copy optimization analysis with 5 ROI-ranked opportunities (20-50% performance projections)
+  - Pre-commit markdown link validation preventing broken documentation
+  - Implementation roadmap for Phase 6.4-6.6 optimizations
+  - **Files Created:** `scripts/generate-targets.sh` (335 lines), zero-copy analysis (944 lines)
+  - **Impact:** 80% of Level 3 tasks completed in 12 hours (67% time efficiency vs 16-18h estimate)
+
+### Fixed
+
+- **TUI Lifecycle Management** (2025-11-17)
+  - Fixed critical bug causing TUI to exit immediately after launch (~0.5-1 second)
+  - **Root Cause:** TUI spawned as detached background task, killed when main process finished scanning
+  - **Solution:** Restructured to use `tokio::join!` for concurrent execution with proper lifecycle control
+  - **Impact:** TUI now stays open after scan completion until user quits ('q' or Ctrl+C)
+  - **Files Modified:** `crates/prtip-cli/src/main.rs` (lines 550-600), `args.rs` (Added Clone derive)
+  - **Testing:** Verified with `prtip --tui 192.168.4.4 -p 80,443` - clean terminal restoration on all exit paths
+
+- **History Behavior & TUI Flag** (2025-11-16)
+  - Changed history.json to opt-in behavior (prevents test isolation issues)
+  - Implemented missing --tui flag making Sprint 6.1/6.2 features accessible
+  - Fixed mdBook GitHub workflow deployment issues
+  - **History Changes:**
+    - Default: No history saving (prevents concurrent test failures)
+    - Opt-in: Use `--save-history` flag to enable history persistence
+    - **Files Modified:** `history.rs`, `args.rs` (lines 622-629), `main.rs`
+  - **TUI Integration:**
+    - Added --tui flag with proper validation (incompatible with --quiet)
+    - 60 FPS real-time dashboard with 4 tabs
+    - EventBus integration for live updates
+    - **Files Modified:** `args.rs` (lines 1233-1241), `main.rs` (lines 378-420), `Cargo.toml`
+  - **Impact:** Resolves 64 test failures, enables production-ready TUI access, fixes CI/CD deployment
+
+- **Documentation Link Fixes** (2025-11-17)
+  - Fixed 500+ broken markdown links across 60 documentation files
+  - Fixed broken external links in multiple guides (IDLE-SCAN, CI-CD-COVERAGE, etc.)
+  - Updated benchmark references and repository links
+  - Fixed relative link paths in documentation index
+  - **Files Modified:** 60+ documentation files across `docs/`, `to-dos/`, `benchmarks/`
+  - **Validation:** All cross-references verified, zero broken links remaining
+  - **Impact:** Improved documentation discoverability and professional quality
+
+### Changed
+
+- **Pre-commit Link Validation** (2025-11-17)
+  - Added markdown link checking to pre-commit workflow
+  - Prevents broken documentation links from being committed
+  - Validates both relative and external links
+  - **Impact:** Maintains documentation quality standards automatically
+
 ## [0.6.0] - 2025-11-16
 
 ### Major Performance Breakthroughs 🚀

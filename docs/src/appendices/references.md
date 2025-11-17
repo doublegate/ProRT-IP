@@ -324,7 +324,7 @@ Regulatory and industry standards for security and data protection.
 
 ### Data Protection
 
-- **[GDPR (General Data Protection Regulation)](https://gdpr.eu/)** - European Union
+- **GDPR (General Data Protection Regulation)** - European Union (gdpr.eu)
   Effective: May 25, 2018
   ProRT-IP provides GDPR-compliant features:
   - Data minimization (configurable output fields)
@@ -526,7 +526,7 @@ Libraries and frameworks used by ProRT-IP.
   Cross-platform packet construction and parsing (TCP, UDP, ICMP, Ethernet, IPv4, IPv6).
   - [pnet Docs](https://docs.rs/pnet/latest/pnet/)
 
-- **[clap](https://clap.rs/)** - Command-Line Argument Parsing
+- **clap** - Command-Line Argument Parsing
   Version: 4.4+
   Derive-based CLI parsing with 50+ Nmap-compatible flags.
   - [Clap Docs](https://docs.rs/clap/latest/clap/)

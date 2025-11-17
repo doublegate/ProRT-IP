@@ -1237,7 +1237,7 @@ cargo install hyperfine --version 1.18.0
 **Benchmark Documentation:**
 - [27-NETWORK-OPTIMIZATION-GUIDE.md](27-NETWORK-OPTIMIZATION-GUIDE.md) - Comprehensive optimization guide
 - [benchmarks/04-Sprint6.3-Network-Optimization/README.md](../benchmarks/04-Sprint6.3-Network-Optimization/README.md) - Benchmark details
-- [31-BENCHMARKING.md](31-BENCHMARKING.md) - General benchmarking guide
+- [31-BENCHMARKING-GUIDE.md](31-BENCHMARKING-GUIDE.md) - General benchmarking guide
 
 **Related Workflows:**
 - `.github/workflows/benchmarks.yml` - Benchmark workflow
@@ -1314,14 +1314,14 @@ cargo install hyperfine --version 1.18.0
 - [cargo-tarpaulin](https://github.com/xd009642/tarpaulin) - Coverage tool
 - [Codecov](https://docs.codecov.com/) - Coverage service
 - [GitHub Actions](https://docs.github.com/en/actions) - CI/CD platform
-- [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) - Coverage format
+- [LCOV](https://github.com/linux-test-project/lcov) - Coverage format
 
 ### ProRT-IP Documentation
 
 - [00-ARCHITECTURE.md](00-ARCHITECTURE.md) - System design
 - [06-TESTING.md](06-TESTING.md) - Testing strategy
 - [10-PROJECT-STATUS.md](10-PROJECT-STATUS.md) - Project tracking
-- [Sprint 5.6 Plan](../to-dos/v0.5.0-PHASE5-PART2-SPRINTS-5.6-5.10.md) - Coverage plan
+- [Sprint 5.6 Plan](../to-dos/PHASE-5/v0.5.0-PHASE5-PART2-SPRINTS-5.6-5.10.md) - Coverage plan
 
 ### Related Files
 

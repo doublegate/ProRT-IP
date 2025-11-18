@@ -1217,7 +1217,7 @@ repository = "https://github.com/prtip/plugins/http-enum"
 **Best Practices:**
 - Plugin architecture patterns: https://martinfowler.com/
 - Trait-based plugins in Rust: https://adventures.michaelfbryan.com/posts/plugins-in-rust/
-- Dynamic loading in Rust: https://michael-f-bryan.github.io/rust-ffi-guide/
+- Dynamic loading in Rust: michael-f-bryan.github.io/rust-ffi-guide (archived/moved)
 
 ---
 

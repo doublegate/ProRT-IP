@@ -827,7 +827,7 @@ After completing setup:
 3. Review [Architecture Overview](../development/architecture.md)
 4. Check [Technical Specifications](../development/technical-specs.md) for implementation details
 5. Begin development following [Roadmap](../project/roadmap.md)
-6. Review [CI/CD Workflows](<!-- .github/workflows/README.md (not yet created) -->) for automation details
+6. Review CI/CD Workflows (see .github/workflows/ directory) for automation details
 
 ---
 
@@ -836,5 +836,5 @@ After completing setup:
 - **Documentation:** See `docs/` directory
 - **Issues:** GitHub Issues for bug reports
 - **Discussions:** GitHub Discussions for questions
-- **CI/CD:** `<!-- .github/workflows/README.md (not yet created) -->` for workflow documentation
+- **CI/CD:** See .github/workflows/ directory for workflow documentation
 - **Chat:** Join project Discord/Matrix (TBD)

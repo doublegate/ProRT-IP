@@ -1006,8 +1006,8 @@ prtip -sS -p 80,443,8080 target.com --plugin http-version-detector
 
 - **[Service Detection](./service-detection.md)** - Core service detection capabilities enhanced by plugins
 - **[User Guide: Plugins](../user-guide/advanced-usage.md#plugins)** - Usage examples and plugin management
-- **[Development: Plugin API](../02-TECHNICAL-SPECS.md#plugin-system)** - Complete API specification
-- **[Examples Gallery](../34-EXAMPLES-GALLERY.md)** - Plugin usage examples
+- **[Development: Plugin API](../../02-TECHNICAL-SPECS.md#plugin-system)** - Complete API specification
+- **[Examples Gallery](../../34-EXAMPLES-GALLERY.md)** - Plugin usage examples
 
 **External Resources:**
 - **Lua 5.4 Manual**: https://www.lua.org/manual/5.4/

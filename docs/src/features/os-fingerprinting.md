@@ -520,9 +520,9 @@ OS fingerprinting complements service detection:
 
 - **[Service Detection](./service-detection.md)** - Protocol-specific detection complementing OS fingerprinting
 - **[User Guide: OS Fingerprinting](../user-guide/basic-usage.md#os-fingerprinting)** - Usage examples and interpretation
-- **[Architecture: Scanning Engine](../00-ARCHITECTURE.md)** - How OS fingerprinting fits into scan workflow
-- **[Technical Specs: Data Structures](../02-TECHNICAL-SPECS.md#data-structures)** - Complete OsFingerprint implementation details
-- **[Performance Guide](../21-PERFORMANCE-GUIDE.md)** - OS detection performance characteristics
+- **[Architecture: Scanning Engine](../../00-ARCHITECTURE.md)** - How OS fingerprinting fits into scan workflow
+- **[Technical Specs: Data Structures](../../02-TECHNICAL-SPECS.md#data-structures)** - Complete OsFingerprint implementation details
+- **[Performance Guide](../../21-PERFORMANCE-GUIDE.md)** - OS detection performance characteristics
 
 **External Resources:**
 - **Nmap OS Detection**: Original fingerprinting methodology

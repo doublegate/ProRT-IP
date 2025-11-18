@@ -2116,7 +2116,7 @@ prtip -sS -p 443 -sV subnet.example.com | grep -v "closed\|filtered"
 - [PCI DSS v3.2.1 Information Supplement: Migrating from SSL and Early TLS](https://www.pcisecuritystandards.org/) (Requirement 4.1, TLS 1.2 minimum)
 
 **CA/Browser Forum:**
-- [Baseline Requirements for the Issuance and Management of Publicly-Trusted Certificates](https://cabforum.org/baseline-requirements-documents/) (398-day certificate validity)
+- Baseline Requirements for the Issuance and Management of Publicly-Trusted Certificates (398-day certificate validity) (cabforum.org/baseline-requirements-documents)
 
 **Mozilla SSL Configuration Generator:**
 - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/) (Recommended cipher suites: Modern, Intermediate, Old)
@@ -2134,7 +2134,7 @@ prtip -sS -p 443 -sV subnet.example.com | grep -v "closed\|filtered"
 
 **Testing Tools:**
 - [badssl.com](https://badssl.com/) - Test servers for various certificate scenarios (expired, self-signed, wrong host, weak ciphers, revoked)
-- [SSL Labs SSL Test](https://www.ssllabs.com/ssltest/) - Comprehensive TLS configuration analysis
+- SSL Labs SSL Test - Comprehensive TLS configuration analysis (ssllabs.com/ssltest)
 - [testssl.sh](https://testssl.sh/) - Command-line TLS testing tool (more comprehensive than ProRT-IP, slower)
 - [crt.sh](https://crt.sh/) - Certificate Transparency log search
 
@@ -2147,7 +2147,7 @@ prtip -sS -p 443 -sV subnet.example.com | grep -v "closed\|filtered"
 - [BEAST Attack](https://en.wikipedia.org/wiki/Transport_Layer_Security#BEAST_attack) - TLS 1.0 vulnerability
 - [POODLE Attack](https://en.wikipedia.org/wiki/POODLE) - SSLv3/TLS CBC vulnerability
 - [Sweet32](https://sweet32.info/) - 3DES birthday attack
-- [RC4 NOMORE](https://www.rc4nomore.com/) - RC4 stream cipher biases
+- RC4 NOMORE - RC4 stream cipher biases (rc4nomore.com)
 
 ---
 

@@ -88,7 +88,7 @@ Expand-Archive -Path prtip.zip -DestinationPath .
 Move-Item prtip.exe C:\Tools\prtip.exe
 
 # Install Npcap (required for packet capture)
-# Download from: https://npcap.com/#download
+# Download from: npcap.com (Npcap download page)
 ```
 
 **Quick Verification:**
@@ -109,7 +109,7 @@ prtip -sT -p 80 scanme.nmap.org
 
 **Troubleshooting:**
 
-- **DLL not found:** Install Npcap from <https://npcap.com/>
+- **DLL not found:** Install Npcap from npcap.com
 - **Access denied:** Run PowerShell/CMD as Administrator
 - **Npcap not working:** Restart computer after Npcap installation
 

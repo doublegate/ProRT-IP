@@ -776,6 +776,6 @@ Target:    ████████████████████ ~60,000 
 
 - [Phase Documentation](phases.md) - Detailed phase descriptions and objectives
 - [Sprint Methodology](sprints.md) - Sprint execution and best practices
-- [Roadmap](../01-ROADMAP.md) - High-level project roadmap
-- [Project Status](../10-PROJECT-STATUS.md) - Current status and next steps
-- [CHANGELOG](../../CHANGELOG.md) - Detailed change history
+- [Roadmap](../../01-ROADMAP.md) - High-level project roadmap
+- [Project Status](../../10-PROJECT-STATUS.md) - Current status and next steps
+- [CHANGELOG](../../../CHANGELOG.md) - Detailed change history

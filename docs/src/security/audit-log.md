@@ -638,7 +638,7 @@ cargo deny check
 ### For Developers
 
 **Contributing Security Fixes**:
-1. **Report First**: Use private disclosure process (security@prtip.dev or GitHub Security Advisory)
+1. **Report First**: Use private disclosure process (security[at]prtip.dev or GitHub Security Advisory)
 2. **Provide PoC**: Reproduction steps + test case demonstrating vulnerability
 3. **Suggest Fix**: Pull request with fix + tests
 4. **Coordinate Disclosure**: Work with maintainers on public disclosure timeline

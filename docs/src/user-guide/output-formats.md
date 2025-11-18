@@ -700,6 +700,6 @@ sudo prtip -sS -p 80,443 192.168.1.1 -oJ /var/log/scan.json
 - **[Tutorials](../getting-started/tutorials.md)** - Interactive walkthroughs
 
 **See Also:**
-- [Output Formats (32-USER-GUIDE.md)](../32-USER-GUIDE.md#35-output-formats)
-- [Output Processing (32-USER-GUIDE.md)](../32-USER-GUIDE.md#use-case-12-output-processing)
-- [Batch Scanning](../32-USER-GUIDE.md#use-case-11-batch-scanning)
+- [Output Formats (32-USER-GUIDE.md)](../../32-USER-GUIDE.md#35-output-formats)
+- [Output Processing (32-USER-GUIDE.md)](../../32-USER-GUIDE.md#use-case-12-output-processing)
+- [Batch Scanning](../../32-USER-GUIDE.md#use-case-11-batch-scanning)

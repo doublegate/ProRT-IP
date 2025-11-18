@@ -946,7 +946,7 @@ ProRT-IP takes security vulnerabilities seriously.
 
 **Instead:**
 
-1. **Email:** security@prtip.example.com (replace with actual contact)
+1. **Email:** security[at]prtip.dev
 2. **PGP Key:** Available at https://github.com/doublegate/ProRT-IP/security/policy
 3. **Expected Response:** Within 48 hours
 
@@ -1130,7 +1130,7 @@ ProRT-IP's security model is built on:
 7. **Continuous Testing** - Fuzzing, static analysis, security audits
 
 For security questions, vulnerability reports, or general inquiries:
-- **Email:** security@prtip.example.com
+- **Email:** security[at]prtip.dev
 - **Repository:** https://github.com/doublegate/ProRT-IP
 - **Security Policy:** [SECURITY.md](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md)
 

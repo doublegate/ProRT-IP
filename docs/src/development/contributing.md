@@ -50,7 +50,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 2. **Second offense**: Temporary ban (7-30 days)
 3. **Third offense**: Permanent ban from project spaces
 
-**Report violations** to: <security@proRT-IP-project.org> (confidential)
+**Report violations** to: security[at]proRT-IP-project.org (confidential)
 
 ---
 
@@ -818,7 +818,7 @@ pub fn function(param1: Type1, param2: Type2) -> Result<ReturnType> {
 
 **Security Issues**:
 - **DO NOT** open public issues for vulnerabilities
-- Email: <security@proRT-IP-project.org>
+- Email: security[at]proRT-IP-project.org
 - See [Security Policy](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md)
 
 ### Issue Reporting

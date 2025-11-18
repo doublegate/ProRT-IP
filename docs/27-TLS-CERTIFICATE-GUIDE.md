@@ -2136,7 +2136,7 @@ prtip -sS -p 443 -sV subnet.example.com | grep -v "closed\|filtered"
 - [badssl.com](https://badssl.com/) - Test servers for various certificate scenarios (expired, self-signed, wrong host, weak ciphers, revoked)
 - SSL Labs SSL Test - Comprehensive TLS configuration analysis (ssllabs.com/ssltest)
 - [testssl.sh](https://testssl.sh/) - Command-line TLS testing tool (more comprehensive than ProRT-IP, slower)
-- [crt.sh](https://crt.sh/) - Certificate Transparency log search
+- crt.sh - Certificate Transparency log search
 
 **Documentation:**
 - [OpenSSL Documentation](https://www.openssl.org/docs/) - OpenSSL command-line tools and library

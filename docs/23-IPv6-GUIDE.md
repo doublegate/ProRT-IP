@@ -1945,9 +1945,9 @@ prtip -sS -p 80,443 $(cat dhcpv6-leases.txt)
 ### External Resources
 
 - [Nmap IPv6 Documentation](https://nmap.org/book/)
-- [IANA IPv6 Address Space](https://www.iana.org/assignments/ipv6-address-space/)
+- IANA IPv6 Address Space (iana.org/assignments/ipv6-address-space)
 - [IPv6 Test Tools](https://test-ipv6.com/)
-- [Hurricane Electric IPv6 Certification](https://ipv6.he.net/certification/)
+- Hurricane Electric IPv6 Certification (ipv6.he.net/certification)
 
 ---
 

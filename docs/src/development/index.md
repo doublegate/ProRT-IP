@@ -8,5 +8,5 @@ Contributing to ProRT-IP development.
 - [Contributing](contributing.md)
 - [Testing](testing.md)
 - [Release Process](release-process.md)
-- [TUI Architecture](tui-architecture.md)
-- [Plugin Development Guide](plugin-guide.md)
+- [TUI Architecture](../advanced/tui-architecture.md)
+- [Plugin Development Guide](../features/plugin-system.md)

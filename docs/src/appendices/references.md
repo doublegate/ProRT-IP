@@ -264,7 +264,7 @@ Vulnerability databases, security advisories, and best practices.
 
 ### OWASP (Open Web Application Security Project)
 
-- **[OWASP Top 10](https://owasp.org/www-project-top-ten/)** - Most Critical Web Application Security Risks
+- **OWASP Top 10** - Most Critical Web Application Security Risks (owasp.org)
   Updated: 2021
   1. Broken Access Control
   2. Cryptographic Failures
@@ -277,10 +277,10 @@ Vulnerability databases, security advisories, and best practices.
   9. Security Logging and Monitoring Failures
   10. Server-Side Request Forgery (SSRF)
 
-- **[OWASP Application Security Verification Standard (ASVS)](https://owasp.org/www-project-application-security-verification-standard/)**
+- **OWASP Application Security Verification Standard (ASVS)** (owasp.org)
   Comprehensive security requirements checklist for web applications.
 
-- **[OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)**
+- **OWASP Testing Guide** (owasp.org)
   Methodology for testing web application security (ProRT-IP follows OWASP testing principles).
 
 ### CWE (Common Weakness Enumeration)
@@ -302,10 +302,10 @@ Vulnerability databases, security advisories, and best practices.
 - **[CVE Database](https://cve.mitre.org/)** - Official CVE database
   ProRT-IP's dependency audit scans for CVEs (zero high/critical CVEs in production).
 
-- **[NVD (National Vulnerability Database)](https://nvd.nist.gov/)** - NIST's CVE enrichment
+- **NVD (National Vulnerability Database)** - NIST's CVE enrichment (nvd.nist.gov)
   CVSS scores, exploit availability, affected software versions.
 
-- **[RustSec Advisory Database](https://rustsec.org/)** - Rust-specific vulnerabilities
+- **RustSec Advisory Database** - Rust-specific vulnerabilities (rustsec.org)
   ProRT-IP runs `cargo audit` in CI/CD to detect vulnerable dependencies.
 
 ### Security Advisories
@@ -394,8 +394,7 @@ Research publications on network scanning, performance optimization, and securit
 - **A Search Engine Backed by Internet-Wide Scanning**
   Zakir Durumeric, David Adrian, Ariana Mirian, Michael Bailey, J. Alex Halderman
   ACM CCS, 2015
-  [PDF](https://censys.io/)
-  Censys.io research platform for Internet measurements.
+  Censys.io research platform for Internet measurements (censys.io).
 
 - **The Matter of Heartbleed**
   Zakir Durumeric, Frank Li, James Kasten, Johanna Amann, Jethro Beekman, Mathias Payer, Nicolas Weaver, David Adrian, Vern Paxson, Michael Bailey, J. Alex Halderman
@@ -626,7 +625,7 @@ Official project links and community resources.
 
 ### Community
 
-- **[Discord Server](https://discord.gg/prort-ip)** *(Planned)*
+- **Discord Server** *(Planned - discord.gg/prort-ip)*
   Real-time chat, support, development discussions.
 
 - **[Reddit Community](https://reddit.com/r/prortip)** *(Planned)*
@@ -640,13 +639,13 @@ Additional resources for learning network scanning and security concepts.
 
 ### Online Courses
 
-- **[Cybrary: Network Security](https://www.cybrary.it/catalog/cybersecurity/)**
+- **Cybrary: Network Security** (cybrary.it)
   Free and paid courses on network security fundamentals.
 
 - **[TryHackMe: Network Security](https://tryhackme.com/paths)**
   Hands-on labs for network scanning and penetration testing.
 
-- **[HackTheBox Academy](https://academy.hackthebox.com/)**
+- **HackTheBox Academy** (academy.hackthebox.com)
   Penetration testing training with practical exercises.
 
 ### YouTube Channels
@@ -662,7 +661,7 @@ Additional resources for learning network scanning and security concepts.
 
 ### Podcasts
 
-- **[Darknet Diaries](https://darknetdiaries.com/)**
+- **Darknet Diaries** (darknetdiaries.com)
   True stories from the dark side of the Internet.
 
 - **[Security Now](https://twit.tv/shows/security-now)**

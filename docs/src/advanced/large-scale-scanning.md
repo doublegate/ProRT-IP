@@ -1318,9 +1318,9 @@ After 3 minutes: 4m 10s (@ 103K pps, optimal rate achieved)
 - [Automation](./automation.md) - Scripting and CI/CD integration
 
 **Reference:**
-- [Architecture Documentation](../00-ARCHITECTURE.md) - Stateless/stateful/hybrid modes
-- [Performance Characteristics](../34-PERFORMANCE-CHARACTERISTICS.md) - Scaling formulas and benchmarks
-- [Capacity Planning](../21-PERFORMANCE-GUIDE.md) - Hardware requirements
+- [Architecture Documentation](../../00-ARCHITECTURE.md) - Stateless/stateful/hybrid modes
+- [Performance Characteristics](../../34-PERFORMANCE-CHARACTERISTICS.md) - Scaling formulas and benchmarks
+- [Capacity Planning](../../21-PERFORMANCE-GUIDE.md) - Hardware requirements
 
 **External Resources:**
 - **Masscan:** https://github.com/robertdavidgraham/masscan (stateless architecture inspiration)

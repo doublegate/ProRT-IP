@@ -773,8 +773,8 @@ prtip -sS --ttl 32 -D RND:5 -p 1-1000 target.com
 
 - **[User Guide: Stealth Scanning](../user-guide/scan-types.md)** - Basic stealth scan usage
 - **[Nmap Compatibility](./nmap-compatibility.md)** - Evasion flag mappings to nmap
-- **[Performance Tuning](../21-PERFORMANCE-GUIDE.md)** - Optimizing scan speed with evasion
-- **[Architecture: Evasion Implementation](../00-ARCHITECTURE.md)** - How evasion techniques are implemented
+- **[Performance Tuning](../../21-PERFORMANCE-GUIDE.md)** - Optimizing scan speed with evasion
+- **[Architecture: Evasion Implementation](../../00-ARCHITECTURE.md)** - How evasion techniques are implemented
 - **[Troubleshooting Guide](../../TROUBLESHOOTING.md)** - Common evasion issues and fixes
 
 **External Resources:**

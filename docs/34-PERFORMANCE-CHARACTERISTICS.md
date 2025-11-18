@@ -1003,11 +1003,11 @@ Duration (sec) = (Hosts × Ports) / Throughput_pps
 - hyperfine: https://github.com/sharkdp/hyperfine
 - valgrind: https://valgrind.org
 - perf: https://perf.wiki.kernel.org
-- Nmap: https://nmap.org
+- Nmap: nmap.org
 
 ### Competitive Analysis
 
-- Nmap Performance: https://nmap.org/book/performance.html
+- Nmap Performance: nmap.org/book/performance.html
 - Masscan: https://github.com/robertdavidgraham/masscan
 - RustScan: https://github.com/RustScan/RustScan
 

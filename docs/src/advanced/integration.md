@@ -1299,7 +1299,7 @@ logger.log_scan_start('192.168.1.0/24')
 - **[Database Usage](./database-usage.md)** - SQL database integration patterns
 - **[Automation](./automation.md)** - Scripting and automation examples
 - **[Output Formats](../reference/output-formats.md)** - JSON, XML, Greppable output for parsing
-- **[API Reference](../../05-API-REFERENCE.md)** - Complete Rust API documentation
+- **[API Reference](../reference/api-reference.md)** - Complete Rust API documentation
 - **[User Guide: Basic Usage](../user-guide/basic-usage.md)** - Command-line examples for integration testing
 
 **External Resources:**

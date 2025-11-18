@@ -1526,7 +1526,7 @@ fi
 - **[Plugin System](../features/plugin-system.md)** - Custom plugins for specialized automation
 - **[Output Formats](../reference/output-formats.md)** - JSON, XML parsing for automation scripts
 - **[User Guide: Basic Usage](../user-guide/basic-usage.md)** - Command-line examples for scripting
-- **[Examples Gallery](../34-EXAMPLES-GALLERY.md)** - 65 runnable examples for automation patterns
+- **[Examples Gallery](../../34-EXAMPLES-GALLERY.md)** - 65 runnable examples for automation patterns
 
 **External Resources:**
 - **Cron Documentation**: https://man7.org/linux/man-pages/man5/crontab.5.html

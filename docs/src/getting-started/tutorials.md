@@ -1199,7 +1199,7 @@ prtip -sS -p 1-1000 TARGET
 
 - [scanme.nmap.org](http://scanme.nmap.org) - Official Nmap test target
 - [HackTheBox](https://www.hackthebox.eu) - Penetration testing labs
-- [TryHackMe](https://tryhackme.com) - Security training platform
+- TryHackMe (tryhackme.com) - Security training platform
 
 **Community:**
 

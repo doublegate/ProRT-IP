@@ -1126,9 +1126,9 @@ fi
 
 ### Technical Documentation
 
-- **[Architecture](../00-ARCHITECTURE.md)** - System design, async architecture
-- **[Performance Characteristics](../34-PERFORMANCE-CHARACTERISTICS.md)** - Comprehensive benchmarking data
-- **[Benchmarking Guide](../31-BENCHMARKING-GUIDE.md)** - Framework usage and methodology
+- **[Architecture](../../00-ARCHITECTURE.md)** - System design, async architecture
+- **[Performance Characteristics](../../34-PERFORMANCE-CHARACTERISTICS.md)** - Comprehensive benchmarking data
+- **[Benchmarking Guide](../../31-BENCHMARKING-GUIDE.md)** - Framework usage and methodology
 
 ### Command Reference
 

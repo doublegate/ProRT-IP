@@ -8,7 +8,7 @@
 
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-2,151%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
-[![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)](https://codecov.io/gh/doublegate/ProRT-IP)
+![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
@@ -1206,7 +1206,7 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
 - **Testing:** All PRs must include tests (>80% coverage)
 - **Security:** Follow [Security Implementation](docs/08-SECURITY.md) guidelines
 - **Documentation:** Update docs for new features
-- **Commits:** Use [Conventional Commits](https://www.conventionalcommits.org/) format
+- **Commits:** Use Conventional Commits format (conventionalcommits.org)
 
 **See:** [CONTRIBUTING.md](CONTRIBUTING.md) for complete guidelines
 

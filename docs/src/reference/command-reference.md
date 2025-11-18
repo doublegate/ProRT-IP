@@ -983,7 +983,7 @@ sudo prtip -A -p 1-1000 192.168.1.1
 prtip -Pn -p 80,443 192.168.1.1
 ```
 
-**See Also:** [Nmap Compatibility Guide](../14-NMAP-COMPATIBILITY.md)
+**See Also:** [Nmap Compatibility Guide](../../14-NMAP-COMPATIBILITY.md)
 
 ---
 

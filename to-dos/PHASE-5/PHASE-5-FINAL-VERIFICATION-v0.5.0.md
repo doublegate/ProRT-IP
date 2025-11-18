@@ -359,7 +359,7 @@ Ensure all documentation is current, accurate, and reflects the v0.5.0 state wit
 - [ ] **Installation section**
   - Verify instructions current for v0.5.0
 - [ ] **Links validation**
-  - Check all internal links (docs/, guides)
+  - Check all internal links (../../docs/, guides)
   - Check external links (GitHub, badges)
 
 **Deliverables:**
@@ -403,7 +403,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Efficient header parsing and checksum calculation
 
 #### Documentation
-- docs/23-IPv6-GUIDE.md (1,958 lines) - Complete implementation guide
+- ../../docs/23-IPv6-GUIDE.md (1,958 lines) - Complete implementation guide
 
 #### Tests
 - +[X] tests for IPv6 coverage
@@ -419,7 +419,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Confidence scoring for service identification
 
 #### Documentation
-- docs/24-SERVICE-DETECTION-GUIDE.md (659 lines) - Detection methodology
+- ../../docs/24-SERVICE-DETECTION-GUIDE.md (659 lines) - Detection methodology
 
 #### Tests
 - +[X] tests for protocol parsers
@@ -439,7 +439,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Efficient zombie probing strategy
 
 #### Documentation
-- docs/25-IDLE-SCAN-GUIDE.md (650 lines) - Complete idle scan guide
+- ../../docs/25-IDLE-SCAN-GUIDE.md (650 lines) - Complete idle scan guide
 
 #### Tests
 - +[X] tests for idle scan functionality
@@ -455,7 +455,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Maintains courtesy scanning while maximizing performance
 
 #### Documentation
-- docs/26-RATE-LIMITING-GUIDE.md v2.0.0 - Updated with V3 optimizations
+- ../../docs/26-RATE-LIMITING-GUIDE.md v2.0.0 - Updated with V3 optimizations
 
 #### Performance
 - V1 baseline: +2.1% overhead
@@ -473,7 +473,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Protocol version analysis (SSLv3, TLS 1.0-1.3)
 
 #### Documentation
-- docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines) - Comprehensive TLS guide
+- ../../docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines) - Comprehensive TLS guide
 
 #### Tests
 - +[X] tests for TLS parsing and validation
@@ -498,7 +498,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Professional execution (A+ grade)
 
 #### Documentation
-- docs/28-CI-CD-GUIDE.md (866 lines) - Coverage infrastructure guide
+- docs/28-CI-CD-GUIDE.md (866 lines) - Coverage infrastructure guide (planned but not created)
 
 ---
 
@@ -513,7 +513,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - TCP parser, UDP parser, IPv6 parser, ICMPv6 parser, TLS parser
 
 #### Documentation
-- docs/29-FUZZ-TESTING-GUIDE.md (784 lines) - Complete fuzzing guide
+- docs/29-FUZZ-TESTING-GUIDE.md (784 lines) - Complete fuzzing guide (planned but not created)
 
 #### Quality
 - Zero crashes found (production-ready parsers)
@@ -534,7 +534,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - ssl-checker: TLS validation with network capability
 
 #### Documentation
-- docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines) - Plugin development guide
+- ../../docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines) - Plugin development guide
 
 #### Tests
 - +10 integration tests (plugin lifecycle)
@@ -550,7 +550,7 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 - Historical performance tracking
 
 #### Documentation
-- docs/31-BENCHMARKING-GUIDE.md (1,044 lines) - Benchmarking methodology
+- ../../docs/31-BENCHMARKING-GUIDE.md (1,044 lines) - Benchmarking methodology
 
 #### Quality
 - Establishes performance baselines for future development
@@ -560,9 +560,9 @@ ProRT-IP v0.5.0 marks the completion of Phase 5 (Advanced Features) with 10 majo
 
 ### Sprint 5.10: Documentation Polish (Completion, Nov 2025)
 #### Added
-- docs/32-USER-GUIDE.md (1,180 lines) - Comprehensive user guide
-- docs/34-EXAMPLES-GALLERY.md (760 lines) - 7+ interactive tutorials
-- docs/34-EXAMPLES-GALLERY.md (680 lines) - 39 real-world examples
+- ../../docs/32-USER-GUIDE.md (1,180 lines) - Comprehensive user guide
+- ../../docs/34-EXAMPLES-GALLERY.md (760 lines) - 7+ interactive tutorials
+- ../../docs/34-EXAMPLES-GALLERY.md (680 lines) - 39 real-world examples
 - API reference with rustdoc + mdBook integration
 - Fixed 40 rustdoc warnings
 
@@ -652,7 +652,7 @@ Phase 6: TUI Interface (Q2 2026)
 
 ---
 
-#### Task 2.3: Update docs/01-ROADMAP.md ⏳
+#### Task 2.3: Update ../../docs/01-ROADMAP.md ⏳
 
 **Objective:** Mark Phase 5 100% COMPLETE, update Sprint 5.10 status
 
@@ -675,7 +675,7 @@ Phase 6: TUI Interface (Q2 2026)
   - Focus: TUI Interface
 
 **Deliverables:**
-- docs/01-ROADMAP.md updated
+- ../../docs/01-ROADMAP.md updated
 - Phase 5 complete, Phase 6 next
 
 **Time Estimate:** 45 minutes
@@ -688,7 +688,7 @@ Phase 6: TUI Interface (Q2 2026)
 
 ---
 
-#### Task 2.4: Update docs/10-PROJECT-STATUS.md ⏳
+#### Task 2.4: Update ../../docs/10-PROJECT-STATUS.md ⏳
 
 **Objective:** Reflect Phase 5 complete, v0.5.0 ready, current metrics
 
@@ -718,7 +718,7 @@ Phase 6: TUI Interface (Q2 2026)
   - Document all deliverables and metrics
 
 **Deliverables:**
-- docs/10-PROJECT-STATUS.md fully current
+- ../../docs/10-PROJECT-STATUS.md fully current
 - All metrics accurate
 - Phase 5 100% status
 
@@ -737,22 +737,22 @@ Phase 6: TUI Interface (Q2 2026)
 **Objective:** Verify core architectural docs reflect Phase 5 components
 
 **Files to Review:**
-- [ ] **docs/00-ARCHITECTURE.md**
+- [ ] **../../docs/00-ARCHITECTURE.md**
   - Verify reflects IPv6 dual-stack architecture
   - Verify plugin system architecture documented
   - Verify benchmarking infrastructure mentioned
   - Verify fuzz testing infrastructure mentioned
   - Update if missing Phase 5 components
-- [ ] **docs/04-IMPLEMENTATION-GUIDE.md**
+- [ ] **../../docs/04-IMPLEMENTATION-GUIDE.md**
   - Verify all Phase 5 modules documented
   - Verify plugin system modules included
   - Update module count if changed
-- [ ] **docs/06-TESTING.md**
+- [ ] **../../docs/06-TESTING.md**
   - Verify test count: 1,766
   - Verify coverage: 54.92%
   - Verify fuzz testing section exists
   - Verify coverage infrastructure documented
-- [ ] **docs/08-SECURITY.md**
+- [ ] **../../docs/08-SECURITY.md**
   - Verify plugin sandboxing documented
   - Verify fuzz testing security benefits
   - Verify TLS analysis capabilities
@@ -778,54 +778,54 @@ Phase 6: TUI Interface (Q2 2026)
 **Objective:** Verify all 12 Phase 5 guides are current with v0.5.0
 
 **Guides to Review:**
-- [ ] docs/23-IPv6-GUIDE.md (1,958 lines)
+- [ ] ../../docs/23-IPv6-GUIDE.md (1,958 lines)
   - Version references current
   - Examples accurate
   - Cross-references valid
-- [ ] docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
+- [ ] ../../docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
   - Detection rates current (85-90%)
   - Parser list complete (5 parsers)
   - Examples work
-- [ ] docs/25-IDLE-SCAN-GUIDE.md (650 lines)
+- [ ] ../../docs/25-IDLE-SCAN-GUIDE.md (650 lines)
   - Accuracy metrics current (99.5%)
   - Examples tested
   - Zombie discovery accurate
-- [ ] docs/26-RATE-LIMITING-GUIDE.md (v2.0.0)
+- [ ] ../../docs/26-RATE-LIMITING-GUIDE.md (v2.0.0)
   - V3 overhead: -1.8%
   - Configuration examples current
   - Performance data accurate
-- [ ] docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines)
+- [ ] ../../docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines)
   - Parse time: 1.33μs
   - SNI support documented
   - Examples current
-- [ ] docs/28-CI-CD-GUIDE.md (866 lines)
+- [ ] docs/28-CI-CD-GUIDE.md (866 lines) - planned but not created
   - Coverage: 54.92%
   - CI/CD workflows current
   - Codecov integration documented
-- [ ] docs/29-FUZZ-TESTING-GUIDE.md (784 lines)
+- [ ] docs/29-FUZZ-TESTING-GUIDE.md (784 lines) - planned but not created
   - Execution count: 230M+
   - Crash count: 0
   - Fuzz targets: 5
   - Examples current
-- [ ] docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines)
+- [ ] ../../docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines)
   - Lua version: 5.4
   - mlua version: 0.11
   - Example plugins: 2
   - Sandbox limits current
-- [ ] docs/31-BENCHMARKING-GUIDE.md (1,044 lines)
+- [ ] ../../docs/31-BENCHMARKING-GUIDE.md (1,044 lines)
   - Benchmark count: 10 scenarios
   - Regression thresholds: 5%/10%
   - Examples current
-- [ ] docs/32-USER-GUIDE.md (1,180 lines)
+- [ ] ../../docs/32-USER-GUIDE.md (1,180 lines)
   - Version: v0.5.0
   - Installation current
   - Examples tested
   - FAQ current
-- [ ] docs/34-EXAMPLES-GALLERY.md (760 lines)
+- [ ] ../../docs/34-EXAMPLES-GALLERY.md (760 lines)
   - Tutorial count: 7+
   - Examples tested
   - Steps accurate
-- [ ] docs/34-EXAMPLES-GALLERY.md (680 lines)
+- [ ] ../../docs/34-EXAMPLES-GALLERY.md (680 lines)
   - Example count: 39
   - Commands copy-paste ready
   - All examples tested
@@ -1007,9 +1007,9 @@ Commit all changes, create release tag, and publish v0.5.0 to GitHub with compre
 
 **If Not Committed:**
 - [ ] Stage Sprint 5.10 files
-  - docs/32-USER-GUIDE.md
-  - docs/34-EXAMPLES-GALLERY.md
-  - docs/34-EXAMPLES-GALLERY.md
+  - ../../docs/32-USER-GUIDE.md
+  - ../../docs/34-EXAMPLES-GALLERY.md
+  - ../../docs/34-EXAMPLES-GALLERY.md
   - Any other Sprint 5.10 deliverables
 - [ ] Create commit
   ```bash
@@ -1017,9 +1017,9 @@ Commit all changes, create release tag, and publish v0.5.0 to GitHub with compre
   feat(docs): Sprint 5.10 - Documentation Polish Complete
 
   Comprehensive documentation overhaul completing Phase 5:
-  - User Guide (docs/32-USER-GUIDE.md, 1,180 lines)
-  - Tutorials (docs/34-EXAMPLES-GALLERY.md, 760 lines)
-  - Examples Gallery (docs/34-EXAMPLES-GALLERY.md, 680 lines, 39 examples)
+  - User Guide (../../docs/32-USER-GUIDE.md, 1,180 lines)
+  - Tutorials (../../docs/34-EXAMPLES-GALLERY.md, 760 lines)
+  - Examples Gallery (../../docs/34-EXAMPLES-GALLERY.md, 680 lines, 39 examples)
   - API reference setup (rustdoc + mdBook)
   - Fixed 40 rustdoc warnings
 
@@ -1064,7 +1064,7 @@ Commit all changes, create release tag, and publish v0.5.0 to GitHub with compre
   - `git add Cargo.toml`
   - `git add crates/*/Cargo.toml` (4 files)
   - `git add README.md CHANGELOG.md`
-  - `git add docs/01-ROADMAP.md docs/10-PROJECT-STATUS.md`
+  - `git add ../../docs/01-ROADMAP.md ../../docs/10-PROJECT-STATUS.md`
   - `git add` any other modified files
   - Review: `git status` to verify staging
 - [ ] Create comprehensive commit message (see template below)
@@ -1304,7 +1304,7 @@ Perform final enhancements, comprehensive validation, and prepare for production
 
 **Process:**
 - [ ] Extract all markdown links
-  - `grep -r '\[.*\](.*\.md)' docs/ > /tmp/ProRT-IP/doc-links.txt`
+  - `grep -r '\[.*\](.*\.md)' ../../docs/ > /tmp/ProRT-IP/doc-links.txt`
   - Review link list
 - [ ] Validate internal links
   - Check each file referenced exists
@@ -1315,7 +1315,7 @@ Perform final enhancements, comprehensive validation, and prepare for production
   - Update anchors if sections renamed
   - Defer minor issues to backlog
 - [ ] Validate key cross-references
-  - README → docs/ guides
+  - README → ../../docs/ guides
   - Guides → other guides
   - Tutorials → guides
   - Examples → tutorials
@@ -1345,7 +1345,7 @@ Perform final enhancements, comprehensive validation, and prepare for production
 
 **Process:**
 - [ ] Extract external URLs
-  - `grep -roh 'https\?://[^)]*' docs/ > /tmp/ProRT-IP/external-urls.txt`
+  - `grep -roh 'https\?://[^)]*' ../../docs/ > /tmp/ProRT-IP/external-urls.txt`
 - [ ] Spot-check critical URLs
   - GitHub links (repository, releases)
   - Documentation links (external references)
@@ -1974,60 +1974,60 @@ Complete Phase 5 (Advanced Features) milestone with 10 sprints:
 - 100% scanner coverage (all 6 scanners dual-stack)
 - ICMPv6, NDP support
 - <15% average overhead
-- docs/23-IPv6-GUIDE.md (1,958 lines)
+- ../../docs/23-IPv6-GUIDE.md (1,958 lines)
 
 **Sprint 5.2: Service Detection (12h)**
 - 85-90% detection rate
 - 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
-- docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
+- ../../docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
 
 **Sprint 5.3: Idle Scan (18h)**
 - Full Nmap -sI parity
 - 99.5% accuracy, 500-800ms per port
 - Maximum anonymity (IP never revealed)
-- docs/25-IDLE-SCAN-GUIDE.md (650 lines)
+- ../../docs/25-IDLE-SCAN-GUIDE.md (650 lines)
 
 **Sprint 5.X: Rate Limiting V3 (8h)**
 - Industry-leading -1.8% overhead (faster than no limiter!)
 - Relaxed memory ordering optimization
 - AdaptiveRateLimiterV3 default
-- docs/26-RATE-LIMITING-GUIDE.md v2.0.0
+- ../../docs/26-RATE-LIMITING-GUIDE.md v2.0.0
 
 **Sprint 5.5: TLS Certificate Analysis (18h)**
 - X.509v3 parsing (1.33μs average)
 - SNI support
 - Chain validation
-- docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines)
+- ../../docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines)
 
 **Sprint 5.6: Code Coverage (20h)**
 - 37% → 54.92% (+17.66pp)
 - +149 tests
 - CI/CD automation (Codecov integration)
-- docs/28-CI-CD-GUIDE.md (866 lines)
+- docs/28-CI-CD-GUIDE.md (866 lines) - planned but not created
 
 **Sprint 5.7: Fuzz Testing (7.5h)**
 - 230M+ executions, 0 crashes
 - 5 fuzz targets, 807 seeds
 - cargo-fuzz integration
-- docs/29-FUZZ-TESTING-GUIDE.md (784 lines)
+- docs/29-FUZZ-TESTING-GUIDE.md (784 lines) - planned but not created
 
 **Sprint 5.8: Plugin System (3h)**
 - Lua 5.4 scripting
 - Sandboxed execution (100MB memory, 5s CPU, 1M instructions)
 - Capabilities-based security
 - 2 example plugins (banner-analyzer, ssl-checker)
-- docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines)
+- ../../docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines)
 
 **Sprint 5.9: Benchmarking Framework (4h)**
 - 10 benchmark scenarios (hyperfine integration)
 - Automated regression detection (5% warn, 10% fail)
 - Historical performance tracking
-- docs/31-BENCHMARKING-GUIDE.md (1,044 lines)
+- ../../docs/31-BENCHMARKING-GUIDE.md (1,044 lines)
 
 **Sprint 5.10: Documentation Polish (completion)**
-- docs/32-USER-GUIDE.md (1,180 lines)
-- docs/34-EXAMPLES-GALLERY.md (760 lines)
-- docs/34-EXAMPLES-GALLERY.md (680 lines, 39 examples)
+- ../../docs/32-USER-GUIDE.md (1,180 lines)
+- ../../docs/34-EXAMPLES-GALLERY.md (760 lines)
+- ../../docs/34-EXAMPLES-GALLERY.md (680 lines, 39 examples)
 - API reference (rustdoc + mdBook)
 - 200+ page equivalent documentation
 
@@ -2071,8 +2071,8 @@ Complete Phase 5 (Advanced Features) milestone with 10 sprints:
 - crates/prtip-cli/Cargo.toml (version: 0.5.0)
 - README.md (version badge, metrics, features, Phase 5 100%)
 - CHANGELOG.md (comprehensive Phase 5 entry, ~400 lines)
-- docs/01-ROADMAP.md (Phase 5 100% COMPLETE)
-- docs/10-PROJECT-STATUS.md (v0.5.0, metrics current)
+- ../../docs/01-ROADMAP.md (Phase 5 100% COMPLETE)
+- ../../docs/10-PROJECT-STATUS.md (v0.5.0, metrics current)
 - [Additional files as needed during verification]
 
 ## Impact
@@ -2124,48 +2124,48 @@ system with sandboxing).
 - 100% scanner coverage (SYN, UDP, Stealth, Discovery, Decoy, Connect)
 - ICMPv6 and NDP integration for IPv6-native reconnaissance
 - <15% performance overhead vs IPv4 (efficient header parsing)
-- Complete: docs/23-IPv6-GUIDE.md (1,958 lines)
+- Complete: ../../docs/23-IPv6-GUIDE.md (1,958 lines)
 
 **Enhanced Service Detection (Sprint 5.2)**
 - Detection rate: 70-80% → 85-90% (approaching Nmap ~90%)
 - 5 new protocol parsers: HTTP, SSH, SMB, MySQL, PostgreSQL
 - Confidence scoring and banner analysis optimization
-- Complete: docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
+- Complete: ../../docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
 
 **Idle Scan Implementation (Sprint 5.3)**
 - Full Nmap -sI flag parity (zombie host scanning)
 - 99.5% IPID prediction accuracy
 - Maximum anonymity (scanner IP never revealed to target)
 - 500-800ms per port (acceptable for anonymity trade-off)
-- Complete: docs/25-IDLE-SCAN-GUIDE.md (650 lines)
+- Complete: ../../docs/25-IDLE-SCAN-GUIDE.md (650 lines)
 
 **Rate Limiting V3 Optimization (Sprint 5.X)**
 - Industry-leading -1.8% overhead (faster than no rate limiter!)
 - Relaxed memory ordering (Acquire/Release → Relaxed)
 - Maintains courtesy scanning, maximizes performance
 - AdaptiveRateLimiterV3 as default implementation
-- Complete: docs/26-RATE-LIMITING-GUIDE.md v2.0.0
+- Complete: ../../docs/26-RATE-LIMITING-GUIDE.md v2.0.0
 
 **TLS Certificate Analysis (Sprint 5.5)**
 - X.509v3 certificate parsing (1.33μs average parse time)
 - SNI support for virtual host certificate extraction
 - Chain validation and weak cipher detection (RC4, 3DES, export)
 - Protocol version analysis (SSLv3, TLS 1.0-1.3)
-- Complete: docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines)
+- Complete: ../../docs/27-TLS-CERTIFICATE-GUIDE.md (2,160 lines)
 
 **Code Coverage Enhancement (Sprint 5.6)**
 - Coverage improvement: 37% → 54.92% (+17.66 percentage points)
 - +149 new tests across all modules
 - CI/CD automation with Codecov integration
 - Zero bugs introduced during coverage sprint
-- Complete: docs/28-CI-CD-GUIDE.md (866 lines)
+- Complete: docs/28-CI-CD-GUIDE.md (866 lines) - planned but not created
 
 **Fuzz Testing Infrastructure (Sprint 5.7)**
 - 230M+ executions with 0 crashes (production-ready validation)
 - 5 fuzz targets: TCP, UDP, IPv6, ICMPv6, TLS parsers
 - Structure-aware fuzzing with arbitrary crate
 - 807 seed corpus files for comprehensive coverage
-- Complete: docs/29-FUZZ-TESTING-GUIDE.md (784 lines)
+- Complete: docs/29-FUZZ-TESTING-GUIDE.md (784 lines) - planned but not created
 
 **Plugin System Foundation (Sprint 5.8)**
 - Lua 5.4 scripting integration (mlua 0.11, thread-safe)
@@ -2174,19 +2174,19 @@ system with sandboxing).
 - 3 plugin types: ScanPlugin, OutputPlugin, DetectionPlugin
 - 2 example plugins: banner-analyzer (8 services), ssl-checker
 - Hot reload support (load/unload without scanner restart)
-- Complete: docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines)
+- Complete: ../../docs/30-PLUGIN-SYSTEM-GUIDE.md (784 lines)
 
 **Benchmarking Framework (Sprint 5.9)**
 - Hyperfine integration for reproducible performance testing
 - 10 benchmark scenarios (scan types, sizes, protocols)
 - Automated regression detection (5% warning, 10% failure thresholds)
 - Historical performance tracking and baseline establishment
-- Complete: docs/31-BENCHMARKING-GUIDE.md (1,044 lines)
+- Complete: ../../docs/31-BENCHMARKING-GUIDE.md (1,044 lines)
 
 **Documentation Polish (Sprint 5.10)**
-- docs/32-USER-GUIDE.md (1,180 lines) - Comprehensive user guide
-- docs/34-EXAMPLES-GALLERY.md (760 lines) - 7+ interactive tutorials
-- docs/34-EXAMPLES-GALLERY.md (680 lines) - 39 real-world examples
+- ../../docs/32-USER-GUIDE.md (1,180 lines) - Comprehensive user guide
+- ../../docs/34-EXAMPLES-GALLERY.md (760 lines) - 7+ interactive tutorials
+- ../../docs/34-EXAMPLES-GALLERY.md (680 lines) - 39 real-world examples
 - API reference with rustdoc + mdBook integration
 - Fixed 40 rustdoc warnings, zero broken links
 - 200+ page equivalent documentation
@@ -2209,7 +2209,7 @@ system with sandboxing).
 
 **Documentation:**
 - Total Lines: 50,510+ across 55 files
-- New Guides: 11 major guides (docs/23-34)
+- New Guides: 11 major guides (../../docs/23-34)
 - Page Equivalent: 200+ pages
 - Quality: Zero broken links, professional formatting
 
@@ -2261,10 +2261,10 @@ system with sandboxing).
 - CHANGELOG.md (comprehensive Phase 5 entry, ~400 lines)
 
 **Documentation:**
-- docs/01-ROADMAP.md (Phase 5 100% COMPLETE)
-- docs/10-PROJECT-STATUS.md (v0.5.0, metrics current)
-- docs/23-34 (11 guides, verified and current)
-- docs/00-ARCHITECTURE.md, 06-TESTING.md, 08-SECURITY.md (updated)
+- ../../docs/01-ROADMAP.md (Phase 5 100% COMPLETE)
+- ../../docs/10-PROJECT-STATUS.md (v0.5.0, metrics current)
+- ../../docs/23-34 (11 guides, verified and current)
+- ../../docs/00-ARCHITECTURE.md, 06-TESTING.md, 08-SECURITY.md (updated)
 
 **Total:** 20+ files modified across verification
 
@@ -2383,7 +2383,7 @@ sudo prtip -sS 192.168.1.0/24 -p 1-1000
 prtip -sV -6 2001:db8::1 -p 80,443
 ```
 
-**See [docs/32-USER-GUIDE.md](docs/32-USER-GUIDE.md) for comprehensive installation and usage.**
+**See [../../docs/32-USER-GUIDE.md](../../docs/32-USER-GUIDE.md) for comprehensive installation and usage.**
 
 ---
 
@@ -2393,58 +2393,58 @@ prtip -sV -6 2001:db8::1 -p 80,443
 - **100% scanner coverage:** All 6 scanners support IPv6 (SYN, UDP, Stealth, Discovery, Decoy, Connect)
 - **ICMPv6 + NDP:** Complete IPv6-native reconnaissance
 - **Performance:** <15% overhead vs IPv4
-- **Documentation:** [docs/23-IPv6-GUIDE.md](docs/23-IPv6-GUIDE.md) (1,958 lines)
+- **Documentation:** [../../docs/23-IPv6-GUIDE.md](../../docs/23-IPv6-GUIDE.md) (1,958 lines)
 
 ### Sprint 5.2: Service Detection (12h)
 - **Detection rate:** 85-90% (approaching Nmap ~90%)
 - **Protocol parsers:** HTTP, SSH, SMB, MySQL, PostgreSQL (5 total)
-- **Documentation:** [docs/24-SERVICE-DETECTION-GUIDE.md](docs/24-SERVICE-DETECTION-GUIDE.md) (659 lines)
+- **Documentation:** [../../docs/24-SERVICE-DETECTION-GUIDE.md](../../docs/24-SERVICE-DETECTION-GUIDE.md) (659 lines)
 
 ### Sprint 5.3: Idle Scan (18h)
 - **Nmap parity:** Full -sI flag support
 - **Accuracy:** 99.5% IPID prediction
 - **Anonymity:** Maximum (scanner IP never revealed)
-- **Documentation:** [docs/25-IDLE-SCAN-GUIDE.md](docs/25-IDLE-SCAN-GUIDE.md) (650 lines)
+- **Documentation:** [../../docs/25-IDLE-SCAN-GUIDE.md](../../docs/25-IDLE-SCAN-GUIDE.md) (650 lines)
 
 ### Sprint 5.X: Rate Limiting V3 (8h)
 - **Industry-leading:** -1.8% overhead (faster than no limiter!)
 - **Optimization:** Relaxed memory ordering (cache-friendly)
-- **Documentation:** [docs/26-RATE-LIMITING-GUIDE.md](docs/26-RATE-LIMITING-GUIDE.md) v2.0.0
+- **Documentation:** [../../docs/26-RATE-LIMITING-GUIDE.md](../../docs/26-RATE-LIMITING-GUIDE.md) v2.0.0
 
 ### Sprint 5.5: TLS Certificate Analysis (18h)
 - **X.509v3 parsing:** 1.33μs average parse time
 - **SNI support:** Virtual host certificate extraction
 - **Chain validation:** Weak cipher detection (RC4, 3DES, export)
-- **Documentation:** [docs/27-TLS-CERTIFICATE-GUIDE.md](docs/27-TLS-CERTIFICATE-GUIDE.md) (2,160 lines)
+- **Documentation:** [../../docs/27-TLS-CERTIFICATE-GUIDE.md](../../docs/27-TLS-CERTIFICATE-GUIDE.md) (2,160 lines)
 
 ### Sprint 5.6: Code Coverage (20h)
 - **Coverage improvement:** 37% → 54.92% (+17.66pp)
 - **Test growth:** +149 new tests
 - **CI/CD automation:** Codecov integration, 50% threshold
-- **Documentation:** [docs/28-CI-CD-GUIDE.md](docs/28-CI-CD-GUIDE.md) (866 lines)
+- **Documentation:** docs/28-CI-CD-GUIDE.md (866 lines) - planned but not created
 
 ### Sprint 5.7: Fuzz Testing (7.5h)
 - **Executions:** 230M+ with 0 crashes
 - **Targets:** TCP, UDP, IPv6, ICMPv6, TLS parsers (5 total)
 - **Corpus:** 807 seed files
-- **Documentation:** [docs/29-FUZZ-TESTING-GUIDE.md](docs/29-FUZZ-TESTING-GUIDE.md) (784 lines)
+- **Documentation:** docs/29-FUZZ-TESTING-GUIDE.md (784 lines) - planned but not created
 
 ### Sprint 5.8: Plugin System (3h)
 - **Lua 5.4:** Thread-safe scripting (mlua 0.11)
 - **Sandboxing:** 100MB memory, 5s CPU, 1M instruction limits
 - **Security:** Capabilities-based (deny-by-default)
 - **Plugins:** banner-analyzer, ssl-checker (2 examples)
-- **Documentation:** [docs/30-PLUGIN-SYSTEM-GUIDE.md](docs/30-PLUGIN-SYSTEM-GUIDE.md) (784 lines)
+- **Documentation:** [../../docs/30-PLUGIN-SYSTEM-GUIDE.md](../../docs/30-PLUGIN-SYSTEM-GUIDE.md) (784 lines)
 
 ### Sprint 5.9: Benchmarking (4h)
 - **Scenarios:** 10 benchmark scenarios (hyperfine integration)
 - **Regression detection:** 5% warning, 10% failure thresholds
-- **Documentation:** [docs/31-BENCHMARKING-GUIDE.md](docs/31-BENCHMARKING-GUIDE.md) (1,044 lines)
+- **Documentation:** [../../docs/31-BENCHMARKING-GUIDE.md](../../docs/31-BENCHMARKING-GUIDE.md) (1,044 lines)
 
 ### Sprint 5.10: Documentation Polish (completion)
-- **User Guide:** [docs/32-USER-GUIDE.md](docs/32-USER-GUIDE.md) (1,180 lines)
-- **Tutorials:** [docs/34-EXAMPLES-GALLERY.md](docs/34-EXAMPLES-GALLERY.md) (760 lines, 7+ tutorials)
-- **Examples:** [docs/34-EXAMPLES-GALLERY.md](docs/34-EXAMPLES-GALLERY.md) (680 lines, 39 examples)
+- **User Guide:** [../../docs/32-USER-GUIDE.md](../../docs/32-USER-GUIDE.md) (1,180 lines)
+- **Tutorials:** [../../docs/34-EXAMPLES-GALLERY.md](../../docs/34-EXAMPLES-GALLERY.md) (760 lines, 7+ tutorials)
+- **Examples:** [../../docs/34-EXAMPLES-GALLERY.md](../../docs/34-EXAMPLES-GALLERY.md) (680 lines, 39 examples)
 - **Quality:** 200+ page equivalent, 0 broken links
 
 ---
@@ -2479,26 +2479,26 @@ prtip -sV -6 2001:db8::1 -p 80,443
 ## 📚 Documentation
 
 ### User Guides
-- **[User Guide](docs/32-USER-GUIDE.md)** - Complete guide from installation to advanced usage (1,180 lines)
-- **[Tutorials](docs/34-EXAMPLES-GALLERY.md)** - 7+ interactive walkthroughs (beginner → advanced, 760 lines)
-- **[Examples](docs/34-EXAMPLES-GALLERY.md)** - 39 real-world scenarios with copy-paste commands (680 lines)
+- **[User Guide](../../docs/32-USER-GUIDE.md)** - Complete guide from installation to advanced usage (1,180 lines)
+- **[Tutorials](../../docs/34-EXAMPLES-GALLERY.md)** - 7+ interactive walkthroughs (beginner → advanced, 760 lines)
+- **[Examples](../../docs/34-EXAMPLES-GALLERY.md)** - 39 real-world scenarios with copy-paste commands (680 lines)
 
 ### Technical Guides
-- **[IPv6 Guide](docs/23-IPv6-GUIDE.md)** - Complete IPv6 support (1,958 lines)
-- **[Service Detection](docs/24-SERVICE-DETECTION-GUIDE.md)** - 85-90% accuracy (659 lines)
-- **[Idle Scan Guide](docs/25-IDLE-SCAN-GUIDE.md)** - Nmap parity (650 lines)
-- **[Rate Limiting](docs/26-RATE-LIMITING-GUIDE.md)** - Industry-leading -1.8% (v2.0.0)
-- **[TLS Certificate](docs/27-TLS-CERTIFICATE-GUIDE.md)** - X.509v3 analysis (2,160 lines)
-- **[Coverage Guide](docs/28-CI-CD-GUIDE.md)** - CI/CD automation (866 lines)
-- **[Fuzzing Guide](docs/29-FUZZ-TESTING-GUIDE.md)** - 230M+ executions (784 lines)
-- **[Plugin System](docs/30-PLUGIN-SYSTEM-GUIDE.md)** - Lua scripting (784 lines)
-- **[Benchmarking](docs/31-BENCHMARKING-GUIDE.md)** - Regression detection (1,044 lines)
+- **[IPv6 Guide](../../docs/23-IPv6-GUIDE.md)** - Complete IPv6 support (1,958 lines)
+- **[Service Detection](../../docs/24-SERVICE-DETECTION-GUIDE.md)** - 85-90% accuracy (659 lines)
+- **[Idle Scan Guide](../../docs/25-IDLE-SCAN-GUIDE.md)** - Nmap parity (650 lines)
+- **[Rate Limiting](../../docs/26-RATE-LIMITING-GUIDE.md)** - Industry-leading -1.8% (v2.0.0)
+- **[TLS Certificate](../../docs/27-TLS-CERTIFICATE-GUIDE.md)** - X.509v3 analysis (2,160 lines)
+- **Coverage Guide (docs/28-CI-CD-GUIDE.md - planned but not created)** - CI/CD automation (866 lines)
+- **Fuzzing Guide (docs/29-FUZZ-TESTING-GUIDE.md - planned but not created)** - 230M+ executions (784 lines)
+- **[Plugin System](../../docs/30-PLUGIN-SYSTEM-GUIDE.md)** - Lua scripting (784 lines)
+- **[Benchmarking](../../docs/31-BENCHMARKING-GUIDE.md)** - Regression detection (1,044 lines)
 
 ### Core Documentation
-- **[Architecture](docs/00-ARCHITECTURE.md)** - System design
-- **[Roadmap](docs/01-ROADMAP.md)** - Phase 5 100% COMPLETE
-- **[Testing](docs/06-TESTING.md)** - 1,766 tests, 54.92% coverage
-- **[Security](docs/08-SECURITY.md)** - Security features and audit
+- **[Architecture](../../docs/00-ARCHITECTURE.md)** - System design
+- **[Roadmap](../../docs/01-ROADMAP.md)** - Phase 5 100% COMPLETE
+- **[Testing](../../docs/06-TESTING.md)** - 1,766 tests, 54.92% coverage
+- **[Security](../../docs/08-SECURITY.md)** - Security features and audit
 
 ---
 
@@ -2510,7 +2510,7 @@ prtip -sV -6 2001:db8::1 -p 80,443
 - **TLS Analysis:** Weak cipher detection, protocol downgrade prevention
 - **Input Validation:** All user inputs validated, no shell injection
 
-**Reporting:** See [SECURITY.md](SECURITY.md)
+**Reporting:** See [SECURITY.md](../../SECURITY.md)
 
 ---
 
@@ -2544,7 +2544,7 @@ prtip -sV -6 2001:db8::1 -p 80,443
 - **Documentation:** https://github.com/doublegate/ProRT-IP/tree/main/docs
 - **Issue Tracker:** https://github.com/doublegate/ProRT-IP/issues
 - **Discussions:** https://github.com/doublegate/ProRT-IP/discussions
-- **License:** GPL-3.0 (see [LICENSE](LICENSE))
+- **License:** GPL-3.0 (see [LICENSE](../../LICENSE))
 
 ---
 
@@ -2575,7 +2575,7 @@ Phase 5 completion represents 10 focused sprints with professional execution:
 - Comprehensive documentation (50K+ lines)
 - Community feedback incorporated (issue reports, discussions)
 
-**Contributors:** See [AUTHORS](AUTHORS) (if exists)
+**Contributors:** See AUTHORS file (if exists)
 
 ---
 

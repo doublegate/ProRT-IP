@@ -6,5 +6,5 @@ Quick start guide for new users.
 
 - [Installation](installation.md)
 - [Quick Start](quick-start.md)
-- [Architecture Overview](architecture.md)
+- [Architecture Overview](../development/architecture.md)
 - [Examples](examples.md)

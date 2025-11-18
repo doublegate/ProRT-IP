@@ -1194,8 +1194,8 @@ prtip -sS -sV -p 3306,5432,1433 TARGET
 - **[OS Fingerprinting](../features/os-fingerprinting.md)** - Operating system detection
 
 **Technical Documentation:**
-- **[Architecture](../00-ARCHITECTURE.md)** - System design and components
-- **[Implementation Guide](../04-IMPLEMENTATION-GUIDE.md)** - Internal port handling
+- **[Architecture](../../00-ARCHITECTURE.md)** - System design and components
+- **[Implementation Guide](../../04-IMPLEMENTATION-GUIDE.md)** - Internal port handling
 
 **External Resources:**
 - **IANA Port Registry:** [https://www.iana.org/assignments/service-names-port-numbers](https://www.iana.org/assignments/service-names-port-numbers)

@@ -1447,9 +1447,9 @@ jq -r '.hosts[].ports[] | select(.service.tls) | [.host, .address, .port, .servi
 
 - **[Service Detection](./service-detection.md)** - Protocol-specific service identification
 - **[User Guide: Service Detection](../user-guide/basic-usage.md#service-detection)** - Usage examples and workflows
-- **[Architecture: Scanning Engine](../00-ARCHITECTURE.md)** - TLS integration in scan pipeline
-- **[Technical Specs: TLS Implementation](../02-TECHNICAL-SPECS.md#tls-certificate-analysis)** - Complete implementation details
-- **[Security Guide](../08-SECURITY.md)** - TLS security best practices
+- **[Architecture: Scanning Engine](../../00-ARCHITECTURE.md)** - TLS integration in scan pipeline
+- **[Technical Specs: TLS Implementation](../../02-TECHNICAL-SPECS.md#tls-certificate-analysis)** - Complete implementation details
+- **[Security Guide](../../08-SECURITY.md)** - TLS security best practices
 
 **External Resources:**
 - **RFC 5280** - X.509 v3 Certificate and CRL Profile

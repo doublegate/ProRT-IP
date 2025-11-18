@@ -1436,7 +1436,7 @@ if ui_state.aggregator_dropped_events > 0 {
 
 - **[Performance Tuning](./performance-tuning.md)** - Performance optimization techniques (NUMA, timing, rate limiting)
 - **[Real-Time Dashboard](../features/real-time-dashboard.md)** - Dashboard widgets usage and examples
-- **[Event System Guide](../35-EVENT-SYSTEM-GUIDE.md)** - EventBus architecture and event types
+- **[Event System Guide](../../35-EVENT-SYSTEM-GUIDE.md)** - EventBus architecture and event types
 - **[Large-Scale Scanning](./large-scale-scanning.md)** - Handling millions of targets (TUI impact)
 
 ### Feature Guides
@@ -1446,9 +1446,9 @@ if ui_state.aggregator_dropped_events > 0 {
 
 ### Technical Documentation
 
-- **[Architecture](../00-ARCHITECTURE.md)** - Overall system design, async architecture
-- **[Testing Guide](../06-TESTING.md)** - Unit, integration, and doctest strategies
-- **[Implementation Guide](../04-IMPLEMENTATION-GUIDE.md)** - Code organization, module structure
+- **[Architecture](../../00-ARCHITECTURE.md)** - Overall system design, async architecture
+- **[Testing Guide](../../06-TESTING.md)** - Unit, integration, and doctest strategies
+- **[Implementation Guide](../../04-IMPLEMENTATION-GUIDE.md)** - Code organization, module structure
 
 ### External Resources
 

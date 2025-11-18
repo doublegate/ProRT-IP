@@ -631,7 +631,7 @@ RUSTFLAGS="-Z sanitizer=address" cargo test --target x86_64-unknown-linux-gnu
 **Responsible Disclosure**: ProRT-IP follows a coordinated vulnerability disclosure process.
 
 **Reporting**:
-- **Email**: security@prtip.dev (PGP key: [0xABCD1234](https://keys.openpgp.org))
+- **Email**: security[at]prtip.dev (PGP key: [0xABCD1234](https://keys.openpgp.org))
 - **GitHub**: Private security advisory (https://github.com/doublegate/ProRT-IP/security/advisories/new)
 
 **Response Timeline**:

@@ -103,7 +103,7 @@ jobs:
       - name: Check links in root markdown files
         run: |
           echo "::group::Checking root markdown files"
-          for file in CHANGELOG.md CONTRIBUTING.md SECURITY.md AUTHORS.md SUPPORT.md 2>/dev/null; do
+          for file in CHANGELOG.md CONTRIBUTING.md SECURITY.md AUTHORS.md SUPPORT.md; do
             if [ -f "$file" ]; then
               echo "Checking: $file"
               markdown-link-check "$file" --config mlc_config.json || exit 1

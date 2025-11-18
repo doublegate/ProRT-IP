@@ -1166,7 +1166,7 @@ Following the completion of Phase 4 (Performance Optimization) with v0.4.0, this
   - **Technical Details:** ISN analysis, TCP option ordering, IPID patterns, timestamp analysis
 
 - **7 Best Nmap Alternatives (TechnicalUstad, 2025):**
-  - **URL:** https://technicalustad.com/nmap-alternatives/
+  - **URL:** technicalustad.com/nmap-alternatives
   - **Key Insights:** Masscan (speed), RustScan (modern), Angry IP Scanner (GUI), ZMap (internet-scale), Unicornscan (advanced)
   - **Use Cases:** When to use each alternative vs Nmap
 

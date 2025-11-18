@@ -2088,7 +2088,7 @@ prtip -sS -p 443 -sV subnet.example.com | grep -v "closed\|filtered"
 
 **TLS Protocol:**
 - **RFC 8446:** [The Transport Layer Security (TLS) Protocol Version 1.3](https://www.rfc-editor.org/rfc/rfc8446.html) (August 2018)
-- **RFC 5246:** The Transport Layer Security (TLS) Protocol Version 1.2 (August 2008)
+- **RFC 5246:** [The Transport Layer Security (TLS) Protocol Version 1.2](https://www.rfc-editor.org/rfc/rfc5246.html) (August 2008)
 - **RFC 8996:** [Deprecating TLS 1.0 and TLS 1.1](https://www.rfc-editor.org/rfc/rfc8996.html) (March 2021)
 - **RFC 7540:** [HTTP/2](https://www.rfc-editor.org/rfc/rfc7540.html) (ALPN h2)
 - **RFC 7301:** [Transport Layer Security (TLS) Application-Layer Protocol Negotiation Extension](https://www.rfc-editor.org/rfc/rfc7301.html) (ALPN)

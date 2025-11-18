@@ -1130,7 +1130,7 @@ ProRT-IP's security model is built on:
 7. **Continuous Testing** - Fuzzing, static analysis, security audits
 
 For security questions, vulnerability reports, or general inquiries:
-- **Email:** security[at]prtip.example.com (replace with actual contact)
+- **Email:** security[at]prtip.dev
 - **Repository:** https://github.com/doublegate/ProRT-IP
 - **Security Policy:** [SECURITY.md](https://github.com/doublegate/ProRT-IP/blob/main/SECURITY.md)
 

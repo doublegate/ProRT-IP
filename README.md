@@ -7,7 +7,7 @@
 </div>
 
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-2,260%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-2,167%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 ![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -109,8 +109,8 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 ## Project Status
 
 **Current:** Phase 6 (4/8 sprints complete, 50%)
-**Version:** v0.6.1 (Released 2025-11-20)
-**Tests:** 2,260 passing (100%)
+**Version:** v0.5.4 (Released 2025-11-21)
+**Tests:** 2,167 passing (100%)
 **Coverage:** 54.92%
 
 ### Recent Achievements
@@ -130,7 +130,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
   - O(1) buffer acquisition and return
   - Thread-safe concurrent access with minimal lock contention (parking_lot::Mutex)
   - Pre-allocation support via `with_preallocation()`
-- **Quality:** 2,260 tests passing (16 new buffer pool tests), 0 clippy warnings
+- **Quality:** 2,167 tests passing (16 new buffer pool tests), 0 clippy warnings
 - **Impact:** Foundation for 30%+ memory allocation reduction on >10KB packets
 
 **Sprint 6.2 COMPLETE (2025-11-14):** Live Dashboard & Real-Time Metrics
@@ -1239,7 +1239,7 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
 - **Technical Documents:** 40+ comprehensive docs in docs/ (13 core + 27 guides/refs)
 - **Historical Archives:** 3 phase archives (Phase 4, 5, 6) with comprehensive sprint history
 - **Benchmark Suites:** 5 comprehensive benchmark directories across Phases 4-6
-- **Test Suite:** 2,260 tests passing (100% success rate, 54.92% coverage)
+- **Test Suite:** 2,167 tests passing (100% success rate, 54.92% coverage)
 - **Fuzz Testing:** 230M+ executions, 0 crashes, 5 fuzz targets
 - **CI/CD Status:** 9/9 jobs passing (100% success rate)
 - **Build Targets:** 8 platforms (5 production-ready + 3 experimental)
@@ -1365,6 +1365,6 @@ This project builds on the pioneering work of:
 
 ---
 
-**Last Updated:** 2025-11-20
-**Current Version:** v0.6.1
+**Last Updated:** 2025-11-21
+**Current Version:** v0.5.4
 **Phase:** 6 Sprint 6.4 COMPLETE (4/8 sprints, 50%)

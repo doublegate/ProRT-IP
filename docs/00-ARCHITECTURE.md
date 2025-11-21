@@ -1,8 +1,8 @@
 # ProRT-IP WarScan: Architecture Overview
 
-**Version:** 3.2
-**Last Updated:** 2025-11-16
-**Status:** Phase 6 IN PROGRESS (Sprint 6.3 COMPLETE) - v0.6.0 TUI + Network Optimizations (~73% Overall Progress, 2,151 tests, 54.92% coverage)
+**Version:** 3.3
+**Last Updated:** 2025-11-21
+**Status:** Phase 6 IN PROGRESS (Sprint 6.4 COMPLETE) - v0.5.4 TUI + Zero-Copy (~75% Overall Progress, 2,167 tests, 54.92% coverage)
 
 ---
 

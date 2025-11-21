@@ -35,6 +35,7 @@ pub mod fragmentation;
 pub mod icmpv6;
 pub mod interface;
 pub mod ipv6_packet;
+pub mod large_buffer_pool;
 pub mod numa;
 pub mod packet_buffer;
 pub mod packet_builder;
@@ -53,6 +54,10 @@ pub use fragmentation::{
 };
 pub use icmpv6::{Icmpv6PacketBuilder, Icmpv6ResponseParser};
 pub use ipv6_packet::{parse_ipv6_header, ExtensionHeader, Ipv6Header, Ipv6PacketBuilder};
+pub use large_buffer_pool::{
+    BufferTier, LargeBufferPool, PoolStats, PooledBuffer, SharedPacket, TIER_1_SIZE, TIER_2_SIZE,
+    TIER_3_SIZE,
+};
 pub use packet_buffer::{with_buffer, PacketBuffer};
 pub use packet_builder::{TcpFlags, TcpOption, TcpPacketBuilder, UdpPacketBuilder};
 pub use privilege::{check_privileges, drop_privileges, has_raw_socket_capability};

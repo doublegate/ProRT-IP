@@ -52,6 +52,10 @@ jobs:
               },
               {
                 "pattern": "^https://127.0.0.1"
+              },
+              {
+                "pattern": "^https://nvd\\.nist\\.gov",
+                "comment": "NIST NVD site blocks automated requests with Cloudflare"
               }
             ],
             "replacementPatterns": [

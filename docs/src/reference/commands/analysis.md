@@ -155,6 +155,6 @@ prtip -sS -T5 --max-rate 100000 -p- target.com
 ## See Also
 
 - [Command Overview](./overview.md)
-- [CLI Specification](../../reference/cli.md)
+- [CLI Specification](../command-reference.md)
 - [Quick Start](../../getting-started/quick-start.md)
 

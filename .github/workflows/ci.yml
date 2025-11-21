@@ -8,6 +8,7 @@ on:
       - 'fuzz/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - 'deny.toml'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [ main ]
@@ -16,6 +17,7 @@ on:
       - 'fuzz/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - 'deny.toml'
       - '.github/workflows/ci.yml'
 
 # Cancel outdated workflow runs

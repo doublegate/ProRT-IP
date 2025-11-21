@@ -59,6 +59,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **windows-sys:** 0.60.2 → 0.61.2 (Windows system bindings)
   - Additional minor dependency updates for improved stability and security
 
+### Fixed
+
+- **CI/CD: Security Audit Advisory Ignore** (2025-11-21)
+  - Added RUSTSEC-2025-0119 to `deny.toml` ignore list
+  - **Issue:** `number_prefix` crate marked unmaintained (transitive dep via indicatif)
+  - **Risk Assessment:** Very Low - pure formatting utility, no security-sensitive operations
+  - **Impact:** CI security audit now passes
+  - **Mitigation:** Will migrate when indicatif upstream adopts unit-prefix alternative
+
 - **Sprint 6.3 Benchmark Infrastructure & Test Data** (2025-11-19)
   - Complete benchmark suite for network optimization testing (40 benchmark files)
   - Batch I/O performance benchmarks with multiple batch sizes (1, 32, 256, 1024)

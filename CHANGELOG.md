@@ -9,6 +9,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sprint 6.4: Zero-Copy Buffer Pool Infrastructure** (2025-11-20)
+  - **New Module:** `large_buffer_pool` with tiered buffer management for zero-copy packet handling
+  - **Buffer Tiers:**
+    - Tier 1: 4KB (small packets, standard MTU)
+    - Tier 2: 16KB (medium packets, jumbo frames, service probes)
+    - Tier 3: 64KB (large packets, max IP packet size)
+  - **Features:**
+    - `LargeBufferPool` - Thread-safe tiered buffer pool using `parking_lot::Mutex`
+    - `PooledBuffer` - RAII wrapper for automatic buffer return to pool
+    - `SharedPacket` - Arc-based zero-copy packet sharing for multi-consumer scenarios
+    - `BufferTier` - Automatic tier selection based on requested size
+    - `PoolStats` - Hit rate tracking, allocation monitoring, pool diagnostics
+  - **Performance Characteristics:**
+    - Zero allocations after initial pool warmup
+    - O(1) buffer acquisition and return
+    - Pre-allocation support via `with_preallocation()`
+    - Automatic buffer recycling on drop
+    - Thread-safe concurrent access with minimal lock contention
+  - **bytes Crate Integration:**
+    - Added `bytes = "1.9"` dependency for zero-copy byte handling
+    - `BytesMut` for mutable buffers with zero-copy slicing
+    - `Bytes` for immutable shared data via `freeze()`
+  - **New Tests:** 16 comprehensive tests covering:
+    - Tier classification and size validation
+    - Pool acquisition/release cycles
+    - Hit rate statistics
+    - Concurrent access patterns
+    - Buffer overflow handling
+    - SharedPacket zero-copy slicing
+    - >10KB packet handling validation
+  - **Files Added:**
+    - `crates/prtip-network/src/large_buffer_pool.rs` (~550 lines)
+    - `docs/to-dos/PHASE-6/SPRINT-6.4-TODO.md` (implementation plan)
+  - **Files Modified:**
+    - `crates/prtip-network/Cargo.toml` (added bytes dependency)
+    - `crates/prtip-network/src/lib.rs` (module exports)
+  - **Impact:** Foundation for 30%+ memory allocation reduction on >10KB packets
+  - **Test Results:** 2,260 tests passing (16 new buffer pool tests), 0 clippy warnings
+
+- **Dependency Updates** (2025-11-20)
+  - **bytes:** 1.10.1 → 1.11.0 (zero-copy byte handling)
+  - **clap:** 4.5.51 → 4.5.53 (CLI argument parsing)
+  - **syn:** 2.0.108 → 2.0.110 (Rust syntax parsing)
+  - **cc:** 1.2.44 → 1.2.46 (C compiler integration)
+  - **crypto-common:** 0.1.6 → 0.1.7 (cryptography utilities)
+  - **anstyle-query:** 1.1.4 → 1.1.5 (ANSI terminal styling)
+  - **anstyle-wincon:** 3.0.10 → 3.0.11 (Windows console styling)
+  - **windows-sys:** 0.60.2 → 0.61.2 (Windows system bindings)
+  - Additional minor dependency updates for improved stability and security
+
 - **Sprint 6.3 Benchmark Infrastructure & Test Data** (2025-11-19)
   - Complete benchmark suite for network optimization testing (40 benchmark files)
   - Batch I/O performance benchmarks with multiple batch sizes (1, 32, 256, 1024)

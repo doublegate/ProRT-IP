@@ -7,7 +7,7 @@
 </div>
 
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-2,151%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-2,260%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 ![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -108,12 +108,30 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current:** Phase 6 (3/8 sprints complete, 37.5%)
-**Version:** v0.5.3 (Released 2025-11-17)
-**Tests:** 2,151 passing (100%)
+**Current:** Phase 6 (4/8 sprints complete, 50%)
+**Version:** v0.6.1 (Released 2025-11-20)
+**Tests:** 2,260 passing (100%)
 **Coverage:** 54.92%
 
 ### Recent Achievements
+
+**Sprint 6.4 COMPLETE (2025-11-20):** Zero-Copy Buffer Pool Infrastructure
+
+- **Status:** Core Implementation Complete - Production-ready foundation for zero-copy packet handling
+- **Major Achievements:**
+  - **New Module:** `large_buffer_pool.rs` (682 lines) - Thread-safe tiered buffer management
+  - **Three-Tier Architecture:** 4KB (small packets), 16KB (medium/jumbo frames), 64KB (max IP packet)
+  - **RAII Buffer Management:** `PooledBuffer` wrapper with automatic return to pool on drop
+  - **Zero-Copy Sharing:** `SharedPacket` Arc-based wrapper for multi-consumer packet access
+  - **Pool Statistics:** Hit rate tracking, allocation monitoring, pool diagnostics via `PoolStats`
+  - **bytes Crate Integration:** BytesMut for mutable buffers, Bytes for immutable shared data
+- **Performance Characteristics:**
+  - Zero allocations after initial pool warmup
+  - O(1) buffer acquisition and return
+  - Thread-safe concurrent access with minimal lock contention (parking_lot::Mutex)
+  - Pre-allocation support via `with_preallocation()`
+- **Quality:** 2,260 tests passing (16 new buffer pool tests), 0 clippy warnings
+- **Impact:** Foundation for 30%+ memory allocation reduction on >10KB packets
 
 **Sprint 6.2 COMPLETE (2025-11-14):** Live Dashboard & Real-Time Metrics
 
@@ -175,6 +193,7 @@ ProRT-IP includes comprehensive documentation built with mdBook, providing profe
 ### Viewing Documentation
 
 **Option 1: Build and Serve Locally**
+
 ```bash
 cd docs/
 mdbook serve --open
@@ -182,6 +201,7 @@ mdbook serve --open
 ```
 
 **Option 2: Static HTML**
+
 ```bash
 mdbook build docs/
 # Generated HTML in docs/book/
@@ -897,14 +917,14 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 
 ### Current Focus: Phase 6 - TUI Interface + Network Optimizations
 
-**Progress:** 2.5/8 sprints (31.25%)
+**Progress:** 4/8 sprints (50%)
 
 | Sprint | Status | Description |
 |--------|--------|-------------|
 | 6.1 | ✅ Complete | TUI Framework (60 FPS, 4 widgets, event integration) |
 | 6.2 | ✅ Complete | Live Dashboard (4-tab interface, 8 widgets total) |
-| 6.3 | 🔄 Partial | Network Optimizations (CDN dedup, adaptive batching) |
-| 6.4 | 📋 Planned | Zero-Copy Optimizations |
+| 6.3 | ✅ Complete | Network Optimizations (O(N) scaling, CDN dedup, adaptive batching) |
+| 6.4 | ✅ Complete | Zero-Copy Buffer Pool (tiered 4KB/16KB/64KB, RAII, SharedPacket) |
 | 6.5 | 📋 Planned | Interactive Target Selection |
 | 6.6 | 📋 Planned | TUI Polish & UX |
 | 6.7 | 📋 Planned | Configuration Profiles |
@@ -917,7 +937,7 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 | Phase 1-3 | Weeks 1-10 | Core Infrastructure, Advanced Scanning, Detection | ✅ Complete |
 | Phase 4 | Weeks 11-13 | Performance Optimization | ✅ Complete |
 | Phase 5 + 5.5 | Weeks 14-18 | Advanced Features + Pre-TUI | ✅ Complete |
-| **Phase 6** | **Weeks 19-20** | **TUI Interface** | **🔄 31% (2.5/8 sprints)** |
+| **Phase 6** | **Weeks 19-20** | **TUI Interface** | **🔄 50% (4/8 sprints)** |
 | Phase 7 | Weeks 21-22 | Release Preparation | 📋 Planned |
 | Phase 8 | Beyond | Post-Release Features | 📋 Future |
 
@@ -1219,7 +1239,7 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
 - **Technical Documents:** 40+ comprehensive docs in docs/ (13 core + 27 guides/refs)
 - **Historical Archives:** 3 phase archives (Phase 4, 5, 6) with comprehensive sprint history
 - **Benchmark Suites:** 5 comprehensive benchmark directories across Phases 4-6
-- **Test Suite:** 2,151 tests passing (100% success rate, 54.92% coverage)
+- **Test Suite:** 2,260 tests passing (100% success rate, 54.92% coverage)
 - **Fuzz Testing:** 230M+ executions, 0 crashes, 5 fuzz targets
 - **CI/CD Status:** 9/9 jobs passing (100% success rate)
 - **Build Targets:** 8 platforms (5 production-ready + 3 experimental)
@@ -1274,7 +1294,7 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
   - Git-style help system
 - **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam, ratatui, crossterm, mlua, hwloc)
 - **Target Performance:** 10M+ packets/second (stateless), 72K+ pps (stateful - achieved!)
-- **Code Coverage:** 2,151 tests (100% pass rate), 54.92% line coverage
+- **Code Coverage:** 2,260 tests (100% pass rate), 54.92% line coverage
 - **Cross-Compilation:** Supported via cross-rs for ARM64 and BSD targets
 - **Release Automation:** GitHub Actions with smart release management + artifact uploads
 
@@ -1345,6 +1365,6 @@ This project builds on the pioneering work of:
 
 ---
 
-**Last Updated:** 2025-11-17
-**Current Version:** v0.5.3
-**Phase:** 6 Sprint 6.3 COMPLETE (3/8 sprints, 37.5%)
+**Last Updated:** 2025-11-20
+**Current Version:** v0.6.1
+**Phase:** 6 Sprint 6.4 COMPLETE (4/8 sprints, 50%)

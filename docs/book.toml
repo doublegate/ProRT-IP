@@ -8,7 +8,7 @@ src = "src"
 
 [build]
 build-dir = "book"
-create-missing = true
+create-missing = false
 
 [preprocessor.links]
 # Enable link checking

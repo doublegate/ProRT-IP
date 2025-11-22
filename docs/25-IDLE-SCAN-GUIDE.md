@@ -1379,7 +1379,7 @@ Use ossec, wazuh, or custom scripts to alert on:
 
 1. **Commit 04ca6973f7c1:** "ip: make IP identifiers less predictable"
    - Date: April 2018 (kernel 4.18)
-   - URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=04ca6973f7c1
+   - URL: https://github.com/torvalds/linux/commit/04ca6973f7c1
    - Impact: Default random IPID, broke idle scan on modern Linux
 
 ### Tools and Software

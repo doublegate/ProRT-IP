@@ -1,0 +1,56 @@
+#!/bin/bash
+# Pre-commit hook for ProRT-IP
+# Validates Cargo.lock synchronization before allowing commit
+#
+# Installation:
+#   cp .github/hooks/pre-commit .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# Bypass (not recommended):
+#   git commit --no-verify
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if Cargo.toml files were modified
+if git diff --cached --name-only | grep -q "Cargo.toml"; then
+    echo "📦 Cargo.toml modified, validating Cargo.lock synchronization..."
+
+    # Check if Cargo.lock is also staged
+    if ! git diff --cached --name-only | grep -q "Cargo.lock"; then
+        echo "❌ ERROR: Cargo.toml modified but Cargo.lock not staged"
+        echo "   Run: cargo update && git add Cargo.lock"
+        exit 1
+    fi
+
+    # Validate lockfile is synchronized
+    if ! cargo build --locked --quiet 2>/dev/null; then
+        echo "❌ ERROR: Cargo.lock is out of sync with Cargo.toml"
+        echo "   Run: cargo update && git add Cargo.lock"
+        exit 1
+    fi
+
+    echo "✅ Cargo.lock is synchronized"
+fi
+
+# Run cargo fmt check
+echo "🎨 Checking code formatting..."
+if ! cargo fmt --check 2>&1 | grep -q "^$"; then
+    echo "❌ ERROR: Code formatting issues found"
+    echo "   Run: cargo fmt"
+    exit 1
+fi
+echo "✅ Code formatting OK"
+
+# Run clippy
+echo "🔎 Running clippy linter..."
+if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1; then
+    echo "❌ ERROR: Clippy warnings found"
+    echo "   Fix warnings or run: cargo clippy --fix"
+    exit 1
+fi
+echo "✅ Clippy checks passed"
+
+echo "✅ All pre-commit checks passed!"
+exit 0

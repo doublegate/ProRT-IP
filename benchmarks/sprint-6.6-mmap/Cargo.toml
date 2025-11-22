@@ -1,0 +1,17 @@
+[workspace]
+# Standalone benchmark (not part of main workspace)
+
+[package]
+name = "benchmark-mmap"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "benchmark_mmap"
+path = "benchmark_mmap.rs"
+
+[dependencies]
+prtip-core = { path = "../../crates/prtip-core" }
+prtip-scanner = { path = "../../crates/prtip-scanner" }
+chrono = "0.4"

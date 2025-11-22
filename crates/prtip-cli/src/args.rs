@@ -522,6 +522,25 @@ pub struct Args {
     #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
     pub output_file: Option<PathBuf>,
 
+    /// Use memory-mapped file output (reduces memory usage by 20-50%)
+    ///
+    /// Uses memory-mapped files instead of in-memory buffering for scan results.
+    /// Ideal for large-scale scans (10M+ targets) on systems with limited RAM.
+    /// Requires --mmap-output to specify the output file path.
+    ///
+    /// Example: prtip --use-mmap --mmap-output results.mmap -sS -p- 10.0.0.0/16
+    #[arg(long, help_heading = "OUTPUT")]
+    pub use_mmap: bool,
+
+    /// Path to memory-mapped output file (used with --use-mmap)
+    ///
+    /// Binary format file for memory-mapped scan results. Can be read with MmapResultReader.
+    /// Only used when --use-mmap flag is specified.
+    ///
+    /// Example: prtip --use-mmap --mmap-output scan.mmap -sS 192.168.1.0/24
+    #[arg(long, value_name = "FILE", help_heading = "OUTPUT")]
+    pub mmap_output_path: Option<PathBuf>,
+
     /// Enable SQLite database storage (optional, async worker mode)
     ///
     /// By default, ProRT-IP stores results only in memory for maximum performance
@@ -1648,6 +1667,8 @@ impl Args {
                 format: output_format,
                 file: output_file,
                 verbose: self.verbose,
+                use_mmap: self.use_mmap,
+                mmap_output_path: self.mmap_output_path.clone(),
             },
             performance: PerformanceConfig {
                 max_rate: self.max_rate,

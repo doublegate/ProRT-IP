@@ -37,7 +37,7 @@
 //! # }
 //! ```
 
-use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter, ResultWriter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{
@@ -1143,7 +1143,7 @@ impl SynScanner {
     /// # Arguments
     ///
     /// * `responses` - Vector of received packets from BatchReceiver
-    /// * `results` - Mutable vector to append ScanResults to
+    /// * `writer` - Mutable ResultWriter to append ScanResults to
     /// * `scan_id` - Scan ID for event emission
     ///
     /// # Algorithm
@@ -1159,10 +1159,12 @@ impl SynScanner {
     /// - No lock contention (only locks target shard, not all shards)
     /// - No memory allocation (no Vec creation)
     /// - Minimal cache misses (only access relevant shard)
+    ///
+    /// Sprint 6.6 Task Area 3: Updated to use ResultWriter abstraction
     async fn process_batch_responses(
         &self,
         responses: Vec<prtip_network::ReceivedPacket>,
-        results: &mut Vec<ScanResult>,
+        writer: &mut ResultWriter,
         scan_id: Uuid,
     ) -> Result<()> {
         for response in responses {
@@ -1192,7 +1194,7 @@ impl SynScanner {
                         }
                     }
 
-                    results.push(result);
+                    writer.write(&result)?;
                 }
             }
         }
@@ -1321,26 +1323,28 @@ impl SynScanner {
                 prtip_core::Error::Network(format!("Failed to create BatchReceiver: {}", e))
             })?;
 
-        // 8. Process ports in batches
-        let mut results = Vec::new();
+        // 8. Create ResultWriter from config (Sprint 6.6 Task Area 3)
+        let mut writer = ResultWriter::from_config(&self.config, ports.len())?;
+
+        // 9. Process ports in batches
         for chunk in ports.chunks(batch_size) {
-            // 8a. Prepare batch of SYN packets
+            // 9a. Prepare batch of SYN packets
             let batch_packets = self.prepare_batch(target, chunk, batch_size).await?;
 
-            // 8b. Add packets to sender batch
+            // 9b. Add packets to sender batch
             for packet in batch_packets {
                 sender.add_packet(packet).map_err(|e| {
                     prtip_core::Error::Network(format!("Failed to add packet to batch: {}", e))
                 })?;
             }
 
-            // 8c. Flush batch with retry logic
+            // 9c. Flush batch with retry logic
             sender
                 .flush(3) // 3 retries
                 .await
                 .map_err(|e| prtip_core::Error::Network(format!("Failed to flush batch: {}", e)))?;
 
-            // 8d. Receive batch responses with timeout
+            // 9d. Receive batch responses with timeout
             let timeout_ms = Duration::from_millis(self.config.scan.timeout_ms);
             let responses = receiver
                 .receive_batch(timeout_ms.as_millis() as u32)
@@ -1349,22 +1353,28 @@ impl SynScanner {
                     prtip_core::Error::Network(format!("Failed to receive batch: {}", e))
                 })?;
 
-            // 8e. Process responses and update results
-            self.process_batch_responses(responses, &mut results, scan_id)
+            // 9e. Process responses and update results
+            self.process_batch_responses(responses, &mut writer, scan_id)
                 .await?;
 
-            // 8f. Mark remaining ports in chunk as filtered (no response received)
+            // 9f. Mark remaining ports in chunk as filtered (no response received)
+            // Get current results to check which ports were already found
+            let current_results = writer.collect()?;
             for &port in chunk {
-                if !results.iter().any(|r| r.port == port) {
-                    results.push(
-                        ScanResult::new(target, port, PortState::Filtered)
+                if !current_results.iter().any(|r| r.port == port) {
+                    writer.write(
+                        &ScanResult::new(target, port, PortState::Filtered)
                             .with_response_time(scan_start.elapsed()),
-                    );
+                    )?;
                 }
             }
         }
 
-        // 9. Calculate final statistics
+        // 10. Flush writer and collect results
+        writer.flush()?;
+        let results = writer.collect()?;
+
+        // 11. Calculate final statistics
         let open_count = results
             .iter()
             .filter(|r| r.state == PortState::Open)
@@ -1378,7 +1388,7 @@ impl SynScanner {
             .filter(|r| r.state == PortState::Filtered)
             .count();
 
-        // 10. Emit ScanCompleted event
+        // 12. Emit ScanCompleted event
         if let Some(bus) = &self.event_bus {
             bus.publish(ScanEvent::ScanCompleted {
                 scan_id,
@@ -1424,6 +1434,7 @@ impl SynScanner {
 
         // Clone event bus for tasks
         let event_bus = self.event_bus.clone();
+        let port_count = ports.len();
 
         // Spawn scan tasks for each port (original implementation)
         for port in ports {
@@ -1463,10 +1474,10 @@ impl SynScanner {
         // Drop the sender so receiver knows when all tasks are done
         drop(tx);
 
-        // Collect results
-        let mut results = Vec::new();
+        // Sprint 6.6 Task Area 3: Use ResultWriter for collection
+        let mut writer = ResultWriter::from_config(&self.config, port_count)?;
         while let Some(result) = rx.recv().await {
-            results.push(result);
+            writer.write(&result)?;
         }
 
         // Wait for all tasks to complete
@@ -1474,7 +1485,9 @@ impl SynScanner {
             let _ = task.await;
         }
 
-        Ok(results)
+        // Flush and return results
+        writer.flush()?;
+        writer.collect()
     }
 
     /// Clone scanner for task spawning (shares connection table and capture)
@@ -1619,6 +1632,8 @@ mod tests {
                 format: OutputFormat::Json,
                 file: None,
                 verbose: 0,
+                use_mmap: false,
+                mmap_output_path: None,
             },
             performance: PerformanceConfig {
                 max_rate: None,
@@ -1792,13 +1807,15 @@ mod tests {
         // verify the full parsing logic.
         let responses = vec![]; // Empty response set for now
 
-        let mut results = Vec::new();
+        // Sprint 6.6 Task Area 3: Use ResultWriter in test
+        let mut writer = ResultWriter::new_memory();
         let result = scanner
-            .process_batch_responses(responses, &mut results, scan_id)
+            .process_batch_responses(responses, &mut writer, scan_id)
             .await;
 
         assert!(result.is_ok(), "Batch response processing should succeed");
         // With no responses, results should remain empty
+        let results = writer.collect().expect("Should collect results");
         assert_eq!(
             results.len(),
             0,

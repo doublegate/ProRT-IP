@@ -37,7 +37,7 @@
 //! # }
 //! ```
 
-use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter, ResultWriter};
 use futures::stream::{FuturesUnordered, StreamExt};
 use prtip_core::{Config, PortState, Result, ScanResult};
 use prtip_network::CdnDetector;
@@ -339,8 +339,8 @@ impl ConcurrentScanner {
         // Track unique error messages (avoid spam)
         let mut errors: HashSet<String> = HashSet::new();
 
-        // Results accumulator
-        let mut results = Vec::new();
+        // Sprint 6.6 Task Area 3: Use ResultWriter for result accumulation
+        let mut writer = ResultWriter::from_config(&self.config, total_sockets)?;
 
         // Helper closure to create futures (ensures same type)
         let make_future = |socket: SocketAddr, config: Config| async move {
@@ -375,7 +375,7 @@ impl ConcurrentScanner {
                 Ok(result) => {
                     if result.state == PortState::Open {
                         trace!("Found open port: {}:{}", result.target_ip, result.port);
-                        results.push(result);
+                        writer.write(&result)?;
                     }
                 }
                 Err(e) => {
@@ -387,6 +387,10 @@ impl ConcurrentScanner {
                 }
             }
         }
+
+        // Flush writer and collect results
+        writer.flush()?;
+        let results = writer.collect()?;
 
         debug!(
             "Concurrent scan complete: {} open ports, {} unique errors",

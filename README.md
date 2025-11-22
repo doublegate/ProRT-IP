@@ -257,6 +257,10 @@ sudo mv prtip-linux-x86_64 /usr/local/bin/prtip
 ```bash
 git clone https://github.com/doublegate/ProRT-IP.git
 cd ProRT-IP
+
+# For development (recommended): install git hooks
+./scripts/install-hooks.sh
+
 cargo build --release
 sudo setcap cap_net_raw,cap_net_admin=eip target/release/prtip
 ```
@@ -1168,6 +1172,9 @@ sudo dnf install hwloc-devel            # Fedora
 git clone https://github.com/doublegate/ProRT-IP.git
 cd ProRT-IP
 
+# Install git hooks (recommended for development)
+./scripts/install-hooks.sh
+
 # Build
 cargo build --release
 
@@ -1212,6 +1219,10 @@ brew install libpcap pkgconf
 # Clone and build
 git clone https://github.com/doublegate/ProRT-IP.git
 cd ProRT-IP
+
+# Install git hooks (recommended for development)
+./scripts/install-hooks.sh
+
 cargo build --release
 ```
 

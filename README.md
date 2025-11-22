@@ -109,13 +109,22 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 ## Project Status
 
 **Current:** Phase 6 (5/8 sprints complete, 63%)
-**Version:** v0.5.4 (Released 2025-11-21)
-**Tests:** 2,260 passing (100%)
+**Version:** v0.5.5 (Released 2025-11-22)
+**Tests:** 2,246 passing (100%)
 **Coverage:** 54.92%
 
 ### Recent Achievements
 
-**Sprint 6.5 Part 2 COMPLETE (2025-11-21):** Interactive Selection Widgets
+**Sprint 6.5 COMPLETE (2025-11-21):** Bug Fixes & Interactive Selection Widgets
+
+**Part 1: Bug Fix Sprint** - Critical TODO/FIXME Resolution (~14 hours)
+- **3 Critical Fixes:** Plugin System Lua callbacks, Idle Scan IPID tracking, Decoy Scanner integration
+- **Decoy Scanner Performance:** BatchSender/BatchReceiver integration (96.87-99.90% syscall reduction)
+- **Build Fixes:** Resolved 3 critical bugs (build_syn_probe, send_raw_packet, wait_for_response)
+- **Quality:** 425 decoy scanner tests passing, 0 clippy warnings
+- **Impact:** Production-ready decoy scanning with batch I/O optimization
+
+**Part 2: Interactive Selection Widgets** (~20 hours)
 
 - **Status:** Production-Ready TUI Interactive Widgets - Comprehensive scan configuration UI
 - **Major Achievements:**

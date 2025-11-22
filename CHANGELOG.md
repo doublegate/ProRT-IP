@@ -5,6 +5,110 @@ All notable changes to ProRT-IP WarScan will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2025-11-22
+
+### Executive Summary
+
+Post-v0.5.4 release consolidating Sprint 6.5 (Bug Fixes & Interactive Widgets), comprehensive documentation improvements, and memory bank optimization. This release completes Phase 6 Sprint 5/8 with production-ready TUI interactive selection widgets and critical bug fixes.
+
+### Added
+
+- **Sprint 6.5 Part 1: Bug Fix Sprint** (2025-11-21, ~14 hours)
+  - **3 Critical Fixes:** Plugin System Lua callbacks (6 methods), Idle Scan IPID tracking (Layer3 migration), Decoy Scanner batch I/O integration
+  - **Plugin System:** All 6 callback methods now functional (pre_scan, on_target, post_scan, format_result, export, config passing)
+  - **Idle Scan:** Fixed 3 critical IPID tracker bugs enabling stealth scanning via zombie hosts
+  - **Decoy Scanner:** BatchSender/BatchReceiver integration (96.87-99.90% syscall reduction)
+  - **Quality:** 27 new tests (8 plugin, 19 idle scan), 425 decoy scanner tests passing, 0 clippy warnings
+  - **Coverage:** 74-84% on new code (plugin_metadata.rs 74.2%, sandbox.rs 83.9%)
+  - See v0.5.4 CHANGELOG for complete technical details
+
+- **Sprint 6.5 Part 2: Interactive Selection Widgets** (2025-11-21, ~20 hours)
+  - **5 Production-Ready TUI Widgets:**
+    - **TargetSelectionWidget:** CIDR calculator (192.168.1.0/24 → 256 IPs), supports /0 to /32
+    - **File Import/Export:** Target list management with metadata (timestamp, counts, exclusions)
+    - **Exclusion List:** Dynamic IP filtering with CIDR support, automatic recalculation
+    - **DNS Resolution:** Async dual-stack (IPv4/IPv6) with intelligent caching
+    - **TemplateSelectionWidget:** Browse 10 built-in templates + custom, case-insensitive filtering
+  - **Critical Infrastructure:** Moved templates module from prtip-cli to prtip-core (resolved circular dependency)
+  - **Quality:** 228 prtip-tui tests passing (78 new, 2.23× minimum), 0 clippy warnings, ~65% coverage
+  - **Files:** 1 created (template_selection.rs, 575L), 7 modified, 1 deleted (templates.rs moved)
+  - See v0.5.4 CHANGELOG for complete technical details
+
+- **Memory Bank Optimization** (2025-11-21)
+  - **52.5% CLAUDE.local.md reduction:** 16,033 → 7,817 characters
+  - **Compression strategies:**
+    - 4-column Recent Decisions table format (date | decision | impact | status)
+    - Session archiving (docs/session-archive/2025-11-SESSIONS.md)
+    - Sprint summary consolidation (removed redundant sprint breakdowns)
+  - **Impact:** Improved context window efficiency, faster file reads, preserved all critical information
+
+- **Documentation Improvements** (2025-11-21 through 2025-11-22)
+  - **mdBook System Enhancements:**
+    - Populated 24 stub files resolving blank page issues (968 lines content)
+    - Fixed broken links (commands/analysis.md, reference sections)
+    - Populated 4 reference sections with comprehensive content
+    - Removed anchor sub-navigation preventing page loads
+  - **Production-Ready:** 110-file mdBook system (97.75/100 quality grade, 98/100 production readiness)
+  - **Deployment:** Ready for GitHub Pages with hierarchical navigation and full-text search
+
+### Changed
+
+- **Dependency Updates** (2025-11-21)
+  - **cc:** 1.2.46 → 1.2.47 (C compiler integration, patch update)
+  - Comprehensive TODO/FIXME analysis performed (252 occurrences across 62 files)
+
+### Fixed
+
+- **CI/CD:** Ignored nvd.nist.gov in markdown link check (prevents external URL flakiness)
+- **Documentation:** Resolved mdBook blank pages by removing navigation anchors
+- **Memory Bank:** Synchronized metrics and compressed historical data for efficiency
+
+### Quality Metrics
+
+- **Tests:** 2,246 passing (100%), 96 ignored (platform-specific)
+- **Coverage:** 54.92% (maintained from Sprint 5.6)
+- **Clippy:** 0 warnings (strict mode)
+- **Build:** Clean release build SUCCESS
+- **Fuzz:** 230M+ executions, 0 crashes (5 targets)
+- **CI:** 7/7 workflows passing (Linux, Windows, macOS)
+
+### Files Changed
+
+**11 commits since v0.5.4:**
+- **Added:** mdBook content files (~968 lines), session archive, memory optimization docs
+- **Modified:** CLAUDE.local.md (52.5% reduction), CLAUDE.md (metrics sync), Sprint 6.5 implementation files, mdBook navigation
+- **Total:** ~7,500 insertions, ~9,000 deletions (net: memory optimization)
+
+### Strategic Impact
+
+- **Production Readiness:** TUI now has comprehensive interactive widgets for scan configuration
+- **Bug Elimination:** 3 critical TODO/FIXME bugs resolved, unblocking Phase 6.6+ advanced features
+- **Documentation Excellence:** Professional-grade mdBook system ready for public deployment
+- **Memory Efficiency:** 52.5% memory bank reduction improves AI context performance
+- **Phase Progress:** Phase 6 now 5/8 sprints complete (63%), overall project ~76% complete
+
+### Breaking Changes
+
+None
+
+### Migration Guide
+
+No migration required - fully backward compatible with v0.5.4
+
+### Known Limitations
+
+- Decoy scanner batch I/O requires Linux sendmmsg/recvmmsg (falls back to standard sockets on other platforms)
+- IPID tracking works with IPv4 only (IPv6 doesn't have IPID field)
+- Template system requires ~/.prtip/templates.toml for custom templates
+
+### Next Steps
+
+- **Sprint 6.6:** TUI Polish (help modals, error handling, theme selection)
+- **Sprint 6.7:** Config Profiles (save/load scan configurations)
+- **Sprint 6.8:** Help System Integration (contextual help, keyboard shortcuts)
+
+---
+
 ## [0.5.4] - 2025-11-21
 
 ### Added

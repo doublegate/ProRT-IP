@@ -1,8 +1,8 @@
 # TUI Architecture Documentation
 
-**Version:** 1.1.0
-**Last Updated:** 2025-11-16
-**Status:** Phase 6.2 COMPLETE (6/6 tasks), Sprint 6.3 PARTIAL (3/6 task areas)
+**Version:** 1.2.0
+**Last Updated:** 2025-11-22
+**Status:** Phase 6.5 COMPLETE (Sprint 6.5 Parts 1 & 2), Production-Ready Interactive Widgets
 
 ## Table of Contents
 

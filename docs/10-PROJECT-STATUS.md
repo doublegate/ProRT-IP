@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 3.5
-**Last Updated:** 2025-11-21
-**Current Phase:** Phase 6 IN PROGRESS (Sprint 6.4 COMPLETE) | v0.5.4 + Zero-Copy Buffer Pool
-**Current Sprint:** Sprint 6.4: Zero-Copy Infrastructure ✅ COMPLETE (tiered buffer pool, RAII, SharedPacket, 2,167 tests) | **Completed:** 2025-11-20
+**Version:** 3.6
+**Last Updated:** 2025-11-22
+**Current Phase:** Phase 6 IN PROGRESS (Sprint 6.5 COMPLETE) | v0.5.5 + Interactive Widgets
+**Current Sprint:** Sprint 6.5: Bug Fixes & Interactive Selection Widgets ✅ COMPLETE (5 TUI widgets, 3 critical fixes, 2,246 tests) | **Completed:** 2025-11-21
 
 ---
 
@@ -54,8 +54,8 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
-| **Version** | v0.5.4 | ✅ Current | Released 2025-11-21 (Sprint 6.4 Zero-Copy Buffer Pool) |
-| **Tests** | 2,167 (100% passing) | ✅ Excellent | Phase 5 + Sprint 6.1-6.4 complete, all tests green |
+| **Version** | v0.5.5 | ✅ Current | Released 2025-11-22 (Sprint 6.5 Bug Fixes & Interactive Widgets) |
+| **Tests** | 2,246 (100% passing) | ✅ Excellent | Phase 5 + Sprint 6.1-6.5 complete, all tests green |
 | **Coverage** | 54.92% | ✅ Good | Maintained from Sprint 5.6 |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |
 | **CI Platforms** | 7/7 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
@@ -77,7 +77,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Phase 3: Detection Systems** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 24/24 tasks |
 | **Phase 4: Performance** | ✅ COMPLETE | 2025-10-09 | 2025-10-26 | 22/22 sprints (4.1-4.22) |
 | **Phase 5: Advanced Features** | ✅ COMPLETE | 2025-10-28 | 2025-11-07 | 10/10 sprints (100%) |
-| **Phase 6: TUI** | 🔄 IN PROGRESS | 2025-11-14 | TBD | 4/8 sprints (6.1 ✅, 6.2 ✅, 6.3 ✅, 6.4 ✅) |
+| **Phase 6: TUI** | 🔄 IN PROGRESS | 2025-11-14 | TBD | 5/8 sprints (6.1 ✅, 6.2 ✅, 6.3 ✅, 6.4 ✅, 6.5 ✅) |
 | **Phase 7: Release** | 📋 Planned | Q3 2026 | TBD | 0/13 tasks |
 
 ### Phase 5 Sprint Progress (Detailed)

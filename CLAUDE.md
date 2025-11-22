@@ -6,9 +6,9 @@ ProRT-IP project guidance for Claude Code.
 
 **ProRT-IP WarScan**: Network scanner combining Masscan/ZMap speed with Nmap detection depth.
 
-**Status**: Phase 6 Sprint 6.5 COMPLETE (v0.5.4, 2,246 tests, 54.92% coverage, 8 scan types, production-ready TUI)
+**Status**: Phase 6 Sprint 6.5 COMPLETE (v0.5.5, 2,246 tests, 54.92% coverage, 8 scan types, production-ready TUI)
 
-**Repository**: <https://github.com/doublegate/ProRT-IP> | **License**: GPL-3.0 | **Updated**: 2025-11-21
+**Repository**: <https://github.com/doublegate/ProRT-IP> | **License**: GPL-3.0 | **Updated**: 2025-11-22
 
 ## Architecture
 

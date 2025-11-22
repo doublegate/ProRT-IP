@@ -45,9 +45,9 @@
 //! prtip --show-template web-servers
 //! ```
 
+use crate::config::Config;
+use crate::types::{ScanType, TimingTemplate};
 use anyhow::{Context, Result};
-use prtip_core::config::Config;
-use prtip_core::types::{ScanType, TimingTemplate};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -182,6 +182,7 @@ impl ScanTemplate {
 }
 
 /// Manages built-in and custom scan templates
+#[derive(Debug, Clone)]
 pub struct TemplateManager {
     /// Built-in templates
     builtin_templates: HashMap<String, ScanTemplate>,

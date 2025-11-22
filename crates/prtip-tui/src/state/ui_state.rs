@@ -83,6 +83,13 @@ pub struct UIState {
 
     /// NetworkGraph state (throughput visualization)
     pub network_graph_state: NetworkGraphState,
+
+    // ===== Sprint 6.5: Interactive Selection Widgets =====
+    /// TargetSelectionWidget state (CIDR calculator, file import, exclusions, DNS)
+    pub target_selection_state: crate::widgets::TargetSelectionState,
+
+    /// TemplateSelectionWidget state (scan template browsing and selection)
+    pub template_selection_state: crate::widgets::TemplateSelectionState,
 }
 
 impl UIState {
@@ -108,6 +115,8 @@ impl UIState {
             service_table_state: ServiceTableState::new(),
             service_panel_state: ServicePanelState::new(),
             network_graph_state: NetworkGraphState::new(),
+            target_selection_state: crate::widgets::TargetSelectionState::new(),
+            template_selection_state: crate::widgets::TemplateSelectionState::new(),
         }
     }
 

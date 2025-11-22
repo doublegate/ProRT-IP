@@ -11,7 +11,6 @@ mod help;
 mod history;
 mod output;
 mod progress;
-mod templates;
 
 use anyhow::{bail, Context, Result};
 use args::Args;
@@ -342,7 +341,7 @@ async fn run() -> Result<()> {
 
     // Apply template if specified (template values are overridden by CLI flags)
     if let Some(ref template_name) = args.template {
-        use templates::TemplateManager;
+        use prtip_core::templates::TemplateManager;
 
         let manager =
             TemplateManager::with_custom_templates().context("Failed to load templates")?;
@@ -1216,7 +1215,7 @@ fn record_scan_history(
 
 /// Handle --list-templates flag
 fn handle_list_templates() -> Result<()> {
-    use templates::TemplateManager;
+    use prtip_core::templates::TemplateManager;
 
     let manager = TemplateManager::with_custom_templates().context("Failed to load templates")?;
 
@@ -1279,7 +1278,7 @@ fn handle_list_templates() -> Result<()> {
 
 /// Handle --show-template flag
 fn handle_show_template(template_name: &str) -> Result<()> {
-    use templates::TemplateManager;
+    use prtip_core::templates::TemplateManager;
 
     let manager = TemplateManager::with_custom_templates().context("Failed to load templates")?;
 

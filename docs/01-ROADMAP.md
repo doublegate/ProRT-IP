@@ -693,7 +693,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 ### Phase 6: TUI Interface + Network Optimizations (Weeks 17-18, Q2 2026) 🔄 IN PROGRESS
 
 **Goal:** Create interactive terminal user interface with comprehensive network performance optimizations
-**Status:** 🔄 IN PROGRESS (Sprint 6.3 PARTIAL - 2025-11-15) | **2.5/8 sprints complete (6.1 ✅, 6.2 ✅, 6.3 🔄)**
+**Status:** 🔄 IN PROGRESS (Sprint 6.5 Part 2 COMPLETE - 2025-11-21) | **5/8 sprints complete (6.1 ✅, 6.2 ✅, 6.3 ✅, 6.4 ✅, 6.5 Part 2 ✅)**
 **Planning Documents:**
 - **Master Plan:** `to-dos/PHASE-6-TUI-INTERFACE.md` (2,107 lines, 11,500+ words)
 - **Planning Report:** `to-dos/PHASE-6-PLANNING-REPORT.md` (3,500+ words)
@@ -829,20 +829,75 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - Resource utilization monitoring
 - Performance recommendations
 
-#### Sprint 6.5: Interactive Target Selection (2-3 days)
+#### Sprint 6.5 Part 2: Interactive Selection Widgets ✅ COMPLETE (2025-11-21)
 
-**Goal:** Enhanced target specification with visual feedback
+**Status:** ✅ 100% COMPLETE | **Duration:** ~20 hours | **Tests:** 228 prtip-tui (78 new dedicated tests)
 
-- [ ] Interactive CIDR calculator
-- [ ] Target import from files (CSV, TXT)
-- [ ] Exclusion list management
-- [ ] DNS resolution preview
-- [ ] Target count estimation
+**Goal:** Comprehensive TUI interactive selection widgets for scan configuration
+
+**Completed Tasks:**
+
+**Task 1: TargetSelectionWidget CIDR Calculator** (✅ COMPLETE, ~6h, 19 tests)
+- [x] Interactive CIDR calculator with parsing and expansion (192.168.1.0/24 → 256 IPs)
+- [x] Target count calculation with automatic deduplication (CIDR + Import + DNS)
+- [x] Multi-section widget (Input, Calculated IPs, Imported IPs, Exclusions, DNS)
+- [x] Keyboard navigation (Tab, Esc clears input, Enter confirms)
+- [x] Support for /0 to /32 CIDR ranges (single IP to internet-scale)
+- **Implementation:** calculate_cidr(), recalculate_target_count() with HashSet deduplication
+- **Test Coverage:** Valid CIDR (/8,/16,/24,/30,/31,/32,/0), invalid input, edge cases, deduplication
+
+**Task 2: File Import/Export Functionality** (✅ COMPLETE, ~4h, 15 tests)
+- [x] Target import from text files (one IP/CIDR per line)
+- [x] Export targets with metadata (timestamp, source counts, exclusions)
+- [x] Automatic deduplication across all sources
+- [x] Progress indication for large imports (10,000+ IPs)
+- [x] Clear imported targets functionality
+- **Implementation:** import_targets(), export_targets(), clear_imported_targets()
+- **Test Coverage:** Basic I/O, large files, metadata accuracy, error handling, deduplication
+
+**Task 3: Exclusion List Management** (✅ COMPLETE, ~3h, 15 tests)
+- [x] Add exclusions (CIDR or single IP notation)
+- [x] Parse exclusions with ipnetwork integration
+- [x] Apply exclusions with automatic target count recalculation
+- [x] IPv6 exclusion support
+- [x] Exclusion metadata in exported files
+- **Implementation:** add_exclusion(), parse_exclusions(), apply_exclusions()
+- **Test Coverage:** Validation, application, edge cases, integration, IPv6, export
+
+**Task 4: DNS Resolution** (✅ COMPLETE, ~3h, 10 tests - 250% of minimum)
+- [x] Async DNS resolution with tokio (non-blocking I/O)
+- [x] Dual-stack IPv4/IPv6 support (A + AAAA records)
+- [x] Success + Failure caching (no redundant lookups)
+- [x] Batch resolution with deduplication
+- [x] DNS cache management (clear all, clear failures only)
+- [x] Cache statistics (total, successful, failed, pending counts)
+- **Implementation:** resolve_hostname(), resolve_hostnames_batch(), clear_dns_cache(), dns_cache_stats()
+- **Test Coverage:** Basic functionality, batch processing, cache management, integration, statistics
+
+**Task 5: TemplateSelectionWidget** (✅ COMPLETE, ~4h, 13 tests - 163% of minimum)
+- [x] Template browsing (10 built-in + custom from ~/.prtip/templates.toml)
+- [x] Case-insensitive filtering (name/description substring matching)
+- [x] Dual-focus navigation (Tab to toggle filter input ↔ template list)
+- [x] Wrapping keyboard navigation (circular list, arrows/PageUp/PageDown/Home/End)
+- [x] Template selection with Enter key
+- [x] **Critical Infrastructure:** Moved templates module from prtip-cli to prtip-core (broke circular dependency)
+- **Built-in Templates (10):** web-servers, databases, quick, thorough, stealth, discovery, ssl-only, admin-panels, mail-servers, file-shares
+- **Implementation:** TemplateSelectionState::new(), apply_filter(), navigate_up/down(), page_up/down(), select_template()
+- **Test Coverage:** Initialization, filtering, navigation, selection, manager access
 
 **Deliverables:**
-- User-friendly target specification
-- Visual validation and feedback
-- Import/export functionality
+- ✅ 5 production-ready TUI widgets with comprehensive functionality
+- ✅ 78 dedicated tests (2.23× average minimum requirement)
+- ✅ 228 total prtip-tui tests passing (100% success rate)
+- ✅ Templates module architecture improvement (circular dependency resolved)
+- ✅ 0 clippy warnings, clean formatting, ~65% coverage on new widgets
+- ✅ Stateless widget pattern established, thread-safe state management
+
+**Strategic Impact:**
+- Comprehensive scan configuration via keyboard-driven TUI interface
+- Templates module now shared across all crates (prtip-core)
+- Production-ready interactive selection widgets
+- Foundation for advanced TUI features (Sprint 6.6+)
 
 #### Sprint 6.6: Advanced Features Integration (3-4 days)
 

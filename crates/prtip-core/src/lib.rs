@@ -104,6 +104,7 @@ pub mod resource_limits;
 pub mod resource_monitor;
 pub mod retry;
 pub mod service_db;
+pub mod templates;
 pub mod top_ports;
 pub mod types;
 
@@ -134,4 +135,5 @@ pub use resource_monitor::{
 };
 pub use retry::{retry_with_backoff, RetryConfig};
 pub use service_db::{ServiceMatch, ServiceProbe, ServiceProbeDb};
+pub use templates::{ScanTemplate, TemplateManager};
 pub use types::{PortRange, PortState, Protocol, ScanResult, ScanTarget, ScanType, TimingTemplate};

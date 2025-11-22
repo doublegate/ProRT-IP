@@ -2336,11 +2336,14 @@ name = "prtip-tui"
 version = "0.5.4"
 dependencies = [
  "anyhow",
+ "chrono",
  "crossterm",
  "futures",
+ "ipnetwork",
  "parking_lot",
  "prtip-core",
  "ratatui 0.29.0",
+ "tempfile",
  "thiserror 1.0.69",
  "tokio",
  "tui-input",

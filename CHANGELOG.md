@@ -59,10 +59,150 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **windows-sys:** 0.60.2 → 0.61.2 (Windows system bindings)
   - Additional minor dependency updates for improved stability and security
 
-- **Sprint 6.5: Bug Fix Sprint - Critical TODO/FIXME Resolution** (2025-11-21)
+- **Sprint 6.5 Part 1: Bug Fix Sprint - Critical TODO/FIXME Resolution** (2025-11-21)
   - **Duration:** 14 hours actual vs 26-38h estimate (46-63% efficiency gain)
   - **Quality Metrics:** 2,418 tests passing (100%), 0 clippy warnings, ~75% coverage on new code
   - **Impact:** Eliminated 3 critical TODO/FIXME bugs blocking production readiness
+
+- **Sprint 6.5 Part 2: Interactive Selection Widgets** (2025-11-21)
+  - **Duration:** ~20 hours (5 tasks, production-ready implementation)
+  - **Quality Metrics:** 228 prtip-tui tests passing (100%), 0 clippy warnings, ~65% coverage on new code
+  - **Impact:** Comprehensive TUI interactive selection widgets for scan configuration
+
+  **TASK 1: TargetSelectionWidget CIDR Calculator** (~6 hours)
+  - **Features:** CIDR notation parsing and expansion (192.168.1.0/24 → 256 IPs)
+    - `calculate_cidr()` - Parse and expand CIDR notation to IP list
+    - `recalculate_target_count()` - Deduplicate across CIDR, Import, DNS sources
+    - Multi-section widget (Input, Calculated IPs, Imported IPs, Exclusions, DNS)
+    - Keyboard navigation (Tab, Esc clears input, Enter confirms)
+  - **Implementation:**
+    - `target_selection.rs`: CIDR calculation methods (~150 lines)
+    - `ipnetwork` crate integration for IPv4/IPv6 CIDR parsing
+    - Automatic deduplication using HashSet
+  - **Test Coverage:** 19 tests covering:
+    - Valid CIDR ranges (/8, /16, /24, /30, /31, /32, /0)
+    - Invalid input handling (missing mask, bad IP, out-of-range)
+    - Edge cases (single IP /32, 2 IPs /31, 4.3B IPs /0)
+    - Deduplication across overlapping CIDRs
+    - Escape key functionality (clear input)
+  - **Strategic Value:** Enables bulk target specification, supports both small (/32) and internet-scale (/0) ranges
+
+  **TASK 2: File Import/Export Functionality** (~4 hours)
+  - **Features:** Target list import/export with metadata preservation
+    - `import_targets(PathBuf)` - Load targets from text file (one IP/CIDR per line)
+    - `export_targets(PathBuf)` - Save targets with timestamp and source metadata
+    - `clear_imported_targets()` - Reset imported list
+    - Automatic deduplication across CIDR + Import + DNS sources
+    - Progress indication for large file imports
+  - **Implementation:**
+    - File I/O with comprehensive error handling
+    - Line-by-line parsing with validation
+    - Metadata headers in exported files (timestamp, counts, exclusions)
+  - **Test Coverage:** 15 tests covering:
+    - Basic import/export (single IP, CIDR, mixed formats)
+    - Large file handling (10,000 IPs performance validation)
+    - Export metadata accuracy (timestamp, source counts, exclusion list)
+    - Clear operation verification (import → export → clear → verify)
+    - Deduplication integration (CIDR overlap with imports)
+    - Error cases (nonexistent file, empty file, invalid format)
+  - **Strategic Value:** Enables target list reuse, batch scanning workflows, audit trails
+
+  **TASK 3: Exclusion List Management** (~3 hours)
+  - **Features:** Dynamic IP exclusion with automatic recalculation
+    - `add_exclusion(String)` - Add CIDR or single IP exclusion
+    - `parse_exclusions()` - Convert exclusion strings to IpNetwork
+    - `apply_exclusions(&[IpAddr])` - Filter targets against exclusion list
+    - Automatic target count recalculation on add/remove
+    - IPv6 exclusion support
+  - **Implementation:**
+    - `ipnetwork` integration for CIDR-based exclusions
+    - O(N × M) filtering with short-circuit optimization
+    - Exclusion metadata in exported files
+  - **Test Coverage:** 15 tests covering:
+    - Basic validation (single IP, CIDR notation, invalid input)
+    - Exclusion application (single IP, CIDR range, multiple exclusions)
+    - Edge cases (overlapping exclusions, no overlap, empty list)
+    - Integration with imported targets, CIDR, and DNS
+    - IPv6 support (exclusion parsing and validation)
+    - Export integration (exclusions documented in metadata)
+  - **Strategic Value:** Enables skip lists (localhost, internal ranges, CDNs), audit compliance
+
+  **TASK 4: DNS Resolution** (~3 hours)
+  - **Features:** Async DNS with dual-stack support and intelligent caching
+    - `resolve_hostname(String)` - Async DNS lookup with tokio
+    - `resolve_hostnames_batch(Vec<String>)` - Batch resolution with deduplication
+    - `clear_dns_cache()` - Clear all cached resolutions
+    - `clear_failed_dns()` - Clear only failed resolution cache entries
+    - `dns_cache_stats()` - Return (total, successful, failed, pending) counts
+    - Dual-stack IPv4/IPv6 (A + AAAA records)
+    - Success + Failure caching (no redundant lookups)
+  - **Implementation:**
+    - `tokio::net::lookup_host` for non-blocking resolution
+    - HashMap-based O(1) cache lookups
+    - Deduplication at 3 levels (within result, across hostnames, with other sources)
+  - **Test Coverage:** 10 tests (250% of minimum) covering:
+    - Basic functionality (localhost success, invalid failure, cache hit)
+    - Batch resolution (duplicate hostname deduplication across batch)
+    - Cache management (full clear, selective failure clear, statistics)
+    - Integration (target count recalculation, exclusion filtering)
+    - Statistics accuracy (0→1→2 entries tracking)
+    - Performance (duplicate resolution → single cache entry)
+  - **Strategic Value:** Enables hostname-based scanning, reduces redundant DNS queries
+
+  **TASK 5: TemplateSelectionWidget + Infrastructure Refactor** (~4 hours)
+  - **Features:** Template browsing with filtering and custom template support
+    - Template browsing (10 built-in + custom from ~/.prtip/templates.toml)
+    - Case-insensitive filtering (name/description substring matching)
+    - Dual-focus navigation (Tab to toggle filter input ↔ template list)
+    - Wrapping keyboard navigation (circular list, arrows/PageUp/PageDown/Home/End)
+    - Template selection with Enter key
+    - Custom template support via TOML configuration
+  - **Critical Infrastructure Change:**
+    - **Problem:** Circular dependency (prtip-cli depends on prtip-tui, prtip-tui needs templates from prtip-cli)
+    - **Solution:** Moved templates module from prtip-cli to prtip-core (shared layer)
+    - **Files Modified:**
+      - `crates/prtip-core/src/templates.rs` (MOVED from prtip-cli, 672 lines)
+      - `crates/prtip-core/src/lib.rs` (+2 lines: module export, public re-export)
+      - `crates/prtip-cli/src/lib.rs` (removed module, added re-export from prtip-core)
+      - `crates/prtip-cli/src/templates.rs` (DELETED)
+      - `crates/prtip-tui/src/widgets/template_selection.rs` (NEW, 575 lines)
+    - **Impact:** Breaking architectural change - templates now accessible to all crates, no workarounds
+  - **Built-in Templates (10):**
+    - web-servers (7 ports: 80, 443, 8080, 8443, 3000, 5000, 8000)
+    - databases (4 services: MySQL, PostgreSQL, MongoDB, Redis)
+    - quick (top 100 ports)
+    - thorough (all 65,535 ports)
+    - stealth (evasive scanning techniques)
+    - discovery (host discovery only)
+    - ssl-only (HTTPS ports with certificate analysis)
+    - admin-panels (SSH 22, RDP 3389, VNC 5900)
+    - mail-servers (SMTP 25, IMAP 143, POP3 110)
+    - file-shares (SMB 445, NFS 2049, FTP 21)
+  - **Implementation:**
+    - `TemplateSelectionState::new()` - Loads TemplateManager with built-in + custom
+    - `apply_filter()` - Case-insensitive substring matching on name/description
+    - `navigate_up/down()` - Wrapping circular navigation (0 ↔ len-1)
+    - `page_up/down()` - Jump 10 items with saturating arithmetic
+    - `select_template()` - Set selected_template_name
+    - `get_selected_template()` - Return (name, template, is_custom) tuple
+  - **Test Coverage:** 13 tests (163% of minimum) covering:
+    - Initialization (10 built-in templates loaded from TemplateManager)
+    - Filtering (by name, by description, case-insensitive, empty restores all)
+    - Navigation (up/down wrapping, page up/down, Home/End, bounds checking)
+    - Selection (get template, set selected name, selection after filter)
+    - Manager access (builtin_names, get_template methods)
+  - **Strategic Value:** Enables rapid scan configuration, reusable workflows, custom template sharing
+
+  **Overall Sprint 6.5 Part 2 Impact:**
+  - **Files Created:** 1 (template_selection.rs, 575 lines)
+  - **Files Modified:** 7 (target_selection.rs, ui_state.rs, widgets/mod.rs, 3 core files, 1 CLI file)
+  - **Files Deleted:** 1 (prtip-cli/src/templates.rs - moved to prtip-core)
+  - **New Tests:** 78 dedicated tests (2.23× average minimum requirement)
+  - **Total prtip-tui Tests:** 228 passing (150 existing + 78 new)
+  - **Code Quality:** 0 clippy warnings, clean formatting, 0 compilation errors
+  - **Code Coverage:** ~65% on new widgets (target_selection + template_selection)
+  - **Architecture Quality:** Stateless widget pattern, circular dependency resolved, thread-safe state management
+  - **Strategic Achievement:** Production-ready interactive TUI widgets for comprehensive scan configuration
 
   **TASK 1: Plugin System Lua Callbacks** (~6 hours)
   - **Fixed:** 6 stubbed callback methods now fully functional

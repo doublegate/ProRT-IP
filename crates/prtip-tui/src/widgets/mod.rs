@@ -9,6 +9,8 @@ mod network_graph;
 mod port_table;
 mod service_table;
 mod status;
+mod target_selection;
+mod template_selection;
 
 pub use component::Component;
 pub use help_widget::{handle_help_widget_event, HelpWidget};
@@ -19,3 +21,10 @@ pub use network_graph::NetworkGraphWidget;
 pub use port_table::{handle_port_table_event, PortTableWidget};
 pub use service_table::{handle_service_table_event, ServiceTableWidget};
 pub use status::StatusBar;
+pub use target_selection::{
+    handle_target_selection_event, Section, TargetSelectionState, TargetSelectionWidget,
+    ValidationState,
+};
+pub use template_selection::{
+    handle_template_selection_event, TemplateSelectionState, TemplateSelectionWidget,
+};

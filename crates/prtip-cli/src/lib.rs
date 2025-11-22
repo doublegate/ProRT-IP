@@ -13,11 +13,11 @@ pub mod help;
 pub mod history;
 pub mod output;
 pub mod progress;
-pub mod templates;
 
 pub use confirm::{ConfirmConfig, ConfirmationManager};
 pub use error::{exit_codes, CliError};
 pub use error_formatter::{create_error_formatter, ErrorFormatter};
 pub use history::{HistoryEntry, HistoryManager};
 pub use progress::{ProgressDisplay, ProgressMetrics, ProgressStyle, ProgressTracker, ScanStage};
-pub use templates::{ScanTemplate, TemplateManager};
+// Re-export templates from prtip-core
+pub use prtip_core::templates::{ScanTemplate, TemplateManager};

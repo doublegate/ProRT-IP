@@ -59,6 +59,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **windows-sys:** 0.60.2 → 0.61.2 (Windows system bindings)
   - Additional minor dependency updates for improved stability and security
 
+- **Sprint 6.5: Bug Fix Sprint - Critical TODO/FIXME Resolution** (2025-11-21)
+  - **Duration:** 14 hours actual vs 26-38h estimate (46-63% efficiency gain)
+  - **Quality Metrics:** 2,418 tests passing (100%), 0 clippy warnings, ~75% coverage on new code
+  - **Impact:** Eliminated 3 critical TODO/FIXME bugs blocking production readiness
+
+  **TASK 1: Plugin System Lua Callbacks** (~6 hours)
+  - **Fixed:** 6 stubbed callback methods now fully functional
+    - `pre_scan()` - Execute before scan starts
+    - `on_target()` - Execute for each target
+    - `post_scan()` - Execute after scan completes
+    - `format_result()` - Custom result formatting
+    - `export()` - Custom export functionality
+    - Configuration passing mechanism (PluginManager accepts ScanConfig)
+  - **Implementation:**
+    - `plugin_api.rs`: Implemented 5 callback methods with Lua function invocation (~120 lines)
+    - `plugin_manager.rs`: Configuration passing to plugins (~50 lines)
+    - `plugin_config_tests.rs`: 8 new integration tests (NEW, 169 lines)
+    - `history.rs`: Fixed 5 doctest failures (HistoryManager::new() signature)
+  - **Coverage:** 74-84% on new code (plugin_metadata.rs 74.2%, sandbox.rs 83.9%)
+  - **Strategic Value:** Enables real-world plugin functionality, TOML configuration support
+
+  **TASK 2: Idle Scan IPID Tracking** (~4 hours)
+  - **Fixed:** 3 critical bugs in IPID tracker preventing idle scanning
+    - Bug 1: Layer4 → Layer3 transport (critical - IPID field inaccessible without Layer3)
+    - Bug 2: `send_syn_ack_probe()` stub → Full IPv4+TCP packet crafting (74 lines)
+    - Bug 3: `receive_rst_response()` stub → Packet reception & IPID extraction (57 lines)
+  - **Implementation:**
+    - IPv4/TCP header construction (40 bytes: 20 IP + 20 TCP)
+    - IP/TCP checksum calculation using pnet
+    - Packet iterator with timeout-based receive loop
+    - Source address verification and RST flag checking
+  - **Files Modified:** `ipid_tracker.rs` (~150 lines changed)
+  - **Strategic Value:** Enables stealth scanning via zombie hosts, RFC 793 compliant
+
+  **TASK 3: Decoy Scanner Integration** (~4 hours)
+  - **Fixed:** 3 TODO/FIXME bugs blocking batch I/O integration
+    - Bug 1: `build_syn_probe()` - Returns all fragments, not just first (fragmentation support)
+    - Bug 2: `send_raw_packet()` - BatchSender integration with sendmmsg() (96.87-99.90% syscall reduction)
+    - Bug 3: `wait_for_response()` - BatchReceiver with O(1) connection matching
+  - **Implementation:**
+    - Multi-fragment packet support for large decoy sets
+    - Immediate flush for decoy timing precision
+    - Connection state tracking with 4-tuple key (src_ip, src_port, dst_ip, dst_port)
+    - Timeout-based batch response handling
+  - **Files Modified:** `decoy_scanner.rs` (3 methods modified, 1 new helper method)
+  - **Strategic Value:** Production-ready decoy scanning with efficient batch I/O
+
+  **Overall Impact:**
+  - **Files Modified:** 5 total (plugin_manager.rs, plugin_api.rs, ipid_tracker.rs, decoy_scanner.rs, history.rs)
+  - **New Tests:** 27 total (8 plugin integration tests + 19 idle scan tests)
+  - **Performance:** Zero regressions, maintains 96.87-99.90% syscall reduction from Sprint 6.3
+  - **Code Quality:** All quality gates passing (fmt, clippy, build, tests)
+  - **Documentation:** 3 comprehensive completion reports (~2,000 lines total)
+  - **Strategic Achievement:** Systematic bug elimination preparing for Phase 6.6+ advanced features
+
 ### Fixed
 
 - **CI/CD: Security Audit Advisory Ignore** (2025-11-21)

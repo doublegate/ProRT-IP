@@ -245,9 +245,16 @@ impl PluginManager {
             PluginType::Detection => Box::new(LuaDetectionPlugin::new(base)),
         };
 
-        // Call on_load
-        let config = ""; // TODO: Pass actual configuration
-        plugin.on_load(config)?;
+        // Call on_load with plugin configuration
+        // Serialize TOML config table to string for backward compatibility
+        let config_str = if metadata.config.is_empty() {
+            String::new()
+        } else {
+            toml::to_string(&metadata.config).map_err(|e| {
+                std::io::Error::other(format!("Failed to serialize plugin config: {}", e))
+            })?
+        };
+        plugin.on_load(&config_str)?;
 
         info!("Plugin {} loaded successfully", name);
         self.loaded_plugins.insert(name.to_string(), plugin);

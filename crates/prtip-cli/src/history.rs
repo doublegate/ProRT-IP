@@ -18,7 +18,7 @@
 //! use prtip_cli::history::{HistoryManager, HistoryEntry};
 //! use chrono::Utc;
 //!
-//! let mut manager = HistoryManager::new()?;
+//! let mut manager = HistoryManager::new(true)?;
 //!
 //! // Add a scan to history
 //! manager.add_entry(
@@ -244,7 +244,7 @@ impl HistoryManager {
     ///
     /// ```no_run
     /// # use prtip_cli::history::HistoryManager;
-    /// let mut manager = HistoryManager::new()?;
+    /// let mut manager = HistoryManager::new(true)?;
     /// manager.add_entry(
     ///     vec!["prtip".to_string(), "-sS".to_string(), "-p".to_string(), "80,443".to_string(), "192.168.1.1".to_string()],
     ///     "SYN scan of 192.168.1.1: 2 open ports",
@@ -285,7 +285,7 @@ impl HistoryManager {
     ///
     /// ```no_run
     /// # use prtip_cli::history::HistoryManager;
-    /// let manager = HistoryManager::new()?;
+    /// let manager = HistoryManager::new(true)?;
     /// if let Some(entry) = manager.get_entry(0) {
     ///     println!("Command: {}", entry.command);
     /// } else {
@@ -333,7 +333,7 @@ impl HistoryManager {
     ///
     /// ```no_run
     /// # use prtip_cli::history::HistoryManager;
-    /// let mut manager = HistoryManager::new()?;
+    /// let mut manager = HistoryManager::new(true)?;
     /// manager.clear()?;
     /// assert!(manager.is_empty());
     /// # Ok::<(), anyhow::Error>(())
@@ -377,7 +377,7 @@ impl HistoryManager {
     ///
     /// ```no_run
     /// # use prtip_cli::history::HistoryManager;
-    /// let manager = HistoryManager::new()?;
+    /// let manager = HistoryManager::new(true)?;
     /// if let Some(entry) = manager.get_entry(0) {
     ///     // Replay with modifications
     ///     let args = HistoryManager::rebuild_command(entry, Some(vec!["--verbose"]));

@@ -52,13 +52,15 @@
 //! - **Network Topology**: Decoys should be topologically plausible
 
 use crate::AdaptiveRateLimiterV2;
+use dashmap::DashMap;
+use pnet::packet::Packet; // For eth_packet.payload()
 use prtip_core::{Config, Error, PortState, Result, ScanResult, ScanTarget};
-use prtip_network::{TcpFlags, TcpPacketBuilder};
+use prtip_network::{BatchReceiver, BatchSender, TcpFlags, TcpPacketBuilder};
 use rand::Rng;
 use std::collections::HashSet;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::time;
 use tracing::debug;
 
@@ -70,6 +72,29 @@ const MIN_DECOY_DELAY_US: u64 = 100;
 
 /// Maximum inter-decoy delay (microseconds)
 const MAX_DECOY_DELAY_US: u64 = 1000;
+
+/// Default batch size for BatchSender/BatchReceiver
+const DEFAULT_BATCH_SIZE: usize = 256;
+
+/// Connection key for response matching (src_ip, dst_ip, dst_port)
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+struct ConnectionKey {
+    /// Source IP (real scanner IP)
+    src_ip: IpAddr,
+    /// Destination IP (target)
+    dst_ip: IpAddr,
+    /// Destination port
+    dst_port: u16,
+}
+
+/// Connection state for tracking decoy scan responses
+#[derive(Debug, Clone)]
+struct ConnectionState {
+    /// Time the packet was sent
+    sent_time: Instant,
+    /// Source port used (for future extension)
+    _source_port: u16,
+}
 
 /// Decoy placement strategy
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -98,17 +123,40 @@ pub struct DecoyScanner {
     random_decoy_count: Option<usize>,
     /// Optional adaptive rate limiter (ICMP-aware throttling)
     adaptive_limiter: Option<Arc<AdaptiveRateLimiterV2>>,
+    /// Batch packet sender for efficient transmission
+    batch_sender: Option<BatchSender>,
+    /// Batch packet receiver for efficient reception
+    batch_receiver: Option<BatchReceiver>,
+    /// Connection state tracking for response matching (O(1) hash lookups)
+    connection_state: Arc<DashMap<ConnectionKey, ConnectionState>>,
 }
 
 impl DecoyScanner {
     /// Create new decoy scanner with configuration
+    ///
+    /// Initializes BatchSender/BatchReceiver for efficient packet I/O.
+    /// Uses "eth0" interface by default (TODO: auto-detect interface).
     pub fn new(config: Config) -> Self {
+        // Initialize BatchSender/BatchReceiver with default batch size
+        // Note: Interface detection is simplified - production would auto-detect
+        let batch_sender = BatchSender::new("eth0", DEFAULT_BATCH_SIZE, None).ok();
+        let batch_receiver = BatchReceiver::new("eth0", DEFAULT_BATCH_SIZE).ok();
+
+        if batch_sender.is_none() || batch_receiver.is_none() {
+            tracing::warn!(
+                "Failed to initialize BatchSender/BatchReceiver - decoy scanning may not work properly"
+            );
+        }
+
         Self {
             config,
             decoys: Vec::new(),
             real_placement: DecoyPlacement::Random,
             random_decoy_count: None,
             adaptive_limiter: None,
+            batch_sender,
+            batch_receiver,
+            connection_state: Arc::new(DashMap::new()),
         }
     }
 
@@ -466,11 +514,35 @@ impl DecoyScanner {
         self.shuffle_decoys(&mut send_order);
 
         for (i, &source_ip) in send_order.iter().enumerate() {
-            // Build SYN packet with spoofed source
-            let packet = self.build_syn_probe(&target, port, source_ip)?;
+            // Build SYN packet with spoofed source (returns all fragments)
+            let fragments = self.build_syn_probe(&target, port, source_ip)?;
 
-            // Send packet
-            self.send_raw_packet(&packet).await?;
+            // Track connection state for real source IP (for response matching)
+            if source_ip == real_source {
+                let src_port = self
+                    .config
+                    .network
+                    .source_port
+                    .unwrap_or_else(|| rand::thread_rng().gen_range(10000..60000));
+
+                let key = ConnectionKey {
+                    src_ip: real_source,
+                    dst_ip: target_ip,
+                    dst_port: port,
+                };
+
+                let state = ConnectionState {
+                    sent_time: Instant::now(),
+                    _source_port: src_port,
+                };
+
+                self.connection_state.insert(key, state);
+            }
+
+            // Send all fragments
+            for fragment in fragments {
+                self.send_raw_packet(&fragment).await?;
+            }
 
             // Small random delay between decoys to appear more natural
             if i < send_order.len() - 1 {
@@ -504,12 +576,13 @@ impl DecoyScanner {
     }
 
     /// Build SYN probe packet with spoofed source (supports IPv4 and IPv6)
+    /// Returns all fragments (multiple if fragmentation enabled)
     fn build_syn_probe(
         &self,
         target: &ScanTarget,
         port: u16,
         source_ip: IpAddr,
-    ) -> Result<Vec<u8>> {
+    ) -> Result<Vec<Vec<u8>>> {
         // Extract first host from target
         let hosts = target.expand_hosts();
         if hosts.is_empty() {
@@ -575,52 +648,260 @@ impl DecoyScanner {
             vec![packet]
         };
 
-        // For now, return first packet (TODO: handle multiple fragments properly)
-        Ok(packets_to_send.into_iter().next().unwrap_or_default())
+        // Return all fragments (fixed: no longer returns only first fragment)
+        Ok(packets_to_send)
     }
 
-    /// Send raw packet (placeholder - should use actual packet sender)
-    async fn send_raw_packet(&self, _packet: &[u8]) -> Result<()> {
-        // TODO: Integrate with actual raw socket sender
-        // For now, just simulate sending
-        tracing::trace!("Sending decoy probe packet");
-        Ok(())
+    /// Send raw packet using BatchSender
+    ///
+    /// # Arguments
+    ///
+    /// * `packet` - Raw packet bytes to send
+    ///
+    /// # Returns
+    ///
+    /// Result indicating success or failure
+    async fn send_raw_packet(&mut self, packet: &[u8]) -> Result<()> {
+        if let Some(ref mut sender) = self.batch_sender {
+            // Add packet to batch queue (convert to Vec<u8>)
+            sender
+                .add_packet(packet.to_vec())
+                .map_err(|e| Error::Network(format!("Failed to add packet to batch: {}", e)))?;
+
+            // Flush immediately for decoy scanning (critical for timing)
+            sender
+                .flush(3) // 3 retries
+                .await
+                .map_err(|e| Error::Network(format!("Failed to flush batch: {}", e)))?;
+
+            tracing::trace!("Sent decoy probe packet ({} bytes)", packet.len());
+            Ok(())
+        } else {
+            Err(Error::Network(
+                "BatchSender not initialized - cannot send packets".to_string(),
+            ))
+        }
     }
 
-    /// Wait for response to real source IP
+    /// Wait for response to real source IP using BatchReceiver
+    ///
+    /// # Arguments
+    ///
+    /// * `target` - Target to scan
+    /// * `port` - Port to scan
+    /// * `real_source` - Real scanner source IP (for connection key lookup)
+    ///
+    /// # Returns
+    ///
+    /// ScanResult with port state determined from TCP response flags
     async fn wait_for_response(
-        &self,
+        &mut self,
         target: &ScanTarget,
         port: u16,
-        _real_source: IpAddr,
+        real_source: IpAddr,
     ) -> Result<ScanResult> {
-        // TODO: Integrate with actual response receiver
-        // For now, return placeholder result
-        let timeout = Duration::from_millis(1000);
-        time::sleep(timeout).await;
-
         use chrono::Utc;
-        use std::time::Duration;
 
         // Get first host IP from target
         let hosts = target.expand_hosts();
         let target_ip = if !hosts.is_empty() {
             hosts[0]
         } else {
-            std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED)
+            return Err(Error::Network("No hosts in target".to_string()));
         };
 
+        // If no receiver, return filtered (cannot receive responses)
+        let receiver = match &mut self.batch_receiver {
+            Some(r) => r,
+            None => {
+                return Ok(ScanResult {
+                    target_ip,
+                    port,
+                    state: PortState::Filtered,
+                    response_time: Duration::from_millis(0),
+                    timestamp: Utc::now(),
+                    banner: None,
+                    service: None,
+                    version: None,
+                    raw_response: None,
+                });
+            }
+        };
+
+        // Receive batch responses with timeout
+        let timeout_ms = self.config.scan.timeout_ms;
+        let responses = receiver
+            .receive_batch(timeout_ms as u32)
+            .await
+            .map_err(|e| Error::Network(format!("Failed to receive batch: {}", e)))?;
+
+        // Create connection key for lookup (src_ip, dst_ip, dst_port)
+        let key = ConnectionKey {
+            src_ip: real_source,
+            dst_ip: target_ip,
+            dst_port: port,
+        };
+
+        // Process responses looking for match to our connection
+        for response in responses {
+            // Parse TCP response to check if it matches our connection
+            if let Some(state) = self.parse_tcp_response(&response.data, &key)? {
+                // Found matching response - remove from tracking
+                if let Some((_, conn_state)) = self.connection_state.remove(&key) {
+                    let response_time = conn_state.sent_time.elapsed();
+
+                    return Ok(ScanResult {
+                        target_ip,
+                        port,
+                        state,
+                        response_time,
+                        timestamp: Utc::now(),
+                        banner: None,
+                        service: None,
+                        version: None,
+                        raw_response: Some(response.data),
+                    });
+                }
+            }
+        }
+
+        // No response received - return Filtered
         Ok(ScanResult {
             target_ip,
             port,
-            state: PortState::Filtered, // Placeholder
-            response_time: Duration::from_millis(100),
+            state: PortState::Filtered,
+            response_time: Duration::from_millis(timeout_ms),
             timestamp: Utc::now(),
             banner: None,
             service: None,
             version: None,
             raw_response: None,
         })
+    }
+
+    /// Parse TCP response packet and determine port state
+    ///
+    /// # Arguments
+    ///
+    /// * `packet_data` - Raw packet bytes from BatchReceiver
+    /// * `expected_key` - Expected connection key for validation
+    ///
+    /// # Returns
+    ///
+    /// Some(PortState) if packet matches expected connection, None otherwise
+    fn parse_tcp_response(
+        &self,
+        packet_data: &[u8],
+        expected_key: &ConnectionKey,
+    ) -> Result<Option<PortState>> {
+        use pnet::packet::ethernet::{EtherTypes, EthernetPacket};
+        use pnet::packet::ip::IpNextHeaderProtocols;
+        use pnet::packet::ipv4::Ipv4Packet;
+        use pnet::packet::ipv6::Ipv6Packet;
+        use pnet::packet::tcp::TcpPacket;
+
+        // Parse Ethernet header
+        let eth_packet = match EthernetPacket::new(packet_data) {
+            Some(p) => p,
+            None => return Ok(None), // Invalid packet
+        };
+
+        // Parse IP layer and extract TCP info (dual-stack support)
+        match eth_packet.get_ethertype() {
+            EtherTypes::Ipv4 => {
+                let ipv4 = match Ipv4Packet::new(eth_packet.payload()) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
+
+                if ipv4.get_next_level_protocol() != IpNextHeaderProtocols::Tcp {
+                    return Ok(None); // Not TCP
+                }
+
+                let src_ip = IpAddr::V4(ipv4.get_source());
+                let dst_ip = IpAddr::V4(ipv4.get_destination());
+
+                // Parse TCP header
+                let tcp = match TcpPacket::new(ipv4.payload()) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
+
+                let src_port = tcp.get_source();
+
+                // Check if response matches expected connection
+                if src_ip != expected_key.dst_ip || src_port != expected_key.dst_port {
+                    return Ok(None);
+                }
+
+                if dst_ip != expected_key.src_ip {
+                    return Ok(None);
+                }
+
+                // Determine port state from TCP flags
+                let flags = tcp.get_flags();
+                let syn = (flags & 0x02) != 0;
+                let ack = (flags & 0x10) != 0;
+                let rst = (flags & 0x04) != 0;
+
+                let state = if syn && ack {
+                    PortState::Open
+                } else if rst {
+                    PortState::Closed
+                } else {
+                    PortState::Filtered
+                };
+
+                Ok(Some(state))
+            }
+            EtherTypes::Ipv6 => {
+                let ipv6 = match Ipv6Packet::new(eth_packet.payload()) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
+
+                if ipv6.get_next_header() != IpNextHeaderProtocols::Tcp {
+                    return Ok(None); // Not TCP
+                }
+
+                let src_ip = IpAddr::V6(ipv6.get_source());
+                let dst_ip = IpAddr::V6(ipv6.get_destination());
+
+                // Parse TCP header
+                let tcp = match TcpPacket::new(ipv6.payload()) {
+                    Some(p) => p,
+                    None => return Ok(None),
+                };
+
+                let src_port = tcp.get_source();
+
+                // Check if response matches expected connection
+                if src_ip != expected_key.dst_ip || src_port != expected_key.dst_port {
+                    return Ok(None);
+                }
+
+                if dst_ip != expected_key.src_ip {
+                    return Ok(None);
+                }
+
+                // Determine port state from TCP flags
+                let flags = tcp.get_flags();
+                let syn = (flags & 0x02) != 0;
+                let ack = (flags & 0x10) != 0;
+                let rst = (flags & 0x04) != 0;
+
+                let state = if syn && ack {
+                    PortState::Open
+                } else if rst {
+                    PortState::Closed
+                } else {
+                    PortState::Filtered
+                };
+
+                Ok(Some(state))
+            }
+            _ => Ok(None), // Unknown ethertype
+        }
     }
 
     /// Shuffle decoy order using Fisher-Yates (supports IPv4 and IPv6)

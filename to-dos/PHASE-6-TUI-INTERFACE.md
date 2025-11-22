@@ -1572,12 +1572,12 @@ Sprint 6.1 (TUI Framework)
 Sprint 6.2 (Live Dashboard)
     ↓
 Sprint 6.5 (Interactive Selection) ←──────────┐
-    ↓                                          │
-Sprint 6.6 (Advanced Features)                 │
-    ↓                                          │
-Sprint 6.8 (Documentation + Release)           │
-    ↑                                          │
-    │                                          │
+    ↓                                         │
+Sprint 6.6 (Advanced Features)                │
+    ↓                                         │
+Sprint 6.8 (Documentation + Release)          │
+    ↑                                         │
+    │                                         │
 Sprint 6.3 (Network Optimization) ────────────┘
     ↓
 Sprint 6.4 (Adaptive Tuning)

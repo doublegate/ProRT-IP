@@ -7,7 +7,7 @@
 </div>
 
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-2,167%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-2,260%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 ![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -108,12 +108,28 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current:** Phase 6 (4/8 sprints complete, 50%)
+**Current:** Phase 6 (5/8 sprints complete, 63%)
 **Version:** v0.5.4 (Released 2025-11-21)
-**Tests:** 2,167 passing (100%)
+**Tests:** 2,260 passing (100%)
 **Coverage:** 54.92%
 
 ### Recent Achievements
+
+**Sprint 6.5 Part 2 COMPLETE (2025-11-21):** Interactive Selection Widgets
+
+- **Status:** Production-Ready TUI Interactive Widgets - Comprehensive scan configuration UI
+- **Major Achievements:**
+  - **TargetSelectionWidget CIDR Calculator:** Parse & expand CIDR notation (192.168.1.0/24 → 256 IPs), supports /0 to /32
+  - **File Import/Export:** Load/save target lists with metadata, large file support (10K+ IPs)
+  - **Exclusion List Management:** Dynamic IP exclusion with CIDR support, automatic recalculation
+  - **DNS Resolution:** Async dual-stack (IPv4/IPv6) with intelligent caching, batch resolution
+  - **TemplateSelectionWidget:** Browse 10 built-in templates + custom, case-insensitive filtering
+  - **Critical Infrastructure:** Moved templates module from prtip-cli to prtip-core (broke circular dependency)
+- **Quality Metrics:**
+  - 228 prtip-tui tests passing (78 new dedicated tests, 2.23× minimum requirements)
+  - 0 clippy warnings, clean formatting, ~65% coverage on new widgets
+  - Stateless widget pattern, thread-safe state management
+- **Impact:** Enables comprehensive scan configuration via keyboard-driven TUI interface
 
 **Sprint 6.4 COMPLETE (2025-11-20):** Zero-Copy Buffer Pool Infrastructure
 

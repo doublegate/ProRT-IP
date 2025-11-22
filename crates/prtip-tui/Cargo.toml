@@ -32,5 +32,14 @@ parking_lot = { workspace = true }
 anyhow = { workspace = true }
 thiserror = { workspace = true }
 
+# Networking
+ipnetwork = "0.20"
+
+# Date/time handling
+chrono = { workspace = true }
+
 # Testing utilities
 uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+tempfile = "3.8"

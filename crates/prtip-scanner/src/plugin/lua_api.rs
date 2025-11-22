@@ -7,6 +7,7 @@ use super::sandbox::{Capability, PluginCapabilities, ResourceLimits};
 use mlua::{Lua, Result as LuaResult, Table, Value};
 use parking_lot::Mutex;
 use std::sync::Arc;
+use toml;
 use tracing::{debug, error, info, warn};
 
 /// Create a sandboxed Lua VM with security restrictions
@@ -245,6 +246,45 @@ fn lua_add_result(_lua: &Lua, (key, value): (String, Value)) -> LuaResult<()> {
     // TODO: Store result in scan context
     info!("[Plugin] Add result: {} = {:?}", key, value);
     Ok(())
+}
+
+/// Convert TOML table to Lua table
+pub fn toml_to_lua(lua: &Lua, toml_table: &toml::Table) -> LuaResult<Table> {
+    let lua_table = lua.create_table()?;
+
+    for (key, value) in toml_table {
+        let lua_value = toml_value_to_lua(lua, value)?;
+        lua_table.set(key.clone(), lua_value)?;
+    }
+
+    Ok(lua_table)
+}
+
+/// Convert TOML value to Lua value recursively
+fn toml_value_to_lua(lua: &Lua, value: &toml::Value) -> LuaResult<Value> {
+    match value {
+        toml::Value::String(s) => Ok(Value::String(lua.create_string(s)?)),
+        toml::Value::Integer(i) => Ok(Value::Integer(*i)),
+        toml::Value::Float(f) => Ok(Value::Number(*f)),
+        toml::Value::Boolean(b) => Ok(Value::Boolean(*b)),
+        toml::Value::Array(arr) => {
+            let lua_table = lua.create_table()?;
+            for (i, item) in arr.iter().enumerate() {
+                let lua_value = toml_value_to_lua(lua, item)?;
+                lua_table.set(i + 1, lua_value)?; // Lua arrays are 1-indexed
+            }
+            Ok(Value::Table(lua_table))
+        }
+        toml::Value::Table(table) => {
+            let lua_table = lua.create_table()?;
+            for (key, val) in table {
+                let lua_value = toml_value_to_lua(lua, val)?;
+                lua_table.set(key.clone(), lua_value)?;
+            }
+            Ok(Value::Table(lua_table))
+        }
+        toml::Value::Datetime(dt) => Ok(Value::String(lua.create_string(dt.to_string())?)),
+    }
 }
 
 #[cfg(test)]

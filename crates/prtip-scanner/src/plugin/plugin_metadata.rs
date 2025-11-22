@@ -70,6 +70,10 @@ impl std::str::FromStr for PluginType {
 pub struct PluginMetadata {
     /// Plugin section
     pub plugin: PluginInfo,
+
+    /// Plugin configuration (optional)
+    #[serde(default)]
+    pub config: toml::Table,
 }
 
 /// Core plugin information

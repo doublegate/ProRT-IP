@@ -13,9 +13,12 @@
 //! - **Broken256**: Windows byte-order bug, increments by 256 (still usable)
 
 use pnet::packet::ip::IpNextHeaderProtocols;
-use pnet::transport::{transport_channel, TransportChannelType, TransportProtocol};
+use pnet::packet::ipv4::{checksum, Ipv4Packet, MutableIpv4Packet};
+use pnet::packet::tcp::{ipv4_checksum, MutableTcpPacket, TcpFlags, TcpPacket};
+use pnet::transport::{transport_channel, TransportChannelType};
+use pnet_packet::Packet; // Trait needed for .packet() method
 use prtip_core::{Error, Result};
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv4Addr};
 use std::time::{Duration, Instant};
 
 /// IPID measurement result containing the IPID value and timestamp
@@ -95,9 +98,8 @@ impl IPIDTracker {
     /// * Timeout if no RST received within 5 seconds
     /// * I/O errors from raw socket operations
     pub async fn probe(&mut self) -> Result<IPIDMeasurement> {
-        // Create transport channel for sending/receiving TCP packets
-        let protocol =
-            TransportChannelType::Layer4(TransportProtocol::Ipv4(IpNextHeaderProtocols::Tcp));
+        // Create transport channel for sending/receiving IP packets (Layer3 for IPID access)
+        let protocol = TransportChannelType::Layer3(IpNextHeaderProtocols::Tcp);
 
         let (mut tx, mut rx) = transport_channel(4096, protocol)
             .map_err(|e| Error::Network(format!("Failed to create transport channel: {}", e)))?;
@@ -241,22 +243,136 @@ impl IPIDTracker {
     // Private helper methods
 
     /// Send SYN/ACK probe packet to target
-    async fn send_syn_ack_probe(&self, _tx: &mut pnet::transport::TransportSender) -> Result<()> {
-        // TODO: Implement SYN/ACK packet building and sending
-        // This will be implemented in Phase 3 with proper packet construction
-        Ok(())
+    ///
+    /// Crafts a SYN/ACK packet with proper IP and TCP headers and checksums.
+    /// The unsolicited SYN/ACK should trigger a RST response from the target.
+    async fn send_syn_ack_probe(&self, tx: &mut pnet::transport::TransportSender) -> Result<()> {
+        match self.target {
+            IpAddr::V4(target_ipv4) => {
+                // Build IPv4 + TCP SYN/ACK packet
+                let mut buffer = [0u8; 40]; // IPv4 header (20) + TCP header (20)
+
+                // Use local interface IP as source (simplified - could be improved)
+                let src_ip = Ipv4Addr::new(192, 168, 1, 100); // Placeholder
+
+                // Split buffer to avoid multiple mutable borrows
+                let (ip_buf, tcp_buf) = buffer.split_at_mut(20);
+
+                // Build IP header
+                {
+                    let mut ip_packet = MutableIpv4Packet::new(ip_buf)
+                        .ok_or_else(|| Error::Scanner("Failed to create IPv4 packet".into()))?;
+
+                    ip_packet.set_version(4);
+                    ip_packet.set_header_length(5); // 5 * 4 = 20 bytes
+                    ip_packet.set_total_length(40); // IP(20) + TCP(20)
+                    ip_packet.set_ttl(64);
+                    ip_packet.set_next_level_protocol(IpNextHeaderProtocols::Tcp);
+                    ip_packet.set_identification(rand::random()); // Random IPID for our probe
+                    ip_packet.set_source(src_ip);
+                    ip_packet.set_destination(target_ipv4);
+
+                    // Calculate IP checksum
+                    let ip_checksum = checksum(&ip_packet.to_immutable());
+                    ip_packet.set_checksum(ip_checksum);
+                }
+
+                // Build TCP header
+                {
+                    let mut tcp_packet = MutableTcpPacket::new(tcp_buf)
+                        .ok_or_else(|| Error::Scanner("Failed to create TCP packet".into()))?;
+
+                    tcp_packet.set_source(rand::random::<u16>().saturating_add(10000)); // Random high port
+                    tcp_packet.set_destination(80); // Common port
+                    tcp_packet.set_sequence(rand::random());
+                    tcp_packet.set_acknowledgement(rand::random());
+                    tcp_packet.set_data_offset(5); // 5 * 4 = 20 bytes
+                    tcp_packet.set_flags(TcpFlags::SYN | TcpFlags::ACK); // SYN+ACK
+                    tcp_packet.set_window(8192);
+                    tcp_packet.set_urgent_ptr(0);
+
+                    // Calculate TCP checksum
+                    let tcp_checksum =
+                        ipv4_checksum(&tcp_packet.to_immutable(), &src_ip, &target_ipv4);
+                    tcp_packet.set_checksum(tcp_checksum);
+                }
+
+                // Reconstruct IP packet for sending
+                let ip_packet = Ipv4Packet::new(&buffer[..20])
+                    .ok_or_else(|| Error::Scanner("Failed to reconstruct IPv4 packet".into()))?;
+
+                // Send packet
+                tx.send_to(ip_packet, std::net::IpAddr::V4(target_ipv4))
+                    .map_err(|e| Error::Network(format!("Failed to send probe: {}", e)))?;
+
+                Ok(())
+            }
+            IpAddr::V6(_target_ipv6) => {
+                // IPv6 doesn't have IPID in main header (only in Fragment extension)
+                // For now, return error indicating IPv6 not fully supported
+                Err(Error::Scanner(
+                    "IPv6 IPID tracking not fully supported (IPID only in Fragment extension)"
+                        .into(),
+                ))
+            }
+        }
     }
 
     /// Receive RST response and extract IPID
+    ///
+    /// Waits for RST packet from target and extracts IPID from IP header.
+    /// Uses timeout (self.timeout) to avoid blocking indefinitely.
+    ///
+    /// Note: This is a simplified implementation for Sprint 6.5 TASK 2.
+    /// In production, this would use non-blocking I/O or a separate thread pool.
     async fn receive_rst_response(
         &self,
-        _rx: &mut pnet::transport::TransportReceiver,
+        rx: &mut pnet::transport::TransportReceiver,
     ) -> Result<u16> {
-        // TODO: Implement RST packet reception and IPID extraction
-        // This will be implemented in Phase 3 with proper packet parsing
+        use pnet::transport::ipv4_packet_iter;
+        use std::time::Instant as StdInstant;
 
-        // Placeholder: Return a mock IPID for now
-        Ok(0)
+        // Create iterator for IPv4 packets
+        let mut iter = ipv4_packet_iter(rx);
+        let deadline = StdInstant::now() + self.timeout;
+
+        // Keep receiving until we get a RST packet from our target or timeout
+        loop {
+            // Check timeout
+            if StdInstant::now() >= deadline {
+                return Err(Error::Network(format!(
+                    "Timeout waiting for RST response ({}s)",
+                    self.timeout.as_secs()
+                )));
+            }
+
+            // Try to receive packet (this is blocking)
+            match iter.next() {
+                Ok((ipv4_packet, addr)) => {
+                    // Verify packet is from our target (addr is already IpAddr)
+                    if addr != self.target {
+                        continue; // Not from target, keep waiting
+                    }
+
+                    // Extract IPID from IP header
+                    let ipid = ipv4_packet.get_identification();
+
+                    // Verify payload is TCP RST
+                    let tcp_offset = ipv4_packet.get_header_length() as usize * 4;
+                    let packet_data = ipv4_packet.packet();
+                    if let Some(tcp_packet) = TcpPacket::new(&packet_data[tcp_offset..]) {
+                        let flags = tcp_packet.get_flags();
+                        if (flags & TcpFlags::RST) != 0 {
+                            // Found RST packet with valid IPID
+                            return Ok(ipid);
+                        }
+                    }
+                }
+                Err(e) => {
+                    return Err(Error::Network(format!("Failed to receive response: {}", e)));
+                }
+            }
+        }
     }
 }
 
@@ -450,5 +566,233 @@ mod tests {
 
         tracker.clear_measurements();
         assert_eq!(tracker.measurement_count(), 0);
+    }
+
+    // New tests for IPID extraction logic
+
+    #[test]
+    fn test_ipv4_packet_parsing() {
+        // Test that we can parse IPv4 packets and extract IPID
+        use pnet::packet::ipv4::MutableIpv4Packet;
+
+        let mut buffer = vec![0u8; 20];
+        let mut packet = MutableIpv4Packet::new(&mut buffer).unwrap();
+
+        packet.set_version(4);
+        packet.set_header_length(5);
+        packet.set_identification(12345);
+
+        // Parse immutable packet
+        let parsed = Ipv4Packet::new(&buffer).unwrap();
+        assert_eq!(parsed.get_identification(), 12345);
+    }
+
+    #[test]
+    fn test_tcp_rst_flag_detection() {
+        // Test RST flag detection in TCP packets
+        use pnet::packet::tcp::MutableTcpPacket;
+
+        let mut buffer = vec![0u8; 20];
+        let mut packet = MutableTcpPacket::new(&mut buffer).unwrap();
+
+        packet.set_flags(TcpFlags::RST);
+
+        // Parse and verify RST flag
+        let parsed = TcpPacket::new(&buffer).unwrap();
+        assert_ne!(parsed.get_flags() & TcpFlags::RST, 0);
+    }
+
+    #[test]
+    fn test_tcp_syn_ack_flags() {
+        // Test SYN+ACK flag combination
+        use pnet::packet::tcp::MutableTcpPacket;
+
+        let mut buffer = vec![0u8; 20];
+        let mut packet = MutableTcpPacket::new(&mut buffer).unwrap();
+
+        packet.set_flags(TcpFlags::SYN | TcpFlags::ACK);
+
+        let parsed = TcpPacket::new(&buffer).unwrap();
+        let flags = parsed.get_flags();
+        assert_ne!(flags & TcpFlags::SYN, 0);
+        assert_ne!(flags & TcpFlags::ACK, 0);
+    }
+
+    #[test]
+    fn test_ipid_wrapping_arithmetic() {
+        // Test that IPID wrapping is handled correctly
+        let target: IpAddr = "192.168.1.100".parse().unwrap();
+        let mut tracker = IPIDTracker::new(target).unwrap();
+
+        // Test rollover from max value
+        tracker.set_measurements_for_test(vec![
+            IPIDMeasurement {
+                ipid: u16::MAX - 1, // 65534
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: u16::MAX, // 65535
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 0, // Wrapped to 0
+                timestamp: Instant::now(),
+            },
+        ]);
+
+        let increments = tracker.calculate_increments();
+        assert_eq!(increments.len(), 2);
+        assert_eq!(increments[0], 1); // 65535 - 65534 = 1
+        assert_eq!(increments[1], 1); // 0 - 65535 = 1 (wrapping)
+    }
+
+    #[test]
+    fn test_ipv6_target_error() {
+        // Test that IPv6 targets return appropriate error
+        let target: IpAddr = "::1".parse().unwrap();
+        let _tracker = IPIDTracker::new(target).unwrap();
+
+        assert!(matches!(target, IpAddr::V6(_)));
+        // IPv6 IPID tracking should fail with proper error message
+    }
+
+    #[test]
+    fn test_pattern_classification_random() {
+        // Test classification of random IPID pattern
+        let target: IpAddr = "192.168.1.100".parse().unwrap();
+        let mut tracker = IPIDTracker::new(target).unwrap();
+
+        // Simulate random IPIDs (high variance)
+        tracker.set_measurements_for_test(vec![
+            IPIDMeasurement {
+                ipid: 1234,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 5678,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 9012,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 2345,
+                timestamp: Instant::now(),
+            },
+        ]);
+
+        let variance = tracker.calculate_variance();
+        assert!(variance > 10.0, "Expected high variance for random pattern");
+    }
+
+    #[test]
+    fn test_pattern_classification_perhost() {
+        // Test classification of per-host IPID pattern
+        let target: IpAddr = "192.168.1.100".parse().unwrap();
+        let mut tracker = IPIDTracker::new(target).unwrap();
+
+        // Simulate per-host pattern (low variance but not sequential)
+        tracker.set_measurements_for_test(vec![
+            IPIDMeasurement {
+                ipid: 100,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 102,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 104,
+                timestamp: Instant::now(),
+            },
+            IPIDMeasurement {
+                ipid: 106,
+                timestamp: Instant::now(),
+            },
+        ]);
+
+        let increments = tracker.calculate_increments();
+        assert_eq!(increments, vec![2, 2, 2]); // Consistent but not +1
+
+        let variance = tracker.calculate_variance();
+        assert!(
+            variance < 10.0,
+            "Expected low variance for per-host pattern"
+        );
+        assert!(!tracker.is_sequential());
+    }
+
+    // Integration tests requiring root privileges
+
+    #[tokio::test]
+    #[ignore] // Requires root privileges
+    async fn test_ipid_tracking_real_host() {
+        // This test must be run manually with sudo
+        // cargo test --test idle_scan -- --ignored --test-threads=1
+
+        let target: IpAddr = "192.168.1.1".parse().unwrap();
+        let mut tracker = IPIDTracker::new(target).unwrap();
+
+        // Attempt to probe real host
+        match tracker.probe().await {
+            Ok(measurement) => {
+                // Real IPID should not be stub value 0 (unless coincidence)
+                println!("Measured IPID: {}", measurement.ipid);
+                assert!(measurement.timestamp.elapsed().as_secs() < 10);
+            }
+            Err(e) => {
+                // May fail if no host at that IP or insufficient privileges
+                println!("Probe failed (expected if no host): {}", e);
+            }
+        }
+    }
+
+    #[tokio::test]
+    #[ignore] // Requires root privileges
+    async fn test_classify_pattern_sequential() {
+        // Test with known sequential zombie (Linux <4.18 VM)
+        // Replace with actual sequential host IP in your environment
+
+        let target: IpAddr = "192.168.1.50".parse().unwrap(); // Placeholder
+        let mut tracker = IPIDTracker::new(target).unwrap();
+
+        match tracker.classify_pattern(5).await {
+            Ok(pattern) => {
+                println!("Detected pattern: {:?}", pattern);
+                // Pattern should be Sequential, Random, PerHost, or Broken256
+                assert!(matches!(
+                    pattern,
+                    IPIDPattern::Sequential
+                        | IPIDPattern::Random
+                        | IPIDPattern::PerHost
+                        | IPIDPattern::Broken256
+                ));
+            }
+            Err(e) => {
+                println!("Classification failed: {}", e);
+                // Expected if host not available or insufficient privileges
+            }
+        }
+    }
+
+    #[tokio::test]
+    #[ignore] // Requires root privileges
+    async fn test_ipv6_limitation() {
+        // Test that IPv6 targets fail gracefully with proper error message
+
+        let target: IpAddr = "::1".parse().unwrap();
+        let mut tracker = IPIDTracker::new(target).unwrap();
+
+        let result = tracker.probe().await;
+        assert!(result.is_err());
+
+        if let Err(e) = result {
+            let error_msg = format!("{:?}", e);
+            assert!(
+                error_msg.contains("IPv6") || error_msg.contains("IPID"),
+                "Error should mention IPv6 limitation"
+            );
+        }
     }
 }

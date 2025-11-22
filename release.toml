@@ -1,0 +1,86 @@
+# cargo-release configuration for ProRT-IP WarScan
+# See: https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
+#
+# This configuration automates:
+# - Version bumps in all workspace members (5 crates)
+# - Documentation version updates (7+ files)
+# - Quality gate validation (5 pre-release hooks)
+# - Git commit and tag creation
+#
+# Manual steps still required:
+# 1. Create release notes: /tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md
+# 2. Push to GitHub: git push origin main && git push origin --tags
+# 3. Create GitHub Release: gh release create vX.Y.Z --notes-file /tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md
+
+# Workspace-wide settings
+allow-branch = ["main"]         # Only allow releases from main branch
+sign-commit = false             # No GPG signing (can enable if desired)
+sign-tag = false                # No GPG signing for tags
+push = false                    # Manual push for safety and control
+publish = false                 # Not publishing to crates.io (binary project)
+
+# Commit and tag configuration
+pre-release-commit-message = "release(v{{version}}): prepare ProRT-IP WarScan release"
+tag-message = "ProRT-IP WarScan v{{version}}\n\nNetwork scanner combining Masscan speed with Nmap detection depth."
+tag-prefix = "v"                # Tags: v0.5.5, v0.5.6, etc.
+tag-name = "v{{version}}"       # Full tag name
+
+# Workspace member handling
+consolidate-commits = true      # Single commit for all workspace member changes
+shared-version = true           # All workspace members share the same version
+
+# Development version configuration
+# After release, version will be set to next patch with -dev suffix
+# Example: After releasing 0.5.5, workspace versions become 0.5.6-dev
+# dev-version = true            # Uncomment to enable -dev suffix
+# dev-version-ext = "dev"       # Suffix for development versions
+
+# Pre-release text replacements (automatic version updates in documentation)
+# These patterns update version strings in documentation files during release
+# Each replacement runs before the version bump commit is created
+pre-release-replacements = [
+  # Note: Paths are relative to workspace root (../ from crates/*/), since cargo-release
+  # runs replacements from each crate directory in workspace mode
+
+  # CLAUDE.md - Project status line (preserve test count and sprint info)
+  # Matches: "(v0.5.5, 2,246 tests" → "(v0.5.6, 2,246 tests"
+  {file = "../../CLAUDE.md", search = "\\(v[0-9]+\\.[0-9]+\\.[0-9]+, 2,246 tests", replace = "(v{{version}}, 2,246 tests"},
+
+  # CLAUDE.local.md - Header version (bold markdown format)
+  # Matches: "**v0.5.5**" → "**v0.5.6**"
+  {file = "../../CLAUDE.local.md", search = "\\*\\*v[0-9]+\\.[0-9]+\\.[0-9]+\\*\\*", replace = "**v{{version}}**"},
+
+  # docs/00-ARCHITECTURE.md - Status line with project version
+  # Matches: "- v0.5.5 TUI" → "- v0.5.6 TUI"
+  {file = "../../docs/00-ARCHITECTURE.md", search = "- v[0-9]+\\.[0-9]+\\.[0-9]+ TUI", replace = "- v{{version}} TUI"},
+
+  # docs/01-ROADMAP.md - Project Status line (multiple v0.5.5 references)
+  # Matches: All "v0.5.5" → "v0.5.6" (generic pattern for this file)
+  {file = "../../docs/01-ROADMAP.md", search = "v[0-9]+\\.[0-9]+\\.[0-9]+", replace = "v{{version}}"},
+
+  # docs/10-PROJECT-STATUS.md - Current Phase line
+  # Matches: "| v0.5.5 +" → "| v0.5.6 +"
+  {file = "../../docs/10-PROJECT-STATUS.md", search = "\\| v[0-9]+\\.[0-9]+\\.[0-9]+ \\+", replace = "| v{{version}} +"},
+]
+
+# Pre-release hooks (quality gates)
+# Note: This version of cargo-release does not support pre-release hooks in TOML configuration
+# Quality checks are handled by scripts/release.sh instead, which runs:
+#   - cargo fmt --all --check
+#   - cargo clippy --workspace --all-targets -- -D warnings
+#   - cargo test --workspace
+#   - cargo build --release
+#   - cargo build --locked
+#
+# The script provides better error messages and user confirmation before proceeding.
+# Always use ./scripts/release.sh instead of running cargo-release directly.
+
+# Post-release hooks (optional, currently disabled)
+# These would run AFTER the version bump commit and tag are created
+# Uncomment and customize if you want automatic post-release actions
+#
+# post-release-hook = [
+#   ["git", "push", "origin", "main"],
+#   ["git", "push", "origin", "v{{version}}"],
+#   ["gh", "release", "create", "v{{version}}", "--notes-file", "/tmp/ProRT-IP/RELEASE-NOTES-v{{version}}.md"],
+# ]

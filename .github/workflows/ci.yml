@@ -31,7 +31,68 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
-  # Job 1: Format check
+  # Job 1: Lockfile validation (fast fail-fast check)
+  lockfile-validation:
+    name: Validate Cargo.lock
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "lockfile-validation"
+
+      - name: Validate Cargo.lock is synchronized
+        run: |
+          echo "Validating Cargo.lock synchronization..."
+          if ! cargo build --locked --quiet 2>&1; then
+            echo "❌ ERROR: Cargo.lock is out of sync with Cargo.toml"
+            echo ""
+            echo "This means Cargo.lock needs to be regenerated."
+            echo "Run the following commands to fix:"
+            echo "  cargo update"
+            echo "  git add Cargo.lock"
+            echo "  git commit --amend"
+            echo ""
+            exit 1
+          fi
+          echo "✅ Cargo.lock is synchronized"
+
+      - name: Check for Cargo.toml changes without Cargo.lock update
+        run: |
+          echo "Checking if Cargo.toml was modified without Cargo.lock..."
+
+          # Get the list of changed files in this commit
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+
+          # Count Cargo.toml and Cargo.lock changes
+          CARGO_TOML_CHANGES=$(echo "$CHANGED_FILES" | grep -c "Cargo.toml" || true)
+          CARGO_LOCK_CHANGES=$(echo "$CHANGED_FILES" | grep -c "Cargo.lock" || true)
+
+          echo "Files changed:"
+          echo "$CHANGED_FILES" | grep -E "(Cargo\.(toml|lock)|crates/)" || echo "(no Cargo files)"
+          echo ""
+          echo "Cargo.toml files modified: $CARGO_TOML_CHANGES"
+          echo "Cargo.lock modified: $CARGO_LOCK_CHANGES"
+
+          if [ "$CARGO_TOML_CHANGES" -gt 0 ] && [ "$CARGO_LOCK_CHANGES" -eq 0 ]; then
+            echo ""
+            echo "⚠️  WARNING: Cargo.toml modified but Cargo.lock was not updated"
+            echo "This might indicate the lockfile is out of sync."
+            echo "The previous step should have caught this if there's an actual issue."
+          else
+            echo "✅ Cargo.toml and Cargo.lock changes are consistent"
+          fi
+
+  # Job 2: Format check
   format:
     name: Format Check
     runs-on: ubuntu-latest
@@ -46,7 +107,7 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
-  # Job 2: Clippy linting
+  # Job 3: Clippy linting
   clippy:
     name: Clippy Lint
     runs-on: ubuntu-latest
@@ -66,7 +127,7 @@ jobs:
       - name: Run clippy
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
-  # Job 3: Build and Test (Matrix for multiple platforms)
+  # Job 4: Build and Test (Matrix for multiple platforms)
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -195,7 +256,7 @@ jobs:
           fail_ci_if_error: false
           verbose: true
 
-  # Job 4: Security audit
+  # Job 5: Security audit
   security_audit:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -209,7 +270,7 @@ jobs:
           command: check advisories
           arguments: --all-features
 
-  # Job 5: MSRV (Minimum Supported Rust Version) check
+  # Job 6: MSRV (Minimum Supported Rust Version) check
   msrv:
     name: MSRV Check (1.85)
     runs-on: ubuntu-latest

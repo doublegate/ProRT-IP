@@ -53,7 +53,7 @@
 //! # }
 //! ```
 
-use crate::AdaptiveRateLimiterV2;
+use crate::{AdaptiveRateLimiterV2, ResultWriter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanType};
@@ -281,28 +281,29 @@ impl StealthScanner {
                 prtip_core::Error::Network(format!("Failed to create BatchReceiver: {}", e))
             })?;
 
-        // Step 8: Process ports in batches
-        let mut all_results = Vec::new();
+        // Step 8: Create ResultWriter from config (Sprint 6.6 Task Area 3)
+        let mut writer = ResultWriter::from_config(&self.config, ports.len())?;
         let timeout_ms = self.config.timing().timeout_ms();
 
+        // Step 9: Process ports in batches
         for chunk in ports.chunks(batch_size) {
-            // Step 8a: Prepare batch packets
+            // Step 9a: Prepare batch packets
             let packets = self.prepare_batch(target, chunk, scan_type)?;
 
-            // Step 8b: Add packets to sender
+            // Step 9b: Add packets to sender
             for packet in &packets {
                 sender.add_packet(packet.clone()).map_err(|e| {
                     prtip_core::Error::Network(format!("Failed to add packet: {}", e))
                 })?;
             }
 
-            // Step 8c: Flush batch (with 3 retries)
+            // Step 9c: Flush batch (with 3 retries)
             sender
                 .flush(3)
                 .await
                 .map_err(|e| prtip_core::Error::Network(format!("Failed to flush batch: {}", e)))?;
 
-            // Step 8d: Receive batch responses
+            // Step 9d: Receive batch responses
             let responses = receiver
                 .receive_batch(timeout_ms as u32)
                 .await
@@ -310,15 +311,20 @@ impl StealthScanner {
                     prtip_core::Error::Network(format!("Failed to receive batch: {}", e))
                 })?;
 
-            // Step 8e: Process responses
+            // Step 9e: Process responses
             let response_data: Vec<Vec<u8>> = responses.into_iter().map(|r| r.data).collect();
             let batch_results = self
                 .process_batch_responses(response_data, scan_type, scan_id)
                 .await?;
-            all_results.extend(batch_results);
 
-            // Step 8f: Mark remaining ports as open|filtered (no RST = open|filtered for stealth)
-            let responded_ports: std::collections::HashSet<u16> = all_results
+            // Write batch results to writer
+            for result in batch_results {
+                writer.write(&result)?;
+            }
+
+            // Step 9f: Mark remaining ports as open|filtered (no RST = open|filtered for stealth)
+            let current_results = writer.collect()?;
+            let responded_ports: std::collections::HashSet<u16> = current_results
                 .iter()
                 .filter(|r| r.target_ip == target)
                 .map(|r| r.port)
@@ -327,12 +333,14 @@ impl StealthScanner {
             for &port in chunk {
                 if !responded_ports.contains(&port) {
                     // No RST received = port is open or filtered
-                    all_results.push(ScanResult::new(target, port, PortState::Open));
+                    writer.write(&ScanResult::new(target, port, PortState::Open))?;
                 }
             }
         }
 
-        Ok(all_results)
+        // Step 10: Flush writer and collect results
+        writer.flush()?;
+        writer.collect()
     }
 
     /// Fallback scan_ports for macOS/Windows (no batch I/O support)
@@ -343,19 +351,23 @@ impl StealthScanner {
         ports: Vec<u16>,
         scan_type: StealthScanType,
     ) -> Result<Vec<ScanResult>> {
-        let mut results = Vec::new();
+        // Sprint 6.6 Task Area 3: Use ResultWriter for collection
+        let port_count = ports.len();
+        let mut writer = ResultWriter::from_config(&self.config, port_count)?;
 
         for port in ports {
             match self.scan_port(target, port, scan_type).await {
-                Ok(result) => results.push(result),
+                Ok(result) => writer.write(&result)?,
                 Err(e) => {
                     debug!("Error scanning {}:{} - {}", target, port, e);
-                    results.push(ScanResult::new(target, port, PortState::Filtered));
+                    writer.write(&ScanResult::new(target, port, PortState::Filtered))?;
                 }
             }
         }
 
-        Ok(results)
+        // Flush and return results
+        writer.flush()?;
+        writer.collect()
     }
 
     /// Scan a single port with specified stealth technique

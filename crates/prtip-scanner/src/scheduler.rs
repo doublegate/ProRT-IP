@@ -12,7 +12,7 @@ use crate::adaptive_parallelism::calculate_parallelism;
 use crate::storage_backend::StorageBackend;
 use crate::{
     AdaptiveRateLimiterV3, BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator,
-    ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
+    ResultWriter, ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
 };
 use prtip_core::{
     Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb,
@@ -358,7 +358,8 @@ impl ScanScheduler {
 
                     // Scan each port individually (SYN scanner scans one port at a time)
                     // Sprint 5.1: Now supports both IPv4 and IPv6
-                    let mut results = Vec::new();
+                    // Sprint 6.6 Task Area 3: Use ResultWriter for result accumulation
+                    let mut writer = ResultWriter::from_config(&self.config, ports.len())?;
                     for port in &ports {
                         match syn_scanner
                             .scan_port_with_pcapng(
@@ -368,11 +369,12 @@ impl ScanScheduler {
                             )
                             .await
                         {
-                            Ok(result) => results.push(result),
+                            Ok(result) => writer.write(&result)?,
                             Err(e) => warn!("Error scanning SYN {}:{}: {}", host, port, e),
                         }
                     }
-                    Ok(results)
+                    writer.flush()?;
+                    writer.collect()
                 }
                 ScanType::Udp => {
                     // UDP scan (has PCAPNG support already!)
@@ -380,7 +382,8 @@ impl ScanScheduler {
                     udp_scanner.initialize().await?;
 
                     // Scan each port individually (Sprint 5.1: UDP now supports dual-stack IPv4/IPv6)
-                    let mut results = Vec::new();
+                    // Sprint 6.6 Task Area 3: Use ResultWriter for result accumulation
+                    let mut writer = ResultWriter::from_config(&self.config, ports.len())?;
                     for port in &ports {
                         match udp_scanner
                             .scan_port_with_pcapng(
@@ -390,11 +393,12 @@ impl ScanScheduler {
                             )
                             .await
                         {
-                            Ok(result) => results.push(result),
+                            Ok(result) => writer.write(&result)?,
                             Err(e) => warn!("Error scanning UDP {}:{}: {}", host, port, e),
                         }
                     }
-                    Ok(results)
+                    writer.flush()?;
+                    writer.collect()
                 }
                 ScanType::Fin | ScanType::Null | ScanType::Xmas | ScanType::Ack => {
                     // Stealth scans (have PCAPNG support now!)
@@ -414,7 +418,8 @@ impl ScanScheduler {
 
                     // Scan each port individually
                     // Sprint 5.1 Phase 2.2: Stealth scanner now supports IPv6
-                    let mut results = Vec::new();
+                    // Sprint 6.6 Task Area 3: Use ResultWriter for result accumulation
+                    let mut writer = ResultWriter::from_config(&self.config, ports.len())?;
                     for port in &ports {
                         match stealth_scanner
                             .scan_port_with_pcapng(
@@ -425,7 +430,7 @@ impl ScanScheduler {
                             )
                             .await
                         {
-                            Ok(result) => results.push(result),
+                            Ok(result) => writer.write(&result)?,
                             Err(e) => warn!(
                                 "Error scanning {} {}:{}: {}",
                                 stealth_type.name(),
@@ -435,7 +440,8 @@ impl ScanScheduler {
                             ),
                         }
                     }
-                    Ok(results)
+                    writer.flush()?;
+                    writer.collect()
                 }
                 ScanType::Idle => {
                     // Idle scan (Phase 5 feature)
@@ -976,6 +982,8 @@ mod tests {
                 format: OutputFormat::Json,
                 file: None,
                 verbose: 0,
+                use_mmap: false,
+                mmap_output_path: None,
             },
             performance: PerformanceConfig {
                 max_rate: Some(100),

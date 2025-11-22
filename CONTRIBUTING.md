@@ -16,6 +16,7 @@ Thank you for your interest in contributing to ProRT-IP WarScan! This document p
 - [Branch Naming Conventions](#branch-naming-conventions)
 - [Issue Guidelines](#issue-guidelines)
 - [Code Review Process](#code-review-process)
+- [Release Process](#release-process)
 
 ## Code of Conduct
 
@@ -111,20 +112,65 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
 
 5. **Set up pre-commit hooks** (recommended):
 
-   ```bash
-   # Configure Git to use custom hooks directory
-   git config core.hooksPath .githooks
+   ProRT-IP uses pre-commit hooks to validate code quality before commits.
 
-   # Or manually copy hook to .git/hooks/
-   cp .githooks/pre-commit .git/hooks/pre-commit
+   **Option 1: Installation Script (Recommended)**
+   ```bash
+   ./scripts/install-hooks.sh
+   ```
+
+   **Option 2: Manual Installation**
+   ```bash
+   cp .github/hooks/pre-commit .git/hooks/pre-commit
    chmod +x .git/hooks/pre-commit
    ```
 
-   The pre-commit hook automatically checks markdown links before commits. Requires `markdown-link-check`:
-
+   **Option 3: Use core.hooksPath (Advanced)**
    ```bash
-   npm install -g markdown-link-check
+   git config core.hooksPath .github/hooks
    ```
+
+   The pre-commit hook automatically validates:
+   - ✅ Cargo.lock synchronized with Cargo.toml changes
+   - ✅ Code formatting (`cargo fmt --check`)
+   - ✅ Clippy linting (`cargo clippy --workspace -- -D warnings`)
+
+   **Bypassing** (not recommended):
+   ```bash
+   git commit --no-verify  # Only use in emergencies
+   ```
+
+### Hook Files Explained
+
+ProRT-IP has two pre-commit hook files:
+
+1. **`.github/hooks/pre-commit`** (version controlled)
+   - Source of truth, shared with all developers
+   - Updated via pull requests
+   - Tracked in Git repository
+
+2. **`.git/hooks/pre-commit`** (local, not in Git)
+   - Active hook that Git executes
+   - Copied from template in `.github/hooks/`
+   - Not version controlled (lives in `.git/` directory)
+
+**Why two files?** Git only executes hooks from the `.git/hooks/` directory, which is never version controlled. To share hooks with the team, we store the template in `.github/hooks/` (version controlled) and developers copy it to `.git/hooks/` (local installation).
+
+This is a **standard Git workflow pattern** used by projects like Homebrew, Kubernetes, and Linux Kernel.
+
+### Updating Hooks
+
+If the hook template in `.github/hooks/pre-commit` is updated (via pull request):
+
+```bash
+# Re-install to get latest version
+./scripts/install-hooks.sh
+
+# Or manually
+cp .github/hooks/pre-commit .git/hooks/pre-commit
+```
+
+**Tip:** Run `git pull` before re-installing to ensure you have the latest template.
 
 ## Coding Standards
 
@@ -572,6 +618,151 @@ Reviewers will check:
 6. **Address review feedback** and push updates
 
 7. **Squash commits** if requested before merge
+
+## Release Process
+
+### Release Checklist
+
+This section provides a comprehensive checklist for maintainers creating new releases. Following this process prevents common issues like Cargo.lock desynchronization that can cause CI failures.
+
+#### Pre-Release Preparation
+
+1. **Version Bump**
+   - [ ] Update version in root `Cargo.toml`
+   - [ ] Update version in all workspace member `Cargo.toml` files:
+     - `prtip-cli/Cargo.toml`
+     - `prtip-core/Cargo.toml`
+     - `prtip-network/Cargo.toml`
+     - `prtip-scanner/Cargo.toml`
+     - `prtip-tui/Cargo.toml`
+   - [ ] Run `cargo update` to regenerate `Cargo.lock`
+   - [ ] Verify with `cargo build --locked` (must pass)
+   - [ ] Stage all changes: `git add Cargo.toml */Cargo.toml Cargo.lock`
+
+2. **Documentation Updates**
+   - [ ] Update `README.md` (version badge, test count, new features)
+   - [ ] Update `CHANGELOG.md` (add new version section)
+   - [ ] Update `CLAUDE.md` (status line with new version)
+   - [ ] Update `CLAUDE.local.md` (header with new version)
+   - [ ] Update `docs/00-ARCHITECTURE.md` (version, test count)
+   - [ ] Update `docs/01-ROADMAP.md` (version, progress percentage)
+   - [ ] Update `docs/10-PROJECT-STATUS.md` (current version)
+   - [ ] Update relevant technical docs (if architecture changed)
+
+3. **Quality Gates**
+   - [ ] Run `cargo fmt --check` (0 formatting issues)
+   - [ ] Run `cargo clippy --workspace -- -D warnings` (0 warnings)
+   - [ ] Run `cargo test --workspace` (all tests passing)
+   - [ ] Run `cargo build --release` (clean build)
+   - [ ] Run `cargo audit` (no security vulnerabilities)
+   - [ ] Check coverage: `cargo tarpaulin --workspace` (>54% baseline)
+
+4. **Release Notes**
+   - [ ] Create `/tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md`
+   - [ ] Include: Executive summary, features, fixes, performance, quality metrics
+   - [ ] Length: 100-200 lines (follow v0.3.7-v0.5.5 standard)
+   - [ ] Technical depth: Code examples, metrics, strategic value
+
+5. **Git Workflow**
+   - [ ] Stage all changes: `git add .`
+   - [ ] Create commit with 200+ line message (conventional format)
+   - [ ] Create annotated tag: `git tag -a vX.Y.Z -F /tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md`
+   - [ ] Verify tag: `git show vX.Y.Z`
+   - [ ] Push commit: `git push origin main`
+   - [ ] Push tag: `git push origin vX.Y.Z`
+
+6. **GitHub Release**
+   - [ ] Create/update release: `gh release create vX.Y.Z --notes-file /tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md`
+   - [ ] Verify release URL and content
+   - [ ] Check all CI workflows pass (100% success rate)
+
+#### Post-Release Verification
+
+- [ ] All GitHub Actions workflows passing (green checks)
+- [ ] GitHub Release published and visible
+- [ ] Release notes comprehensive and accurate
+- [ ] No broken links in documentation
+- [ ] CI/CD coverage workflow uploading to Codecov
+- [ ] All platforms validated (Linux, macOS, Windows)
+
+#### Common Pitfalls
+
+⚠️ **Don't forget to regenerate Cargo.lock** after version bumps
+⚠️ **Don't skip `cargo build --locked`** verification
+⚠️ **Don't commit without running pre-commit hook** checks
+⚠️ **Don't create duplicate GitHub releases** (check existing first)
+⚠️ **Don't push before local quality gates pass**
+
+### Using cargo-release (Recommended)
+
+ProRT-IP uses `cargo-release` to automate version bumps and releases, reducing manual errors and ensuring consistency.
+
+#### Installation
+
+```bash
+cargo install cargo-release
+```
+
+#### Configuration
+
+Release automation is configured in `release.toml` at the repository root. This configuration handles:
+- Workspace-wide version bumps
+- Cargo.lock regeneration
+- Documentation version updates
+- Pre-release quality checks
+
+#### Usage
+
+```bash
+# Patch release (0.5.5 → 0.5.6)
+./scripts/release.sh patch
+
+# Minor release (0.5.6 → 0.6.0)
+./scripts/release.sh minor
+
+# Major release (0.6.0 → 1.0.0)
+./scripts/release.sh major
+```
+
+The `release.sh` script automates:
+- Pre-flight checks (fmt, clippy, test, lockfile validation)
+- Version bumps in all Cargo.toml files
+- Cargo.lock regeneration
+- Documentation version updates (README, CLAUDE.md, docs/)
+- Git commit and tag creation
+
+#### Manual Steps (Still Required)
+
+1. **Create release notes**: Write `/tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md`
+2. **Push to GitHub**: `git push origin main && git push origin --tags`
+3. **Create GitHub Release**: `gh release create vX.Y.Z --notes-file /tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md`
+
+#### Dry-Run Testing
+
+Before executing a release, test with dry-run mode:
+
+```bash
+cargo release patch --dry-run
+```
+
+This shows all changes that would be made without actually executing them.
+
+### Quick Commands
+
+```bash
+# Version bump workflow (manual)
+cargo update
+cargo build --locked
+
+# Quality checks (run before release)
+cargo fmt --check && cargo clippy --workspace -- -D warnings && cargo test --workspace
+
+# Release workflow (manual)
+git add . && git commit -m "release(vX.Y.Z): ..."
+git tag -a vX.Y.Z -F /tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md
+git push origin main && git push origin vX.Y.Z
+gh release create vX.Y.Z --notes-file /tmp/ProRT-IP/RELEASE-NOTES-vX.Y.Z.md
+```
 
 ## Additional Resources
 

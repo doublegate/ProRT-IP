@@ -221,6 +221,12 @@ pub struct OutputConfig {
     pub file: Option<PathBuf>,
     /// Verbosity level (0-3)
     pub verbose: u8,
+    /// Use memory-mapped output instead of in-memory buffering (Sprint 6.6)
+    #[serde(default)]
+    pub use_mmap: bool,
+    /// Path to memory-mapped output file (if use_mmap is true) (Sprint 6.6)
+    #[serde(default)]
+    pub mmap_output_path: Option<PathBuf>,
 }
 
 impl Default for OutputConfig {
@@ -229,6 +235,8 @@ impl Default for OutputConfig {
             format: OutputFormat::Text,
             file: None,
             verbose: 0,
+            use_mmap: false,
+            mmap_output_path: None,
         }
     }
 }

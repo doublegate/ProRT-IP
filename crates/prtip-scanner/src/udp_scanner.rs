@@ -48,7 +48,7 @@
 //! # }
 //! ```
 
-use crate::{AdaptiveRateLimiterV2, HostgroupLimiter};
+use crate::{AdaptiveRateLimiterV2, HostgroupLimiter, ResultWriter};
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use prtip_core::{Config, EventBus, PortState, Protocol, Result, ScanEvent, ScanResult, ScanType};
@@ -229,22 +229,23 @@ impl UdpScanner {
                 prtip_core::Error::Network(format!("Failed to create BatchReceiver: {}", e))
             })?;
 
-        // 8. Process ports in batches
-        let mut results = Vec::with_capacity(ports.len());
+        // 8. Create ResultWriter from config (Sprint 6.6 Task Area 3)
+        let mut writer = ResultWriter::from_config(&self.config, ports.len())?;
         let timeout_ms = self.config.scan.timeout_ms;
 
+        // 9. Process ports in batches
         for chunk in ports.chunks(batch_size) {
-            // 8a. Prepare batch packets
+            // 9a. Prepare batch packets
             let batch_packets = self.prepare_batch(target, chunk, batch_size).await?;
 
-            // 8b. Add packets to sender
+            // 9b. Add packets to sender
             for packet in batch_packets {
                 sender.add_packet(packet).map_err(|e| {
                     prtip_core::Error::Network(format!("Failed to add packet to batch: {}", e))
                 })?;
             }
 
-            // 8c. Flush batch (with retry logic)
+            // 9c. Flush batch (with retry logic)
             for retry in 0..3 {
                 match sender.flush(3).await {
                     Ok(_) => {
@@ -264,7 +265,7 @@ impl UdpScanner {
                 }
             }
 
-            // 8d. Receive batch responses
+            // 9d. Receive batch responses
             let responses = receiver
                 .receive_batch(timeout_ms as u32)
                 .await
@@ -272,20 +273,25 @@ impl UdpScanner {
                     prtip_core::Error::Network(format!("Failed to receive batch: {}", e))
                 })?;
 
-            // 8e. Process responses
-            self.process_batch_responses(responses, &mut results, scan_id)
+            // 9e. Process responses
+            self.process_batch_responses(responses, &mut writer, scan_id)
                 .await?;
 
-            // 8f. Mark remaining ports as filtered
+            // 9f. Mark remaining ports as filtered
+            let current_results = writer.collect()?;
             for &port in chunk {
-                if !results
+                if !current_results
                     .iter()
                     .any(|r| r.port == port && r.target_ip == target)
                 {
-                    results.push(ScanResult::new(target, port, PortState::Filtered));
+                    writer.write(&ScanResult::new(target, port, PortState::Filtered))?;
                 }
             }
         }
+
+        // 10. Flush writer and collect results
+        writer.flush()?;
+        let results = writer.collect()?;
 
         debug!(
             "UDP batch scan complete: {} results for {}",
@@ -310,20 +316,24 @@ impl UdpScanner {
             target
         );
 
-        let mut results = Vec::with_capacity(ports.len());
+        // Sprint 6.6 Task Area 3: Use ResultWriter for collection
+        let port_count = ports.len();
+        let mut writer = ResultWriter::from_config(&self.config, port_count)?;
 
         // Sequential scanning using existing scan_port method
         for port in ports {
             match self.scan_port(target, port).await {
-                Ok(result) => results.push(result),
+                Ok(result) => writer.write(&result)?,
                 Err(e) => {
                     warn!("UDP scan failed for {}:{} - {}", target, port, e);
-                    results.push(ScanResult::new(target, port, PortState::Unknown));
+                    writer.write(&ScanResult::new(target, port, PortState::Unknown))?;
                 }
             }
         }
 
-        Ok(results)
+        // Flush and return results
+        writer.flush()?;
+        writer.collect()
     }
 
     /// Detect local IPv4 address for the interface
@@ -1210,7 +1220,7 @@ impl UdpScanner {
     async fn process_batch_responses(
         &self,
         responses: Vec<prtip_network::ReceivedPacket>,
-        results: &mut Vec<ScanResult>,
+        writer: &mut ResultWriter,
         scan_id: Uuid,
     ) -> Result<()> {
         for response in responses {
@@ -1242,7 +1252,7 @@ impl UdpScanner {
                         }
                     }
 
-                    results.push(result);
+                    writer.write(&result)?;
                 }
             }
         }

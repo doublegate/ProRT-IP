@@ -375,9 +375,32 @@ async fn run() -> Result<()> {
     let total_ports = targets.len() * ports.count();
 
     // Validate TUI mode early (actual launch happens later)
-    if args.tui && event_bus.is_none() {
-        warn!("TUI requires event tracking (cannot use with --quiet mode)");
-        bail!("Cannot use --tui flag in quiet mode. Remove --quiet or remove --tui.");
+    if args.tui {
+        // Check for TTY (terminal device) - required for ratatui/crossterm
+        use std::io::IsTerminal;
+
+        if !std::io::stdout().is_terminal() {
+            eprintln!("ERROR: TUI mode requires an interactive terminal (TTY)\n");
+            eprintln!("You are currently running in a non-interactive environment.");
+            eprintln!("This typically occurs when:");
+            eprintln!("  - Running via SSH without proper terminal allocation");
+            eprintln!("  - Executing in a CI/CD pipeline or automated script");
+            eprintln!("  - Piping output to another command or file");
+            eprintln!("  - Running via remote execution without TTY");
+            eprintln!();
+            eprintln!("Solutions:");
+            eprintln!("  SSH: Use 'ssh -t user@host prtip --tui ...'");
+            eprintln!("  Script: Ensure script runs in interactive shell");
+            eprintln!("  Alternative: Remove --tui flag for non-interactive mode");
+            eprintln!();
+            bail!("TUI requires interactive terminal (TTY)");
+        }
+
+        // Check for event bus (quiet mode incompatibility)
+        if event_bus.is_none() {
+            warn!("TUI requires event tracking (cannot use with --quiet mode)");
+            bail!("Cannot use --tui flag in quiet mode. Remove --quiet or remove --tui.");
+        }
     }
 
     // Initialize ProgressDisplay (event-driven) - skip if TUI is active

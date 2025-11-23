@@ -76,6 +76,8 @@ impl App {
     /// Returns an error if terminal initialization fails or event handling fails.
     pub async fn run(&mut self) -> Result<()> {
         // Initialize terminal (ratatui 0.29+ handles panic hook automatically)
+        // NOTE: This will panic if no TTY is available. The CLI should validate
+        // TTY presence before calling this function (see main.rs TTY check).
         let mut terminal = ratatui::init();
 
         // Subscribe to all EventBus events

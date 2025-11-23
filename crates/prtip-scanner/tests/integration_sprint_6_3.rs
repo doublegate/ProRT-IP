@@ -52,6 +52,8 @@ fn create_sprint_6_3_config(
             format: OutputFormat::Json,
             file: None,
             verbose: 0,
+            use_mmap: false,
+            mmap_output_path: None,
         },
         performance: PerformanceConfig {
             max_rate: Some(1000),

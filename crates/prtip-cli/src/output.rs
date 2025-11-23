@@ -563,6 +563,8 @@ mod tests {
                 format: OutputFormat::Text,
                 file: None,
                 verbose: 0,
+                use_mmap: false,
+                mmap_output_path: None,
             },
             performance: PerformanceConfig {
                 max_rate: None,

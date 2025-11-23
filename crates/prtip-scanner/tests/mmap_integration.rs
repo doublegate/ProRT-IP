@@ -231,7 +231,7 @@ fn test_mmap_different_port_states() {
     let reader = MmapResultReader::open(&path).unwrap();
     assert_eq!(reader.len(), 4);
 
-    let expected_states = vec![
+    let expected_states = [
         PortState::Open,
         PortState::Closed,
         PortState::Filtered,

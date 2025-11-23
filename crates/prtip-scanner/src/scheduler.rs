@@ -501,6 +501,38 @@ impl ScanScheduler {
     ) -> Result<Vec<ScanResult>> {
         info!("Starting scan with host discovery");
 
+        // Publish ScanStarted event for TUI
+        if let Some(ref event_bus) = self.config.scan.event_bus {
+            use prtip_core::events::{ScanEvent, ScanStage};
+            use std::time::SystemTime;
+            use uuid::Uuid;
+
+            let scan_id = Uuid::new_v4();
+            let timestamp = SystemTime::now();
+
+            event_bus
+                .publish(ScanEvent::ScanStarted {
+                    scan_id,
+                    scan_type: self.config.scan.scan_type,
+                    target_count: targets.len(),
+                    port_count: 0, // Will be determined after discovery
+                    timestamp,
+                })
+                .await;
+
+            // Transition to DiscoveringHosts stage
+            event_bus
+                .publish(ScanEvent::StageChanged {
+                    scan_id,
+                    timestamp,
+                    from_stage: ScanStage::Initializing,
+                    to_stage: ScanStage::DiscoveringHosts,
+                })
+                .await;
+
+            debug!("Published ScanStarted and StageChanged (DiscoveringHosts) events");
+        }
+
         // Expand all targets to individual IPs
         let mut original_ips = Vec::new();
         for target in &targets {
@@ -580,6 +612,27 @@ impl ScanScheduler {
             .filter_map(|ip| ScanTarget::parse(&ip.to_string()).ok())
             .collect();
 
+        // Transition to ScanningPorts stage after discovery
+        if let Some(ref event_bus) = self.config.scan.event_bus {
+            use prtip_core::events::{ScanEvent, ScanStage};
+            use std::time::SystemTime;
+            use uuid::Uuid;
+
+            let scan_id = Uuid::new_v4();
+            let timestamp = SystemTime::now();
+
+            event_bus
+                .publish(ScanEvent::StageChanged {
+                    scan_id,
+                    timestamp,
+                    from_stage: ScanStage::DiscoveringHosts,
+                    to_stage: ScanStage::ScanningPorts,
+                })
+                .await;
+
+            debug!("Published StageChanged (ScanningPorts) event after discovery");
+        }
+
         // Execute normal scan on live hosts
         self.execute_scan(live_targets, pcapng_writer).await
     }
@@ -614,11 +667,46 @@ impl ScanScheduler {
         targets: Vec<ScanTarget>,
         ports: &PortRange,
     ) -> Result<Vec<ScanResult>> {
+        // Store target count before vector is consumed
+        let target_count = targets.len();
+
         info!(
             "Starting port scan: {} targets, {} ports",
-            targets.len(),
+            target_count,
             ports.count()
         );
+
+        // Publish ScanStarted event for TUI
+        if let Some(ref event_bus) = self.config.scan.event_bus {
+            use prtip_core::events::{ScanEvent, ScanStage};
+            use std::time::SystemTime;
+            use uuid::Uuid;
+
+            let scan_id = Uuid::new_v4();
+            let timestamp = SystemTime::now();
+
+            event_bus
+                .publish(ScanEvent::ScanStarted {
+                    scan_id,
+                    scan_type: self.config.scan.scan_type,
+                    target_count,
+                    port_count: ports.count(),
+                    timestamp,
+                })
+                .await;
+
+            // Transition to ScanningPorts stage
+            event_bus
+                .publish(ScanEvent::StageChanged {
+                    scan_id,
+                    timestamp,
+                    from_stage: ScanStage::Initializing,
+                    to_stage: ScanStage::ScanningPorts,
+                })
+                .await;
+
+            debug!("Published ScanStarted and StageChanged events");
+        }
 
         let ports_vec: Vec<u16> = ports.iter().collect();
 
@@ -939,6 +1027,56 @@ impl ScanScheduler {
 
         // Complete progress bar
         progress.finish("Scan complete");
+
+        // Publish ScanCompleted event for TUI
+        if let Some(ref event_bus) = self.config.scan.event_bus {
+            use prtip_core::events::{ScanEvent, ScanStage};
+            use std::time::{Duration, SystemTime};
+            use uuid::Uuid;
+
+            let scan_id = Uuid::new_v4();
+            let timestamp = SystemTime::now();
+
+            // Calculate port counts
+            let open_count = all_results
+                .iter()
+                .filter(|r| r.state == PortState::Open)
+                .count();
+            let closed_count = all_results
+                .iter()
+                .filter(|r| r.state == PortState::Closed)
+                .count();
+            let filtered_count = all_results
+                .iter()
+                .filter(|r| r.state == PortState::Filtered)
+                .count();
+            let detected_services = all_results.iter().filter(|r| r.service.is_some()).count();
+
+            // Transition to Completed stage
+            event_bus
+                .publish(ScanEvent::StageChanged {
+                    scan_id,
+                    timestamp,
+                    from_stage: ScanStage::ScanningPorts,
+                    to_stage: ScanStage::Completed,
+                })
+                .await;
+
+            event_bus
+                .publish(ScanEvent::ScanCompleted {
+                    scan_id,
+                    duration: Duration::from_secs(0), // TODO: Track actual scan duration
+                    total_targets: target_count,
+                    open_ports: open_count,
+                    closed_ports: closed_count,
+                    filtered_ports: filtered_count,
+                    detected_services,
+                    timestamp,
+                })
+                .await;
+
+            debug!("Published ScanCompleted event");
+        }
 
         info!("Port scan complete: {} results", all_results.len());
         Ok(all_results)

@@ -189,9 +189,8 @@ impl PortTableWidget {
             ScanType::Null => "NULL",
             ScanType::Xmas => "Xmas",
             ScanType::Ack => "ACK",
-            ScanType::Window => "Window",
-            ScanType::Maimon => "Maimon",
             ScanType::Udp => "UDP",
+            ScanType::Idle => "Idle",
         };
 
         // Row style

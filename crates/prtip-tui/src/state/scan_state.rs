@@ -101,9 +101,46 @@ pub enum ScanType {
     Null,
     Xmas,
     Ack,
-    Window,
-    Maimon,
     Udp,
+    Idle,
+}
+
+// ===== Type Conversions (prtip-core → scan_state) =====
+
+impl From<prtip_core::types::PortState> for PortState {
+    fn from(state: prtip_core::types::PortState) -> Self {
+        match state {
+            prtip_core::types::PortState::Open => PortState::Open,
+            prtip_core::types::PortState::Closed => PortState::Closed,
+            prtip_core::types::PortState::Filtered => PortState::Filtered,
+            _ => PortState::Filtered, // Default for unknown states
+        }
+    }
+}
+
+impl From<prtip_core::types::Protocol> for Protocol {
+    fn from(protocol: prtip_core::types::Protocol) -> Self {
+        match protocol {
+            prtip_core::types::Protocol::Tcp => Protocol::Tcp,
+            prtip_core::types::Protocol::Udp => Protocol::Udp,
+            _ => Protocol::Tcp, // Default to TCP for other protocols
+        }
+    }
+}
+
+impl From<prtip_core::types::ScanType> for ScanType {
+    fn from(scan_type: prtip_core::types::ScanType) -> Self {
+        match scan_type {
+            prtip_core::types::ScanType::Syn => ScanType::Syn,
+            prtip_core::types::ScanType::Connect => ScanType::Connect,
+            prtip_core::types::ScanType::Fin => ScanType::Fin,
+            prtip_core::types::ScanType::Null => ScanType::Null,
+            prtip_core::types::ScanType::Xmas => ScanType::Xmas,
+            prtip_core::types::ScanType::Ack => ScanType::Ack,
+            prtip_core::types::ScanType::Udp => ScanType::Udp,
+            prtip_core::types::ScanType::Idle => ScanType::Idle,
+        }
+    }
 }
 
 /// Shared scan state accessible from both scanner and TUI

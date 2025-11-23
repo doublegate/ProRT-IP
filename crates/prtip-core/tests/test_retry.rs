@@ -218,9 +218,16 @@ async fn test_backoff_multiplier_effects() {
         retry_with_backoff(|| async { Err::<(), _>("fail") }, config_3x, |_| true).await;
     let elapsed_3x = start_3x.elapsed();
 
-    // 2x: 10ms + 20ms = 30ms
-    // 3x: 10ms + 30ms = 40ms
-    assert!(elapsed_3x > elapsed_2x, "3x multiplier should take longer");
+    // 2x: 10ms + 20ms = 30ms total delay
+    // 3x: 10ms + 30ms = 40ms total delay
+    // Theoretical ratio: 40/30 = 1.33x
+    // Allow 25% tolerance for scheduler variance on ARM64/CI environments
+    let actual_ratio = elapsed_3x.as_secs_f64() / elapsed_2x.as_secs_f64();
+    assert!(
+        actual_ratio >= 1.10,
+        "3x multiplier should take at least 10% longer (actual ratio: {:.2})",
+        actual_ratio
+    );
 }
 
 // ========================================================================

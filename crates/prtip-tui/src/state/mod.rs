@@ -5,7 +5,8 @@ mod ui_state;
 
 pub use scan_state::{
     PortDiscovery, PortState as ScanPortState, Protocol as ScanProtocol, ScanState, ScanType,
-    ServiceDetection, ThroughputSample,
+    ServiceDetection, ThroughputSample, MAX_PORT_DISCOVERIES, MAX_SERVICE_DETECTIONS,
+    MAX_THROUGHPUT_SAMPLES,
 };
 pub use ui_state::{
     ConfidenceFilter, DashboardTab, EventFilter, EventType, GraphType, HelpWidgetState, LogEntry,

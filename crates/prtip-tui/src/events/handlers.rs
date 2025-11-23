@@ -3,8 +3,12 @@
 use parking_lot::RwLock;
 use prtip_core::events::ScanEvent;
 use std::sync::Arc;
+use std::time::Instant;
 
-use crate::state::ScanState;
+use crate::state::{
+    PortDiscovery, ScanState, ServiceDetection, ThroughputSample, MAX_PORT_DISCOVERIES,
+    MAX_SERVICE_DETECTIONS, MAX_THROUGHPUT_SAMPLES,
+};
 
 /// Handle a ScanEvent and update the shared ScanState
 ///
@@ -66,6 +70,18 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             state.total = total;
             state.throughput_pps = throughput.packets_per_second;
             state.eta = eta;
+
+            // Add throughput sample for network activity graph
+            let sample = ThroughputSample {
+                timestamp: Instant::now(),
+                packets_per_second: throughput.packets_per_second,
+            };
+
+            // Add to ringbuffer (pop oldest if at capacity)
+            state.throughput_history.push_back(sample);
+            if state.throughput_history.len() > MAX_THROUGHPUT_SAMPLES {
+                state.throughput_history.pop_front();
+            }
         }
 
         ScanEvent::StageChanged { to_stage, .. } => {
@@ -81,14 +97,62 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             }
         }
 
-        ScanEvent::PortFound { .. } => {
+        ScanEvent::PortFound {
+            ip,
+            port,
+            state: port_state,
+            protocol,
+            scan_type,
+            timestamp,
+            ..
+        } => {
             let mut state = scan_state.write();
             state.open_ports += 1;
+
+            // Create PortDiscovery entry for widget display
+            let discovery = PortDiscovery {
+                timestamp,
+                ip,
+                port,
+                state: port_state.into(),
+                protocol: protocol.into(),
+                scan_type: scan_type.into(),
+            };
+
+            // Add to ringbuffer (pop oldest if at capacity)
+            state.port_discoveries.push_back(discovery);
+            if state.port_discoveries.len() > MAX_PORT_DISCOVERIES {
+                state.port_discoveries.pop_front();
+            }
         }
 
-        ScanEvent::ServiceDetected { .. } => {
+        ScanEvent::ServiceDetected {
+            ip,
+            port,
+            service_name,
+            service_version,
+            confidence,
+            timestamp,
+            ..
+        } => {
             let mut state = scan_state.write();
             state.detected_services += 1;
+
+            // Create ServiceDetection entry for widget display
+            let detection = ServiceDetection {
+                timestamp,
+                ip,
+                port,
+                service_name,
+                service_version,
+                confidence,
+            };
+
+            // Add to ringbuffer (pop oldest if at capacity)
+            state.service_detections.push_back(detection);
+            if state.service_detections.len() > MAX_SERVICE_DETECTIONS {
+                state.service_detections.pop_front();
+            }
         }
 
         // Diagnostic events

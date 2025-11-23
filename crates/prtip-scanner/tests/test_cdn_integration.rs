@@ -43,6 +43,8 @@ fn create_test_config_with_cdn(
             format: OutputFormat::Json,
             file: None,
             verbose: 0,
+            use_mmap: false,
+            mmap_output_path: None,
         },
         performance: PerformanceConfig {
             max_rate: Some(100),

@@ -359,10 +359,12 @@ mod tests {
         let temp = NamedTempFile::new().unwrap();
         let path = temp.path().to_owned();
 
-        let mut config = Config::default();
-        config.output = OutputConfig {
-            use_mmap: true,
-            mmap_output_path: Some(path.clone()),
+        let config = Config {
+            output: OutputConfig {
+                use_mmap: true,
+                mmap_output_path: Some(path.clone()),
+                ..Default::default()
+            },
             ..Default::default()
         };
 
@@ -377,10 +379,12 @@ mod tests {
     fn test_from_config_mmap_default_path() {
         use prtip_core::{Config, OutputConfig};
 
-        let mut config = Config::default();
-        config.output = OutputConfig {
-            use_mmap: true,
-            mmap_output_path: None, // Use default path
+        let config = Config {
+            output: OutputConfig {
+                use_mmap: true,
+                mmap_output_path: None, // Use default path
+                ..Default::default()
+            },
             ..Default::default()
         };
 

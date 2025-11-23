@@ -316,6 +316,8 @@ async fn test_scheduler_config_validation() {
             format: OutputFormat::Json,
             file: None,
             verbose: 0,
+            use_mmap: false,
+            mmap_output_path: None,
         },
         performance: PerformanceConfig {
             max_rate: None,

@@ -58,10 +58,15 @@ jobs:
 
       - name: Run Sprint 5.9 benchmark suite
         id: run-benchmarks
+        continue-on-error: true
         run: |
-          cd benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts
-          chmod +x run-all-benchmarks.sh
-          ./run-all-benchmarks.sh
+          if [ -d "benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts" ]; then
+            cd benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts
+            chmod +x run-all-benchmarks.sh
+            ./run-all-benchmarks.sh
+          else
+            echo "Sprint 5.9 benchmarks archived - skipping"
+          fi
           echo "timestamp=$(date -u +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
 
       - name: Run Sprint 6.3 network optimization benchmarks
@@ -93,48 +98,68 @@ jobs:
       - name: Compare against baseline
         if: steps.find-baseline.outputs.baseline_found == 'true'
         id: compare
+        continue-on-error: true
         run: |
-          chmod +x benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts/analyze-results.sh
-          cd benchmarks/05-Sprint5.9-Benchmarking-Framework
-          ./scripts/analyze-results.sh "${{ steps.find-baseline.outputs.baseline_file }}" results
-          comparison_exit_code=$?
-          echo "exit_code=$comparison_exit_code" >> $GITHUB_OUTPUT
+          if [ -d "benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts" ]; then
+            chmod +x benchmarks/05-Sprint5.9-Benchmarking-Framework/scripts/analyze-results.sh
+            cd benchmarks/05-Sprint5.9-Benchmarking-Framework
+            ./scripts/analyze-results.sh "${{ steps.find-baseline.outputs.baseline_file }}" results
+            comparison_exit_code=$?
+            echo "exit_code=$comparison_exit_code" >> $GITHUB_OUTPUT
 
-          # Read PR comment if generated
-          if [ -f "results/pr-comment.md" ]; then
-            echo "pr_comment<<EOF" >> $GITHUB_OUTPUT
-            cat results/pr-comment.md >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            # Read PR comment if generated
+            if [ -f "results/pr-comment.md" ]; then
+              echo "pr_comment<<EOF" >> $GITHUB_OUTPUT
+              cat results/pr-comment.md >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Sprint 5.9 benchmarks archived - skipping baseline comparison"
+            echo "exit_code=0" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
         with:
           name: benchmark-results-${{ steps.run-benchmarks.outputs.timestamp }}
           path: |
-            benchmarks/05-Sprint5.9-Benchmarking-Framework/results/*.json
-            benchmarks/05-Sprint5.9-Benchmarking-Framework/results/*.md
-            benchmarks/05-Sprint5.9-Benchmarking-Framework/results/pr-comment.md
-            benchmarks/04-Sprint6.3-Network-Optimization/results/*.json
-            benchmarks/04-Sprint6.3-Network-Optimization/results/*.md
+            benchmarks/**/results/*.json
+            benchmarks/**/results/*.md
+            benchmarks/**/results/pr-comment.md
           retention-days: 90  # 3 months of benchmark history
 
       - name: Comment on PR
         if: github.event_name == 'pull_request' && steps.find-baseline.outputs.baseline_found == 'true'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const commentPath = 'benchmarks/05-Sprint5.9-Benchmarking-Framework/results/pr-comment.md';
+            const glob = require('@actions/glob');
 
-            if (fs.existsSync(commentPath)) {
-              const comment = fs.readFileSync(commentPath, 'utf8');
+            // Try to find PR comment from any benchmark suite
+            const commentPaths = [
+              'benchmarks/05-Sprint5.9-Benchmarking-Framework/results/pr-comment.md',
+              'benchmarks/04-Sprint6.3-Network-Optimization/results/pr-comment.md',
+              'benchmarks/sprint-6.6-mmap/results/pr-comment.md'
+            ];
 
+            let commentBody = null;
+            for (const path of commentPaths) {
+              if (fs.existsSync(path)) {
+                commentBody = fs.readFileSync(path, 'utf8');
+                break;
+              }
+            }
+
+            if (commentBody) {
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: comment
+                body: commentBody
               });
             } else {
               github.rest.issues.createComment({

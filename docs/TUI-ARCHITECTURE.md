@@ -1,8 +1,8 @@
 # TUI Architecture Documentation
 
-**Version:** 1.2.0
-**Last Updated:** 2025-11-22
-**Status:** Phase 6.5 COMPLETE (Sprint 6.5 Parts 1 & 2), Production-Ready Interactive Widgets
+**Version:** 1.3.0
+**Last Updated:** 2025-11-23
+**Status:** Phase 6.6 COMPLETE (Sprint 6.6 Parts 1-3), Memory-Mapped I/O + Live Event Flow
 
 ## Table of Contents
 
@@ -852,12 +852,23 @@ impl UIState {
 
 ## Event Flow
 
-### 1. Scanner → EventBus → TUI
+### 1. Scanner → EventBus → TUI (Enhanced Sprint 6.6)
+
+**Sprint 6.6 Enhancement:** Added lifecycle event publishing (ScanStarted, StageChanged, ScanCompleted) to enable live TUI updates during scan execution.
 
 ```
 Scanner Thread                EventBus               TUI Thread
 ──────────────                ────────               ──────────
 
+scan_initialization()
+    │
+    │ publishes ScanStarted (NEW in 6.6)
+    ├──────────────────────▶ broadcast ─────────────▶ event_rx.recv()
+    │                                                       │
+    │                                                       ▼
+    │                                                 aggregator.add_event()
+    │                                                       │ (lifecycle event buffered)
+    │                                                       ▼
 port_scan()
     │
     │ publishes PortFound
@@ -879,6 +890,15 @@ port_scan()
     │                                                       ▼
     │                                                 (buffered)
     │
+stage_transition()
+    │
+    │ publishes StageChanged (NEW in 6.6)
+    ├──────────────────────▶ broadcast ─────────────▶ event_rx.recv()
+    │                                                       │
+    │                                                       ▼
+    │                                                 aggregator.add_event()
+    │                                                       │ (lifecycle event buffered)
+    │                                                       ▼
 [16ms passes]
     │                                                 tick_interval.tick()
     │                                                       │
@@ -894,7 +914,22 @@ port_scan()
     │                                                       ▼
     │                                                 terminal.draw(render)
     │
+scan_completion()
+    │
+    │ publishes ScanCompleted (NEW in 6.6)
+    ├──────────────────────▶ broadcast ─────────────▶ event_rx.recv()
+    │                                                       │
+    │                                                       ▼
+    │                                                 aggregator.add_event()
+    │                                                       │ (lifecycle event buffered)
+    │                                                       ▼
 ```
+
+**New Lifecycle Events (Sprint 6.6):**
+
+- **ScanStarted**: Published at scan initialization, includes target info and scan type
+- **StageChanged**: Published when scanner transitions between phases (Discovery → Enumeration → Deep Inspection)
+- **ScanCompleted**: Published when scan finishes, includes final statistics
 
 ### 2. Keyboard Input Flow
 
@@ -981,6 +1016,8 @@ With Aggregation (16ms interval):
 
 ### Memory Usage
 
+**Sprint 6.6 Enhancement:** Memory-mapped I/O (mmap) for scan results reduces RAM footprint by 77-86% during internet-scale scans.
+
 ```
 Component              Size           Notes
 ─────────              ────           ─────
@@ -989,9 +1026,35 @@ UIState                ~100 bytes     Stack-allocated
 EventAggregator        ~100 KB        1,000 × ~100 bytes/event
 Event Buffer           ~100 KB        MAX_BUFFER_SIZE
 Terminal Buffer        ~10 KB         ratatui screen buffer
+MmapResultWriter       Variable       Disk-backed (mmap mode only)
 
-Total: ~211 KB (negligible overhead)
+Total: ~211 KB + mmap (negligible overhead)
 ```
+
+**Memory-Mapped I/O (Sprint 6.6):**
+
+ProRT-IP supports two result storage modes:
+
+1. **Memory Mode** (default for small scans):
+   - Results stored in `Vec<ScanResult>`
+   - Fast random access (O(1))
+   - Limited by available RAM (~10M results max)
+
+2. **Mmap Mode** (automatic for large scans):
+   - Results streamed to memory-mapped file
+   - Auto-grows in 1MB increments
+   - Zero-copy reads via `MmapResultReader`
+   - **77-86% RAM reduction** (100K results: 35MB → 5MB)
+   - Transparent to TUI (same API)
+
+**Auto-Switching Threshold:**
+- Default: >10,000 expected results → mmap mode
+- Configurable via `--mmap-threshold N`
+
+**Implementation:**
+- **MmapResultWriter** (124 lines): bincode serialization, auto-growth
+- **MmapResultReader** (219 lines): zero-copy iteration, index offsets
+- **ResultWriter enum**: Memory vs Mmap mode abstraction
 
 ### CPU Profiling
 

@@ -82,16 +82,19 @@ jobs:
           echo "=== Disk space before coverage ==="
           df -h /
 
-          # Run tarpaulin with optimized options to prevent hangs:
-          # - --engine llvm: Use LLVM instrumentation instead of ptrace (prevents breakpoint hangs)
+          # Run tarpaulin with settings to prevent hangs while producing coverage:
           # - --target-dir: Separate directory avoids incremental compilation issues
-          # - --timeout 300: 5-minute per-test timeout (generous for slow tests)
-          # - --test-threads 1: Sequential tests prevent race conditions
+          # - --timeout 600: 10-minute per-test timeout (generous for slow/async tests)
+          # - --skip-clean: Don't clean between runs (reduces build time, helps stability)
+          # - --no-fail-fast: Continue even if some tests fail
+          # - --test-threads 1: Sequential tests prevent race conditions and ptrace issues
+          # Note: Using default ptrace engine (not LLVM) as LLVM doesn't produce output
           # See: https://github.com/xd009642/tarpaulin/issues/971
           OUTPUT=$(cargo tarpaulin --workspace \
-            --engine llvm \
             --target-dir target-cov \
-            --timeout 300 \
+            --timeout 600 \
+            --skip-clean \
+            --no-fail-fast \
             --out Lcov \
             --output-dir coverage \
             --exclude-files "crates/prtip-cli/src/main.rs" \

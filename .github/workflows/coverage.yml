@@ -21,6 +21,10 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  # Reduce disk usage during builds
+  CARGO_INCREMENTAL: 0
+  # Minimize debug info to save disk space
+  CARGO_PROFILE_DEV_DEBUG: 0
 
 jobs:
   coverage:
@@ -28,6 +32,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Initial disk space ==="
+          df -h /
+          echo ""
+          echo "=== Removing unnecessary packages ==="
+          # Remove large unnecessary packages
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          echo ""
+          echo "=== Disk space after cleanup ==="
+          df -h /
+
       - uses: actions/checkout@v4
 
       - name: Install Rust toolchain
@@ -41,8 +62,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "coverage"
-          cache-targets: "true"
-          cache-on-failure: "true"
+          cache-targets: "false"
+          cache-on-failure: "false"
 
       - name: Install cargo-tarpaulin
         run: |
@@ -56,15 +77,30 @@ jobs:
       - name: Generate coverage report
         id: tarpaulin
         run: |
-          # Run tarpaulin and capture output
+          echo "=== Disk space before coverage ==="
+          df -h /
+
+          # Clean previous builds to save space
+          cargo clean || true
+
+          # Run tarpaulin with disk-saving options:
+          # - Only Lcov output (required for Codecov)
+          # - Skip clean (we just cleaned)
+          # - Engine llvm uses less disk than ptrace
           OUTPUT=$(cargo tarpaulin --workspace \
             --timeout 600 \
-            --out Lcov --out Html --out Json \
+            --out Lcov \
             --output-dir coverage \
-            --exclude-files "crates/prtip-cli/src/main.rs" 2>&1)
+            --skip-clean \
+            --exclude-files "crates/prtip-cli/src/main.rs" \
+            --exclude-files "*/tests/*" \
+            --exclude-files "*/benches/*" 2>&1)
 
           # Display the output
           echo "$OUTPUT"
+
+          echo "=== Disk space after coverage ==="
+          df -h /
 
           # Extract coverage percentage from output (format: "XX.XX% coverage, N/M lines covered")
           COVERAGE=$(echo "$OUTPUT" | grep -oP '\d+\.\d+(?=% coverage)' | tail -1)
@@ -90,8 +126,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage/
-          retention-days: 30
+          path: coverage/lcov.info
+          retention-days: 14
 
       - name: Extract coverage percentage
         id: coverage

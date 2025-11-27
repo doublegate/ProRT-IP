@@ -8,7 +8,7 @@
 
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-2,557%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
-![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)
+![Coverage](https://img.shields.io/badge/coverage-51.40%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
@@ -109,9 +109,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 ## Project Status
 
 **Current:** Phase 6 COMPLETE (8/8 sprints, 100%)
-**Version:** v0.5.6 (Released 2025-11-27)
+**Version:** v0.5.8 (Released 2025-11-27)
 **Tests:** 2,557 passing (100%)
-**Coverage:** 54.92%
+**Coverage:** 51.40%
 
 ### Recent Achievements
 
@@ -341,7 +341,7 @@ prtip --tui -sS -p 1-1000 192.168.1.0/24
 
 ### Quality Assurance
 
-- **Testing:** 2,151 tests (100% passing), 54.92% code coverage
+- **Testing:** 2,557 tests (100% passing), 51.40% code coverage
 - **Fuzz Testing:** 230M+ executions across 5 fuzzers, 0 crashes
 - **CI/CD:** 9/9 GitHub Actions workflows, multi-platform matrix (Linux/macOS/Windows)
 - **Benchmarking:** Automated performance regression detection (5%/10% thresholds)
@@ -1353,7 +1353,7 @@ We welcome contributions of all kinds! ProRT-IP is in active development with ma
   - Git-style help system
 - **Dependencies:** Core (serde, tokio, sqlx, clap, pnet, rand, regex, rlimit, indicatif, futures, libc, crossbeam, ratatui, crossterm, mlua, hwloc)
 - **Target Performance:** 10M+ packets/second (stateless), 72K+ pps (stateful - achieved!)
-- **Code Coverage:** 2,260 tests (100% pass rate), 54.92% line coverage
+- **Code Coverage:** 2,557 tests (100% pass rate), 51.40% line coverage
 - **Cross-Compilation:** Supported via cross-rs for ARM64 and BSD targets
 - **Release Automation:** GitHub Actions with smart release management + artifact uploads
 
@@ -1425,5 +1425,5 @@ This project builds on the pioneering work of:
 ---
 
 **Last Updated:** 2025-11-27
-**Current Version:** v0.5.6
+**Current Version:** v0.5.8
 **Phase:** 6 COMPLETE (8/8 sprints, 100%)

@@ -85,15 +85,13 @@ jobs:
           # Run tarpaulin with optimized options to prevent hangs:
           # - --engine llvm: Use LLVM instrumentation instead of ptrace (prevents breakpoint hangs)
           # - --target-dir: Separate directory avoids incremental compilation issues
-          # - -t 120: Per-test timeout of 2 minutes
-          # - --timeout 900: Overall timeout of 15 minutes
+          # - --timeout 300: 5-minute per-test timeout (generous for slow tests)
           # - --test-threads 1: Sequential tests prevent race conditions
           # See: https://github.com/xd009642/tarpaulin/issues/971
           OUTPUT=$(cargo tarpaulin --workspace \
             --engine llvm \
             --target-dir target-cov \
-            --timeout 900 \
-            -t 120 \
+            --timeout 300 \
             --out Lcov \
             --output-dir coverage \
             --exclude-files "crates/prtip-cli/src/main.rs" \

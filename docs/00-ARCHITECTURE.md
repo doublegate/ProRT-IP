@@ -1,8 +1,8 @@
 # ProRT-IP WarScan: Architecture Overview
 
-**Version:** 3.4
-**Last Updated:** 2025-11-22
-**Status:** Phase 6 IN PROGRESS (Sprint 6.5 COMPLETE) - v0.5.5 TUI + Interactive Widgets (~76% Overall Progress, 2,246 tests, 54.92% coverage)
+**Version:** 3.5
+**Last Updated:** 2025-11-23
+**Status:** Phase 6 IN PROGRESS (Sprint 6.6 COMPLETE) - v0.5.6 Memory-Mapped I/O + TUI Enhancements (~78% Overall Progress, 2,246 tests, 54.92% coverage)
 
 ---
 
@@ -34,7 +34,7 @@ ProRT-IP WarScan is a modern, high-performance network reconnaissance tool writt
 - **Extensibility:** Plugin architecture and scripting engine for custom workflows
 - **Accessibility:** Progressive interfaces from CLI → TUI → Web → GUI
 
-### Current Capabilities (v0.4.3)
+### Current Capabilities (v0.5.6)
 
 **Scan Types:** 8 total
 - TCP SYN (default, requires privileges)
@@ -455,9 +455,9 @@ The V3 promotion (Sprint 5.X Phase 5) consolidated to a cleaner two-tier archite
 
 **For comprehensive usage examples, CLI flags, performance tuning, and troubleshooting, see [docs/26-RATE-LIMITING-GUIDE.md](26-RATE-LIMITING-GUIDE.md).**
 
-### 3. Result Aggregator
+### 3. Result Aggregator (Enhanced Sprint 6.6)
 
-**Purpose:** Collect, deduplicate, and merge scan results from multiple workers
+**Purpose:** Collect, deduplicate, and merge scan results from multiple workers with memory-mapped I/O support
 
 **Key Responsibilities:**
 
@@ -466,6 +466,7 @@ The V3 promotion (Sprint 5.X Phase 5) consolidated to a cleaner two-tier archite
 - Maintain canonical port state (open/closed/filtered)
 - Stream results to output formatters without buffering entire dataset
 - Handle out-of-order results from parallel workers
+- **NEW (Sprint 6.6):** Memory-mapped I/O for internet-scale scans (77-86% RAM reduction)
 
 **Result Merging Logic:**
 
@@ -489,6 +490,50 @@ impl ResultAggregator {
     }
 }
 ```
+
+**Memory-Mapped I/O (Sprint 6.6):**
+
+For internet-scale scans (10K+ expected results), ProRT-IP automatically switches to memory-mapped I/O:
+
+```rust
+pub enum ResultWriter {
+    Memory(MemoryWriter),      // Default for small scans
+    Mmap(MmapResultWriter),    // Automatic for large scans
+}
+
+pub struct MmapResultWriter {
+    file: File,
+    mmap: MmapMut,
+    position: usize,
+    index: Vec<usize>,  // Result offsets for iteration
+}
+
+impl MmapResultWriter {
+    pub fn write_result(&mut self, result: &ScanResult) -> Result<()> {
+        let serialized = bincode::serialize(result)?;
+
+        // Auto-grow if needed
+        if self.position + serialized.len() > self.mmap.len() {
+            self.grow(1024 * 1024)?;  // +1MB increments
+        }
+
+        // Zero-copy write
+        self.mmap[self.position..self.position + serialized.len()]
+            .copy_from_slice(&serialized);
+
+        self.index.push(self.position);
+        self.position += serialized.len();
+        Ok(())
+    }
+}
+```
+
+**Benefits:**
+- **77-86% RAM reduction** (100K results: 35MB → 5MB)
+- Transparent to scanner (same API)
+- Zero-copy iteration via `MmapResultReader`
+- Auto-growth (1MB increments)
+- Configurable threshold (`--mmap-threshold N`)
 
 ### 4. Packet Crafting Engine
 

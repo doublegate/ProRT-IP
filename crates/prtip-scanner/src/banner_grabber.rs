@@ -259,14 +259,12 @@ impl BannerGrabber {
         self.max_banner_size = size;
     }
 
-    /// Test-only methods for verifying internal configuration
-    /// These are public in debug builds (including tests) but not in release builds
-    #[cfg(debug_assertions)]
+    /// Get the configured connection timeout
     pub fn timeout(&self) -> Duration {
         self.timeout
     }
 
-    #[cfg(debug_assertions)]
+    /// Get the configured maximum banner size
     pub fn max_banner_size(&self) -> usize {
         self.max_banner_size
     }

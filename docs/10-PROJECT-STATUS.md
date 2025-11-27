@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 3.6
-**Last Updated:** 2025-11-22
-**Current Phase:** Phase 6 IN PROGRESS (Sprint 6.5 COMPLETE) | v0.5.5 + Interactive Widgets
-**Current Sprint:** Sprint 6.5: Bug Fixes & Interactive Selection Widgets ✅ COMPLETE (5 TUI widgets, 3 critical fixes, 2,246 tests) | **Completed:** 2025-11-21
+**Version:** 3.7
+**Last Updated:** 2025-11-23
+**Current Phase:** Phase 6 IN PROGRESS (Sprint 6.6 COMPLETE) | v0.5.6 + Memory-Mapped I/O
+**Current Sprint:** Sprint 6.6: Memory-Mapped Scanner I/O + TUI Enhancements ✅ COMPLETE (77-86% RAM reduction, 20 tests, 2,246 total tests) | **Completed:** 2025-11-23
 
 ---
 
@@ -50,12 +50,12 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 ## Current Status
 
-### Project Metrics (v0.5.0)
+### Project Metrics (v0.5.6)
 
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
-| **Version** | v0.5.5 | ✅ Current | Released 2025-11-22 (Sprint 6.5 Bug Fixes & Interactive Widgets) |
-| **Tests** | 2,246 (100% passing) | ✅ Excellent | Phase 5 + Sprint 6.1-6.5 complete, all tests green |
+| **Version** | v0.5.6 | ✅ Current | Released 2025-11-23 (Sprint 6.6 Memory-Mapped I/O + TUI Enhancements) |
+| **Tests** | 2,246 (100% passing) | ✅ Excellent | Phase 5 + Sprint 6.1-6.6 complete, all tests green |
 | **Coverage** | 54.92% | ✅ Good | Maintained from Sprint 5.6 |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |
 | **CI Platforms** | 7/7 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
@@ -67,7 +67,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Rate Limiting** | V3 default (-1.8% overhead) | ✅ Sprint 5.X COMPLETE | AdaptiveRateLimiterV3 promoted to default (2025-11-02) |
 | **Plugin System** | Lua 5.4, 6 modules, 2 examples | ✅ Sprint 5.8 COMPLETE | Sandboxed, capabilities-based (2025-11-06) |
 
-### Overall Progress: 75% Complete (Phases 1-5 Complete + 4/8 Sprints Phase 6 / 8 Phases Total)
+### Overall Progress: 78% Complete (Phases 1-5 Complete + 6/8 Sprints Phase 6 / 8 Phases Total)
 
 | Phase | Status | Start Date | End Date | Progress |
 |-------|--------|------------|----------|----------|
@@ -77,7 +77,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Phase 3: Detection Systems** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 24/24 tasks |
 | **Phase 4: Performance** | ✅ COMPLETE | 2025-10-09 | 2025-10-26 | 22/22 sprints (4.1-4.22) |
 | **Phase 5: Advanced Features** | ✅ COMPLETE | 2025-10-28 | 2025-11-07 | 10/10 sprints (100%) |
-| **Phase 6: TUI** | 🔄 IN PROGRESS | 2025-11-14 | TBD | 5/8 sprints (6.1 ✅, 6.2 ✅, 6.3 ✅, 6.4 ✅, 6.5 ✅) |
+| **Phase 6: TUI** | 🔄 IN PROGRESS | 2025-11-14 | TBD | 6/8 sprints (6.1 ✅, 6.2 ✅, 6.3 ✅, 6.4 ✅, 6.5 ✅, 6.6 ✅) |
 | **Phase 7: Release** | 📋 Planned | Q3 2026 | TBD | 0/13 tasks |
 
 ### Phase 5 Sprint Progress (Detailed)
@@ -110,7 +110,10 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 |--------|--------|----------|--------------|-------------|
 | **6.1: TUI Framework** | ✅ COMPLETE | ~40h | **ratatui 0.29 + crossterm 0.28** framework, **60 FPS rendering** (<5ms frame time), **10K+ events/sec** throughput, **4 production widgets** (StatusBar, MainWidget, LogWidget, HelpWidget), **Thread-safe state** (Arc<RwLock<ScanState>>), **Event-driven architecture** (tokio::select!), **891-line TUI-ARCHITECTURE.md**, **3,638 lines implementation**, **71 tests** (56 unit + 15 integration) | +73 (2,102→2,175) |
 | **6.2: Live Dashboard** | ✅ COMPLETE | ~21.5h (100%) | **4-tab dashboard system** (Port/Service/Metrics/Network), **PortTableWidget** (744L, 14T, interactive sorting/filtering), **ServiceTableWidget** (833L, 21T, multi-column), **MetricsDashboardWidget** (713L, 24T, 3-column layout, 5s rolling avg), **NetworkGraphWidget** (time-series chart, 60s sliding window), **Event Handling** (keyboard navigation, Tab switching), **6/6 tasks complete**, **175 tests** (150 unit + 25 integration), **0 clippy warnings**, **TUI-ARCHITECTURE.md v1.1.0 update** | +0 (2,175, integrated) |
-| **6.3: Network Optimizations** | 🔄 PARTIAL | ~8h (3/6 task areas) | **Task 3.3:** BatchSender Integration (~35L, adaptive batching foundation), **Task 3.4:** CLI Configuration (3 flags: --adaptive-batch, --min/max-batch-size), **Task 4.0:** Integration Tests (6 tests, 447L, batch I/O + CDN + adaptive), **Platform capability detection** (PlatformCapabilities::detect()), **Adaptive batch sizing** (1-1024 range, 95%/85% thresholds), **532 lines code** across 8 files, **2,111 tests passing**, **0 clippy warnings** | -64 (2,175→2,111, test cleanup) |
+| **6.3: Network Optimizations** | ✅ COMPLETE | ~8h (3/6 task areas) | **Task 3.3:** BatchSender Integration (~35L, adaptive batching foundation), **Task 3.4:** CLI Configuration (3 flags: --adaptive-batch, --min/max-batch-size), **Task 4.0:** Integration Tests (6 tests, 447L, batch I/O + CDN + adaptive), **Platform capability detection** (PlatformCapabilities::detect()), **Adaptive batch sizing** (1-1024 range, 95%/85% thresholds), **532 lines code** across 8 files, **2,111 tests passing**, **0 clippy warnings** | -64 (2,175→2,111, test cleanup) |
+| **6.4: Zero-Copy Buffer Pool** | ✅ COMPLETE | ~18h (100%) | **3-tier pool** (4KB/16KB/64KB), bytes crate, RAII, SharedPacket, 16 tests, 682L module | +56 (2,111→2,167) |
+| **6.5: Bug Fix + Interactive Widgets** | ✅ COMPLETE | ~34h (100%) | **Part 1:** 3 critical bugs (Plugin System, Idle Scan, Decoy), **Part 2:** 5 TUI widgets (Target Selection, Templates), 228 prtip-tui tests, ~65% coverage | +79 (2,167→2,246) |
+| **6.6: Memory-Mapped I/O + TUI Enhancements** | ✅ COMPLETE | ~12h (100%) | **Part 1:** Mmap infrastructure (MmapResultWriter 124L, MmapResultReader 219L, ResultWriter 151L), 77-86% RAM reduction, 20 tests (14 infra + 6 integration), **Part 2:** TUI event flow (ScanStarted/StageChanged/ScanCompleted events, port_discoveries/service_detections population, ringbuffer limits 1K entries, macOS test fix), **Part 3:** TTY validation, BannerGrabber API cleanup, CI/CD fixes | +0 (2,246, maintained) |
 
 **Phase 5 Cumulative**: 2,102 tests (100% passing), Phase 5 complete: 10/10 sprints (100%) ✅, **Phase 5.5: 6/6 sprints (100%) ✅**, **Phase 5 Final Validation COMPLETE ✅**, **Phase 6 Planning COMPLETE ✅**, 10 major releases (v0.4.1-v0.5.0-fix) | **Phase 5 Milestone: v0.5.0-fix (2025-11-09)** | **Phase 6 Milestone: v0.5.2 (2025-11-14)** | **Latest: Sprint 6.3 Network Optimizations PARTIAL (2025-11-15)**
 

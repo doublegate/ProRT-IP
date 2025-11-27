@@ -137,3 +137,7 @@ Desktop.ini
 
 # GitHub App credentials
 gha-creds-*.json
+
+# Benchmark artifacts
+benchmarks/*/Cargo.lock
+benchmarks/*/target/

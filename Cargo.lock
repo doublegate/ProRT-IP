@@ -2358,6 +2358,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "crossterm",
+ "dirs",
  "futures",
  "ipnetwork",
  "parking_lot",

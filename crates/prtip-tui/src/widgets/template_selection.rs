@@ -132,6 +132,16 @@ impl TemplateSelectionWidget {
     fn render_template_list(&self, frame: &mut Frame, area: Rect, state: &UIState) {
         let template_state = &state.template_selection_state;
 
+        // Split area: template list (left) + preview panel (right)
+        let chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Percentage(60), // Template list
+                Constraint::Percentage(40), // Preview panel
+            ])
+            .split(area);
+
+        // Render template list (left side)
         let items: Vec<ListItem> = template_state
             .filtered_templates
             .iter()
@@ -167,45 +177,6 @@ impl TemplateSelectionWidget {
                     Style::default().fg(Color::Gray),
                 )]));
 
-                // Add port list if present
-                if let Some(ref ports) = template.ports {
-                    let ports_vec: &Vec<u16> = ports;
-                    let port_str = if ports_vec.len() > 8 {
-                        format!("  Ports: {} ports", ports_vec.len())
-                    } else {
-                        format!("  Ports: {}", Self::format_port_list(ports_vec))
-                    };
-                    lines.push(Line::from(vec![Span::styled(
-                        port_str,
-                        Style::default().fg(Color::DarkGray),
-                    )]));
-                }
-
-                // Add scan config summary
-                let mut config_parts = Vec::new();
-                if let Some(ref scan_type) = template.scan_type {
-                    config_parts.push(format!("Scan: {}", scan_type));
-                }
-                if let Some(ref timing) = template.timing {
-                    config_parts.push(format!("Timing: {}", timing));
-                }
-                if let Some(true) = template.service_detection {
-                    config_parts.push("Service Detection: Yes".to_string());
-                }
-                if let Some(true) = template.os_detection {
-                    config_parts.push("OS Detection: Yes".to_string());
-                }
-                if let Some(true) = template.tls_analysis {
-                    config_parts.push("TLS Analysis: Yes".to_string());
-                }
-
-                if !config_parts.is_empty() {
-                    lines.push(Line::from(vec![Span::styled(
-                        format!("  {}", config_parts.join(" | ")),
-                        Style::default().fg(Color::DarkGray),
-                    )]));
-                }
-
                 // Add spacing between templates
                 lines.push(Line::from(vec![]));
 
@@ -227,8 +198,127 @@ impl TemplateSelectionWidget {
             ));
 
         let list = List::new(items).block(list_block);
+        frame.render_widget(list, chunks[0]);
 
-        frame.render_widget(list, area);
+        // Render preview panel (right side)
+        self.render_preview_panel(frame, chunks[1], state);
+    }
+
+    /// Render preview panel showing selected template details
+    fn render_preview_panel(&self, frame: &mut Frame, area: Rect, state: &UIState) {
+        let template_state = &state.template_selection_state;
+
+        let mut lines = vec![Line::from(Span::styled(
+            "Template Preview",
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        ))];
+
+        if let Some((name, template, is_custom)) = template_state.get_selected_template() {
+            lines.push(Line::from(""));
+
+            // Template name and type
+            let type_badge = if is_custom {
+                Span::styled(" [Custom] ", Style::default().fg(Color::Magenta))
+            } else {
+                Span::styled(" [Built-in] ", Style::default().fg(Color::Cyan))
+            };
+            lines.push(Line::from(vec![
+                Span::styled(name, Style::default().fg(Color::Yellow)),
+                type_badge,
+            ]));
+
+            lines.push(Line::from(""));
+
+            // Description
+            lines.push(Line::from(Span::styled(
+                "Description:",
+                Style::default().fg(Color::Green),
+            )));
+            lines.push(Line::from(format!("  {}", template.description)));
+            lines.push(Line::from(""));
+
+            // Ports
+            if let Some(ref ports) = template.ports {
+                let ports_vec: &Vec<u16> = ports;
+                lines.push(Line::from(Span::styled(
+                    "Ports:",
+                    Style::default().fg(Color::Green),
+                )));
+                if ports_vec.len() > 10 {
+                    lines.push(Line::from(format!("  {} ports total", ports_vec.len())));
+                    lines.push(Line::from(format!(
+                        "  {}...",
+                        Self::format_port_list(&ports_vec[..10])
+                    )));
+                } else {
+                    lines.push(Line::from(format!(
+                        "  {}",
+                        Self::format_port_list(ports_vec)
+                    )));
+                }
+                lines.push(Line::from(""));
+            }
+
+            // Scan configuration
+            lines.push(Line::from(Span::styled(
+                "Configuration:",
+                Style::default().fg(Color::Green),
+            )));
+
+            if let Some(ref scan_type) = template.scan_type {
+                lines.push(Line::from(format!("  Scan Type: {}", scan_type)));
+            }
+            if let Some(ref timing) = template.timing {
+                lines.push(Line::from(format!("  Timing: {}", timing)));
+            }
+            if let Some(true) = template.service_detection {
+                lines.push(Line::from("  Service Detection: Enabled"));
+            }
+            if let Some(true) = template.os_detection {
+                lines.push(Line::from("  OS Detection: Enabled"));
+            }
+            if let Some(true) = template.tls_analysis {
+                lines.push(Line::from("  TLS Analysis: Enabled"));
+            }
+
+            // Quick actions
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                "Quick Actions:",
+                Style::default().fg(Color::Green),
+            )));
+            lines.push(Line::from(vec![
+                Span::styled("  [Enter]", Style::default().fg(Color::Yellow)),
+                Span::raw(" Apply  "),
+                Span::styled("[e]", Style::default().fg(Color::Yellow)),
+                Span::raw(" Edit"),
+            ]));
+            lines.push(Line::from(vec![
+                Span::styled("  [d]", Style::default().fg(Color::Yellow)),
+                Span::raw(" Duplicate  "),
+                Span::styled("[Del]", Style::default().fg(Color::Yellow)),
+                Span::raw(" Delete"),
+            ]));
+        } else {
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                "No template selected",
+                Style::default().fg(Color::DarkGray),
+            )));
+        }
+
+        let paragraph = Paragraph::new(lines)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title(" Preview ")
+                    .border_style(Style::default().fg(Color::Gray)),
+            )
+            .wrap(Wrap { trim: false });
+
+        frame.render_widget(paragraph, area);
     }
 
     /// Render footer (stats + help text)
@@ -346,11 +436,40 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
                 true
             }
 
-            // Enter - select template
+            // Enter - select template (apply)
             (KeyCode::Enter, KeyModifiers::NONE) if !template_state.filter_focused => {
                 if let Some(selected) = template_state.get_selected_template() {
                     template_state.selected_template_name = Some(selected.0.clone());
                     // Template application to Config would happen in parent widget/app
+                }
+                true
+            }
+
+            // Quick action: Edit (e key)
+            (KeyCode::Char('e'), KeyModifiers::NONE) if !template_state.filter_focused => {
+                if let Some(selected) = template_state.get_selected_template() {
+                    template_state.action_pending = Some(TemplateAction::Edit(selected.0.clone()));
+                }
+                true
+            }
+
+            // Quick action: Duplicate (d key)
+            (KeyCode::Char('d'), KeyModifiers::NONE) if !template_state.filter_focused => {
+                if let Some(selected) = template_state.get_selected_template() {
+                    template_state.action_pending =
+                        Some(TemplateAction::Duplicate(selected.0.clone()));
+                }
+                true
+            }
+
+            // Quick action: Delete (Delete key)
+            (KeyCode::Delete, KeyModifiers::NONE) if !template_state.filter_focused => {
+                if let Some(selected) = template_state.get_selected_template() {
+                    // Only allow deletion of custom templates
+                    if selected.2 {
+                        template_state.action_pending =
+                            Some(TemplateAction::Delete(selected.0.clone()));
+                    }
                 }
                 true
             }
@@ -360,6 +479,14 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
     } else {
         false
     }
+}
+
+/// Template actions that can be triggered from the widget
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TemplateAction {
+    Edit(String),
+    Duplicate(String),
+    Delete(String),
 }
 
 // ===== State Structures =====
@@ -390,6 +517,9 @@ pub struct TemplateSelectionState {
 
     /// Selected template name (after Enter key)
     selected_template_name: Option<String>,
+
+    /// Pending action (Edit, Duplicate, Delete)
+    action_pending: Option<TemplateAction>,
 }
 
 impl TemplateSelectionState {
@@ -422,6 +552,7 @@ impl TemplateSelectionState {
             filter_input: String::new(),
             filter_focused: false,
             selected_template_name: None,
+            action_pending: None,
         }
     }
 
@@ -512,6 +643,16 @@ impl TemplateSelectionState {
     /// Get template manager (for advanced usage)
     pub fn template_manager(&self) -> &TemplateManager {
         &self.template_manager
+    }
+
+    /// Get pending action (if any)
+    pub fn get_pending_action(&self) -> Option<&TemplateAction> {
+        self.action_pending.as_ref()
+    }
+
+    /// Clear pending action
+    pub fn clear_pending_action(&mut self) {
+        self.action_pending = None;
     }
 }
 

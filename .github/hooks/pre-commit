@@ -36,7 +36,7 @@ fi
 
 # Run cargo fmt check
 echo "🎨 Checking code formatting..."
-if ! cargo fmt --check 2>&1 | grep -q "^$"; then
+if ! cargo fmt --check >/dev/null 2>&1; then
     echo "❌ ERROR: Code formatting issues found"
     echo "   Run: cargo fmt"
     exit 1

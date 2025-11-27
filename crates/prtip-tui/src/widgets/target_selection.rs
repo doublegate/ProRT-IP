@@ -52,7 +52,7 @@
 //! let target_widget = TargetSelectionWidget::new();
 //! ```
 
-use crossterm::event::{Event, KeyCode, KeyEvent};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ipnetwork::IpNetwork;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
@@ -155,6 +155,13 @@ impl TargetSelectionWidget {
                     .map(|p| p.to_string_lossy().to_string())
                     .unwrap_or_else(|| "(none)".to_string()),
             ),
+            Span::raw("  "),
+            Span::styled(
+                "[Ctrl+B] Browse",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::DIM),
+            ),
         ])];
 
         if !target_state.imported_targets.is_empty() {
@@ -176,6 +183,89 @@ impl TargetSelectionWidget {
             .wrap(Wrap { trim: false });
 
         frame.render_widget(paragraph, area);
+    }
+
+    /// Render target list section (visual display of all targets)
+    fn render_target_list_section(frame: &mut Frame, area: Rect, state: &UIState) {
+        let target_state = &state.target_selection_state;
+
+        // Collect all targets
+        let mut all_targets: Vec<IpAddr> = Vec::new();
+        all_targets.extend(&target_state.calculated_ips);
+        all_targets.extend(&target_state.imported_targets);
+
+        // Add DNS-resolved IPs
+        for ips in target_state
+            .dns_cache
+            .values()
+            .filter_map(|r| r.as_ref().ok())
+        {
+            all_targets.extend(ips);
+        }
+
+        // Remove duplicates and sort
+        all_targets.sort();
+        all_targets.dedup();
+
+        // Limit display to visible area (with scrolling)
+        let display_start = target_state.target_list_scroll;
+        let display_count = area.height.saturating_sub(3) as usize; // Account for border + title
+        let display_end = (display_start + display_count).min(all_targets.len());
+
+        let items: Vec<ListItem> = all_targets[display_start..display_end]
+            .iter()
+            .enumerate()
+            .map(|(idx, ip)| {
+                let global_idx = display_start + idx;
+                let is_selected = global_idx == target_state.target_list_selected;
+
+                let style = if is_selected {
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+
+                // Determine source
+                let source = if target_state.calculated_ips.contains(ip) {
+                    Span::styled(" [CIDR]", Style::default().fg(Color::Cyan))
+                } else if target_state.imported_targets.contains(ip) {
+                    Span::styled(" [File]", Style::default().fg(Color::Yellow))
+                } else {
+                    Span::styled(" [DNS]", Style::default().fg(Color::Green))
+                };
+
+                ListItem::new(Line::from(vec![
+                    Span::raw(if is_selected { "> " } else { "  " }),
+                    Span::styled(ip.to_string(), style),
+                    source,
+                ]))
+            })
+            .collect();
+
+        let title = if all_targets.is_empty() {
+            " Target List (empty) ".to_string()
+        } else {
+            format!(
+                " Target List ({}/{}) ",
+                display_start + 1,
+                all_targets.len()
+            )
+        };
+
+        let list = List::new(items).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(if target_state.selected_section == Section::TargetList {
+                    Style::default().fg(Color::Yellow)
+                } else {
+                    Style::default().fg(Color::Gray)
+                })
+                .title(title),
+        );
+
+        frame.render_widget(list, area);
     }
 
     /// Render exclusion list section
@@ -360,23 +450,25 @@ impl Default for TargetSelectionWidget {
 
 impl Component for TargetSelectionWidget {
     fn render(&self, frame: &mut Frame, area: Rect, state: &UIState) {
-        // Split area into sections: CIDR, Import, Exclusions, DNS, Summary
+        // Split area into sections: CIDR, Import, Target List, Exclusions, DNS, Summary
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(4), // CIDR section
-                Constraint::Length(4), // Import section
-                Constraint::Min(6),    // Exclusion list (dynamic)
-                Constraint::Min(5),    // DNS section (dynamic)
-                Constraint::Length(7), // Summary section
+                Constraint::Length(4),      // CIDR section
+                Constraint::Length(4),      // Import section
+                Constraint::Percentage(20), // Target list (scrollable)
+                Constraint::Percentage(15), // Exclusion list
+                Constraint::Percentage(15), // DNS section
+                Constraint::Length(7),      // Summary section
             ])
             .split(area);
 
         Self::render_cidr_section(frame, chunks[0], state);
         Self::render_import_section(frame, chunks[1], state);
-        Self::render_exclusion_section(frame, chunks[2], state);
-        Self::render_dns_section(frame, chunks[3], state);
-        Self::render_summary_section(frame, chunks[4], state);
+        Self::render_target_list_section(frame, chunks[2], state);
+        Self::render_exclusion_section(frame, chunks[3], state);
+        Self::render_dns_section(frame, chunks[4], state);
+        Self::render_summary_section(frame, chunks[5], state);
     }
 
     fn handle_event(&mut self, event: Event) -> bool {
@@ -395,12 +487,15 @@ impl Component for TargetSelectionWidget {
 ///
 /// `true` if the event was handled, `false` otherwise
 pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bool {
-    if let Event::Key(KeyEvent { code, .. }) = event {
+    if let Event::Key(KeyEvent {
+        code, modifiers, ..
+    }) = event
+    {
         let target_state = &mut ui_state.target_selection_state;
 
         match code {
             // Section navigation
-            KeyCode::Tab => {
+            KeyCode::Tab if modifiers == KeyModifiers::NONE => {
                 target_state.next_section();
                 true
             }
@@ -410,35 +505,96 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
             }
 
             // CIDR input
-            KeyCode::Char(c) if target_state.selected_section == Section::CidrInput => {
+            KeyCode::Char(c)
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::CidrInput =>
+            {
                 target_state.input_char(c);
                 true
             }
-            KeyCode::Backspace if target_state.selected_section == Section::CidrInput => {
+            KeyCode::Backspace
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::CidrInput =>
+            {
                 target_state.backspace();
                 true
             }
-            KeyCode::Enter if target_state.selected_section == Section::CidrInput => {
+            KeyCode::Enter
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::CidrInput =>
+            {
                 target_state.validate_cidr();
                 true
             }
 
+            // Target list navigation
+            KeyCode::Up
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::TargetList =>
+            {
+                target_state.target_list_move_up();
+                true
+            }
+            KeyCode::Down
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::TargetList =>
+            {
+                target_state.target_list_move_down();
+                true
+            }
+            KeyCode::PageUp
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::TargetList =>
+            {
+                target_state.target_list_page_up();
+                true
+            }
+            KeyCode::PageDown
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::TargetList =>
+            {
+                target_state.target_list_page_down();
+                true
+            }
+            KeyCode::Delete
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::TargetList =>
+            {
+                target_state.remove_selected_target();
+                true
+            }
+
             // Exclusion list navigation
-            KeyCode::Up if target_state.selected_section == Section::ExclusionList => {
+            KeyCode::Up
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::ExclusionList =>
+            {
                 target_state.select_previous_exclusion();
                 true
             }
-            KeyCode::Down if target_state.selected_section == Section::ExclusionList => {
+            KeyCode::Down
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::ExclusionList =>
+            {
                 target_state.select_next_exclusion();
                 true
             }
-            KeyCode::Delete if target_state.selected_section == Section::ExclusionList => {
+            KeyCode::Delete
+                if modifiers == KeyModifiers::NONE
+                    && target_state.selected_section == Section::ExclusionList =>
+            {
                 target_state.remove_selected_exclusion();
                 true
             }
 
+            // File browser (Ctrl+B)
+            KeyCode::Char('b') if modifiers == KeyModifiers::CONTROL => {
+                target_state.file_browser_open = true;
+                true
+            }
+
             // Esc to cancel/clear based on context
-            KeyCode::Esc => {
+            KeyCode::Esc if modifiers == KeyModifiers::NONE => {
                 // Clear the current section's input
                 match target_state.selected_section {
                     Section::CidrInput => {
@@ -450,6 +606,11 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
                         target_state.import_file_path = None;
                         target_state.imported_targets.clear();
                         target_state.recalculate_target_count();
+                    }
+                    Section::TargetList => {
+                        // Reset target list selection to 0
+                        target_state.target_list_selected = 0;
+                        target_state.target_list_scroll = 0;
                     }
                     Section::ExclusionList => {
                         // Reset exclusion list selection to 0
@@ -477,6 +638,7 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
 pub enum Section {
     CidrInput,
     FileImport,
+    TargetList,
     ExclusionList,
     DnsResolution,
 }
@@ -536,6 +698,15 @@ pub struct TargetSelectionState {
 
     /// Scroll offset for exclusion list
     pub scroll_offset: usize,
+
+    /// Target list scroll offset
+    pub target_list_scroll: usize,
+
+    /// Target list selected index
+    pub target_list_selected: usize,
+
+    /// Whether file browser is open
+    pub file_browser_open: bool,
 }
 
 impl TargetSelectionState {
@@ -557,6 +728,9 @@ impl TargetSelectionState {
             cursor_position: 0,
             selected_section: Section::CidrInput,
             scroll_offset: 0,
+            target_list_scroll: 0,
+            target_list_selected: 0,
+            file_browser_open: false,
         }
     }
 
@@ -564,7 +738,8 @@ impl TargetSelectionState {
     pub fn next_section(&mut self) {
         self.selected_section = match self.selected_section {
             Section::CidrInput => Section::FileImport,
-            Section::FileImport => Section::ExclusionList,
+            Section::FileImport => Section::TargetList,
+            Section::TargetList => Section::ExclusionList,
             Section::ExclusionList => Section::DnsResolution,
             Section::DnsResolution => Section::CidrInput,
         };
@@ -575,7 +750,8 @@ impl TargetSelectionState {
         self.selected_section = match self.selected_section {
             Section::CidrInput => Section::DnsResolution,
             Section::FileImport => Section::CidrInput,
-            Section::ExclusionList => Section::FileImport,
+            Section::TargetList => Section::FileImport,
+            Section::ExclusionList => Section::TargetList,
             Section::DnsResolution => Section::ExclusionList,
         };
     }
@@ -691,6 +867,88 @@ impl TargetSelectionState {
         if self.exclusion_list_selected < self.exclusion_list.len() {
             self.exclusion_list.remove(self.exclusion_list_selected);
             self.recalculate_target_count();
+        }
+    }
+
+    /// Target list navigation - move up
+    pub fn target_list_move_up(&mut self) {
+        if self.target_list_selected > 0 {
+            self.target_list_selected -= 1;
+            // Adjust scroll if needed
+            if self.target_list_selected < self.target_list_scroll {
+                self.target_list_scroll = self.target_list_selected;
+            }
+        }
+    }
+
+    /// Target list navigation - move down
+    pub fn target_list_move_down(&mut self) {
+        let total_targets = self.target_count();
+        if total_targets > 0 && self.target_list_selected + 1 < total_targets {
+            self.target_list_selected += 1;
+            // Adjust scroll if needed (assume 20 visible rows for now)
+            if self.target_list_selected >= self.target_list_scroll + 20 {
+                self.target_list_scroll = self.target_list_selected - 19;
+            }
+        }
+    }
+
+    /// Target list navigation - page up
+    pub fn target_list_page_up(&mut self) {
+        self.target_list_selected = self.target_list_selected.saturating_sub(20);
+        self.target_list_scroll = self.target_list_scroll.saturating_sub(20);
+    }
+
+    /// Target list navigation - page down
+    pub fn target_list_page_down(&mut self) {
+        let total_targets = self.target_count();
+        if total_targets > 0 {
+            self.target_list_selected = (self.target_list_selected + 20).min(total_targets - 1);
+            self.target_list_scroll =
+                (self.target_list_scroll + 20).min(total_targets.saturating_sub(20));
+        }
+    }
+
+    /// Get total target count (for bounds checking)
+    fn target_count(&self) -> usize {
+        let mut all_targets: Vec<IpAddr> = Vec::new();
+        all_targets.extend(&self.calculated_ips);
+        all_targets.extend(&self.imported_targets);
+        for ips in self.dns_cache.values().filter_map(|r| r.as_ref().ok()) {
+            all_targets.extend(ips);
+        }
+        all_targets.sort();
+        all_targets.dedup();
+        all_targets.len()
+    }
+
+    /// Remove selected target from the list
+    pub fn remove_selected_target(&mut self) {
+        let mut all_targets: Vec<IpAddr> = Vec::new();
+        all_targets.extend(&self.calculated_ips);
+        all_targets.extend(&self.imported_targets);
+        for ips in self.dns_cache.values().filter_map(|r| r.as_ref().ok()) {
+            all_targets.extend(ips);
+        }
+        all_targets.sort();
+        all_targets.dedup();
+
+        if self.target_list_selected < all_targets.len() {
+            let target_to_remove = all_targets[self.target_list_selected];
+
+            // Remove from calculated_ips
+            self.calculated_ips.retain(|ip| *ip != target_to_remove);
+
+            // Remove from imported_targets
+            self.imported_targets.retain(|ip| *ip != target_to_remove);
+
+            // Recalculate
+            self.recalculate_target_count();
+
+            // Adjust selection if needed
+            if self.target_list_selected >= self.target_count() && self.target_list_selected > 0 {
+                self.target_list_selected -= 1;
+            }
         }
     }
 
@@ -1179,9 +1437,12 @@ mod tests {
         // Verify default section
         assert_eq!(state.selected_section, Section::CidrInput);
 
-        // Test next_section
+        // Test next_section (order: CidrInput → FileImport → TargetList → ExclusionList → DnsResolution)
         state.next_section();
         assert_eq!(state.selected_section, Section::FileImport);
+
+        state.next_section();
+        assert_eq!(state.selected_section, Section::TargetList);
 
         state.next_section();
         assert_eq!(state.selected_section, Section::ExclusionList);
@@ -1198,6 +1459,9 @@ mod tests {
 
         state.prev_section();
         assert_eq!(state.selected_section, Section::ExclusionList);
+
+        state.prev_section();
+        assert_eq!(state.selected_section, Section::TargetList);
     }
 
     #[test]

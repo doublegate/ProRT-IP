@@ -31,6 +31,7 @@
 // Public API
 pub mod app;
 pub mod events;
+pub mod shortcuts;
 pub mod state;
 pub mod ui;
 pub mod widgets;
@@ -38,6 +39,7 @@ pub mod widgets;
 // Re-exports
 pub use app::App;
 pub use events::{EventAggregator, EventStats};
+pub use shortcuts::ShortcutManager;
 pub use state::{ScanState, UIState};
 pub use widgets::Component;
 

@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 3.7
-**Last Updated:** 2025-11-23
-**Current Phase:** Phase 6 IN PROGRESS (Sprint 6.6 COMPLETE) | v0.5.6 + Memory-Mapped I/O
-**Current Sprint:** Sprint 6.6: Memory-Mapped Scanner I/O + TUI Enhancements ✅ COMPLETE (77-86% RAM reduction, 20 tests, 2,246 total tests) | **Completed:** 2025-11-23
+**Version:** 3.8
+**Last Updated:** 2025-11-27
+**Current Phase:** Phase 6 COMPLETE | v0.5.6 + Full TUI Implementation
+**Current Sprint:** Sprint 6.7-6.8: Interactive & Polish Widgets ✅ COMPLETE (+311 tests, FileBrowser/PortSelection/Shortcuts, 2,557 total tests) | **Completed:** 2025-11-27
 
 ---
 
@@ -54,20 +54,21 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
-| **Version** | v0.5.6 | ✅ Current | Released 2025-11-23 (Sprint 6.6 Memory-Mapped I/O + TUI Enhancements) |
-| **Tests** | 2,246 (100% passing) | ✅ Excellent | Phase 5 + Sprint 6.1-6.6 complete, all tests green |
+| **Version** | v0.5.6 | ✅ Current | Released 2025-11-27 (Sprint 6.7-6.8 Interactive & Polish Widgets) |
+| **Tests** | 2,557 (100% passing) | ✅ Excellent | Phase 6 COMPLETE (8/8 sprints), all tests green |
 | **Coverage** | 54.92% | ✅ Good | Maintained from Sprint 5.6 |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |
-| **CI Platforms** | 7/7 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
+| **CI Platforms** | 9/9 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
 | **Release Targets** | 8/8 building | ✅ Complete | x86_64, ARM64, musl, FreeBSD |
 | **Scan Types** | 8 | ✅ Complete | Connect, SYN, UDP, Stealth×4, Idle |
 | **Detection Rate** | 85-90% | ✅ High | Service detection (5 parsers) |
-| **IPv6 Coverage** | 100% (6/6 scanners) | ✅ Complete | All scanners support dual-stack |
+| **IPv6 Coverage** | 100% (8/8 scanners) | ✅ Complete | All scanners support dual-stack |
 | **Evasion Techniques** | 6 | ✅ Complete | Fragmentation, TTL, checksum, decoy, source port, idle |
 | **Rate Limiting** | V3 default (-1.8% overhead) | ✅ Sprint 5.X COMPLETE | AdaptiveRateLimiterV3 promoted to default (2025-11-02) |
 | **Plugin System** | Lua 5.4, 6 modules, 2 examples | ✅ Sprint 5.8 COMPLETE | Sandboxed, capabilities-based (2025-11-06) |
+| **TUI Widgets** | 11 production-ready | ✅ Phase 6 COMPLETE | FileBrowser, PortSelection, Shortcuts + 8 core widgets |
 
-### Overall Progress: 78% Complete (Phases 1-5 Complete + 6/8 Sprints Phase 6 / 8 Phases Total)
+### Overall Progress: 87.5% Complete (Phases 1-6 Complete / 8 Phases Total)
 
 | Phase | Status | Start Date | End Date | Progress |
 |-------|--------|------------|----------|----------|
@@ -77,8 +78,8 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **Phase 3: Detection Systems** | ✅ COMPLETE | 2025-10-08 | 2025-10-08 | 24/24 tasks |
 | **Phase 4: Performance** | ✅ COMPLETE | 2025-10-09 | 2025-10-26 | 22/22 sprints (4.1-4.22) |
 | **Phase 5: Advanced Features** | ✅ COMPLETE | 2025-10-28 | 2025-11-07 | 10/10 sprints (100%) |
-| **Phase 6: TUI** | 🔄 IN PROGRESS | 2025-11-14 | TBD | 6/8 sprints (6.1 ✅, 6.2 ✅, 6.3 ✅, 6.4 ✅, 6.5 ✅, 6.6 ✅) |
-| **Phase 7: Release** | 📋 Planned | Q3 2026 | TBD | 0/13 tasks |
+| **Phase 6: TUI** | ✅ COMPLETE | 2025-11-14 | 2025-11-27 | 8/8 sprints (100%) |
+| **Phase 7: Release** | 📋 Planned | Q1 2026 | TBD | 0/13 tasks |
 
 ### Phase 5 Sprint Progress (Detailed)
 

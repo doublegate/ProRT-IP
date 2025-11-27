@@ -1,11 +1,13 @@
 //! Reusable TUI widgets
 
 mod component;
+mod file_browser;
 mod help_widget;
 mod log_widget;
 mod main_widget;
 mod metrics_dashboard;
 mod network_graph;
+mod port_selection;
 mod port_table;
 mod service_table;
 mod status;
@@ -13,11 +15,16 @@ mod target_selection;
 mod template_selection;
 
 pub use component::Component;
+pub use file_browser::{FileBrowserWidget, FileFilter};
 pub use help_widget::{handle_help_widget_event, HelpWidget};
 pub use log_widget::{handle_log_widget_event, LogWidget};
 pub use main_widget::{handle_main_widget_event, MainWidget};
 pub use metrics_dashboard::MetricsDashboardWidget;
 pub use network_graph::NetworkGraphWidget;
+pub use port_selection::{
+    handle_port_selection_event, PortCategory, PortPreset, PortSelectionState, PortSelectionWidget,
+    PortSpec,
+};
 pub use port_table::{handle_port_table_event, PortTableWidget};
 pub use service_table::{handle_service_table_event, ServiceTableWidget};
 pub use status::StatusBar;

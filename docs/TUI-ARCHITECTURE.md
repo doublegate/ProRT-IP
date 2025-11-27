@@ -1,8 +1,8 @@
 # TUI Architecture Documentation
 
-**Version:** 1.3.0
-**Last Updated:** 2025-11-23
-**Status:** Phase 6.6 COMPLETE (Sprint 6.6 Parts 1-3), Memory-Mapped I/O + Live Event Flow
+**Version:** 1.4.0
+**Last Updated:** 2025-11-27
+**Status:** Phase 6 COMPLETE (Sprints 6.1-6.8), Full TUI Implementation with Interactive Widgets
 
 ## Table of Contents
 
@@ -45,7 +45,7 @@ The ProRT-IP TUI (Terminal User Interface) is designed to provide real-time visu
 - **Event Throughput**: 10,000+ events/second
 - **Event Aggregation**: 16ms batching interval (60 FPS)
 - **Max Buffer Size**: 1,000 events before dropping
-- **Test Coverage**: 165 tests (140 unit, 25 integration) [Sprint 6.2]
+- **Test Coverage**: 228 tests (190 unit, 38 integration) [Sprint 6.7-6.8]
 
 ---
 
@@ -383,10 +383,11 @@ pub fn render(frame: &mut Frame, scan_state: &ScanState, ui_state: &UIState) {
 
 ### 5. Widgets (`src/widgets/`)
 
-ProRT-IP TUI includes 7 production-ready widgets as of Sprint 6.2:
+ProRT-IP TUI includes 11 production-ready widgets as of Phase 6 completion:
 
 - **Phase 6.1 Widgets** (4): StatusBar, MainWidget, LogWidget, HelpWidget
 - **Phase 6.2 Dashboard Widgets** (3): PortTableWidget, ServiceTableWidget, MetricsDashboardWidget
+- **Phase 6.7-6.8 Interactive Widgets** (4): FileBrowserWidget, PortSelectionWidget, TemplateSelectionWidget, ShortcutsWidget
 
 #### Component Trait (`src/widgets/component.rs`)
 
@@ -843,7 +844,90 @@ impl UIState {
 
 ---
 
-**Future Components** (Phase 6.3+):
+#### FileBrowserWidget **[Phase 6.7-6.8]**
+
+**Purpose**: Interactive file browser for target list import/export
+
+**Location**: `src/widgets/file_browser.rs`
+
+**Features**:
+- Directory navigation with keyboard controls
+- File selection with visual feedback
+- File type filtering (.txt, .csv for target lists)
+- Support for large directories (10K+ files)
+- Breadcrumb path display
+
+**Keyboard Shortcuts**:
+- `↑/↓` or `j/k`: Navigate files
+- `Enter`: Select file/enter directory
+- `Backspace`: Go up one directory
+- `Esc`: Cancel file browser
+
+---
+
+#### PortSelectionWidget **[Phase 6.7-6.8]**
+
+**Purpose**: Interactive port range selection with templates
+
+**Location**: `src/widgets/port_selection.rs`
+
+**Features**:
+- Visual port range selector (1-65535)
+- Pre-defined port templates (top 100, top 1000, common services)
+- Custom range input (e.g., "80,443,8080-8090")
+- Port validation and error handling
+- Real-time selection count display
+
+**Keyboard Shortcuts**:
+- `t`: Toggle template selection
+- `c`: Custom range input mode
+- `a`: Select all ports
+- `r`: Reset selection
+
+---
+
+#### ShortcutsWidget **[Phase 6.7-6.8]**
+
+**Purpose**: Interactive keyboard shortcuts help overlay
+
+**Location**: `src/widgets/shortcuts.rs`
+
+**Features**:
+- Categorized shortcuts (Navigation, Selection, Actions, Views)
+- Context-aware help (shows relevant shortcuts for active widget)
+- Searchable shortcuts list
+- Color-coded key bindings
+- Scrollable multi-page layout
+
+**Keyboard Shortcuts**:
+- `?` or `F1`: Toggle shortcuts panel
+- `/`: Search shortcuts
+- `Esc`: Close shortcuts panel
+
+---
+
+#### TemplateSelectionWidget **[Phase 6.7-6.8]**
+
+**Purpose**: Interactive scan template selector
+
+**Location**: `src/widgets/template_selection.rs`
+
+**Features**:
+- 10+ built-in scan templates (Quick, Stealth, Aggressive, etc.)
+- Custom template creation and saving
+- Template preview with parameter details
+- Case-insensitive filtering
+- Template categories (Speed, Stealth, Comprehensive)
+
+**Keyboard Shortcuts**:
+- `↑/↓`: Navigate templates
+- `Enter`: Select template
+- `n`: Create new template
+- `/`: Filter templates
+
+---
+
+**Future Components** (Phase 7+):
 - **ChartWidget**: Sparkline throughput graph (real-time performance visualization)
 - **ConfigWidget**: Interactive scan parameter editor (pause, adjust timing, change targets)
 - **ExportWidget**: Live results export to JSON/XML/CSV during scan
@@ -1276,23 +1360,27 @@ fn test_scan_state_shared() {
 
 ### Test Metrics
 
-**Phase 6.2 (Sprint 6.2 Complete):**
+**Phase 6 Complete (Sprints 6.1-6.8):**
 
 ```
 Test Type         Count    Status    Coverage
 ─────────         ─────    ──────    ────────
-Unit Tests        140      ✓ Pass    Aggregator, Widgets (59 dashboard widget tests)
-Integration       25       ✓ Pass    App, State, Events, Tab switching
+Unit Tests        190      ✓ Pass    Aggregator, All Widgets (137 widget tests)
+Integration       38       ✓ Pass    App, State, Events, Tab switching, Interactive widgets
 Doctests          2        ✓ Pass    Public API examples
                   1        Ignored   Future Component trait
 
-Total             168      165 Pass  Comprehensive (3 ignored)
+Total             231      228 Pass  Comprehensive (3 ignored)
 ```
 
-**Widget Test Breakdown** (59 unit tests):
+**Widget Test Breakdown** (137 unit tests):
 - PortTableWidget: 14 tests (sorting, filtering)
 - ServiceTableWidget: 21 tests (sorting, filtering, color coding)
 - MetricsDashboardWidget: 24 tests (calculations, formatting, edge cases)
+- FileBrowserWidget: 22 tests (navigation, selection, filtering)
+- PortSelectionWidget: 18 tests (range validation, templates)
+- ShortcutsWidget: 16 tests (categorization, search, display)
+- TemplateSelectionWidget: 22 tests (template loading, filtering, creation)
 
 ---
 

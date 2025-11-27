@@ -7,7 +7,7 @@
 </div>
 
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-2,246%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
+[![Tests](https://img.shields.io/badge/tests-2,557%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 ![Coverage](https://img.shields.io/badge/coverage-54.92%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -28,7 +28,7 @@
 - **Depth:** Comprehensive service detection and OS fingerprinting (like Nmap)
 - **Safety:** Memory-safe Rust implementation prevents entire vulnerability classes
 - **Stealth:** Advanced evasion techniques (timing, decoys, fragmentation, TTL manipulation, idle scans)
-- **Modern TUI:** Real-time dashboard with 60 FPS rendering, 4-tab interface, 8 production widgets
+- **Modern TUI:** Real-time dashboard with 60 FPS rendering, 4-tab interface, 11 production widgets
 - **Extensibility:** Plugin system with Lua 5.4 sandboxed execution
 
 **At a glance:**
@@ -108,9 +108,9 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 
 ## Project Status
 
-**Current:** Phase 6 (6/8 sprints complete, 75%)
-**Version:** v0.5.6 (Released 2025-11-23)
-**Tests:** 2,246 passing (100%)
+**Current:** Phase 6 COMPLETE (8/8 sprints, 100%)
+**Version:** v0.5.6 (Released 2025-11-27)
+**Tests:** 2,557 passing (100%)
 **Coverage:** 54.92%
 
 ### Recent Achievements
@@ -317,7 +317,7 @@ prtip --tui -sS -p 1-1000 192.168.1.0/24
 - **Performance:** 10M+ pps theoretical, 72K+ pps stateful (localhost), O(N) linear scaling (50-1000x speedup), adaptive parallelism, rate limiting (-1.8% overhead)
 - **Evasion:** Packet fragmentation (-f, --mtu), TTL control, bad checksums, decoy scanning, timing templates (T0-T5)
 - **Output:** Text, JSON, XML, Greppable, PCAPNG capture, SQLite database, Memory-mapped I/O (77-86% RAM reduction)
-- **TUI:** Real-time dashboard with 60 FPS, 4-tab interface, 8 widgets, event-driven updates (10K+ events/sec), TTY validation
+- **TUI:** Real-time dashboard with 60 FPS, 4-tab interface, 11 widgets, event-driven updates (10K+ events/sec), TTY validation
 - **Plugin System:** Lua 5.4 sandboxed execution, capabilities-based security, hot reload
 
 ### Network Optimizations (Sprint 6.3) ✅ COMPLETE
@@ -358,7 +358,7 @@ ProRT-IP includes a production-ready TUI for real-time scan visualization and mo
 
 - **Real-Time Visualization:** Live scan progress with 60 FPS rendering
 - **Event-Driven Updates:** Integrated with EventBus for instant result updates (10K+ events/sec)
-- **8 Production Widgets:** StatusBar, MainWidget, LogWidget, HelpWidget + 4 Dashboard Widgets
+- **11 Production Widgets:** StatusBar, MainWidget, LogWidget, HelpWidget + FileBrowser, PortSelection, Shortcuts + 4 Dashboard Widgets
 - **Tabbed Interface:** 4 real-time dashboards with Tab key switching
 - **Thread-Safe State:** Shared `Arc<RwLock<ScanState>>` for scanner integration
 - **Responsive Design:** Immediate mode rendering with <5ms frame time per widget
@@ -968,9 +968,9 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 
 ## Development Roadmap
 
-### Current Focus: Phase 6 - TUI Interface + Network Optimizations
+### Current Focus: Phase 7 - Release Preparation
 
-**Progress:** 4/8 sprints (50%)
+**Phase 6 Status:** ✅ COMPLETE (8/8 sprints, 100%)
 
 | Sprint | Status | Description |
 |--------|--------|-------------|
@@ -980,8 +980,7 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 | 6.4 | ✅ Complete | Zero-Copy Buffer Pool (tiered 4KB/16KB/64KB, RAII, SharedPacket) |
 | 6.5 | ✅ Complete | Interactive Selection Widgets (CIDR, Import/Export, Templates) |
 | 6.6 | ✅ Complete | Memory-Mapped I/O (77-86% RAM reduction), TUI Event Flow, TTY Validation |
-| 6.7 | 📋 Planned | Configuration Profiles |
-| 6.8 | 📋 Planned | Help System & Tooltips |
+| 6.7-6.8 | ✅ Complete | Interactive & Polish (FileBrowser, PortSelection, Shortcuts widgets) |
 
 ### Overall Progress: 8 Phases
 
@@ -990,7 +989,7 @@ prtip -sS --ports 1-1000 -oX scan.xml target.com
 | Phase 1-3 | Weeks 1-10 | Core Infrastructure, Advanced Scanning, Detection | ✅ Complete |
 | Phase 4 | Weeks 11-13 | Performance Optimization | ✅ Complete |
 | Phase 5 + 5.5 | Weeks 14-18 | Advanced Features + Pre-TUI | ✅ Complete |
-| **Phase 6** | **Weeks 19-20** | **TUI Interface** | **🔄 75% (6/8 sprints)** |
+| **Phase 6** | **Weeks 19-20** | **TUI Interface** | **✅ 100% (8/8 sprints)** |
 | Phase 7 | Weeks 21-22 | Release Preparation | 📋 Planned |
 | Phase 8 | Beyond | Post-Release Features | 📋 Future |
 
@@ -1425,6 +1424,6 @@ This project builds on the pioneering work of:
 
 ---
 
-**Last Updated:** 2025-11-23
+**Last Updated:** 2025-11-27
 **Current Version:** v0.5.6
-**Phase:** 6 Sprint 6.6 COMPLETE (6/8 sprints, 75%)
+**Phase:** 6 COMPLETE (8/8 sprints, 100%)

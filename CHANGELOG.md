@@ -5,6 +5,144 @@ All notable changes to ProRT-IP WarScan will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.8] - 2025-11-27
+
+### Executive Summary
+
+Coverage workflow stabilization release resolving CI/CD infrastructure issues including disk space exhaustion, tarpaulin hangs, and duplicate argument conflicts. This release ensures reliable automated code coverage reporting with cargo-tarpaulin ptrace engine and establishes 51.40% coverage baseline.
+
+### Fixed
+
+- **CI/CD Coverage Workflow Stabilization** (commits de4fe3e, 2e360ef, f00e2b8, dcd31e5)
+  - **Disk Space Management** (commit dcd31e5)
+    - Resolved GitHub Actions disk space exhaustion during coverage runs
+    - Implemented disk space monitoring and cleanup procedures
+    - Prevents coverage workflow failures from insufficient storage
+  - **Tarpaulin Engine Selection** (commits f00e2b8, de4fe3e)
+    - Reverted to ptrace engine with hang mitigations (most stable)
+    - LLVM engine caused test threading conflicts and hangs
+    - ptrace provides reliable coverage without test interference
+  - **Argument Deduplication** (commit 2e360ef)
+    - Removed duplicate tarpaulin timeout argument
+    - Eliminated "argument cannot be used multiple times" error
+    - Cleaned up tarpaulin invocation configuration
+  - **Coverage Baseline Established:** 51.40% (down from 54.92% due to new untested code)
+  - **Impact:** Reliable automated coverage reporting in CI/CD pipeline
+
+### Changed
+
+- **Benchmark Artifacts** (commit 563d381)
+  - Added benchmark output files to .gitignore
+  - Prevents accidental commit of large benchmark data files
+  - Maintains clean repository state
+
+### Technical Details
+
+- **Engine Comparison:**
+  - ptrace: Stable, no hangs, slight performance penalty
+  - LLVM: Faster but caused test threading conflicts
+  - Final choice: ptrace with explicit hang mitigations
+- **Coverage Metrics:**
+  - Total lines: ~45,000
+  - Covered lines: 23,130 (51.40%)
+  - 2,557 tests contributing to coverage
+- **CI/CD Health:** All 9 workflows passing consistently
+
+## [0.5.7] - 2025-11-27
+
+### Executive Summary
+
+Phase 6 completion (Sprint 6.7-6.8) delivering 3 new interactive TUI widgets, centralized keyboard management, and comprehensive scan configuration UI. Added 311 tests bringing total to 2,557. This release marks 87.5% project completion (7/8 phases) with production-ready terminal interface for comprehensive network scanning.
+
+### Added
+
+- **Sprint 6.7: Interactive Selection Widgets** (commit 9bef69f, ~16 hours)
+  - **File Browser Widget** (file_browser.rs - 771 lines, 8 tests)
+    - Interactive directory navigation with keyboard controls (Up/Down arrows, Enter, Backspace)
+    - File filtering: .txt, .csv, .json, or all files (Tab to cycle filters)
+    - Path breadcrumb display and quick navigation
+    - Parent directory navigation with Backspace
+    - Used for target list import/export (Ctrl+B to open)
+  - **Port Selection Widget** (port_selection.rs - 1,224 lines, 35 tests)
+    - Port presets: Top 100, Top 1000, All Ports (1-65535), Common Services
+    - Port categories: Web (80,443,8080,8443), SSH (22), Database (3306,5432,1433,27017)
+    - Mail (25,587,465,993,995), File Sharing (21,445,139), Remote Access (3389,5900,5901)
+    - Custom port range input with validation
+    - PortSpec parser for complex specifications (e.g., "80,443,8080-8090")
+    - Category-based port expansion with descriptions
+  - **Shortcut Manager** (shortcuts.rs - 577 lines, 11 tests)
+    - Centralized keyboard shortcut registration and dispatch
+    - 60+ shortcuts across 6 contexts: Global, Scanning, Results, Help, Targets, Ports
+    - Conflict detection and resolution
+    - Dynamic help text generation
+    - Context-based shortcut filtering
+    - Examples: q (quit), ? (help), Tab (switch tabs), Ctrl+B (file browser)
+
+- **Enhanced Widget Integration** (+531 lines)
+  - **Target Selection Widget** (+308 lines)
+    - New Section::TargetList for managing added targets
+    - FileBrowser integration (Ctrl+B to open)
+    - Target list rendering with selection highlighting
+    - Navigation between CIDR input, file import, target list, exclusions (Tab key)
+  - **Template Selection Widget** (+223 lines)
+    - Preview panel with 60/40 split layout
+    - Quick actions: e (edit), d (duplicate), Del (delete)
+    - TemplateAction enum for action handling
+    - Enhanced keyboard navigation and filtering
+
+- **Sprint 6.8: TUI Polish**
+  - Documentation updates for new widget architecture
+  - Integration testing for widget interactions
+  - Memory optimization for CLAUDE.local.md (22% reduction)
+
+### Changed
+
+- **Test Coverage Expansion:** +311 tests (2,246 → 2,557)
+  - 54 new TUI widget tests (file browser, port selection, shortcuts)
+  - 276 total TUI tests (was 228, +21% increase)
+  - Comprehensive widget state management testing
+  - Keyboard navigation and event handling validation
+
+- **TUI Architecture Enhancement:**
+  - Centralized keyboard management via ShortcutManager
+  - Stateless widget pattern for predictable rendering
+  - Thread-safe state management with Arc<RwLock<T>>
+  - Context-aware shortcut filtering
+
+### Technical Details
+
+- **Widget Development Metrics:**
+  - 3 new files: 2,572 lines of production code
+  - 2 enhanced files: +531 lines of improvements
+  - 54 new tests achieving ~65% coverage on new widgets
+  - Average widget complexity: 771-1,224 lines with 8-35 tests each
+
+- **Keyboard Shortcut System:**
+  - 60+ shortcuts registered across 6 contexts
+  - Conflict detection prevents duplicate bindings
+  - Dynamic help text generation from registrations
+  - Context-based filtering ensures appropriate shortcuts per view
+
+- **Performance Characteristics:**
+  - Immediate mode rendering (<5ms per widget)
+  - 60 FPS sustained with all widgets active
+  - Minimal memory overhead (~2-3 MB for widget state)
+
+- **Phase 6 Completion Summary:**
+  - Sprint 6.1: TUI Framework (60 FPS, 4 widgets, event integration)
+  - Sprint 6.2: Live Dashboard (4-tab interface, 8 widgets)
+  - Sprint 6.3: Network Optimizations (O(N×M)→O(N), 50-1000x speedup)
+  - Sprint 6.4: Zero-Copy Buffer Pool (3-tier, RAII)
+  - Sprint 6.5: Bug Fix Sprint (Plugin/Idle/Decoy fixes)
+  - Sprint 6.6: Memory-Mapped I/O (77-86% RAM reduction)
+  - Sprint 6.7-6.8: Interactive Widgets + Polish (THIS RELEASE)
+  - **Phase 6: 100% COMPLETE (8/8 sprints)**
+
+- **Project Milestone:**
+  - Overall progress: 87.5% (7/8 phases complete)
+  - Next phase: Phase 7 - Polish & Release Preparation
+  - Production-ready TUI: 11 widgets, 60 FPS, 2,557 tests
+
 ## [0.5.6] - 2025-11-23
 
 ### Executive Summary

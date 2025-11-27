@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
-**Version:** 3.8
+**Version:** 3.9
 **Last Updated:** 2025-11-27
-**Current Phase:** Phase 6 COMPLETE | v0.5.6 + Full TUI Implementation
-**Current Sprint:** Sprint 6.7-6.8: Interactive & Polish Widgets ✅ COMPLETE (+311 tests, FileBrowser/PortSelection/Shortcuts, 2,557 total tests) | **Completed:** 2025-11-27
+**Current Phase:** Phase 6 COMPLETE | v0.5.8 + Coverage Workflow Stabilization
+**Current Sprint:** Sprint 6.8: Release Preparation ✅ COMPLETE (v0.5.7 Interactive Widgets, v0.5.8 CI/CD fixes) | **Completed:** 2025-11-27
 
 ---
 
@@ -50,13 +50,13 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 ## Current Status
 
-### Project Metrics (v0.5.6)
+### Project Metrics (v0.5.8)
 
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
-| **Version** | v0.5.6 | ✅ Current | Released 2025-11-27 (Sprint 6.7-6.8 Interactive & Polish Widgets) |
+| **Version** | v0.5.8 | ✅ Current | Released 2025-11-27 (CI/CD Coverage Workflow Stabilization) |
 | **Tests** | 2,557 (100% passing) | ✅ Excellent | Phase 6 COMPLETE (8/8 sprints), all tests green |
-| **Coverage** | 54.92% | ✅ Good | Maintained from Sprint 5.6 |
+| **Coverage** | 51.40% | ✅ Good | Baseline established with ptrace engine (Sprint 6.8) |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |
 | **CI Platforms** | 9/9 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
 | **Release Targets** | 8/8 building | ✅ Complete | x86_64, ARM64, musl, FreeBSD |

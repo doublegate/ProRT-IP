@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Fix:** Track scan_start_time in ScanState, set on ScanStarted event for duration calculation
   - **Fix:** Add TCP Connect scan progress tracking (was only SYN/UDP/Stealth before)
   - **Fix:** Improve Network Graph data calculations (packets_received, ports_per_second)
+  - **Root Cause 6:** execute_scan_ports() never published ProgressUpdate events during scan
+  - **Fix:** Add ProgressTracker to execute_scan_ports() for real-time Metrics/Network Graph updates
   - **Impact:** All TUI tabs now display real-time data (Port Table, Service Table, Metrics, Network Graph)
 
 ## [0.5.8] - 2025-11-27

@@ -794,13 +794,14 @@ impl ScanScheduler {
             ports.count()
         );
 
+        // Generate scan_id for this scan (used by events and progress tracker)
+        let scan_id = Uuid::new_v4();
+
         // Publish ScanStarted event for TUI
         if let Some(ref event_bus) = self.config.scan.event_bus {
             use prtip_core::events::{ScanEvent, ScanStage};
             use std::time::SystemTime;
-            use uuid::Uuid;
 
-            let scan_id = Uuid::new_v4();
             let timestamp = SystemTime::now();
 
             event_bus
@@ -866,6 +867,10 @@ impl ScanScheduler {
         // Capture total scan ports for adaptive polling interval calculation
         // (must be before the loop where total_ports gets shadowed)
         let total_scan_ports = total_ports;
+
+        // Create progress tracker for TUI updates (Sprint 6.8 fix)
+        // Uses same scan_id as ScanStarted event
+        let mut progress_tracker = ProgressTracker::new(scan_id, total_ports);
 
         for target in targets {
             let original_hosts = target.expand_hosts();
@@ -984,6 +989,13 @@ impl ScanScheduler {
                     Ok(results) => {
                         // Wait for progress bridge to finish
                         let _ = bridge_handle.await;
+
+                        // Update progress tracker for TUI (Sprint 6.8 fix)
+                        for _ in 0..ports_vec.len() {
+                            progress_tracker
+                                .increment(&self.config.scan.event_bus)
+                                .await;
+                        }
 
                         // Push results to lock-free aggregator (zero contention!)
                         for result in results.iter() {
@@ -1176,13 +1188,15 @@ impl ScanScheduler {
         // Complete progress bar
         progress.finish("Scan complete");
 
+        // Publish final ProgressUpdate event to ensure 100% completion (Sprint 6.8 fix)
+        progress_tracker.publish(&self.config.scan.event_bus).await;
+
         // Publish ScanCompleted event for TUI
         if let Some(ref event_bus) = self.config.scan.event_bus {
             use prtip_core::events::{ScanEvent, ScanStage};
             use std::time::{Duration, SystemTime};
-            use uuid::Uuid;
 
-            let scan_id = Uuid::new_v4();
+            // Use same scan_id as ScanStarted/ProgressUpdate events
             let timestamp = SystemTime::now();
 
             // Calculate port counts

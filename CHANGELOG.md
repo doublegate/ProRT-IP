@@ -13,10 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Root Cause 1:** EventAggregator swallowed high-frequency events (PortFound, HostDiscovered, ServiceDetected) - counted but never buffered for handler processing
   - **Root Cause 2:** Scanner didn't publish ProgressUpdate events to EventBus for TUI consumption
   - **Root Cause 3:** TCP scanner was NOT attached to EventBus during initialization - PortFound events never published
+  - **Root Cause 4:** Service detection didn't publish ServiceDetected events to EventBus
+  - **Root Cause 5:** Metrics dashboard didn't track scan start time for duration calculation
   - **Fix:** Buffer all high-frequency events in aggregator for `handle_scan_event` processing
   - **Fix:** Added ProgressTracker struct to scheduler with 250ms progress publishing interval
   - **Fix:** Attach EventBus to TCP scanner via `with_event_bus()` in scheduler constructor
-  - **Impact:** TUI now displays real-time port discoveries, service detections, and scan progress with ETA
+  - **Fix:** Publish ServiceDetected events after successful service detection with confidence scores
+  - **Fix:** Track scan_start_time in ScanState, set on ScanStarted event for duration calculation
+  - **Fix:** Add TCP Connect scan progress tracking (was only SYN/UDP/Stealth before)
+  - **Fix:** Improve Network Graph data calculations (packets_received, ports_per_second)
+  - **Impact:** All TUI tabs now display real-time data (Port Table, Service Table, Metrics, Network Graph)
 
 ## [0.5.8] - 2025-11-27
 

@@ -12,7 +12,7 @@ use ratatui::widgets::{Axis, Block, Borders, Chart, Dataset, GraphType};
 use ratatui::Frame;
 use std::collections::VecDeque;
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Instant, SystemTime};
 
 use crate::state::{ScanState, UIState};
 use crate::widgets::Component;
@@ -40,6 +40,7 @@ pub struct NetworkMetrics {
     cumulative_ports: u64,
 
     /// Start time for relative timestamp calculation
+    #[allow(dead_code)] // Used in test-only add_sample() function
     start_time: Instant,
 
     /// Last sample time (to enforce 1-second sampling)
@@ -288,28 +289,53 @@ impl Component for NetworkGraphWidget {
         // Build NetworkMetrics from throughput_history
         let mut network_metrics = NetworkMetrics::new();
 
+        // Calculate time base relative to NOW (most recent sample at t=0, older samples at t<0)
+        let now = Instant::now();
+
         // Convert ScanState throughput history to NetworkMetrics samples
-        for sample in &scan_state.throughput_history {
-            let elapsed = sample.timestamp.elapsed().as_secs_f64();
-            let timestamp = network_metrics.start_time.elapsed().as_secs_f64() - elapsed;
+        for (idx, sample) in scan_state.throughput_history.iter().enumerate() {
+            // Calculate relative timestamp (seconds ago from now)
+            let seconds_ago = now.duration_since(sample.timestamp).as_secs_f64();
+            let timestamp = -seconds_ago; // Negative = past
 
             network_metrics.timestamps.push_back(timestamp);
             network_metrics
                 .packets_sent
                 .push_back(sample.packets_per_second);
 
-            // Estimate received packets (responses)
-            let responses =
-                scan_state.open_ports + scan_state.closed_ports + scan_state.filtered_ports;
-            let received_pps = if timestamp > 0.0 {
-                responses as f64 / timestamp
+            // Estimate received packets (responses per second)
+            // Assume ~30% response rate (SYN-ACK responses vs SYN sent)
+            let received_pps = sample.packets_per_second * 0.3;
+            network_metrics.packets_received.push_back(received_pps);
+
+            // Calculate ports/sec derivative from port_discoveries
+            // Look at port discovery rate in this time window
+            let ports_in_window = if idx < scan_state.port_discoveries.len() {
+                // Count ports discovered near this sample's timestamp
+                scan_state
+                    .port_discoveries
+                    .iter()
+                    .filter(|p| {
+                        if let Ok(elapsed) = p.timestamp.duration_since(SystemTime::UNIX_EPOCH) {
+                            let sample_time = sample.timestamp.elapsed().as_secs();
+                            let sample_epoch = SystemTime::now()
+                                .duration_since(SystemTime::UNIX_EPOCH)
+                                .unwrap()
+                                .as_secs()
+                                .saturating_sub(sample_time);
+                            let port_epoch = elapsed.as_secs();
+                            // Within 1-second window
+                            port_epoch.abs_diff(sample_epoch) <= 1
+                        } else {
+                            false
+                        }
+                    })
+                    .count() as f64
             } else {
                 0.0
             };
-            network_metrics.packets_received.push_back(received_pps);
 
-            // Calculate ports/sec derivative (placeholder - needs proper implementation)
-            network_metrics.ports_per_second.push_back(0.0);
+            network_metrics.ports_per_second.push_back(ports_in_window);
         }
 
         // Handle empty state

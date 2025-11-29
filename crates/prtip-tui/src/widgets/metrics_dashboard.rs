@@ -10,7 +10,7 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders, Gauge, Paragraph};
 use ratatui::Frame;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use crate::state::{ScanState, UIState};
 
@@ -41,8 +41,6 @@ use crate::widgets::Component;
 pub struct MetricsDashboardWidget {
     /// Shared scan state (read-only access)
     scan_state: Arc<RwLock<ScanState>>,
-    /// Widget creation time (for scan duration calculation)
-    start_time: Instant,
 }
 
 impl MetricsDashboardWidget {
@@ -64,10 +62,7 @@ impl MetricsDashboardWidget {
     /// let widget = MetricsDashboardWidget::new(scan_state);
     /// ```
     pub fn new(scan_state: Arc<RwLock<ScanState>>) -> Self {
-        Self {
-            scan_state,
-            start_time: Instant::now(),
-        }
+        Self { scan_state }
     }
 
     /// Calculate 5-second rolling average throughput
@@ -407,8 +402,12 @@ impl MetricsDashboardWidget {
         let errors = Paragraph::new(errors_text).style(Style::default().fg(error_color));
         frame.render_widget(errors, chunks[2]);
 
-        // Scan duration
-        let duration = Instant::now() - self.start_time;
+        // Scan duration (calculate from scan_start_time if available)
+        let duration = if let Some(start_time) = scan_state.scan_start_time {
+            start_time.elapsed()
+        } else {
+            Duration::from_secs(0)
+        };
         let duration_text = format!("Scan Duration: {}", Self::format_duration(duration));
         let duration_para = Paragraph::new(duration_text).style(Style::default().fg(Color::White));
         frame.render_widget(duration_para, chunks[4]);
@@ -464,6 +463,7 @@ impl Component for MetricsDashboardWidget {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::Instant;
 
     fn create_test_scan_state() -> Arc<RwLock<ScanState>> {
         let mut state = ScanState::new();
@@ -482,8 +482,8 @@ mod tests {
     #[test]
     fn test_widget_creation() {
         let scan_state = create_test_scan_state();
-        let widget = MetricsDashboardWidget::new(scan_state);
-        assert!(widget.start_time.elapsed().as_secs() < 1);
+        let _widget = MetricsDashboardWidget::new(scan_state);
+        // Widget created successfully (no start_time field anymore)
     }
 
     #[test]

@@ -200,6 +200,10 @@ pub struct ScanState {
     /// Throughput history (60-second window, 1-second samples)
     /// For network activity graph
     pub throughput_history: VecDeque<ThroughputSample>,
+
+    /// Scan start time (set when ScanStarted event received)
+    /// Used for accurate duration calculation in metrics dashboard
+    pub scan_start_time: Option<Instant>,
 }
 
 impl ScanState {
@@ -222,6 +226,7 @@ impl ScanState {
             port_discoveries: VecDeque::with_capacity(MAX_PORT_DISCOVERIES),
             service_detections: VecDeque::with_capacity(MAX_SERVICE_DETECTIONS),
             throughput_history: VecDeque::with_capacity(MAX_THROUGHPUT_SAMPLES),
+            scan_start_time: None,
         }
     }
 

@@ -31,6 +31,7 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             state.total = (target_count * port_count) as u64;
             state.completed = 0;
             state.progress_percentage = 0.0;
+            state.scan_start_time = Some(Instant::now()); // Track scan start time
         }
 
         ScanEvent::ScanCompleted {

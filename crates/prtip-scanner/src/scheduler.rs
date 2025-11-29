@@ -442,9 +442,19 @@ impl ScanScheduler {
             let scan_result = match self.config.scan.scan_type {
                 ScanType::Connect => {
                     // TCP Connect scan (already exists, no PCAPNG support yet - TASK-2)
-                    self.tcp_scanner
+                    let results = self
+                        .tcp_scanner
                         .scan_ports(host, ports.clone(), parallelism)
-                        .await
+                        .await;
+
+                    // Update progress tracker for TUI (per port scanned)
+                    for _ in 0..ports.len() {
+                        progress_tracker
+                            .increment(&self.config.scan.event_bus)
+                            .await;
+                    }
+
+                    results
                 }
                 ScanType::Syn => {
                     // SYN scan (has PCAPNG support now!)
@@ -1061,16 +1071,16 @@ impl ScanScheduler {
                                     result.raw_response = service_info.raw_response;
 
                                     // Combine product and version
-                                    if let Some(product) = service_info.product {
-                                        if let Some(version) = service_info.version {
-                                            result.version =
-                                                Some(format!("{} {}", product, version));
-                                        } else {
-                                            result.version = Some(product);
-                                        }
-                                    } else if let Some(version) = service_info.version {
-                                        result.version = Some(version);
-                                    }
+                                    let version_string =
+                                        match (&service_info.product, &service_info.version) {
+                                            (Some(product), Some(version)) => {
+                                                Some(format!("{} {}", product, version))
+                                            }
+                                            (Some(product), None) => Some(product.clone()),
+                                            (None, Some(version)) => Some(version.clone()),
+                                            (None, None) => None,
+                                        };
+                                    result.version = version_string.clone();
 
                                     debug!(
                                         "Detected service on {}:{}: {} {}",
@@ -1079,6 +1089,36 @@ impl ScanScheduler {
                                         result.service.as_ref().unwrap_or(&"unknown".to_string()),
                                         result.version.as_ref().unwrap_or(&"".to_string())
                                     );
+
+                                    // Publish ServiceDetected event for TUI
+                                    if let Some(ref event_bus) = self.config.scan.event_bus {
+                                        // Calculate confidence based on detection method
+                                        // High confidence (0.9) if product and version detected
+                                        // Medium confidence (0.75) if only product detected
+                                        // Low confidence (0.5) for service name only
+                                        let confidence = if service_info.product.is_some()
+                                            && service_info.version.is_some()
+                                        {
+                                            0.9
+                                        } else if service_info.product.is_some() {
+                                            0.75
+                                        } else {
+                                            0.5
+                                        };
+
+                                        event_bus
+                                            .publish(ScanEvent::ServiceDetected {
+                                                scan_id: Uuid::new_v4(),
+                                                ip: result.target_ip,
+                                                port: result.port,
+                                                service_name: service_info.service.clone(),
+                                                service_version: version_string,
+                                                confidence,
+                                                timestamp: SystemTime::now(),
+                                            })
+                                            .await;
+                                    }
+
                                     continue;
                                 }
                             }

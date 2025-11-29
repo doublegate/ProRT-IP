@@ -14,17 +14,103 @@ use crate::{
     AdaptiveRateLimiterV3, BannerGrabber, DiscoveryEngine, DiscoveryMethod, LockFreeAggregator,
     ResultWriter, ScanProgressBar, ServiceDetector, TcpConnectScanner, UdpScanner,
 };
+use prtip_core::event_bus::EventBus;
+use prtip_core::events::{ScanEvent, ScanStage, Throughput};
 use prtip_core::{
     Config, PortRange, PortState, Result, ScanResult, ScanTarget, ScanType, ServiceProbeDb,
 };
 use prtip_network::{CdnDetector, CdnProvider};
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant, SystemTime};
 use tracing::{debug, error, info, warn};
+use uuid::Uuid;
 
 #[cfg(feature = "numa")]
 use prtip_network::numa::{NumaManager, NumaTopology};
+
+/// Helper for tracking and publishing scan progress to TUI
+struct ProgressTracker {
+    scan_id: Uuid,
+    total: u64,
+    completed: u64,
+    last_publish: Instant,
+    start_time: Instant,
+    publish_interval: Duration,
+}
+
+impl ProgressTracker {
+    /// Create a new progress tracker
+    fn new(scan_id: Uuid, total: u64) -> Self {
+        Self {
+            scan_id,
+            total,
+            completed: 0,
+            last_publish: Instant::now(),
+            start_time: Instant::now(),
+            publish_interval: Duration::from_millis(250), // Publish every 250ms
+        }
+    }
+
+    /// Increment completed count and publish if interval elapsed
+    async fn increment(&mut self, event_bus: &Option<Arc<EventBus>>) {
+        self.completed += 1;
+
+        // Publish at regular intervals or on completion
+        if self.last_publish.elapsed() >= self.publish_interval || self.completed >= self.total {
+            self.publish(event_bus).await;
+            self.last_publish = Instant::now();
+        }
+    }
+
+    /// Publish a ProgressUpdate event
+    async fn publish(&self, event_bus: &Option<Arc<EventBus>>) {
+        if let Some(ref bus) = event_bus {
+            let percentage = if self.total > 0 {
+                (self.completed as f32 / self.total as f32) * 100.0
+            } else {
+                0.0
+            };
+
+            // Calculate ETA based on current progress rate
+            let elapsed = self.start_time.elapsed();
+            let eta = if self.completed > 0 && self.completed < self.total {
+                let rate = self.completed as f64 / elapsed.as_secs_f64();
+                let remaining = (self.total - self.completed) as f64;
+                if rate > 0.0 {
+                    Some(Duration::from_secs_f64(remaining / rate))
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            // Calculate throughput
+            let pps = if elapsed.as_secs_f64() > 0.0 {
+                self.completed as f64 / elapsed.as_secs_f64()
+            } else {
+                0.0
+            };
+
+            bus.publish(ScanEvent::ProgressUpdate {
+                scan_id: self.scan_id,
+                stage: ScanStage::ScanningPorts,
+                percentage,
+                completed: self.completed,
+                total: self.total,
+                throughput: Throughput {
+                    packets_per_second: pps,
+                    hosts_per_minute: pps * 60.0 / 1000.0, // Rough estimate
+                    bandwidth_mbps: 0.0,                   // Not tracked at this level
+                },
+                eta,
+                timestamp: SystemTime::now(),
+            })
+            .await;
+        }
+    }
+}
 
 /// Scan scheduler that orchestrates the scanning process
 ///
@@ -336,6 +422,11 @@ impl ScanScheduler {
             self.config.performance.requested_ulimit,
         );
 
+        // Create progress tracker for TUI updates
+        let total_work = (hosts.len() * ports.len()) as u64;
+        let scan_id = Uuid::new_v4();
+        let mut progress_tracker = ProgressTracker::new(scan_id, total_work);
+
         for host in hosts {
             // Rate limiting (V3 is now the default and only rate limiter)
             if let Some(ref limiter) = self.rate_limiter {
@@ -372,6 +463,10 @@ impl ScanScheduler {
                             Ok(result) => writer.write(&result)?,
                             Err(e) => warn!("Error scanning SYN {}:{}: {}", host, port, e),
                         }
+                        // Update progress tracker for TUI
+                        progress_tracker
+                            .increment(&self.config.scan.event_bus)
+                            .await;
                     }
                     writer.flush()?;
                     writer.collect()
@@ -396,6 +491,10 @@ impl ScanScheduler {
                             Ok(result) => writer.write(&result)?,
                             Err(e) => warn!("Error scanning UDP {}:{}: {}", host, port, e),
                         }
+                        // Update progress tracker for TUI
+                        progress_tracker
+                            .increment(&self.config.scan.event_bus)
+                            .await;
                     }
                     writer.flush()?;
                     writer.collect()
@@ -439,6 +538,10 @@ impl ScanScheduler {
                                 e
                             ),
                         }
+                        // Update progress tracker for TUI
+                        progress_tracker
+                            .increment(&self.config.scan.event_bus)
+                            .await;
                     }
                     writer.flush()?;
                     writer.collect()

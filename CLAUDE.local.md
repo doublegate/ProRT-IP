@@ -8,7 +8,7 @@
 |--------|-------|---------|
 | **Version** | v0.5.6 | Phase 6 COMPLETE (8/8 sprints) |
 | **Tests** | 2,557 (100%), 96 ignored | +311 from Sprint 6.7-6.8 |
-| **Coverage** | 54.92% baseline | ~75% on new code |
+| **Coverage** | 51.40% (CI verified) | Coverage workflow fixed, passing threshold |
 | **Fuzz** | 230M+ executions, 0 crashes | 5 targets |
 | **CI/CD** | 9/9 workflows | Production-ready |
 
@@ -30,6 +30,7 @@
 
 | Date | Decision | Summary | Details |
 |------|----------|---------|---------|
+| 11-27 | Coverage Workflow Fix | Fixed CI coverage workflow: disk space, tarpaulin hangs (ptrace+hang mitigations), 51.40% passing. Grade: A+ | coverage.yml |
 | 11-27 | Sprint 6.7-6.8 COMPLETE | Phase 6 COMPLETE (8/8 sprints), +311 tests, FileBrowser/PortSelection/Shortcuts widgets. Grade: A+ | Sprint 6.7-6.8 completion |
 | 11-23 | BannerGrabber API | Removed cfg guards from timeout()/max_banner_size() getters, public API. Grade: A | BANNER-GRABBER-FIX-COMPLETE.md |
 | 11-21 | Memory Optimization | 52.5% reduction (16,033→7,620 chars), archival strategy. Grade: A+ | MEMORY-OPTIMIZATION-PRIORITIES-2-4-COMPLETE.md |
@@ -39,18 +40,15 @@
 | 11-16 | O(N×M)→O(N) | 50-1000x speedup, hash lookups. Grade: A+ | CONNECTION-STATE-OPTIMIZATION-COMPLETE.md |
 | 11-16 | Sprint 6.3 | README/CHANGELOG +328L, batch I/O + CDN. Grade: A+ | SPRINT-6.3-FINAL-COMPLETE.md |
 | 11-15 | CI/CD Coverage | cargo-tarpaulin, Codecov upload. Grade: A+ | .github/workflows/test.yml |
-| 11-10 | Production Readiness | v0.5.0-fix: I/O 0.9-1.6%, linear memory, IPv6 -1.9%. Ready | profiling/ |
-| 11-09 | Phase 5 Benchmarks | 22 scenarios, 2,100L report, all targets validated. Grade: A+ | benchmarks/ |
-| 11-09 | v0.5.0-fix Release | Phase 5.5 COMPLETE, 6/6 sprints, ~105h, TUI-ready. Grade: A+ | CHANGELOG.md |
-| 11-07 | v0.5.0 Release | Phase 5 COMPLETE, 1,766 tests, 54.92% coverage, 230M+ fuzz | CHANGELOG.md |
 
-**Note:** Full implementation details in `/tmp/ProRT-IP/` completion reports and linked files.
+**Archived:** Phase 5 decisions (11-07 to 11-10) in `/tmp/ProRT-IP/` completion reports.
 
 ## Recent Sessions (Last 7 Days)
 
 | Date | Task | Duration | Result | Status |
 |------|------|----------|--------|--------|
-| 11-27 | Doc Update + Memory Optimization | ~1h | Updated docs for Phase 6 COMPLETE, 2,557 tests, optimized CLAUDE.local.md | ✅ |
+| 11-27 (2) | Coverage Workflow Fix | ~45m | Fixed 4 issues: disk space, tarpaulin hang, duplicate timeout, LLVM engine. 51.40% coverage, 4 commits | ✅ |
+| 11-27 (1) | Doc Update + Memory Optimization | ~1h | Updated docs for Phase 6 COMPLETE, 2,557 tests, optimized CLAUDE.local.md | ✅ |
 | 11-23 | Banner Grabber Test Fix | ~15m | Fixed release mode compilation, removed cfg guards, 26 tests pass | ✅ |
 | 11-21 | Git Workflow: Memory Optimization | ~45m | Committed memory optimization (52.5% reduction), commit 14d6e4e | ✅ |
 
@@ -86,4 +84,4 @@
 
 ---
 
-**Last Updated:** 2025-11-27 (Phase 6 COMPLETE, Sprint 6.7-6.8)
+**Last Updated:** 2025-11-27 (Coverage fix, doc-update + mem-reduce)

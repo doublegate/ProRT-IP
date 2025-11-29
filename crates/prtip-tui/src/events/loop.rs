@@ -148,22 +148,14 @@ pub async fn process_events(
                     handle_scan_event(event, Arc::clone(&scan_state));
                 }
 
-                // Apply aggregated statistics
-                if stats.ports_found > 0 || stats.hosts_discovered > 0 || stats.services_detected > 0 {
-                    let mut state = scan_state.write();
-                    state.open_ports += stats.ports_found;
-                    state.detected_services += stats.services_detected;
-
-                    // Add discovered hosts (deduplicated)
-                    for ip in stats.discovered_ips.keys() {
-                        if !state.discovered_hosts.contains(ip) {
-                            state.discovered_hosts.push(*ip);
-                        }
-                    }
-                }
+                // All high-frequency events (PortFound, HostDiscovered, ServiceDetected)
+                // are now buffered and handled by handle_scan_event above.
+                // Stats are kept for debugging/monitoring only.
 
                 // Update UI state with aggregator stats (for debug display)
                 ui_state.aggregator_dropped_events = stats.dropped_events;
+                // Note: stats.ports_found, stats.hosts_discovered, stats.services_detected
+                // are available for metrics display if needed in the future.
             }
         }
     }

@@ -80,18 +80,25 @@ impl EventAggregator {
         match &event {
             ScanEvent::PortFound { .. } => {
                 self.stats.ports_found += 1;
-                // Don't buffer individual port events - we'll batch them
+                // Buffer PortFound events so port_discoveries list gets populated.
+                // The handler needs the full event details (ip, port, protocol, etc.)
+                // to create PortDiscovery entries for the TUI port table display.
+                self.event_buffer.push(event);
                 true
             }
 
             ScanEvent::HostDiscovered { ip, .. } => {
                 *self.stats.discovered_ips.entry(*ip).or_insert(0) += 1;
                 self.stats.hosts_discovered += 1;
+                // Buffer to pass to handler for discovered_hosts list management
+                self.event_buffer.push(event);
                 true
             }
 
             ScanEvent::ServiceDetected { .. } => {
                 self.stats.services_detected += 1;
+                // Buffer to pass to handler for service_detections VecDeque
+                self.event_buffer.push(event);
                 true
             }
 
@@ -277,9 +284,12 @@ mod tests {
         assert_eq!(stats.ports_found, 50);
         assert_eq!(stats.total_events, 51);
 
-        // Check events (only lifecycle event buffered)
-        assert_eq!(events.len(), 1);
-        assert!(matches!(events[0], ScanEvent::ScanStarted { .. }));
+        // Check events - all events are now buffered for handle_scan_event
+        // (50 PortFound + 1 ScanStarted = 51 events)
+        assert_eq!(events.len(), 51);
+        // First 50 should be PortFound, last one should be ScanStarted
+        assert!(matches!(events[49], ScanEvent::PortFound { .. }));
+        assert!(matches!(events[50], ScanEvent::ScanStarted { .. }));
 
         // Stats should be reset
         assert_eq!(agg.stats().ports_found, 0);

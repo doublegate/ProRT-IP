@@ -12,8 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TUI Event Display Fix** - Resolved critical issue where `prtip --tui` failed to display scan progress and results
   - **Root Cause 1:** EventAggregator swallowed high-frequency events (PortFound, HostDiscovered, ServiceDetected) - counted but never buffered for handler processing
   - **Root Cause 2:** Scanner didn't publish ProgressUpdate events to EventBus for TUI consumption
+  - **Root Cause 3:** TCP scanner was NOT attached to EventBus during initialization - PortFound events never published
   - **Fix:** Buffer all high-frequency events in aggregator for `handle_scan_event` processing
   - **Fix:** Added ProgressTracker struct to scheduler with 250ms progress publishing interval
+  - **Fix:** Attach EventBus to TCP scanner via `with_event_bus()` in scheduler constructor
   - **Impact:** TUI now displays real-time port discoveries, service detections, and scan progress with ETA
 
 ## [0.5.8] - 2025-11-27

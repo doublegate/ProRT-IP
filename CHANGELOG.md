@@ -7,24 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.9] - 2025-11-28
+
+### Executive Summary
+
+TUI Event Flow Fix release resolving critical display issues where `prtip --tui` failed to show scan progress and results. Identified and fixed 6 root causes across event aggregation, scanner initialization, service detection, and progress tracking. All TUI dashboard tabs now display real-time scan data with proper event publishing and state management.
+
 ### Fixed
 
-- **TUI Event Display Fix** - Resolved critical issue where `prtip --tui` failed to display scan progress and results
-  - **Root Cause 1:** EventAggregator swallowed high-frequency events (PortFound, HostDiscovered, ServiceDetected) - counted but never buffered for handler processing
-  - **Root Cause 2:** Scanner didn't publish ProgressUpdate events to EventBus for TUI consumption
-  - **Root Cause 3:** TCP scanner was NOT attached to EventBus during initialization - PortFound events never published
-  - **Root Cause 4:** Service detection didn't publish ServiceDetected events to EventBus
-  - **Root Cause 5:** Metrics dashboard didn't track scan start time for duration calculation
-  - **Fix:** Buffer all high-frequency events in aggregator for `handle_scan_event` processing
-  - **Fix:** Added ProgressTracker struct to scheduler with 250ms progress publishing interval
-  - **Fix:** Attach EventBus to TCP scanner via `with_event_bus()` in scheduler constructor
-  - **Fix:** Publish ServiceDetected events after successful service detection with confidence scores
-  - **Fix:** Track scan_start_time in ScanState, set on ScanStarted event for duration calculation
-  - **Fix:** Add TCP Connect scan progress tracking (was only SYN/UDP/Stealth before)
-  - **Fix:** Improve Network Graph data calculations (packets_received, ports_per_second)
-  - **Root Cause 6:** execute_scan_ports() never published ProgressUpdate events during scan
-  - **Fix:** Add ProgressTracker to execute_scan_ports() for real-time Metrics/Network Graph updates
-  - **Impact:** All TUI tabs now display real-time data (Port Table, Service Table, Metrics, Network Graph)
+- **TUI Event Display Fix Series** (commits cdad62c, 2a051ad, b3776e7, 2cb2840)
+  - **Root Cause 1: EventAggregator Event Swallowing** (commit cdad62c)
+    - EventAggregator counted high-frequency events (PortFound, HostDiscovered, ServiceDetected) but never buffered them for handler processing
+    - Events were tallied in statistics but never reached `handle_scan_event()` for TUI consumption
+    - **Fix:** Buffer all high-frequency events in aggregator for proper handler processing
+    - Modified: `crates/prtip-scanner/src/event/aggregator.rs` (+12 lines)
+
+  - **Root Cause 2: Scanner Progress Events Missing** (commit cdad62c)
+    - Scanner didn't publish ProgressUpdate events to EventBus for TUI consumption
+    - TUI Metrics dashboard had no scan progress data to display
+    - **Fix:** Added ProgressTracker struct to scheduler with 250ms progress publishing interval
+    - Modified: `crates/prtip-scanner/src/scheduler/mod.rs` (+45 lines)
+
+  - **Root Cause 3: TCP Scanner Not Attached to EventBus** (commit 2a051ad)
+    - TCP scanner was NOT attached to EventBus during initialization
+    - PortFound events were never published to the event system
+    - Port Table widget remained empty despite successful scans
+    - **Fix:** Attach EventBus to TCP scanner via `with_event_bus()` in scheduler constructor
+    - Modified: `crates/prtip-scanner/src/scheduler/mod.rs` (+3 lines)
+
+  - **Root Cause 4: Service Detection Events Not Published** (commit b3776e7)
+    - Service detection didn't publish ServiceDetected events to EventBus
+    - Service Table widget remained empty despite successful service detection
+    - **Fix:** Publish ServiceDetected events after successful service detection with confidence scores
+    - Modified: `crates/prtip-scanner/src/detection/service.rs` (+8 lines)
+
+  - **Root Cause 5: Metrics Dashboard Scan Duration** (commit b3776e7)
+    - Metrics dashboard didn't track scan start time for duration calculation
+    - Duration field showed incorrect or missing values
+    - **Fix:** Track scan_start_time in ScanState, set on ScanStarted event
+    - Modified: `crates/prtip-tui/src/state.rs` (+5 lines)
+    - Modified: `crates/prtip-tui/src/handlers/scan_events.rs` (+3 lines)
+
+  - **Root Cause 6: execute_scan_ports() Progress Events Missing** (commit 2cb2840)
+    - execute_scan_ports() never published ProgressUpdate events during scan
+    - Metrics dashboard and Network Graph had no data for TCP Connect scans
+    - Progress tracking was only available for SYN/UDP/Stealth scans
+    - **Fix:** Add ProgressTracker to execute_scan_ports() for real-time updates
+    - Modified: `crates/prtip-scanner/src/scheduler/mod.rs` (+28 lines)
+
+### Changed
+
+- **TUI Event Flow Improvements:**
+  - All 4 dashboard tabs now receive real-time events (Port Table, Service Table, Metrics, Network Graph)
+  - Event publishing interval: 250ms for balanced responsiveness and performance
+  - TCP Connect scan progress tracking added (was only SYN/UDP/Stealth before)
+  - Network Graph data calculations improved (packets_received, ports_per_second)
+  - Service detection events include confidence scores for Service Table filtering
+
+### Technical Details
+
+- **Files Modified:** 5 files across prtip-scanner and prtip-tui
+  - `crates/prtip-scanner/src/event/aggregator.rs` (+12 lines)
+  - `crates/prtip-scanner/src/scheduler/mod.rs` (+76 lines total)
+  - `crates/prtip-scanner/src/detection/service.rs` (+8 lines)
+  - `crates/prtip-tui/src/state.rs` (+5 lines)
+  - `crates/prtip-tui/src/handlers/scan_events.rs` (+3 lines)
+- **Total Changes:** +104 lines of critical event flow fixes
+- **Testing:** All 2,557 tests passing (100% success rate)
+- **Impact:** Complete TUI functionality with real-time scan visualization across all dashboard tabs
 
 ## [0.5.8] - 2025-11-27
 

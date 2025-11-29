@@ -109,7 +109,7 @@ To design WarScan, we surveyed state-of-the-art tools widely used for networking
 ## Project Status
 
 **Current:** Phase 6 COMPLETE (8/8 sprints, 100%)
-**Version:** v0.5.8 (Released 2025-11-27)
+**Version:** v0.5.9 (Released 2025-11-28)
 **Tests:** 2,557 passing (100%)
 **Coverage:** 51.40%
 
@@ -1424,6 +1424,6 @@ This project builds on the pioneering work of:
 
 ---
 
-**Last Updated:** 2025-11-27
-**Current Version:** v0.5.8
+**Last Updated:** 2025-11-28
+**Current Version:** v0.5.9
 **Phase:** 6 COMPLETE (8/8 sprints, 100%)

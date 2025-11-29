@@ -1,9 +1,9 @@
 # ProRT-IP WarScan: Project Status and TODO Tracker
 
 **Version:** 3.9
-**Last Updated:** 2025-11-27
-**Current Phase:** Phase 6 COMPLETE | v0.5.8 + Coverage Workflow Stabilization
-**Current Sprint:** Sprint 6.8: Release Preparation ✅ COMPLETE (v0.5.7 Interactive Widgets, v0.5.8 CI/CD fixes) | **Completed:** 2025-11-27
+**Last Updated:** 2025-11-28
+**Current Phase:** Phase 6 COMPLETE | v0.5.9 + TUI Event Flow Fixes
+**Current Sprint:** Sprint 6.8: Release Preparation ✅ COMPLETE (v0.5.7 Interactive Widgets, v0.5.8 CI/CD fixes, v0.5.9 TUI Event Flow) | **Completed:** 2025-11-28
 
 ---
 
@@ -50,11 +50,11 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 ## Current Status
 
-### Project Metrics (v0.5.8)
+### Project Metrics (v0.5.9)
 
 | Metric | Value | Status | Notes |
 |--------|-------|--------|-------|
-| **Version** | v0.5.8 | ✅ Current | Released 2025-11-27 (CI/CD Coverage Workflow Stabilization) |
+| **Version** | v0.5.9 | ✅ Current | Released 2025-11-28 (TUI Event Flow Fixes) |
 | **Tests** | 2,557 (100% passing) | ✅ Excellent | Phase 6 COMPLETE (8/8 sprints), all tests green |
 | **Coverage** | 51.40% | ✅ Good | Baseline established with ptrace engine (Sprint 6.8) |
 | **Fuzz Testing** | 230M+ executions (0 crashes) | ✅ Exceptional | 5 targets, 807 seeds, Sprint 5.7 |

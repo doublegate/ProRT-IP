@@ -1,12 +1,12 @@
 # ProRT-IP Local Memory
 
-**v0.5.6** (11-27) | **2,557 tests** ✅ (96 ignored) | **PHASE 6: COMPLETE** | **Project ~87.5% (7/8 phases)**
+**v0.5.9** (11-28) | **2,557 tests** ✅ (96 ignored) | **PHASE 6: COMPLETE** | **Project ~87.5% (7/8 phases)**
 
 ## At a Glance
 
 | Metric | Value | Details |
 |--------|-------|---------|
-| **Version** | v0.5.6 | Phase 6 COMPLETE (8/8 sprints) |
+| **Version** | v0.5.9 | Phase 6 COMPLETE (8/8 sprints) |
 | **Tests** | 2,557 (100%), 96 ignored | +311 from Sprint 6.7-6.8 |
 | **Coverage** | 51.40% (CI verified) | Coverage workflow fixed, passing threshold |
 | **Fuzz** | 230M+ executions, 0 crashes | 5 targets |
@@ -30,6 +30,7 @@
 
 | Date | Decision | Summary | Details |
 |------|----------|---------|---------|
+| 11-28 | TUI Event Flow Fixes | Fixed 6 root causes preventing TUI event display, 4 commits, +104 lines. Grade: A+ | v0.5.9 release |
 | 11-27 | Coverage Workflow Fix | Fixed CI coverage workflow: disk space, tarpaulin hangs (ptrace+hang mitigations), 51.40% passing. Grade: A+ | coverage.yml |
 | 11-27 | Sprint 6.7-6.8 COMPLETE | Phase 6 COMPLETE (8/8 sprints), +311 tests, FileBrowser/PortSelection/Shortcuts widgets. Grade: A+ | Sprint 6.7-6.8 completion |
 | 11-23 | BannerGrabber API | Removed cfg guards from timeout()/max_banner_size() getters, public API. Grade: A | BANNER-GRABBER-FIX-COMPLETE.md |
@@ -47,6 +48,7 @@
 
 | Date | Task | Duration | Result | Status |
 |------|------|----------|--------|--------|
+| 11-28 | v0.5.9 Release Preparation | ~60m | Updated all version refs, CHANGELOG comprehensive entry, 6 root causes documented | ✅ |
 | 11-27 (2) | Coverage Workflow Fix | ~45m | Fixed 4 issues: disk space, tarpaulin hang, duplicate timeout, LLVM engine. 51.40% coverage, 4 commits | ✅ |
 | 11-27 (1) | Doc Update + Memory Optimization | ~1h | Updated docs for Phase 6 COMPLETE, 2,557 tests, optimized CLAUDE.local.md | ✅ |
 | 11-23 | Banner Grabber Test Fix | ~15m | Fixed release mode compilation, removed cfg guards, 26 tests pass | ✅ |

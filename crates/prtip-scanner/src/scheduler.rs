@@ -164,8 +164,13 @@ impl ScanScheduler {
 
         let timeout = Duration::from_millis(config.scan.timeout_ms);
 
-        // Create TCP scanner
-        let tcp_scanner = Arc::new(TcpConnectScanner::new(timeout, config.scan.retries));
+        // Create TCP scanner with EventBus attached (if available)
+        let mut tcp_scanner = TcpConnectScanner::new(timeout, config.scan.retries);
+        if let Some(ref event_bus) = config.scan.event_bus {
+            tcp_scanner = tcp_scanner.with_event_bus(event_bus.clone());
+            debug!("Attached EventBus to TCP scanner for real-time PortFound events");
+        }
+        let tcp_scanner = Arc::new(tcp_scanner);
 
         // Create discovery engine
         // For Phase 1, we only support TCP SYN ping

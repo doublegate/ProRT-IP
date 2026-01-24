@@ -5,13 +5,14 @@
 //! fixed-size entries for zero-copy random access.
 
 use memmap2::{MmapMut, MmapOptions};
-use prtip_core::ScanResult;
+use prtip_core::{ScanResult, ScanResultRkyv};
 use std::fs::{File, OpenOptions};
 use std::io;
 use std::path::Path;
 
 const HEADER_SIZE: usize = 64; // Version, entry_count, entry_size, checksum
 const ENTRY_SIZE: usize = 512; // Fixed-size entries (padded if needed)
+const LENGTH_PREFIX_SIZE: usize = 8; // 8 bytes for length to maintain alignment
 
 /// Memory-mapped result writer
 pub struct MmapResultWriter {
@@ -56,25 +57,34 @@ impl MmapResultWriter {
         }
 
         let offset = HEADER_SIZE + (self.entry_count * ENTRY_SIZE);
-        let entry_bytes = bincode::serialize(result)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        
+        // Convert to rkyv-compatible type and serialize
+        let rkyv_result: ScanResultRkyv = result.into();
+        let entry_bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&rkyv_result)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
-        if entry_bytes.len() > ENTRY_SIZE {
+        // Check if data + length prefix fits
+        if entry_bytes.len() + LENGTH_PREFIX_SIZE > ENTRY_SIZE {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!(
-                    "Entry size {} exceeds maximum {}",
+                    "Entry size {} (+{} length) exceeds maximum {}",
                     entry_bytes.len(),
+                    LENGTH_PREFIX_SIZE,
                     ENTRY_SIZE
                 ),
             ));
         }
 
-        // Write serialized data
-        self.mmap[offset..offset + entry_bytes.len()].copy_from_slice(&entry_bytes);
+        // Write length prefix (8 bytes for alignment)
+        let len = entry_bytes.len() as u64;
+        self.mmap[offset..offset + LENGTH_PREFIX_SIZE].copy_from_slice(&len.to_le_bytes());
+
+        // Write serialized data after length prefix
+        self.mmap[offset + LENGTH_PREFIX_SIZE..offset + LENGTH_PREFIX_SIZE + entry_bytes.len()].copy_from_slice(&entry_bytes);
 
         // Zero-fill remaining space
-        for i in entry_bytes.len()..ENTRY_SIZE {
+        for i in (LENGTH_PREFIX_SIZE + entry_bytes.len())..ENTRY_SIZE {
             self.mmap[offset + i] = 0;
         }
 

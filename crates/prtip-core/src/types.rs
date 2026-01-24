@@ -3,6 +3,7 @@
 use crate::error::{Error, Result};
 use chrono::{DateTime, Utc};
 use ipnetwork::IpNetwork;
+use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::net::IpAddr;
@@ -315,7 +316,8 @@ impl Iterator for PortRangeIterator {
 }
 
 /// State of a scanned port
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize)]
+#[rkyv(derive(Debug))]
 pub enum PortState {
     /// Port is open and accepting connections
     Open,
@@ -471,6 +473,53 @@ impl fmt::Display for TimingTemplate {
             TimingTemplate::Normal => write!(f, "T3 (Normal)"),
             TimingTemplate::Aggressive => write!(f, "T4 (Aggressive)"),
             TimingTemplate::Insane => write!(f, "T5 (Insane)"),
+        }
+    }
+}
+
+/// Serializable representation of ScanResult for rkyv
+#[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize)]
+#[rkyv(derive(Debug))]
+pub struct ScanResultRkyv {
+    target_ip: IpAddr,
+    port: u16,
+    state: PortState,
+    response_time_nanos: u128,
+    timestamp_nanos: i64,
+    banner: Option<String>,
+    service: Option<String>,
+    version: Option<String>,
+    raw_response: Option<Vec<u8>>,
+}
+
+impl From<&ScanResult> for ScanResultRkyv {
+    fn from(result: &ScanResult) -> Self {
+        Self {
+            target_ip: result.target_ip,
+            port: result.port,
+            state: result.state,
+            response_time_nanos: result.response_time.as_nanos(),
+            timestamp_nanos: result.timestamp.timestamp_nanos_opt().unwrap_or(0),
+            banner: result.banner.clone(),
+            service: result.service.clone(),
+            version: result.version.clone(),
+            raw_response: result.raw_response.clone(),
+        }
+    }
+}
+
+impl From<ScanResultRkyv> for ScanResult {
+    fn from(rkyv: ScanResultRkyv) -> Self {
+        Self {
+            target_ip: rkyv.target_ip,
+            port: rkyv.port,
+            state: rkyv.state,
+            response_time: Duration::from_nanos(rkyv.response_time_nanos as u64),
+            timestamp: DateTime::from_timestamp_nanos(rkyv.timestamp_nanos),
+            banner: rkyv.banner,
+            service: rkyv.service,
+            version: rkyv.version,
+            raw_response: rkyv.raw_response,
         }
     }
 }

@@ -136,4 +136,4 @@ pub use resource_monitor::{
 pub use retry::{retry_with_backoff, RetryConfig};
 pub use service_db::{ServiceMatch, ServiceProbe, ServiceProbeDb};
 pub use templates::{ScanTemplate, TemplateManager};
-pub use types::{PortRange, PortState, Protocol, ScanResult, ScanTarget, ScanType, TimingTemplate};
+pub use types::{PortRange, PortState, Protocol, ScanResult, ScanResultRkyv, ScanTarget, ScanType, TimingTemplate};

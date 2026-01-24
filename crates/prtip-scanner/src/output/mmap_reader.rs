@@ -1,7 +1,7 @@
 //! Memory-mapped result reader for zero-copy access to scan results
 
 use memmap2::Mmap;
-use prtip_core::ScanResult;
+use prtip_core::{ScanResult, ScanResultRkyv};
 use std::fs::File;
 use std::io;
 use std::path::Path;
@@ -77,8 +77,23 @@ impl MmapResultReader {
         let offset = HEADER_SIZE + (index * self.entry_size);
         let entry_bytes = &self.mmap[offset..offset + self.entry_size];
 
-        // Deserialize the entry (bincode handles trailing zeros)
-        bincode::deserialize(entry_bytes).ok()
+        // Find the end of actual data (before zero-padding)
+        let data_end = entry_bytes.iter()
+            .rposition(|&b| b != 0)
+            .map(|pos| pos + 1)
+            .unwrap_or(0);
+        
+        if data_end == 0 {
+            return None;
+        }
+
+        let actual_bytes = &entry_bytes[..data_end];
+
+        // Deserialize using rkyv
+        match rkyv::from_bytes::<ScanResultRkyv, rkyv::rancor::Error>(actual_bytes) {
+            Ok(rkyv_result) => Some(rkyv_result.into()),
+            Err(_) => None,
+        }
     }
 
     /// Create an iterator over all entries

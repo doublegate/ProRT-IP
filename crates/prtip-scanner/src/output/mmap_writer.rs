@@ -5,7 +5,7 @@
 //! fixed-size entries for zero-copy random access.
 
 use memmap2::{MmapMut, MmapOptions};
-use prtip_core::ScanResult;
+use prtip_core::{ScanResult, ScanResultRkyv};
 use std::fs::{File, OpenOptions};
 use std::io;
 use std::path::Path;
@@ -56,8 +56,11 @@ impl MmapResultWriter {
         }
 
         let offset = HEADER_SIZE + (self.entry_count * ENTRY_SIZE);
-        let entry_bytes = bincode::serialize(result)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        
+        // Convert to rkyv-compatible type and serialize
+        let rkyv_result: ScanResultRkyv = result.into();
+        let entry_bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&rkyv_result)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
         if entry_bytes.len() > ENTRY_SIZE {
             return Err(io::Error::new(

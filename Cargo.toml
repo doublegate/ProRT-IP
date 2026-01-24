@@ -43,7 +43,7 @@ rusqlite = { version = "0.31", features = ["bundled"] }
 
 # Memory-mapped I/O (Sprint 6.6)
 memmap2 = "0.9"
-bincode = "1.3"
+rkyv = "0.8.14"
 
 # CSV export (promote to workspace)
 csv = "1.3"

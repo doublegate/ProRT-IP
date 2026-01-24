@@ -649,7 +649,9 @@ impl From<&ScanResult> for ScanResultRkyv {
         };
 
         // Convert response time to u64 nanoseconds (avoid truncation issues)
-        let response_time_nanos = result.response_time.as_nanos() as u64;
+        // Note: u64 can represent up to ~584 years, which is more than sufficient
+        // for network response times. We clamp to u64::MAX to avoid overflow.
+        let response_time_nanos = result.response_time.as_nanos().min(u64::MAX as u128) as u64;
 
         // Convert timestamp with proper error handling
         let timestamp_nanos = result
@@ -692,6 +694,7 @@ impl From<ScanResultRkyv> for ScanResult {
         };
 
         // Convert u64 nanoseconds back to Duration
+        // Safe: u64::MAX nanoseconds fits within Duration's range
         let response_time = Duration::from_nanos(rkyv.response_time_nanos);
 
         // Convert i64 nanoseconds back to DateTime

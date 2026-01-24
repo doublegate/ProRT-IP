@@ -8,6 +8,7 @@ use std::path::Path;
 
 const HEADER_SIZE: usize = 64;
 const ENTRY_SIZE: usize = 512;
+const LENGTH_PREFIX_SIZE: usize = 8; // 8 bytes for length to maintain alignment
 
 /// Memory-mapped result reader
 pub struct MmapResultReader {
@@ -75,22 +76,21 @@ impl MmapResultReader {
         }
 
         let offset = HEADER_SIZE + (index * self.entry_size);
-        let entry_bytes = &self.mmap[offset..offset + self.entry_size];
-
-        // Find the end of actual data (before zero-padding)
-        let data_end = entry_bytes.iter()
-            .rposition(|&b| b != 0)
-            .map(|pos| pos + 1)
-            .unwrap_or(0);
         
-        if data_end == 0 {
+        // Read length prefix (8 bytes)
+        let len_bytes: [u8; 8] = self.mmap[offset..offset + LENGTH_PREFIX_SIZE].try_into().ok()?;
+        let len = u64::from_le_bytes(len_bytes) as usize;
+        
+        if len == 0 || len + LENGTH_PREFIX_SIZE > self.entry_size {
             return None;
         }
 
-        let actual_bytes = &entry_bytes[..data_end];
+        // Copy data to an aligned buffer (rkyv requires alignment)
+        let entry_bytes = &self.mmap[offset + LENGTH_PREFIX_SIZE..offset + LENGTH_PREFIX_SIZE + len];
+        let aligned_data: Vec<u8> = entry_bytes.to_vec();
 
         // Deserialize using rkyv
-        match rkyv::from_bytes::<ScanResultRkyv, rkyv::rancor::Error>(actual_bytes) {
+        match rkyv::from_bytes::<ScanResultRkyv, rkyv::rancor::Error>(&aligned_data) {
             Ok(rkyv_result) => Some(rkyv_result.into()),
             Err(_) => None,
         }

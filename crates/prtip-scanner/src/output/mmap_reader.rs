@@ -1,13 +1,14 @@
 //! Memory-mapped result reader for zero-copy access to scan results
 
 use memmap2::Mmap;
-use prtip_core::ScanResult;
+use prtip_core::{ScanResult, ScanResultRkyv};
 use std::fs::File;
 use std::io;
 use std::path::Path;
 
 const HEADER_SIZE: usize = 64;
 const ENTRY_SIZE: usize = 512;
+const LENGTH_PREFIX_SIZE: usize = 8; // u64 length prefix for each entry
 
 /// Memory-mapped result reader
 pub struct MmapResultReader {
@@ -77,8 +78,34 @@ impl MmapResultReader {
         let offset = HEADER_SIZE + (index * self.entry_size);
         let entry_bytes = &self.mmap[offset..offset + self.entry_size];
 
-        // Deserialize the entry (bincode handles trailing zeros)
-        bincode::deserialize(entry_bytes).ok()
+        // Read length prefix (u64 in little-endian)
+        let len = u64::from_le_bytes(
+            entry_bytes[..LENGTH_PREFIX_SIZE]
+                .try_into()
+                .expect("LENGTH_PREFIX_SIZE is 8 bytes"),
+        ) as usize;
+
+        // Validate length
+        if len == 0 || len + LENGTH_PREFIX_SIZE > self.entry_size {
+            eprintln!(
+                "MmapResultReader: invalid entry length {} at index {}",
+                len, index
+            );
+            return None;
+        }
+
+        // Use zero-copy deserialization without unnecessary allocation
+        let data_bytes = &entry_bytes[LENGTH_PREFIX_SIZE..LENGTH_PREFIX_SIZE + len];
+        match rkyv::from_bytes::<ScanResultRkyv, rkyv::rancor::Error>(data_bytes) {
+            Ok(rkyv_result) => Some(ScanResult::from(rkyv_result)),
+            Err(e) => {
+                eprintln!(
+                    "MmapResultReader: failed to deserialize entry at index {} with length {}: {}",
+                    index, len, e
+                );
+                None
+            }
+        }
     }
 
     /// Create an iterator over all entries

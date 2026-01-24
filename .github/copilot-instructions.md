@@ -19,9 +19,9 @@
 ### Technology Stack
 ```toml
 tokio = "1.35"     # Async runtime (multi-threaded)
-pnet = "0.34"      # Cross-platform packet manipulation
-clap = "4.4"       # CLI argument parsing
-sqlx = "0.7"       # Async SQL operations
+pnet = "0.35"      # Cross-platform packet manipulation
+clap = "4.5"       # CLI argument parsing
+sqlx = "0.8"       # Async SQL operations
 ratatui = "0.29"   # Terminal UI framework
 ```
 
@@ -39,6 +39,7 @@ This is a Rust workspace with multiple crates:
 - `crates/prtip-network`: Packet manipulation and network I/O
 - `crates/prtip-scanner`: Scanning orchestration and algorithms
 - `crates/prtip-cli`: Command-line interface
+- `crates/prtip-tui`: Terminal user interface (TUI)
 - `tests/`: Integration tests
 - `fuzz/`: Fuzz testing targets
 - `docs/`: Technical documentation
@@ -289,7 +290,7 @@ drop_privileges()?;
 
 ### Current Status (as of latest update)
 - **Phase 6**: Production-ready TUI with real-time visualization
-- **Tests**: 2,557 passing (73 ignored for platform-specific reasons)
+- **Tests**: 2,557 passing (96 ignored for platform-specific reasons)
 - **Coverage**: 51.40% overall (>90% in core modules)
 - **CI**: GitHub Actions with Linux, macOS, Windows matrix
 - **Fuzz Testing**: 230M+ executions, 0 crashes

@@ -45,7 +45,10 @@ impl MmapResultReader {
         if version != 2 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("Unsupported version: {}. Expected version 2 (rkyv format).", version),
+                format!(
+                    "Unsupported version: {}. Expected version 2 (rkyv format).",
+                    version
+                ),
             ));
         }
 
@@ -270,11 +273,10 @@ mod tests {
             // Write a version 1 header
             file.write_all(&1u64.to_le_bytes()).unwrap(); // version = 1
             file.write_all(&0u64.to_le_bytes()).unwrap(); // entry_count = 0
-            file.write_all(&(ENTRY_SIZE as u64).to_le_bytes())
-                .unwrap(); // entry_size
+            file.write_all(&(ENTRY_SIZE as u64).to_le_bytes()).unwrap(); // entry_size
             file.write_all(&0u64.to_le_bytes()).unwrap(); // checksum
-            // Pad to HEADER_SIZE
-            file.write_all(&vec![0u8; HEADER_SIZE - 32]).unwrap();
+                                                          // Pad to HEADER_SIZE
+            file.write_all(&[0u8; HEADER_SIZE - 32]).unwrap();
         }
 
         // Attempt to open should fail with clear error message

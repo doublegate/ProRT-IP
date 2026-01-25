@@ -56,6 +56,10 @@ jobs:
               {
                 "pattern": "^https://nvd\\.nist\\.gov",
                 "comment": "NIST NVD site blocks automated requests with Cloudflare"
+              },
+              {
+                "pattern": "^https://hub\\.docker\\.com/r/doublegate/prtip",
+                "comment": "Docker Hub image not yet published - pending first release"
               }
             ],
             "replacementPatterns": [

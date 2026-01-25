@@ -11,6 +11,10 @@
     },
     {
       "pattern": "^https://127.0.0.1"
+    },
+    {
+      "pattern": "^https://hub\\.docker\\.com/r/doublegate/prtip",
+      "comment": "Docker Hub image not yet published - pending first release"
     }
   ],
   "replacementPatterns": [

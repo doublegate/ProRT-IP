@@ -87,7 +87,6 @@ pcap-file = "2.0"
 
 # Memory-mapped I/O
 memmap2 = { workspace = true }
-bincode = { workspace = true }
 rkyv = { workspace = true }
 
 [dev-dependencies]

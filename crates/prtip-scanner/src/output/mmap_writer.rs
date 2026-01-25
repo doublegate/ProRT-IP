@@ -137,8 +137,9 @@ impl MmapResultWriter {
     }
 
     fn write_header(&mut self) -> io::Result<()> {
-        // Version: 1
-        self.mmap[0..8].copy_from_slice(&1u64.to_le_bytes());
+        // Version: 2 (rkyv format with length prefix)
+        // Version 1 was bincode format (deprecated)
+        self.mmap[0..8].copy_from_slice(&2u64.to_le_bytes());
         // Entry count: 0
         self.mmap[8..16].copy_from_slice(&0u64.to_le_bytes());
         // Entry size: ENTRY_SIZE

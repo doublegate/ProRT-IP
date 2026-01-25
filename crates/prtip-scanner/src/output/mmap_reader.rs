@@ -34,10 +34,18 @@ impl MmapResultReader {
 
         // Parse header
         let version = u64::from_le_bytes(mmap[0..8].try_into().unwrap());
-        if version != 1 {
+        if version == 1 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("Unsupported version: {}", version),
+                "Incompatible file format: version 1 (bincode) is no longer supported. \
+                 This file was created with an older version of the scanner. \
+                 Please regenerate scan results with the current version (rkyv format, version 2).",
+            ));
+        }
+        if version != 2 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Unsupported version: {}. Expected version 2 (rkyv format).", version),
             ));
         }
 
@@ -241,5 +249,45 @@ mod tests {
         assert!(reader.get_entry(0).is_some());
         assert!(reader.get_entry(1).is_none());
         assert!(reader.get_entry(100).is_none());
+    }
+
+    #[test]
+    fn test_mmap_version_1_rejected() {
+        use std::io::Write;
+
+        let temp = NamedTempFile::new().unwrap();
+        let path = temp.path().to_owned();
+
+        // Create a file with version 1 header (old bincode format)
+        {
+            let mut file = std::fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(&path)
+                .unwrap();
+
+            // Write a version 1 header
+            file.write_all(&1u64.to_le_bytes()).unwrap(); // version = 1
+            file.write_all(&0u64.to_le_bytes()).unwrap(); // entry_count = 0
+            file.write_all(&(ENTRY_SIZE as u64).to_le_bytes())
+                .unwrap(); // entry_size
+            file.write_all(&0u64.to_le_bytes()).unwrap(); // checksum
+            // Pad to HEADER_SIZE
+            file.write_all(&vec![0u8; HEADER_SIZE - 32]).unwrap();
+        }
+
+        // Attempt to open should fail with clear error message
+        let result = MmapResultReader::open(&path);
+        assert!(result.is_err());
+        if let Err(err) = result {
+            assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
+            let err_msg = err.to_string();
+            assert!(
+                err_msg.contains("version 1") && err_msg.contains("bincode"),
+                "Error message should mention version 1 and bincode format: {}",
+                err_msg
+            );
+        }
     }
 }

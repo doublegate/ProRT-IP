@@ -316,7 +316,20 @@ impl Iterator for PortRangeIterator {
 }
 
 /// State of a scanned port
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+)]
 #[rkyv(derive(Debug))]
 pub enum PortState {
     /// Port is open and accepting connections
@@ -638,128 +651,6 @@ impl fmt::Display for ScanResult {
         }
 
         Ok(())
-    }
-}
-
-/// rkyv-compatible serialization format for ScanResult
-///
-/// This type is optimized for zero-copy deserialization using rkyv.
-/// It stores all data in a format that can be directly interpreted from
-/// memory-mapped files without allocation.
-///
-/// # Alignment Requirements
-///
-/// This structure must maintain proper alignment for rkyv's zero-copy
-/// deserialization. The fixed-size entry buffer (512 bytes) provides
-/// adequate alignment for typical rkyv requirements.
-#[derive(Debug, Clone, rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)]
-#[rkyv(derive(Debug))]
-pub struct ScanResultRkyv {
-    /// Target IP address (16 bytes for IPv6 compatibility)
-    pub target_ip_bytes: [u8; 16],
-    /// Whether the IP is IPv4 (true) or IPv6 (false)
-    pub is_ipv4: bool,
-    /// Port number
-    pub port: u16,
-    /// Port state as u8 (Open=0, Closed=1, Filtered=2, Unknown=3)
-    pub state: u8,
-    /// Response time in nanoseconds (u64 to avoid truncation)
-    pub response_time_nanos: u64,
-    /// Timestamp in nanoseconds since Unix epoch
-    pub timestamp_nanos: i64,
-    /// Optional banner (max 128 bytes)
-    pub banner: Option<String>,
-    /// Optional service name (max 32 bytes)
-    pub service: Option<String>,
-    /// Optional service version (max 64 bytes)
-    pub version: Option<String>,
-    /// Optional raw response (limited to 256 bytes to fit in entry)
-    pub raw_response: Option<Vec<u8>>,
-}
-
-impl From<&ScanResult> for ScanResultRkyv {
-    fn from(result: &ScanResult) -> Self {
-        // Convert IpAddr to bytes
-        let (target_ip_bytes, is_ipv4) = match result.target_ip {
-            IpAddr::V4(ipv4) => {
-                let mut bytes = [0u8; 16];
-                bytes[..4].copy_from_slice(&ipv4.octets());
-                (bytes, true)
-            }
-            IpAddr::V6(ipv6) => (ipv6.octets(), false),
-        };
-
-        // Convert PortState to u8
-        let state = match result.state {
-            PortState::Open => 0,
-            PortState::Closed => 1,
-            PortState::Filtered => 2,
-            PortState::Unknown => 3,
-        };
-
-        // Convert response time to u64 nanoseconds (avoid truncation issues)
-        // Note: u64 can represent up to ~584 years, which is more than sufficient
-        // for network response times. We clamp to u64::MAX to avoid overflow.
-        let response_time_nanos = result.response_time.as_nanos().min(u64::MAX as u128) as u64;
-
-        // Convert timestamp with proper error handling
-        let timestamp_nanos = result
-            .timestamp
-            .timestamp_nanos_opt()
-            .expect("timestamp out of range for nanosecond representation");
-
-        Self {
-            target_ip_bytes,
-            is_ipv4,
-            port: result.port,
-            state,
-            response_time_nanos,
-            timestamp_nanos,
-            banner: result.banner.clone(),
-            service: result.service.clone(),
-            version: result.version.clone(),
-            raw_response: result.raw_response.clone(),
-        }
-    }
-}
-
-impl From<ScanResultRkyv> for ScanResult {
-    fn from(rkyv: ScanResultRkyv) -> Self {
-        // Convert bytes back to IpAddr
-        let target_ip = if rkyv.is_ipv4 {
-            let mut octets = [0u8; 4];
-            octets.copy_from_slice(&rkyv.target_ip_bytes[..4]);
-            IpAddr::V4(std::net::Ipv4Addr::from(octets))
-        } else {
-            IpAddr::V6(std::net::Ipv6Addr::from(rkyv.target_ip_bytes))
-        };
-
-        // Convert u8 back to PortState
-        let state = match rkyv.state {
-            0 => PortState::Open,
-            1 => PortState::Closed,
-            2 => PortState::Filtered,
-            _ => PortState::Unknown,
-        };
-
-        // Convert u64 nanoseconds back to Duration
-        // Safe: u64::MAX nanoseconds fits within Duration's range
-        let response_time = Duration::from_nanos(rkyv.response_time_nanos);
-
-        // Convert i64 nanoseconds back to DateTime
-        let timestamp = DateTime::from_timestamp_nanos(rkyv.timestamp_nanos);
-
-        Self {
-            target_ip,
-            port: rkyv.port,
-            state,
-            response_time,
-            timestamp,
-            banner: rkyv.banner,
-            service: rkyv.service,
-            version: rkyv.version,
-            raw_response: rkyv.raw_response,
-        }
     }
 }
 

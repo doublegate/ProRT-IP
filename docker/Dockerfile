@@ -47,8 +47,8 @@ RUN mkdir -p crates/prtip-core/src crates/prtip-network/src \
 RUN cargo build --release --locked 2>/dev/null || true
 
 # Copy actual source code
+# Note: data/ directory is inside crates/prtip-core/data/ and is embedded via include_str!
 COPY crates/ crates/
-COPY data/ data/
 
 # Touch sources to invalidate cargo cache for actual build
 RUN touch crates/*/src/lib.rs crates/prtip-cli/src/main.rs 2>/dev/null || true

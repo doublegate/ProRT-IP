@@ -83,7 +83,7 @@ Following the successful completion of Phase 4 (Performance Optimization) with 7
 **Primary Research:**
 - **Local Code Analysis**: Analyzed code_ref/ directory containing RustScan (Rust), Nmap (C++), Masscan fragments
 - **GitHub Repository Review**: Deep dive into RustScan/RustScan (18.2K stars), robertdavidgraham/masscan (24.9K stars)
-- **Online Research**: 15+ articles including Medium analyses, GeeksforGeeks tutorials, findsec.org comparisons
+- **Online Research**: 15+ articles including Medium analyses, GeeksforGeeks tutorials, network scanner comparisons
 - **Community Discussions**: Reddit (r/netsec, r/rust), Stack Overflow, GitHub issues across all projects
 
 **Analysis Period:** October 2025
@@ -1583,8 +1583,8 @@ Create comprehensive usage examples library, common scenarios guide, update all 
    - URL: https://medium.com/@lukwagoasuman236/pros-dont-use-nmap-or-rustscan-they-use-this-2026-d9e0964ece1b
    - Insights: Performance comparison, use case recommendations
 
-2. **"Top Network Scanners Compared: Nmap, Masscan, ZMap, and More"** (findsec.org)
-   - URL: https://findsec.org/index.php/blog/493-nmap-vs-masscan-zmap-rustscan-comparison
+2. ~~**"Top Network Scanners Compared: Nmap, Masscan, ZMap, and More"** (findsec.org)~~
+   - URL: (Link no longer accessible - findsec.org/index.php/blog/493-nmap-vs-masscan-zmap-rustscan-comparison)
    - Insights: Feature matrix, speed benchmarks, tool selection guide
 
 3. **"01/31/2025 – masscan vs nmap Scan"** (victsao.wordpress.com)
@@ -1621,7 +1621,7 @@ Create comprehensive usage examples library, common scenarios guide, update all 
 
 **Total Sources:**
 - **Code Repositories**: 3 (RustScan, Masscan, Nmap)
-- **Online Articles**: 15+ (Medium, GeeksforGeeks, findsec.org, etc.)
+- **Online Articles**: 15+ (Medium, GeeksforGeeks, network scanner comparisons, etc.)
 - **Technical Documentation**: Nmap book, RFC specifications
 - **Community Discussions**: Reddit, Stack Overflow, GitHub issues
 

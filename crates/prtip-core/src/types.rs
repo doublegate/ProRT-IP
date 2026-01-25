@@ -3,6 +3,7 @@
 use crate::error::{Error, Result};
 use chrono::{DateTime, Utc};
 use ipnetwork::IpNetwork;
+use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::net::IpAddr;
@@ -315,7 +316,21 @@ impl Iterator for PortRangeIterator {
 }
 
 /// State of a scanned port
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+)]
+#[rkyv(derive(Debug))]
 pub enum PortState {
     /// Port is open and accepting connections
     Open,
@@ -475,128 +490,16 @@ impl fmt::Display for TimingTemplate {
     }
 }
 
-/// Result of scanning a single port
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScanResult {
-    /// Target IP address
-    pub target_ip: IpAddr,
-    /// Port number
-    pub port: u16,
-    /// Port state
-    pub state: PortState,
-    /// Response time
-    pub response_time: Duration,
-    /// Timestamp of the scan
-    pub timestamp: DateTime<Utc>,
-    /// Optional banner grabbed from service
-    pub banner: Option<String>,
-    /// Optional service name
-    pub service: Option<String>,
-    /// Optional service version
-    pub version: Option<String>,
-    /// Optional raw response from service detection
-    pub raw_response: Option<Vec<u8>>,
-}
-
-impl ScanResult {
-    /// Create a new scan result
-    pub fn new(target_ip: IpAddr, port: u16, state: PortState) -> Self {
-        Self {
-            target_ip,
-            port,
-            state,
-            response_time: Duration::from_secs(0),
-            timestamp: Utc::now(),
-            banner: None,
-            service: None,
-            version: None,
-            raw_response: None,
-        }
-    }
-
-    /// Set response time
-    pub fn with_response_time(mut self, duration: Duration) -> Self {
-        self.response_time = duration;
-        self
-    }
-
-    /// Set banner
-    pub fn with_banner(mut self, banner: String) -> Self {
-        self.banner = Some(banner);
-        self
-    }
-
-    /// Set service name
-    pub fn with_service(mut self, service: String) -> Self {
-        self.service = Some(service);
-        self
-    }
-
-    /// Set service version
-    pub fn with_version(mut self, version: String) -> Self {
-        self.version = Some(version);
-        self
-    }
-
-    /// Get target IP
-    pub fn target_ip(&self) -> IpAddr {
-        self.target_ip
-    }
-
-    /// Get port
-    pub fn port(&self) -> u16 {
-        self.port
-    }
-
-    /// Get state
-    pub fn state(&self) -> PortState {
-        self.state
-    }
-
-    /// Get response time
-    pub fn response_time(&self) -> Duration {
-        self.response_time
-    }
-
-    /// Get service name
-    pub fn service(&self) -> Option<&str> {
-        self.service.as_deref()
-    }
-
-    /// Get banner
-    pub fn banner(&self) -> Option<&str> {
-        self.banner.as_deref()
-    }
-}
-
-impl fmt::Display for ScanResult {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}:{} - {} ({:.2}ms)",
-            self.target_ip,
-            self.port,
-            self.state,
-            self.response_time.as_secs_f64() * 1000.0
-        )?;
-
-        if let Some(service) = &self.service {
-            write!(f, " [{}]", service)?;
-        }
-
-        if let Some(banner) = &self.banner {
-            write!(f, " \"{}\"", banner.chars().take(50).collect::<String>())?;
-        }
-
-        Ok(())
-    }
-}
-
 /// rkyv-compatible serialization format for ScanResult
 ///
 /// This type is optimized for zero-copy deserialization using rkyv.
 /// It stores all data in a format that can be directly interpreted from
 /// memory-mapped files without allocation.
+///
+/// # Manual Serialization for IpAddr
+///
+/// std::net::IpAddr does not implement rkyv traits, so we manually serialize
+/// to bytes and convert between IpAddr and byte arrays in the From implementations.
 ///
 /// # Alignment Requirements
 ///
@@ -711,6 +614,123 @@ impl From<ScanResultRkyv> for ScanResult {
             version: rkyv.version,
             raw_response: rkyv.raw_response,
         }
+    }
+}
+
+/// Result of scanning a single port
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScanResult {
+    /// Target IP address
+    pub target_ip: IpAddr,
+    /// Port number
+    pub port: u16,
+    /// Port state
+    pub state: PortState,
+    /// Response time
+    pub response_time: Duration,
+    /// Timestamp of the scan
+    pub timestamp: DateTime<Utc>,
+    /// Optional banner grabbed from service
+    pub banner: Option<String>,
+    /// Optional service name
+    pub service: Option<String>,
+    /// Optional service version
+    pub version: Option<String>,
+    /// Optional raw response from service detection
+    pub raw_response: Option<Vec<u8>>,
+}
+
+impl ScanResult {
+    /// Create a new scan result
+    pub fn new(target_ip: IpAddr, port: u16, state: PortState) -> Self {
+        Self {
+            target_ip,
+            port,
+            state,
+            response_time: Duration::from_secs(0),
+            timestamp: Utc::now(),
+            banner: None,
+            service: None,
+            version: None,
+            raw_response: None,
+        }
+    }
+
+    /// Set response time
+    pub fn with_response_time(mut self, duration: Duration) -> Self {
+        self.response_time = duration;
+        self
+    }
+
+    /// Set banner
+    pub fn with_banner(mut self, banner: String) -> Self {
+        self.banner = Some(banner);
+        self
+    }
+
+    /// Set service name
+    pub fn with_service(mut self, service: String) -> Self {
+        self.service = Some(service);
+        self
+    }
+
+    /// Set service version
+    pub fn with_version(mut self, version: String) -> Self {
+        self.version = Some(version);
+        self
+    }
+
+    /// Get target IP
+    pub fn target_ip(&self) -> IpAddr {
+        self.target_ip
+    }
+
+    /// Get port
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    /// Get state
+    pub fn state(&self) -> PortState {
+        self.state
+    }
+
+    /// Get response time
+    pub fn response_time(&self) -> Duration {
+        self.response_time
+    }
+
+    /// Get service name
+    pub fn service(&self) -> Option<&str> {
+        self.service.as_deref()
+    }
+
+    /// Get banner
+    pub fn banner(&self) -> Option<&str> {
+        self.banner.as_deref()
+    }
+}
+
+impl fmt::Display for ScanResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}:{} - {} ({:.2}ms)",
+            self.target_ip,
+            self.port,
+            self.state,
+            self.response_time.as_secs_f64() * 1000.0
+        )?;
+
+        if let Some(service) = &self.service {
+            write!(f, " [{}]", service)?;
+        }
+
+        if let Some(banner) = &self.banner {
+            write!(f, " \"{}\"", banner.chars().take(50).collect::<String>())?;
+        }
+
+        Ok(())
     }
 }
 

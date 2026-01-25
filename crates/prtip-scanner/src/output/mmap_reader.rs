@@ -87,26 +87,19 @@ impl MmapResultReader {
         }
 
         let offset = HEADER_SIZE + (index * self.entry_size);
-        let entry_bytes = &self.mmap[offset..offset + self.entry_size];
 
-        // Read length prefix (u64 in little-endian)
-        let len = u64::from_le_bytes(
-            entry_bytes[..LENGTH_PREFIX_SIZE]
-                .try_into()
-                .expect("LENGTH_PREFIX_SIZE is 8 bytes"),
-        ) as usize;
+        // Read length prefix (8 bytes)
+        let len_bytes: [u8; 8] = self.mmap[offset..offset + LENGTH_PREFIX_SIZE]
+            .try_into()
+            .ok()?;
+        let len = u64::from_le_bytes(len_bytes) as usize;
 
-        // Validate length
         if len == 0 || len + LENGTH_PREFIX_SIZE > self.entry_size {
-            eprintln!(
-                "MmapResultReader: invalid entry length {} at index {}",
-                len, index
-            );
             return None;
         }
 
         // Use zero-copy deserialization without unnecessary allocation
-        let data_bytes = &entry_bytes[LENGTH_PREFIX_SIZE..LENGTH_PREFIX_SIZE + len];
+        let data_bytes = &self.mmap[offset + LENGTH_PREFIX_SIZE..offset + LENGTH_PREFIX_SIZE + len];
         match rkyv::from_bytes::<ScanResultRkyv, rkyv::rancor::Error>(data_bytes) {
             Ok(rkyv_result) => Some(ScanResult::from(rkyv_result)),
             Err(e) => {

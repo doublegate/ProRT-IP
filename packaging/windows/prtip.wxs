@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package
+        Name="ProRT-IP WarScan"
+        Manufacturer="ProRT-IP Contributors"
+        Version="1.0.0"
+        UpgradeCode="E8B7C4A1-2D3E-4F5A-B6C7-8D9E0F1A2B3C"
+        Language="1033"
+        Codepage="1252"
+        InstallerVersion="500">
+
+        <SummaryInformation
+            Keywords="Network Scanner, Security, Penetration Testing"
+            Description="ProRT-IP WarScan - Modern Network Scanner"
+            Manufacturer="ProRT-IP Contributors" />
+
+        <Media Id="1" Cabinet="prtip.cab" EmbedCab="yes" />
+
+        <!-- Upgrade handling -->
+        <MajorUpgrade
+            Schedule="afterInstallInitialize"
+            DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+        <!-- Check for Npcap -->
+        <Property Id="NPCAP_INSTALLED">
+            <RegistrySearch Id="NpcapSearch"
+                Root="HKLM"
+                Key="SOFTWARE\WOW6432Node\Npcap"
+                Name="Version"
+                Type="raw" />
+        </Property>
+        <Condition Message="Npcap is required for ProRT-IP. Please install Npcap from https://npcap.com/ before installing ProRT-IP.">
+            <![CDATA[Installed OR NPCAP_INSTALLED]]>
+        </Condition>
+
+        <!-- Feature definition -->
+        <Feature Id="MainFeature" Title="ProRT-IP" Level="1" ConfigurableDirectory="INSTALLDIR">
+            <ComponentGroupRef Id="ProductComponents" />
+            <ComponentGroupRef Id="DocumentationComponents" />
+        </Feature>
+
+        <!-- Installation directory -->
+        <StandardDirectory Id="ProgramFiles64Folder">
+            <Directory Id="INSTALLDIR" Name="ProRT-IP">
+                <Directory Id="DocDir" Name="doc" />
+            </Directory>
+        </StandardDirectory>
+
+        <!-- Components -->
+        <ComponentGroup Id="ProductComponents" Directory="INSTALLDIR">
+            <Component Id="MainExecutable" Guid="A1B2C3D4-E5F6-7890-ABCD-EF1234567890">
+                <File Id="prtip.exe" Source="$(var.SourceDir)\prtip.exe" KeyPath="yes" />
+
+                <!-- Add to PATH -->
+                <Environment Id="PATH" Name="PATH" Value="[INSTALLDIR]" Permanent="no" Part="last" Action="set" System="yes" />
+            </Component>
+        </ComponentGroup>
+
+        <ComponentGroup Id="DocumentationComponents" Directory="DocDir">
+            <Component Id="ReadmeComponent" Guid="B2C3D4E5-F6A7-8901-BCDE-F23456789012">
+                <File Id="README.md" Source="$(var.SourceDir)\README.md" />
+            </Component>
+            <Component Id="LicenseComponent" Guid="C3D4E5F6-A7B8-9012-CDEF-345678901234">
+                <File Id="LICENSE" Source="$(var.SourceDir)\LICENSE" />
+            </Component>
+            <Component Id="ChangelogComponent" Guid="D4E5F6A7-B8C9-0123-DEF0-456789012345">
+                <File Id="CHANGELOG.md" Source="$(var.SourceDir)\CHANGELOG.md" />
+            </Component>
+        </ComponentGroup>
+
+        <!-- UI configuration -->
+        <WixVariable Id="WixUILicenseRtf" Value="$(var.SourceDir)\LICENSE.rtf" />
+        <UIRef Id="WixUI_InstallDir" />
+        <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+
+        <!-- Custom actions for capabilities (optional) -->
+        <CustomAction Id="SetCapabilities"
+            Directory="INSTALLDIR"
+            ExeCommand="[System64Folder]cmd.exe /c echo Note: Run as Administrator for raw packet scanning"
+            Execute="deferred"
+            Return="ignore"
+            Impersonate="no" />
+
+    </Package>
+</Wix>

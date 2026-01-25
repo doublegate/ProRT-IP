@@ -6,11 +6,13 @@
   <img src="images/prortip-logo-dark.jpg" alt="ProRT-IP Logo" width="800">
 </div>
 
+[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)](https://github.com/doublegate/ProRT-IP/releases/tag/v1.0.0)
 [![Build](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml/badge.svg)](https://github.com/doublegate/ProRT-IP/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-2,557%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 ![Coverage](https://img.shields.io/badge/coverage-51.40%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
+[![Docker](https://img.shields.io/badge/docker-doublegate%2Fprtip-blue)](https://hub.docker.com/r/doublegate/prtip)
 
 **Modern network scanner combining Masscan/ZMap speed with Nmap detection depth.**
 
@@ -363,7 +365,7 @@ mdbook serve --open    # Opens browser at http://localhost:3000
 
 ### Current Status
 
-**Version:** v0.5.9 | **Phase 6:** COMPLETE (8/8 sprints) | **Overall:** 87.5% (7/8 phases)
+**Version:** v1.0.0 | **Phase 7:** COMPLETE | **Status:** Production Release
 
 | Phase | Status | Key Deliverables |
 |-------|--------|------------------|
@@ -464,4 +466,4 @@ See [AUTHORS.md](AUTHORS.md) for complete contributor list.
 
 ---
 
-**Current Version:** v0.5.9 | **Last Updated:** 2025-01-25
+**Current Version:** v1.0.0 | **Last Updated:** 2025-01-25

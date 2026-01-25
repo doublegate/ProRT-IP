@@ -1,0 +1,74 @@
+# ProRT-IP WarScan Docker Compose Configuration
+#
+# Usage:
+#   docker-compose up -d          # Build and start
+#   docker-compose run prtip -sS -p 80,443 192.168.1.1
+#   docker-compose down           # Stop and remove
+#
+# For TUI mode (requires terminal):
+#   docker-compose run -it prtip --tui -sS -p 1-1000 192.168.1.1
+
+services:
+  # Main ProRT-IP scanner service
+  prtip:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: prtip:latest
+    container_name: prtip
+    network_mode: host
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    # Default command (override with `docker-compose run prtip <args>`)
+    command: ["--help"]
+    # Optional volume mounts for persistence
+    volumes:
+      - prtip-results:/home/prtip/results
+      - prtip-config:/home/prtip/.prtip
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '4'
+        reservations:
+          memory: 512M
+          cpus: '1'
+
+  # Scanner with custom network (isolated testing)
+  prtip-isolated:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: prtip:latest
+    container_name: prtip-isolated
+    networks:
+      - prtip-net
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    volumes:
+      - prtip-results:/home/prtip/results
+
+# Named volumes for persistence
+volumes:
+  prtip-results:
+    driver: local
+  prtip-config:
+    driver: local
+
+# Custom network for isolated testing
+networks:
+  prtip-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

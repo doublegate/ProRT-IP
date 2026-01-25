@@ -4,7 +4,7 @@
 
 **ProRT-IP WarScan** is a high-performance network scanner implemented in Rust that combines the speed of Masscan/ZMap with the detection depth of Nmap. This is a penetration testing and red team tool designed for security professionals.
 
-- **Current Version**: v0.5.9 (Phase 6 Complete)
+- **Current Version**: v1.0.0 (Production Release)
 - **Test Coverage**: 2,557 tests passing, 51.40% coverage
 - **License**: GPL-3.0
 - **Repository**: https://github.com/doublegate/ProRT-IP

@@ -1,0 +1,35 @@
+Source: prtip
+Section: net
+Priority: optional
+Maintainer: ProRT-IP Contributors <noreply@github.com>
+Build-Depends: debhelper-compat (= 13),
+               cargo,
+               rustc (>= 1.85),
+               libpcap-dev,
+               libssl-dev,
+               pkg-config
+Standards-Version: 4.6.2
+Homepage: https://github.com/doublegate/ProRT-IP
+Vcs-Browser: https://github.com/doublegate/ProRT-IP
+Vcs-Git: https://github.com/doublegate/ProRT-IP.git
+Rules-Requires-Root: no
+
+Package: prtip
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         libpcap0.8
+Recommends: nmap
+Description: Modern high-performance network scanner
+ ProRT-IP WarScan is a modern network scanner written in Rust that combines
+ the speed of Masscan (10M+ packets/second) with the depth of Nmap's service
+ detection and OS fingerprinting capabilities.
+ .
+ Features:
+  - TCP SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle scan types
+  - Service version detection (85-90% accuracy, 187 Nmap probes)
+  - OS fingerprinting (16-probe technique, 2,600+ signatures)
+  - Evasion techniques (fragmentation, decoys, TTL manipulation)
+  - TUI dashboard with real-time visualization
+  - Full IPv6 support
+  - Nmap-compatible CLI flags

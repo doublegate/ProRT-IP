@@ -1,0 +1,279 @@
+name: Build Packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0)'
+        required: true
+        type: string
+      publish_docker:
+        description: 'Publish Docker image to Docker Hub'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Build Debian package
+  build-deb:
+    name: Build Debian Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${REF_NAME#v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            devscripts \
+            debhelper \
+            libpcap-dev \
+            libssl-dev \
+            pkg-config
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Create .deb package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Create package directory structure
+          mkdir -p pkg/DEBIAN
+          mkdir -p pkg/usr/bin
+          mkdir -p pkg/usr/share/man/man1
+          mkdir -p pkg/usr/share/doc/prtip
+
+          # Copy binary
+          cp target/release/prtip pkg/usr/bin/
+          chmod 755 pkg/usr/bin/prtip
+
+          # Copy documentation
+          cp README.md pkg/usr/share/doc/prtip/
+          cp LICENSE pkg/usr/share/doc/prtip/
+          cp CHANGELOG.md pkg/usr/share/doc/prtip/
+
+          # Copy man page
+          cp man/prtip.1 pkg/usr/share/man/man1/
+          gzip -9 pkg/usr/share/man/man1/prtip.1
+
+          # Create control file
+          cat > pkg/DEBIAN/control << EOF
+          Package: prtip
+          Version: $VERSION
+          Section: net
+          Priority: optional
+          Architecture: amd64
+          Depends: libpcap0.8
+          Maintainer: ProRT-IP Contributors <noreply@github.com>
+          Homepage: https://github.com/doublegate/ProRT-IP
+          Description: Modern high-performance network scanner
+           ProRT-IP WarScan combines Masscan speed with Nmap detection depth.
+           Features TCP/UDP/ICMP scanning, service detection, OS fingerprinting,
+           and advanced evasion techniques.
+          EOF
+
+          # Create postinst script for capabilities
+          cat > pkg/DEBIAN/postinst << 'EOF'
+          #!/bin/sh
+          set -e
+          if command -v setcap > /dev/null 2>&1; then
+              setcap cap_net_raw,cap_net_admin=eip /usr/bin/prtip || true
+          fi
+          EOF
+          chmod 755 pkg/DEBIAN/postinst
+
+          # Build package
+          dpkg-deb --build pkg "prtip_${VERSION}_amd64.deb"
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prtip-deb
+          path: prtip_*.deb
+
+      - name: Upload to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          gh release upload "$REF_NAME" prtip_*.deb --clobber
+
+  # Build Docker images
+  build-docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: []
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${REF_NAME#v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: github.event_name == 'release' || inputs.publish_docker
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name == 'release' || inputs.publish_docker }}
+          tags: |
+            doublegate/prtip:${{ steps.version.outputs.version }}
+            doublegate/prtip:latest
+            ghcr.io/${{ github.repository_owner }}/prtip:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/prtip:latest
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build test image (for validation)
+        if: github.event_name != 'release' && !inputs.publish_docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: false
+          tags: prtip:test
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+
+  # Validate packages
+  validate-packages:
+    name: Validate Packages
+    runs-on: ubuntu-latest
+    needs: [build-deb, build-docker]
+    if: always() && !failure() && !cancelled()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download .deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: prtip-deb
+          path: packages
+
+      - name: Validate .deb package
+        run: |
+          # Install the package
+          sudo dpkg -i packages/prtip_*.deb || sudo apt-get install -f -y
+
+          # Verify installation
+          which prtip
+          prtip --version
+
+          # Check capabilities (may fail without root)
+          getcap /usr/bin/prtip || true
+
+          # Test basic functionality
+          prtip --help
+          prtip --iflist || true
+
+      - name: Test Docker image
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          # Pull the test image from GHCR
+          docker pull "ghcr.io/${REPO_OWNER}/prtip:latest" || true
+
+          # Test with local build if pull fails
+          if ! docker images | grep -q prtip; then
+            docker build -t prtip:test -f docker/Dockerfile .
+          fi
+
+          # Run basic tests
+          docker run --rm prtip:test --version
+          docker run --rm prtip:test --help
+
+  # Create package summary
+  package-summary:
+    name: Package Summary
+    runs-on: ubuntu-latest
+    needs: [build-deb, build-docker, validate-packages]
+    if: always()
+
+    steps:
+      - name: Summary
+        env:
+          DEB_RESULT: ${{ needs.build-deb.result }}
+          DOCKER_RESULT: ${{ needs.build-docker.result }}
+          VALIDATE_RESULT: ${{ needs.validate-packages.result }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          echo "# Package Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Debian (.deb) | $DEB_RESULT |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker | $DOCKER_RESULT |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | $VALIDATE_RESULT |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Available Packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Debian/Ubuntu:** \`prtip_VERSION_amd64.deb\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Docker:** \`doublegate/prtip:VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Container Registry:** \`ghcr.io/${REPO_OWNER}/prtip:VERSION\`" >> $GITHUB_STEP_SUMMARY

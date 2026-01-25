@@ -1,0 +1,11 @@
+prtip (1.0.0-1) unstable; urgency=medium
+
+  * Initial release.
+  * TCP SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle scan types
+  * Service version detection (85-90% accuracy)
+  * OS fingerprinting (2,600+ signatures)
+  * TUI dashboard with real-time visualization
+  * Full IPv6 support
+  * Nmap-compatible CLI flags
+
+ -- ProRT-IP Contributors <noreply@github.com>  Sat, 25 Jan 2025 00:00:00 +0000

@@ -1,0 +1,322 @@
+.\" ProRT-IP WarScan Manual Page
+.\" Copyright 2025 ProRT-IP Contributors
+.\" Licensed under GPL-3.0
+.\"
+.TH PRTIP 1 "January 2025" "ProRT-IP 1.0.0" "User Commands"
+.SH NAME
+prtip \- modern high-performance network scanner
+.SH SYNOPSIS
+.B prtip
+[\fIOPTIONS\fR] [\fITARGET\fR...]
+.SH DESCRIPTION
+.B ProRT-IP WarScan
+is a modern network scanner written in Rust that combines the speed of Masscan
+(10M+ packets/second) with the depth of Nmap's service detection and OS
+fingerprinting capabilities.
+.PP
+ProRT-IP supports 8 scan types (TCP SYN, Connect, UDP, FIN, NULL, Xmas, ACK,
+Idle), service version detection (85-90% accuracy with 187 Nmap probes), OS
+fingerprinting (16-probe technique with 2,600+ signatures), and various evasion
+techniques.
+.SH TARGET SPECIFICATION
+Targets can be specified as:
+.TP
+.B Single IP
+192.168.1.1
+.TP
+.B CIDR notation
+192.168.1.0/24
+.TP
+.B IP range
+192.168.1.1-100
+.TP
+.B Hostname
+example.com
+.TP
+.B IPv6 address
+2001:db8::1
+.TP
+.B Target file
+Use \fB-iL\fR \fIfilename\fR to read targets from file
+.SH PORT SPECIFICATION
+.TP
+.BI \-p " ports"
+Specify port ranges. Examples: 80, 1-1000, 22,80,443, - (all ports)
+.TP
+.B \-F
+Fast scan (top 100 most common ports)
+.TP
+.BI \-\-top\-ports " N"
+Scan the N most common ports
+.SH SCAN TECHNIQUES
+.TP
+.B \-sS
+TCP SYN scan (half-open, default if privileged). Fast and stealthy.
+.TP
+.B \-sT
+TCP Connect scan (full handshake, default if unprivileged). No privileges required.
+.TP
+.B \-sU
+UDP scan. Discovers UDP services using protocol-specific payloads.
+.TP
+.B \-sF
+FIN scan. Stealth scan with only FIN flag set.
+.TP
+.B \-sN
+NULL scan. Stealth scan with no flags set.
+.TP
+.B \-sX
+Xmas scan. Stealth scan with FIN, PSH, URG flags (lights up like a Christmas tree).
+.TP
+.B \-sA
+ACK scan. Used to map firewall rules, not determine open/closed ports.
+.TP
+.BI \-sI " zombie"
+Idle scan using specified zombie host. Ultimate stealth - your IP never contacts target.
+.SH DETECTION OPTIONS
+.TP
+.B \-sV
+Enable service/version detection on open ports.
+.TP
+.B \-O
+Enable OS fingerprinting using 16-probe technique.
+.TP
+.B \-A
+Aggressive mode. Equivalent to \fB-O -sV --progress\fR.
+.TP
+.BI \-\-version\-intensity " 0-9"
+Set service detection intensity (default: 7). Higher values are more thorough but slower.
+.TP
+.B \-\-banner\-grab
+Enable banner grabbing for additional service information.
+.TP
+.B \-\-no\-tls
+Disable TLS/SSL service detection.
+.SH TIMING AND PERFORMANCE
+.TP
+.BI \-T 0-5
+Set timing template:
+.RS
+.IP T0 8
+Paranoid (very slow, IDS evasion)
+.IP T1 8
+Sneaky (slow)
+.IP T2 8
+Polite (reduces load on target)
+.IP T3 8
+Normal (default)
+.IP T4 8
+Aggressive (faster)
+.IP T5 8
+Insane (fastest, may overwhelm targets)
+.RE
+.TP
+.BI \-\-max\-rate " N"
+Maximum packets per second.
+.TP
+.BI \-\-timeout " ms"
+Connection timeout in milliseconds (default: 1000).
+.TP
+.BI \-\-max\-retries " N"
+Maximum probe retransmissions.
+.TP
+.BI \-\-host\-timeout " time"
+Give up on host after this time (e.g., 30m, 1h).
+.TP
+.B \-\-adaptive\-rate
+Enable adaptive rate limiting with ICMP error monitoring.
+.TP
+.B \-\-numa
+Enable NUMA optimization for multi-socket systems (Linux only).
+.SH FIREWALL/IDS EVASION
+.TP
+.B \-f
+Fragment packets into 8-byte fragments.
+.TP
+.BI \-\-mtu " size"
+Set custom MTU for fragmentation (must be multiple of 8).
+.TP
+.BI \-\-ttl " value"
+Set IP Time-To-Live (1-255).
+.TP
+.BI \-D " decoy1,decoy2,..."
+Cloak scan with decoys. Use \fBRND:N\fR for N random decoys, or \fBME\fR for your position.
+.TP
+.B \-\-badsum
+Send packets with intentionally bad checksums (for testing).
+.TP
+.BI \-g " port"
+Use specific source port for firewall evasion.
+.SH OUTPUT OPTIONS
+.TP
+.BI \-o " format"
+Output format: text, json, xml (default: text)
+.TP
+.BI \-oN " file"
+Normal text output to file.
+.TP
+.BI \-oX " file"
+XML output to file (Nmap compatible).
+.TP
+.BI \-oG " file"
+Greppable output to file.
+.TP
+.BI \-oA " basename"
+Output in all formats (creates .txt, .xml, .gnmap files).
+.TP
+.B \-\-open
+Only show open (or possibly open) ports.
+.TP
+.B \-v, \-vv, \-vvv
+Increase verbosity level.
+.TP
+.B \-q
+Quiet mode (suppress banner and non-essential output).
+.TP
+.B \-\-reason
+Show reason for port state (syn-ack, rst, timeout, etc.).
+.TP
+.BI \-\-packet\-capture " file"
+Save packets to PCAPNG file (Wireshark compatible).
+.TP
+.B \-\-with\-db
+Enable SQLite database storage.
+.SH IPv6 OPTIONS
+.TP
+.B \-6
+Enable IPv6 only mode.
+.TP
+.B \-4
+Enable IPv4 only mode.
+.TP
+.B \-\-dual\-stack
+Allow both IPv4 and IPv6 targets.
+.SH TUI OPTIONS
+.TP
+.B \-\-tui
+Launch interactive terminal user interface with real-time dashboard.
+.SH MISCELLANEOUS
+.TP
+.B \-\-iflist
+List network interfaces and exit.
+.TP
+.BI \-\-interface " iface"
+Use specific network interface.
+.TP
+.B \-n
+Never do DNS resolution.
+.TP
+.B \-Pn
+Skip host discovery, treat all targets as online.
+.TP
+.B \-\-skip\-cdn
+Skip CDN/cloud provider IP addresses.
+.TP
+.B \-y
+Skip all confirmations (assume yes).
+.TP
+.B \-\-version
+Display version information and exit.
+.TP
+.B \-\-help
+Display help information and exit.
+.SH EXAMPLES
+.TP
+.B Basic SYN scan:
+prtip -sS -p 1-1000 192.168.1.0/24
+.TP
+.B Fast scan (top 100 ports):
+prtip -F 192.168.1.1
+.TP
+.B Service detection:
+prtip -sV -p 22,80,443 target.com
+.TP
+.B OS fingerprinting:
+prtip -O -p 1-1000 target.com
+.TP
+.B Aggressive scan with XML output:
+prtip -A -oX scan.xml 192.168.1.0/24
+.TP
+.B Stealth scan with decoys:
+prtip -sF -D RND:10 -p 80,443 target.com
+.TP
+.B Idle scan (anonymous):
+prtip -sI 192.168.1.100 -p 80,443 target.com
+.TP
+.B IPv6 scan:
+prtip -6 -p 80,443 2001:db8::1
+.TP
+.B TUI dashboard:
+prtip --tui -sS -p 1-1000 192.168.1.0/24
+.SH PRIVILEGES
+Raw packet scanning (\fB-sS\fR, \fB-sU\fR, \fB-sF\fR, etc.) requires elevated privileges.
+.PP
+On Linux, grant capabilities instead of running as root:
+.PP
+.RS
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/local/bin/prtip
+.RE
+.PP
+On Windows, run as Administrator.
+.PP
+On macOS, use sudo or configure ChmodBPF.
+.PP
+TCP Connect scan (\fB-sT\fR) does not require special privileges.
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+General error
+.TP
+.B 2
+Invalid arguments
+.TP
+.B 3
+Permission denied
+.TP
+.B 4
+Network error
+.TP
+.B 5
+Target unreachable
+.SH FILES
+.TP
+.I ~/.prtip/config.toml
+User configuration file
+.TP
+.I ~/.prtip/history.json
+Command history (with \fB--save-history\fR)
+.SH ENVIRONMENT
+.TP
+.B PRTIP_CONFIG
+Path to configuration file
+.TP
+.B PRTIP_LOG_LEVEL
+Logging level (trace, debug, info, warn, error)
+.TP
+.B PRTIP_NO_COLOR
+Disable colored output
+.SH LEGAL NOTICE
+ProRT-IP is a security research tool intended for penetration testing, network
+security auditing, educational purposes, and red team operations.
+.PP
+.B ALWAYS obtain proper authorization before scanning networks you do not own.
+.PP
+Unauthorized scanning may be illegal in your jurisdiction.
+.SH BUGS
+Report bugs at: https://github.com/doublegate/ProRT-IP/issues
+.SH SEE ALSO
+.BR nmap (1),
+.BR masscan (1)
+.PP
+Documentation: https://github.com/doublegate/ProRT-IP/tree/main/docs
+.SH AUTHORS
+ProRT-IP Contributors <noreply@github.com>
+.SH COPYRIGHT
+Copyright 2025 ProRT-IP Contributors.
+.PP
+This is free software licensed under GPL-3.0; see the source for copying
+conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.

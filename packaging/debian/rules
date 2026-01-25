@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export CARGO_HOME = $(CURDIR)/debian/cargo
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	# Cargo will configure itself
+
+override_dh_auto_build:
+	cargo build --release --locked
+
+override_dh_auto_test:
+	cargo test --release --locked
+
+override_dh_auto_install:
+	install -Dm755 target/release/prtip debian/prtip/usr/bin/prtip
+	install -Dm644 man/prtip.1 debian/prtip/usr/share/man/man1/prtip.1
+	install -Dm644 README.md debian/prtip/usr/share/doc/prtip/README.md
+	install -Dm644 LICENSE debian/prtip/usr/share/doc/prtip/LICENSE
+	install -Dm644 CHANGELOG.md debian/prtip/usr/share/doc/prtip/CHANGELOG.md
+
+override_dh_auto_clean:
+	cargo clean
+	rm -rf debian/cargo
+
+override_dh_strip:
+	# Binary is already stripped via Cargo release profile
+	dh_strip --no-automatic-dbgsym

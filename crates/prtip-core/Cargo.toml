@@ -30,6 +30,7 @@ rand = { workspace = true }
 sysinfo = { workspace = true }
 flate2 = "1.0"
 dirs = "5.0"
+rkyv = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

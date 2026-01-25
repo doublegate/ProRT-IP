@@ -1,13 +1,14 @@
 //! Memory-mapped result reader for zero-copy access to scan results
 
 use memmap2::Mmap;
-use prtip_core::ScanResult;
+use prtip_core::{ScanResult, ScanResultRkyv};
 use std::fs::File;
 use std::io;
 use std::path::Path;
 
 const HEADER_SIZE: usize = 64;
 const ENTRY_SIZE: usize = 512;
+const LENGTH_PREFIX_SIZE: usize = 8; // u64 length prefix for each entry
 
 /// Memory-mapped result reader
 pub struct MmapResultReader {
@@ -33,10 +34,21 @@ impl MmapResultReader {
 
         // Parse header
         let version = u64::from_le_bytes(mmap[0..8].try_into().unwrap());
-        if version != 1 {
+        if version == 1 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("Unsupported version: {}", version),
+                "Incompatible file format: version 1 (bincode) is no longer supported. \
+                 This file was created with an older version of the scanner. \
+                 Please regenerate scan results with the current version (rkyv format, version 2).",
+            ));
+        }
+        if version != 2 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!(
+                    "Unsupported version: {}. Expected version 2 (rkyv format).",
+                    version
+                ),
             ));
         }
 
@@ -77,8 +89,34 @@ impl MmapResultReader {
         let offset = HEADER_SIZE + (index * self.entry_size);
         let entry_bytes = &self.mmap[offset..offset + self.entry_size];
 
-        // Deserialize the entry (bincode handles trailing zeros)
-        bincode::deserialize(entry_bytes).ok()
+        // Read length prefix (u64 in little-endian)
+        let len = u64::from_le_bytes(
+            entry_bytes[..LENGTH_PREFIX_SIZE]
+                .try_into()
+                .expect("LENGTH_PREFIX_SIZE is 8 bytes"),
+        ) as usize;
+
+        // Validate length
+        if len == 0 || len + LENGTH_PREFIX_SIZE > self.entry_size {
+            eprintln!(
+                "MmapResultReader: invalid entry length {} at index {}",
+                len, index
+            );
+            return None;
+        }
+
+        // Use zero-copy deserialization without unnecessary allocation
+        let data_bytes = &entry_bytes[LENGTH_PREFIX_SIZE..LENGTH_PREFIX_SIZE + len];
+        match rkyv::from_bytes::<ScanResultRkyv, rkyv::rancor::Error>(data_bytes) {
+            Ok(rkyv_result) => Some(ScanResult::from(rkyv_result)),
+            Err(e) => {
+                eprintln!(
+                    "MmapResultReader: failed to deserialize entry at index {} with length {}: {}",
+                    index, len, e
+                );
+                None
+            }
+        }
     }
 
     /// Create an iterator over all entries
@@ -214,5 +252,44 @@ mod tests {
         assert!(reader.get_entry(0).is_some());
         assert!(reader.get_entry(1).is_none());
         assert!(reader.get_entry(100).is_none());
+    }
+
+    #[test]
+    fn test_mmap_version_1_rejected() {
+        use std::io::Write;
+
+        let temp = NamedTempFile::new().unwrap();
+        let path = temp.path().to_owned();
+
+        // Create a file with version 1 header (old bincode format)
+        {
+            let mut file = std::fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(&path)
+                .unwrap();
+
+            // Write a version 1 header
+            file.write_all(&1u64.to_le_bytes()).unwrap(); // version = 1
+            file.write_all(&0u64.to_le_bytes()).unwrap(); // entry_count = 0
+            file.write_all(&(ENTRY_SIZE as u64).to_le_bytes()).unwrap(); // entry_size
+            file.write_all(&0u64.to_le_bytes()).unwrap(); // checksum
+                                                          // Pad to HEADER_SIZE
+            file.write_all(&[0u8; HEADER_SIZE - 32]).unwrap();
+        }
+
+        // Attempt to open should fail with clear error message
+        let result = MmapResultReader::open(&path);
+        assert!(result.is_err());
+        if let Err(err) = result {
+            assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
+            let err_msg = err.to_string();
+            assert!(
+                err_msg.contains("version 1") && err_msg.contains("bincode"),
+                "Error message should mention version 1 and bincode format: {}",
+                err_msg
+            );
+        }
     }
 }

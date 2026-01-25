@@ -3,6 +3,13 @@
 //! Uses memory-mapped files to reduce RAM usage by 20-50% compared to
 //! in-memory buffering. Results are written to a binary format with
 //! fixed-size entries for zero-copy random access.
+//!
+//! # Alignment Requirements
+//!
+//! The ENTRY_SIZE (512 bytes) is carefully chosen to provide adequate alignment
+//! for rkyv's zero-copy deserialization. rkyv typically requires 8-byte alignment,
+//! and 512 is a multiple of 16 bytes, ensuring proper alignment for all common
+//! data types.
 
 use memmap2::{MmapMut, MmapOptions};
 use prtip_core::{ScanResult, ScanResultRkyv};
@@ -12,7 +19,19 @@ use std::path::Path;
 
 const HEADER_SIZE: usize = 64; // Version, entry_count, entry_size, checksum
 const ENTRY_SIZE: usize = 512; // Fixed-size entries (padded if needed)
-const LENGTH_PREFIX_SIZE: usize = 8; // 8 bytes for length to maintain alignment
+const LENGTH_PREFIX_SIZE: usize = 8; // u64 length prefix for each entry
+
+// Compile-time assertion to verify ENTRY_SIZE alignment
+const _: () = assert!(
+    ENTRY_SIZE % 16 == 0,
+    "ENTRY_SIZE must be a multiple of 16 bytes for rkyv alignment"
+);
+
+// Compile-time assertion to verify LENGTH_PREFIX_SIZE alignment
+const _: () = assert!(
+    LENGTH_PREFIX_SIZE == 8,
+    "LENGTH_PREFIX_SIZE must be 8 bytes for proper alignment"
+);
 
 /// Memory-mapped result writer
 pub struct MmapResultWriter {
@@ -57,18 +76,22 @@ impl MmapResultWriter {
         }
 
         let offset = HEADER_SIZE + (self.entry_count * ENTRY_SIZE);
-        
-        // Convert to rkyv-compatible type and serialize
-        let rkyv_result: ScanResultRkyv = result.into();
-        let entry_bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&rkyv_result)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
-        // Check if data + length prefix fits
+        // Convert to rkyv-compatible format
+        let rkyv_result = ScanResultRkyv::from(result);
+
+        // Serialize using rkyv with improved error handling
+        let entry_bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&rkyv_result).map_err(|e| {
+            let msg = format!("rkyv serialization error (rkyv::rancor::Error): {e:?}");
+            io::Error::new(io::ErrorKind::InvalidData, msg)
+        })?;
+
+        // Check if entry fits (accounting for length prefix)
         if entry_bytes.len() + LENGTH_PREFIX_SIZE > ENTRY_SIZE {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!(
-                    "Entry size {} (+{} length) exceeds maximum {}",
+                    "Entry size {} (+ {} length prefix) exceeds maximum {}",
                     entry_bytes.len(),
                     LENGTH_PREFIX_SIZE,
                     ENTRY_SIZE
@@ -76,12 +99,13 @@ impl MmapResultWriter {
             ));
         }
 
-        // Write length prefix (8 bytes for alignment)
-        let len = entry_bytes.len() as u64;
-        self.mmap[offset..offset + LENGTH_PREFIX_SIZE].copy_from_slice(&len.to_le_bytes());
+        // Write length prefix (u64 in little-endian)
+        let len_bytes = (entry_bytes.len() as u64).to_le_bytes();
+        self.mmap[offset..offset + LENGTH_PREFIX_SIZE].copy_from_slice(&len_bytes);
 
         // Write serialized data after length prefix
-        self.mmap[offset + LENGTH_PREFIX_SIZE..offset + LENGTH_PREFIX_SIZE + entry_bytes.len()].copy_from_slice(&entry_bytes);
+        let data_offset = offset + LENGTH_PREFIX_SIZE;
+        self.mmap[data_offset..data_offset + entry_bytes.len()].copy_from_slice(&entry_bytes);
 
         // Zero-fill remaining space
         for i in (LENGTH_PREFIX_SIZE + entry_bytes.len())..ENTRY_SIZE {
@@ -113,8 +137,9 @@ impl MmapResultWriter {
     }
 
     fn write_header(&mut self) -> io::Result<()> {
-        // Version: 1
-        self.mmap[0..8].copy_from_slice(&1u64.to_le_bytes());
+        // Version: 2 (rkyv format with length prefix)
+        // Version 1 was bincode format (deprecated)
+        self.mmap[0..8].copy_from_slice(&2u64.to_le_bytes());
         // Entry count: 0
         self.mmap[8..16].copy_from_slice(&0u64.to_le_bytes());
         // Entry size: ENTRY_SIZE

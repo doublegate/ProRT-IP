@@ -43,7 +43,9 @@ rusqlite = { version = "0.31", features = ["bundled"] }
 
 # Memory-mapped I/O (Sprint 6.6)
 memmap2 = "0.9"
-rkyv = "0.8.14"
+
+# Zero-copy serialization (rkyv migration)
+rkyv = { version = "0.8.14", features = ["std", "alloc"] }
 
 # CSV export (promote to workspace)
 csv = "1.3"

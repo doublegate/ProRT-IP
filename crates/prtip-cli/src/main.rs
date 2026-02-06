@@ -107,7 +107,7 @@ fn preprocess_argv() -> Vec<String> {
                 if i < args.len() {
                     processed.push(args[i].clone());
                 }
-            }
+            },
 
             // Output format flags (with value)
             "-oN" => {
@@ -116,28 +116,28 @@ fn preprocess_argv() -> Vec<String> {
                 if i < args.len() {
                     processed.push(args[i].clone());
                 }
-            }
+            },
             "-oX" => {
                 processed.push("--output-xml".to_string());
                 i += 1;
                 if i < args.len() {
                     processed.push(args[i].clone());
                 }
-            }
+            },
             "-oG" => {
                 processed.push("--output-greppable".to_string());
                 i += 1;
                 if i < args.len() {
                     processed.push(args[i].clone());
                 }
-            }
+            },
             "-oA" => {
                 processed.push("--output-all-formats".to_string());
                 i += 1;
                 if i < args.len() {
                     processed.push(args[i].clone());
                 }
-            }
+            },
 
             // Skip ping flag
             "-Pn" => processed.push("--skip-ping".to_string()),
@@ -204,7 +204,7 @@ async fn run() -> Result<()> {
         match db_cmd.command {
             DbSubcommand::List { db_path } => {
                 db_commands::handle_list(db_path).await?;
-            }
+            },
             DbSubcommand::Query {
                 db_path,
                 scan_id,
@@ -214,7 +214,7 @@ async fn run() -> Result<()> {
                 open,
             } => {
                 db_commands::handle_query(db_path, scan_id, target, port, service, open).await?;
-            }
+            },
             DbSubcommand::Export {
                 db_path,
                 scan_id,
@@ -222,14 +222,14 @@ async fn run() -> Result<()> {
                 output,
             } => {
                 db_commands::handle_export(db_path, scan_id, format, output).await?;
-            }
+            },
             DbSubcommand::Compare {
                 db_path,
                 scan_id_1,
                 scan_id_2,
             } => {
                 db_commands::handle_compare(db_path, scan_id_1, scan_id_2).await?;
-            }
+            },
         }
 
         return Ok(());
@@ -294,14 +294,14 @@ async fn run() -> Result<()> {
         match adjust_and_get_limit(Some(requested_ulimit)) {
             Ok(new_limit) => {
                 info!("Successfully adjusted ulimit to {}", new_limit);
-            }
+            },
             Err(e) => {
                 warn!("Failed to adjust ulimit to {}: {}", requested_ulimit, e);
                 warn!(
                     "Continuing with current ulimit. You may need to run 'ulimit -n {}' manually.",
                     requested_ulimit
                 );
-            }
+            },
         }
     }
 
@@ -309,7 +309,7 @@ async fn run() -> Result<()> {
     match check_privileges() {
         Ok(()) => {
             info!("Privilege check passed");
-        }
+        },
         Err(e) => {
             warn!(
                 "Insufficient privileges for raw sockets: {}. Using TCP connect scan fallback.",
@@ -317,7 +317,7 @@ async fn run() -> Result<()> {
             );
             // For Phase 1, we only have TCP connect scan, so this is OK
             // In future phases, raw socket scans will require privileges
-        }
+        },
     }
 
     // Parse targets
@@ -476,14 +476,14 @@ async fn run() -> Result<()> {
                 config.performance.batch_size = Some(recommended as usize);
                 info!("Using recommended batch size: {}", recommended);
             }
-        }
+        },
         Err(e) => {
             warn!("Failed to calculate recommended batch size: {}", e);
             if config.performance.batch_size.is_none() {
                 config.performance.batch_size = Some(1000);
                 info!("Using default batch size: 1000");
             }
-        }
+        },
     }
 
     // Check for dangerous operations and confirm if needed
@@ -538,12 +538,12 @@ async fn run() -> Result<()> {
             Ok(writer) => {
                 info!("PCAPNG packet capture enabled: {:?}", pcap_path);
                 Some(Arc::new(std::sync::Mutex::new(writer)))
-            }
+            },
             Err(e) => {
                 eprintln!("Error creating PCAPNG writer: {}", e);
                 eprintln!("Hint: Ensure the directory exists and you have write permissions.");
                 return Err(e);
-            }
+            },
         }
     } else {
         None
@@ -668,10 +668,10 @@ async fn run() -> Result<()> {
                 .context(format!("Failed to write output to {:?}", path))?;
             println!("\nResults written to: {:?}", path);
             println!("Total results: {}", results.len());
-        }
+        },
         None => {
             println!("{}", formatted);
-        }
+        },
     }
 
     // Print summary with scan statistics
@@ -1525,35 +1525,35 @@ mod tests {
                     if i < args_vec.len() {
                         processed.push(args_vec[i].clone());
                     }
-                }
+                },
                 "-oN" => {
                     processed.push("--output-normal".to_string());
                     i += 1;
                     if i < args_vec.len() {
                         processed.push(args_vec[i].clone());
                     }
-                }
+                },
                 "-oX" => {
                     processed.push("--output-xml".to_string());
                     i += 1;
                     if i < args_vec.len() {
                         processed.push(args_vec[i].clone());
                     }
-                }
+                },
                 "-oG" => {
                     processed.push("--output-greppable".to_string());
                     i += 1;
                     if i < args_vec.len() {
                         processed.push(args_vec[i].clone());
                     }
-                }
+                },
                 "-oA" => {
                     processed.push("--output-all-formats".to_string());
                     i += 1;
                     if i < args_vec.len() {
                         processed.push(args_vec[i].clone());
                     }
-                }
+                },
                 "-Pn" => processed.push("--skip-ping".to_string()),
                 _ => processed.push(arg.clone()),
             }

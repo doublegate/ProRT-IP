@@ -377,14 +377,14 @@ impl ConcurrentScanner {
                         trace!("Found open port: {}:{}", result.target_ip, result.port);
                         writer.write(&result)?;
                     }
-                }
+                },
                 Err(e) => {
                     // Track unique errors (avoid logging duplicates)
                     let error_msg = e.to_string();
                     if errors.len() < 1000 && !errors.contains(&error_msg) {
                         errors.insert(error_msg.clone());
                     }
-                }
+                },
             }
         }
 
@@ -434,7 +434,7 @@ async fn scan_socket_tcp(socket: SocketAddr, config: Config) -> Result<ScanResul
                 let _ = stream.shutdown().await;
 
                 return Ok(ScanResult::new(socket.ip(), socket.port(), PortState::Open));
-            }
+            },
             Ok(Err(e)) => {
                 // Connection failed
                 let error_str = e.to_string().to_lowercase();
@@ -468,7 +468,7 @@ async fn scan_socket_tcp(socket: SocketAddr, config: Config) -> Result<ScanResul
 
                 // Continue to next retry
                 trace!("Retry {}/{} for {}: {}", retry + 1, max_retries, socket, e);
-            }
+            },
             Err(_) => {
                 // Timeout
                 if retry == max_retries {
@@ -481,7 +481,7 @@ async fn scan_socket_tcp(socket: SocketAddr, config: Config) -> Result<ScanResul
                 }
 
                 trace!("Timeout {}/{} for {}", retry + 1, max_retries, socket);
-            }
+            },
         }
     }
 

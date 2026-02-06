@@ -131,7 +131,7 @@ impl StorageBackend {
                         "Storage backend already flushed".to_string(),
                     ))
                 }
-            }
+            },
         }
     }
 
@@ -164,7 +164,7 @@ impl StorageBackend {
                         "Storage backend already flushed".to_string(),
                     ))
                 }
-            }
+            },
         }
     }
 
@@ -215,7 +215,7 @@ impl StorageBackend {
                         Ok(result) => {
                             debug!("Worker completed successfully");
                             result
-                        }
+                        },
                         Err(_) => Err(prtip_core::Error::Storage(
                             "Worker completion channel closed unexpectedly".to_string(),
                         )),
@@ -224,7 +224,7 @@ impl StorageBackend {
                     debug!("Completion receiver already consumed");
                     Ok(()) // Already flushed
                 }
-            }
+            },
         }
     }
 
@@ -247,7 +247,7 @@ impl StorageBackend {
 
                 // Retrieve from database
                 storage.get_scan_results(*scan_id).await
-            }
+            },
         }
     }
 
@@ -264,7 +264,7 @@ impl StorageBackend {
                 self.flush().await?;
 
                 storage.complete_scan(*scan_id).await
-            }
+            },
         }
     }
 
@@ -276,7 +276,7 @@ impl StorageBackend {
                 // Can't get count from async storage without blocking
                 // Caller should use get_results() for accurate count
                 0
-            }
+            },
         }
     }
 

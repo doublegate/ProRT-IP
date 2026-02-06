@@ -274,7 +274,7 @@ fn toml_value_to_lua(lua: &Lua, value: &toml::Value) -> LuaResult<Value> {
                 lua_table.set(i + 1, lua_value)?; // Lua arrays are 1-indexed
             }
             Ok(Value::Table(lua_table))
-        }
+        },
         toml::Value::Table(table) => {
             let lua_table = lua.create_table()?;
             for (key, val) in table {
@@ -282,7 +282,7 @@ fn toml_value_to_lua(lua: &Lua, value: &toml::Value) -> LuaResult<Value> {
                 lua_table.set(key.clone(), lua_value)?;
             }
             Ok(Value::Table(lua_table))
-        }
+        },
         toml::Value::Datetime(dt) => Ok(Value::String(lua.create_string(dt.to_string())?)),
     }
 }

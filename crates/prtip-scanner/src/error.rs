@@ -99,10 +99,10 @@ impl ScannerError {
             Self::ResourceExhausted { suggestion, .. } => Some(suggestion),
             Self::RateLimitExceeded { .. } => {
                 Some("Reduce scan rate with -T0 through -T3, or --max-rate")
-            }
+            },
             Self::Timeout { .. } => {
                 Some("Increase timeout with --timeout or use faster timing template (-T3, -T4)")
-            }
+            },
             Self::ConnectionFailed {
                 retriable: false, ..
             } => Some("Target may be down or unreachable"),

@@ -163,12 +163,12 @@ impl CircuitBreaker {
                 } else {
                     false
                 }
-            }
+            },
             CircuitState::HalfOpen => {
                 // Allow limited requests in half-open state
                 let total_attempts = circuit.success_count + circuit.failure_count;
                 total_attempts < self.config.half_open_limit
-            }
+            },
         }
     }
 
@@ -187,15 +187,15 @@ impl CircuitBreaker {
                     circuit.state = CircuitState::Closed;
                     circuit.opened_at = None;
                 }
-            }
+            },
             CircuitState::Closed => {
                 // Already closed, nothing to do
-            }
+            },
             CircuitState::Open => {
                 // Shouldn't happen, but handle gracefully
                 circuit.state = CircuitState::Closed;
                 circuit.opened_at = None;
-            }
+            },
         }
     }
 
@@ -214,17 +214,17 @@ impl CircuitBreaker {
                     circuit.state = CircuitState::Open;
                     circuit.opened_at = Some(Instant::now());
                 }
-            }
+            },
             CircuitState::HalfOpen => {
                 // Re-open circuit - service still failing
                 circuit.state = CircuitState::Open;
                 circuit.opened_at = Some(Instant::now());
                 circuit.success_count = 0;
                 circuit.failure_count = 1; // Reset to 1
-            }
+            },
             CircuitState::Open => {
                 // Already open, increment failure count
-            }
+            },
         }
     }
 

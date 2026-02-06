@@ -142,7 +142,7 @@ impl ConnectionPool {
                 Err(e) => {
                     // Log error but continue scanning
                     debug!("Scan error: {}", e);
-                }
+                },
             }
 
             // Add next target if any remain
@@ -173,7 +173,7 @@ impl ConnectionPool {
 
                     return Ok(ScanResult::new(addr.ip(), addr.port(), PortState::Open)
                         .with_response_time(response_time));
-                }
+                },
                 Ok(Err(e)) => {
                     // Connection error
                     match e.kind() {
@@ -184,7 +184,7 @@ impl ConnectionPool {
 
                             return Ok(ScanResult::new(addr.ip(), addr.port(), PortState::Closed)
                                 .with_response_time(response_time));
-                        }
+                        },
                         std::io::ErrorKind::PermissionDenied => {
                             // Firewall blocked
                             return Ok(ScanResult::new(
@@ -192,7 +192,7 @@ impl ConnectionPool {
                                 addr.port(),
                                 PortState::Filtered,
                             ));
-                        }
+                        },
                         _ => {
                             // Other errors - retry if attempts remaining
                             if attempt == self.retries {
@@ -202,16 +202,16 @@ impl ConnectionPool {
                                     PortState::Filtered,
                                 ));
                             }
-                        }
+                        },
                     }
-                }
+                },
                 Err(_elapsed) => {
                     // Timeout - retry if attempts remaining
                     if attempt == self.retries {
                         debug!("Timeout scanning {}", addr);
                         return Ok(ScanResult::new(addr.ip(), addr.port(), PortState::Filtered));
                     }
-                }
+                },
             }
         }
 
@@ -256,7 +256,7 @@ impl ConnectionPool {
                 } else {
                     requested
                 }
-            }
+            },
             Err(e) => {
                 warn!("Failed to detect file descriptor limits: {}", e);
                 warn!(
@@ -264,7 +264,7 @@ impl ConnectionPool {
                     requested
                 );
                 requested
-            }
+            },
         }
     }
 }

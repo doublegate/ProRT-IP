@@ -251,45 +251,45 @@ pub fn handle_main_widget_event(event: Event, ui_state: &mut UIState) -> bool {
             KeyCode::Up => {
                 main_state.select_previous();
                 true
-            }
+            },
             KeyCode::Down => {
                 main_state.select_next();
                 true
-            }
+            },
             KeyCode::PageUp => {
                 main_state.page_up();
                 true
-            }
+            },
             KeyCode::PageDown => {
                 main_state.page_down();
                 true
-            }
+            },
             KeyCode::Home => {
                 main_state.select_first();
                 true
-            }
+            },
             KeyCode::End => {
                 main_state.select_last();
                 true
-            }
+            },
 
             // Sorting
             KeyCode::Char('p') => {
                 main_state.toggle_sort(SortColumn::Port);
                 true
-            }
+            },
             KeyCode::Char('s') => {
                 main_state.toggle_sort(SortColumn::State);
                 true
-            }
+            },
             KeyCode::Char('r') => {
                 main_state.toggle_sort(SortColumn::Protocol);
                 true
-            }
+            },
             KeyCode::Char('v') => {
                 main_state.toggle_sort(SortColumn::Service);
                 true
-            }
+            },
 
             _ => false,
         }

@@ -169,10 +169,10 @@ fn benchmark_certificate_parsing_only() {
                 // Verify certificate has expected fields
                 assert!(!cert.subject.is_empty());
                 assert!(!cert.issuer.is_empty());
-            }
+            },
             Err(e) => {
                 panic!("Certificate parsing failed: {}", e);
-            }
+            },
         }
     }
 
@@ -233,10 +233,10 @@ fn benchmark_chain_validation_only() {
                 // Verify chain properties
                 assert_eq!(chain.certificates.len(), 1);
                 assert!(chain.is_self_signed);
-            }
+            },
             Err(e) => {
                 panic!("Chain validation failed: {}", e);
-            }
+            },
         }
     }
 
@@ -296,10 +296,10 @@ fn benchmark_full_analysis_pipeline() {
                         // Verify both operations succeeded
                         assert!(!cert.subject.is_empty());
                         assert_eq!(chain.certificates.len(), 1);
-                    }
+                    },
                     Err(e) => panic!("Chain validation failed: {}", e),
                 }
-            }
+            },
             Err(e) => panic!("Certificate parsing failed: {}", e),
         }
     }

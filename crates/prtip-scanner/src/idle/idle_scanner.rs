@@ -237,10 +237,10 @@ impl IdleScanner {
                 Ok(Ok(result)) => results.push(result),
                 Ok(Err(e)) => {
                     tracing::warn!("Port scan task failed: {}", e);
-                }
+                },
                 Err(e) => {
                     tracing::warn!("Task join error: {}", e);
-                }
+                },
             }
         }
 
@@ -414,7 +414,7 @@ async fn send_spoofed_syn(zombie_ip: IpAddr, target_ip: IpAddr, target_port: u16
             return Err(Error::Scanner(
                 "IPv6 idle scan not yet supported (Phase 5)".into(),
             ))
-        }
+        },
     };
 
     let target_ipv4 = match target_ip {
@@ -423,7 +423,7 @@ async fn send_spoofed_syn(zombie_ip: IpAddr, target_ip: IpAddr, target_port: u16
             return Err(Error::Scanner(
                 "IPv6 idle scan not yet supported (Phase 5)".into(),
             ))
-        }
+        },
     };
 
     let mut rng = rand::thread_rng();

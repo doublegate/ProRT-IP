@@ -98,7 +98,7 @@ async fn test_batch_sender_creation() {
         Ok(_sender) => {
             println!("✅ BatchSender created successfully");
             // Test passes if BatchSender was created
-        }
+        },
         Err(e) => {
             // If interface doesn't exist, that's also a valid test result
             eprintln!(
@@ -106,7 +106,7 @@ async fn test_batch_sender_creation() {
                 e
             );
             // Test passes - error is expected in some environments
-        }
+        },
     }
 }
 
@@ -126,7 +126,7 @@ async fn test_batch_send_full_success() {
         Err(e) => {
             eprintln!("⚠️  Cannot create BatchSender: {} - skipping test", e);
             return;
-        }
+        },
     };
 
     // Add 10 packets to batch
@@ -148,14 +148,14 @@ async fn test_batch_send_full_success() {
         Ok(sent_count) => {
             assert_eq!(sent_count, 10, "Should send all 10 packets");
             println!("✅ Sent {} packets successfully", sent_count);
-        }
+        },
         Err(e) => {
             eprintln!(
                 "⚠️  Batch send error (may be expected in test environment): {}",
                 e
             );
             // Test passes - some test environments may not allow packet sending
-        }
+        },
     }
 }
 
@@ -310,11 +310,11 @@ async fn test_error_handling_oversized_packets() {
     match result {
         Ok(_) => {
             panic!("Should not allow adding oversized packet");
-        }
+        },
         Err(e) => {
             println!("✅ Oversized packet rejected with error: {}", e);
             // Test passes - oversized packet correctly rejected
-        }
+        },
     }
 }
 
@@ -354,10 +354,10 @@ async fn test_max_batch_size_enforcement() {
     match overflow_result {
         Ok(_) => {
             panic!("Should not allow adding to full batch");
-        }
+        },
         Err(_) => {
             println!("✅ Correctly rejected packet when batch full");
-        }
+        },
     }
 
     // Flush the full batch
@@ -445,10 +445,10 @@ fn create_syn_packet(target: IpAddr, port: u16) -> Vec<u8> {
             packet[33] = 0x02; // Flags: SYN
 
             packet
-        }
+        },
         IpAddr::V6(_) => {
             panic!("Use create_syn_packet_v6 for IPv6 addresses");
-        }
+        },
     }
 }
 
@@ -473,9 +473,9 @@ fn create_syn_packet_v6(target: IpAddr, port: u16) -> Vec<u8> {
             packet[53] = 0x02; // Flags: SYN
 
             packet
-        }
+        },
         IpAddr::V4(_) => {
             panic!("Use create_syn_packet for IPv4 addresses");
-        }
+        },
     }
 }

@@ -262,25 +262,25 @@ pub fn handle_help_widget_event(event: Event, ui_state: &mut UIState) -> bool {
             KeyCode::Up => {
                 help_state.scroll_up();
                 true
-            }
+            },
             KeyCode::Down => {
                 help_state.scroll_down(total_lines);
                 true
-            }
+            },
             KeyCode::PageUp => {
                 help_state.page_up();
                 true
-            }
+            },
             KeyCode::PageDown => {
                 help_state.page_down(total_lines);
                 true
-            }
+            },
 
             // Toggle context mode
             KeyCode::Char('c') => {
                 help_state.toggle_context_mode();
                 true
-            }
+            },
 
             _ => false,
         }

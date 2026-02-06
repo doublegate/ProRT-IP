@@ -389,9 +389,9 @@ async fn test_grab_banner_with_timeout() {
         Ok(banner) => {
             // If it succeeds, should have some banner data
             assert!(!banner.is_empty());
-        }
+        },
         Err(_) => {
             // Timeout or connection error is acceptable
-        }
+        },
     }
 }

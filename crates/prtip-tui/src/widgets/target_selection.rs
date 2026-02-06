@@ -116,19 +116,19 @@ impl TargetSelectionWidget {
                     Span::raw(" | "),
                     Span::raw(range),
                 ]));
-            }
+            },
             ValidationState::Invalid(error) => {
                 lines.push(Line::from(vec![Span::styled(
                     format!("✗ {}", error),
                     Style::default().fg(Color::Red),
                 )]));
-            }
+            },
             ValidationState::Empty => {
                 lines.push(Line::from(vec![Span::styled(
                     "Enter CIDR notation (e.g., 192.168.1.0/24)",
                     Style::default().fg(Color::DarkGray),
                 )]));
-            }
+            },
         }
 
         let paragraph = Paragraph::new(lines)
@@ -333,7 +333,7 @@ impl TargetSelectionWidget {
                             ),
                         ]));
                     }
-                }
+                },
                 Err(err) => {
                     lines.push(Line::from(vec![
                         Span::raw("  "),
@@ -341,7 +341,7 @@ impl TargetSelectionWidget {
                         Span::raw(" → "),
                         Span::styled(format!("Error: {}", err), Style::default().fg(Color::Red)),
                     ]));
-                }
+                },
             }
         }
 
@@ -498,11 +498,11 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
             KeyCode::Tab if modifiers == KeyModifiers::NONE => {
                 target_state.next_section();
                 true
-            }
+            },
             KeyCode::BackTab => {
                 target_state.prev_section();
                 true
-            }
+            },
 
             // CIDR input
             KeyCode::Char(c)
@@ -511,21 +511,21 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
             {
                 target_state.input_char(c);
                 true
-            }
+            },
             KeyCode::Backspace
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::CidrInput =>
             {
                 target_state.backspace();
                 true
-            }
+            },
             KeyCode::Enter
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::CidrInput =>
             {
                 target_state.validate_cidr();
                 true
-            }
+            },
 
             // Target list navigation
             KeyCode::Up
@@ -534,35 +534,35 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
             {
                 target_state.target_list_move_up();
                 true
-            }
+            },
             KeyCode::Down
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::TargetList =>
             {
                 target_state.target_list_move_down();
                 true
-            }
+            },
             KeyCode::PageUp
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::TargetList =>
             {
                 target_state.target_list_page_up();
                 true
-            }
+            },
             KeyCode::PageDown
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::TargetList =>
             {
                 target_state.target_list_page_down();
                 true
-            }
+            },
             KeyCode::Delete
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::TargetList =>
             {
                 target_state.remove_selected_target();
                 true
-            }
+            },
 
             // Exclusion list navigation
             KeyCode::Up
@@ -571,27 +571,27 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
             {
                 target_state.select_previous_exclusion();
                 true
-            }
+            },
             KeyCode::Down
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::ExclusionList =>
             {
                 target_state.select_next_exclusion();
                 true
-            }
+            },
             KeyCode::Delete
                 if modifiers == KeyModifiers::NONE
                     && target_state.selected_section == Section::ExclusionList =>
             {
                 target_state.remove_selected_exclusion();
                 true
-            }
+            },
 
             // File browser (Ctrl+B)
             KeyCode::Char('b') if modifiers == KeyModifiers::CONTROL => {
                 target_state.file_browser_open = true;
                 true
-            }
+            },
 
             // Esc to cancel/clear based on context
             KeyCode::Esc if modifiers == KeyModifiers::NONE => {
@@ -601,28 +601,28 @@ pub fn handle_target_selection_event(event: Event, ui_state: &mut UIState) -> bo
                         target_state.cidr_input.clear();
                         target_state.cursor_position = 0;
                         target_state.validate_cidr();
-                    }
+                    },
                     Section::FileImport => {
                         target_state.import_file_path = None;
                         target_state.imported_targets.clear();
                         target_state.recalculate_target_count();
-                    }
+                    },
                     Section::TargetList => {
                         // Reset target list selection to 0
                         target_state.target_list_selected = 0;
                         target_state.target_list_scroll = 0;
-                    }
+                    },
                     Section::ExclusionList => {
                         // Reset exclusion list selection to 0
                         target_state.exclusion_list_selected = 0;
-                    }
+                    },
                     Section::DnsResolution => {
                         // Clear DNS cache for failed resolutions
                         target_state.dns_cache.retain(|_, result| result.is_ok());
-                    }
+                    },
                 }
                 true
-            }
+            },
 
             _ => false,
         }
@@ -791,7 +791,7 @@ impl TargetSelectionState {
                     IpNetwork::V4(v4_net) => {
                         // IPv4 networks are always <= 2^32, safe for usize
                         v4_net.size() as usize
-                    }
+                    },
                     IpNetwork::V6(v6_net) => {
                         // IPv6 networks can be huge (up to 2^128)
                         // Cap at usize::MAX for display purposes
@@ -801,7 +801,7 @@ impl TargetSelectionState {
                         } else {
                             size_u128 as usize
                         }
-                    }
+                    },
                 };
 
                 // Calculate IP range - special case for single IPs
@@ -826,7 +826,7 @@ impl TargetSelectionState {
 
                 self.validation_state = ValidationState::Valid { ip_count, range };
                 self.recalculate_target_count();
-            }
+            },
             Err(err) => {
                 // Try to parse as a single IP address (add /32 or /128 implicitly)
                 if let Ok(ip) = IpAddr::from_str(&self.cidr_input) {
@@ -845,7 +845,7 @@ impl TargetSelectionState {
                     self.calculated_ips.clear();
                     self.recalculate_target_count();
                 }
-            }
+            },
         }
     }
 
@@ -1001,7 +1001,7 @@ impl TargetSelectionState {
             match IpNetwork::from_str(exclusion) {
                 Ok(network) => {
                     parsed_exclusions.push(network);
-                }
+                },
                 Err(_) => {
                     // Try as single IP (add /32 or /128 implicitly)
                     if let Ok(ip) = IpAddr::from_str(exclusion) {
@@ -1020,7 +1020,7 @@ impl TargetSelectionState {
                     } else {
                         eprintln!("Failed to parse exclusion: {}", exclusion);
                     }
-                }
+                },
             }
         }
 
@@ -1219,7 +1219,7 @@ impl TargetSelectionState {
                         } else {
                             size_u128 as usize
                         }
-                    }
+                    },
                 };
 
                 if ip_count <= MAX_IPS_TO_IMPORT {
@@ -1303,15 +1303,15 @@ impl TargetSelectionState {
                     self.imported_targets
                         .push(IpAddr::V4(std::net::Ipv4Addr::from(octets)));
                 }
-            }
+            },
             (IpAddr::V6(_), IpAddr::V6(_)) => {
                 return Err("IPv6 ranges not yet supported".to_string());
-            }
+            },
             _ => {
                 return Err(
                     "Start and end IPs must be same version (both IPv4 or both IPv6)".to_string(),
                 );
-            }
+            },
         }
 
         Ok(())
@@ -1572,7 +1572,7 @@ mod tests {
                 assert_eq!(*ip_count, 4); // /30 = 4 IPs
                 assert!(range.contains("192.168.1.0"));
                 assert!(range.contains("192.168.1.3"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1591,7 +1591,7 @@ mod tests {
                 assert_eq!(*ip_count, 256); // /24 = 256 IPs
                 assert!(range.contains("10.0.0.0"));
                 assert!(range.contains("10.0.0.255"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1610,7 +1610,7 @@ mod tests {
                 assert_eq!(*ip_count, 16_777_216); // /8 = 16M IPs
                 assert!(range.contains("10.0.0.0"));
                 assert!(range.contains("10.255.255.255"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1629,7 +1629,7 @@ mod tests {
             ValidationState::Valid { ip_count, range } => {
                 assert_eq!(*ip_count, 1);
                 assert!(range.contains("192.168.1.1"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1648,7 +1648,7 @@ mod tests {
                 assert_eq!(*ip_count, 4); // /126 = 4 IPs
                 assert!(range.contains("2001:db8::"));
                 assert!(range.contains("2001:db8::3"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1666,7 +1666,7 @@ mod tests {
             ValidationState::Valid { ip_count, range } => {
                 assert_eq!(*ip_count, 1);
                 assert!(range.contains("2001:db8::1"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1685,7 +1685,7 @@ mod tests {
                 assert_eq!(*ip_count, 1);
                 assert!(range.contains("192.168.1.100"));
                 assert!(range.contains("single IP"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1704,7 +1704,7 @@ mod tests {
                 assert_eq!(*ip_count, 1);
                 assert!(range.contains("2001:db8::1"));
                 assert!(range.contains("single IP"));
-            }
+            },
             _ => panic!("Expected Valid state, got {:?}", state.validation_state),
         }
 
@@ -1721,7 +1721,7 @@ mod tests {
         match &state.validation_state {
             ValidationState::Invalid(msg) => {
                 assert!(msg.contains("Invalid") || msg.contains("invalid"));
-            }
+            },
             _ => panic!("Expected Invalid state, got {:?}", state.validation_state),
         }
 
@@ -1738,7 +1738,7 @@ mod tests {
         match &state.validation_state {
             ValidationState::Invalid(_) => {
                 // Expected
-            }
+            },
             _ => panic!("Expected Invalid state, got {:?}", state.validation_state),
         }
 
@@ -1778,7 +1778,7 @@ mod tests {
         match &state.validation_state {
             ValidationState::Valid { ip_count, .. } => {
                 assert_eq!(*ip_count, 256);
-            }
+            },
             _ => panic!("Expected Valid state after typing 10.0.0.0/24"),
         }
     }
@@ -1803,7 +1803,7 @@ mod tests {
         match &state.validation_state {
             ValidationState::Valid { ip_count, .. } => {
                 assert_eq!(*ip_count, 1_073_741_824); // /2 = huge network
-            }
+            },
             _ => panic!("Expected Valid state after backspace to /2"),
         }
 
@@ -2466,7 +2466,7 @@ mod tests {
 
         // Verify IPv6 network is parsed correctly
         match parsed[0] {
-            IpNetwork::V6(_) => {} // Expected
+            IpNetwork::V6(_) => {}, // Expected
             IpNetwork::V4(_) => panic!("Expected IPv6 network"),
         }
     }

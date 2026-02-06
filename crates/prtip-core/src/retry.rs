@@ -177,7 +177,7 @@ where
                     debug!("Operation succeeded after {} attempts", attempt);
                 }
                 return Ok(result);
-            }
+            },
             Err(e) => {
                 // Check if we should retry
                 let should_retry = attempt < config.max_attempts && is_retriable(&e);
@@ -218,7 +218,7 @@ where
                     Duration::from_secs_f64(delay.as_secs_f64() * config.multiplier),
                     config.max_delay,
                 );
-            }
+            },
         }
     }
 }

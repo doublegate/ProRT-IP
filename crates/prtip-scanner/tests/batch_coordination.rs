@@ -31,7 +31,7 @@ async fn test_scan_ports_batch_mode_linux() {
                 e
             );
             return;
-        }
+        },
     };
 
     // Initialize packet capture (for consistency with other tests)
@@ -55,7 +55,7 @@ async fn test_scan_ports_batch_mode_linux() {
                 e
             );
             return;
-        }
+        },
     };
 
     // Verify results
@@ -100,7 +100,7 @@ async fn test_scan_ports_fallback_mode() {
                 e
             );
             return;
-        }
+        },
     };
 
     // Initialize packet capture (required for fallback mode)
@@ -124,7 +124,7 @@ async fn test_scan_ports_fallback_mode() {
                 e
             );
             return;
-        }
+        },
     };
 
     // Verify results (same as batch mode, just different implementation)
@@ -172,7 +172,7 @@ async fn test_scan_ports_rate_limiting_integration() {
                 e
             );
             return;
-        }
+        },
     };
 
     // Initialize packet capture (required for fallback mode on macOS/Windows)
@@ -197,7 +197,7 @@ async fn test_scan_ports_rate_limiting_integration() {
                 e
             );
             return;
-        }
+        },
     };
     let elapsed = start.elapsed();
 

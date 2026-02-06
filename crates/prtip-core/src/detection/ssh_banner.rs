@@ -175,7 +175,7 @@ impl SshBanner {
                             '4' => return "Ubuntu 20.04 LTS (Focal)".to_string(),
                             '5' => return "Ubuntu 22.04 LTS (Jammy)".to_string(),
                             '6' => return "Ubuntu 24.04 LTS (Noble)".to_string(),
-                            _ => {}
+                            _ => {},
                         }
                     }
                 }

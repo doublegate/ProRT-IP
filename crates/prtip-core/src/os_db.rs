@@ -223,7 +223,7 @@ impl OsFingerprintDb {
                             "T7" => fp.tests.t7 = Some(params),
                             "U1" => fp.tests.u1 = Some(params),
                             "IE" => fp.tests.ie = Some(params),
-                            _ => {}
+                            _ => {},
                         }
                     }
                 }

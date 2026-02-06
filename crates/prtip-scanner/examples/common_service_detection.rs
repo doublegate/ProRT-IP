@@ -93,7 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  Searched: {:?}", probe_paths);
             println!("  Service detection will use default probes only");
             String::new() // Use empty string for basic detection
-        }
+        },
     };
 
     let db = if !probe_data.is_empty() {
@@ -127,10 +127,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "{:5} | {:20} | {:30} | {}",
                     port, service_info.service, version, cpe
                 );
-            }
+            },
             Err(e) => {
                 println!("{:5} | {:20} | {:30} | N/A", port, "error", e,);
-            }
+            },
         }
     }
 

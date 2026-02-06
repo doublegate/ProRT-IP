@@ -146,7 +146,7 @@ impl NumaManager {
                     node,
                     cores.len()
                 )))
-            }
+            },
             NumaTopology::SingleNode => Err(NumaError::NotAvailable),
         }
     }
@@ -427,16 +427,16 @@ mod tests {
                 if let Ok(cores) = get_current_affinity() {
                     assert_eq!(cores, vec![0]);
                 }
-            }
+            },
             Err(NumaError::Pinning(msg)) if msg.contains("CAP_SYS_NICE") => {
                 println!("Thread pinning requires privileges (expected in CI)");
-            }
+            },
             Err(e) => {
                 println!(
                     "Thread pinning failed: {} (may be expected in CI/containers)",
                     e
                 );
-            }
+            },
         }
     }
 

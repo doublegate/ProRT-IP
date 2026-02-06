@@ -336,7 +336,7 @@ mod serialization_tests {
         match deserialized {
             ScanEvent::PortFound { ip, .. } => {
                 assert!(ip.is_ipv6());
-            }
+            },
             _ => panic!("Expected PortFound event"),
         }
     }

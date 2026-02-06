@@ -251,17 +251,17 @@ impl UdpScanner {
                     Ok(_) => {
                         trace!("Batch flush successful (retry {})", retry);
                         break;
-                    }
+                    },
                     Err(e) if retry < 2 => {
                         warn!("Batch flush retry {} failed: {}", retry, e);
                         tokio::time::sleep(Duration::from_millis(10)).await;
-                    }
+                    },
                     Err(e) => {
                         return Err(prtip_core::Error::Network(format!(
                             "Batch flush failed after 3 retries: {}",
                             e
                         )))
-                    }
+                    },
                 }
             }
 
@@ -327,7 +327,7 @@ impl UdpScanner {
                 Err(e) => {
                     warn!("UDP scan failed for {}:{} - {}", target, port, e);
                     writer.write(&ScanResult::new(target, port, PortState::Unknown))?;
-                }
+                },
             }
         }
 
@@ -450,7 +450,7 @@ impl UdpScanner {
                 }
 
                 Ok(ScanResult::new(target, port, state).with_response_time(response_time))
-            }
+            },
             Ok(Err(e)) => {
                 warn!("Error waiting for UDP response: {}", e);
 
@@ -471,14 +471,14 @@ impl UdpScanner {
                 let response_time = start_time.elapsed();
                 Ok(ScanResult::new(target, port, PortState::Unknown)
                     .with_response_time(response_time))
-            }
+            },
             Err(_) => {
                 // Timeout - port is open|filtered
                 debug!("No response from {}:{} - OPEN|FILTERED", target, port);
                 let response_time = start_time.elapsed();
                 Ok(ScanResult::new(target, port, PortState::Filtered)
                     .with_response_time(response_time))
-            }
+            },
         };
 
         result
@@ -517,7 +517,7 @@ impl UdpScanner {
                         "Packet capture not initialized".to_string(),
                     ))
                 }
-            }
+            },
             (IpAddr::V6(src_ipv6), IpAddr::V6(dst_ipv6)) => {
                 // IPv6 UDP packet
                 if let Some(ref mut capture) = *self.capture.lock() {
@@ -535,7 +535,7 @@ impl UdpScanner {
                         "Packet capture not initialized".to_string(),
                     ))
                 }
-            }
+            },
             _ => Err(prtip_core::Error::Config(format!(
                 "IP version mismatch: local {} vs target {}",
                 local_ip, target
@@ -747,10 +747,10 @@ impl UdpScanner {
         match target {
             IpAddr::V4(target_ipv4) => {
                 self.parse_ipv4_response(eth_packet.payload(), target_ipv4, port, src_port)
-            }
+            },
             IpAddr::V6(target_ipv6) => {
                 self.parse_ipv6_response(eth_packet.payload(), target_ipv6, port, src_port)
-            }
+            },
         }
     }
 
@@ -784,7 +784,7 @@ impl UdpScanner {
                         return Ok(Some(PortState::Open));
                     }
                 }
-            }
+            },
             1 => {
                 // ICMP message
                 if let Some(icmp_packet) = IcmpPacket::new(ipv4_packet.payload()) {
@@ -800,8 +800,8 @@ impl UdpScanner {
                         return Ok(Some(PortState::Closed));
                     }
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
 
         Ok(None)
@@ -843,7 +843,7 @@ impl UdpScanner {
                         return Ok(Some(PortState::Open));
                     }
                 }
-            }
+            },
             58 => {
                 // ICMPv6 message
                 if let Some(icmpv6_packet) = Icmpv6Packet::new(ipv6_packet.payload()) {
@@ -860,7 +860,7 @@ impl UdpScanner {
                                     target, port
                                 );
                                 return Ok(Some(PortState::Closed));
-                            }
+                            },
                             0 | 1 | 3 | 5 | 6 => {
                                 // Other unreachable codes (no route, admin prohibited, etc.)
                                 debug!(
@@ -868,19 +868,19 @@ impl UdpScanner {
                                     icmpv6_code.0, target, port
                                 );
                                 return Ok(Some(PortState::Filtered));
-                            }
+                            },
                             _ => {
                                 // Unknown code
                                 trace!(
                                     "Received ICMPv6 destination unreachable with unknown code {} from {}:{}",
                                     icmpv6_code.0, target, port
                                 );
-                            }
+                            },
                         }
                     }
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
 
         Ok(None)
@@ -934,7 +934,7 @@ impl UdpScanner {
                 IpAddr::V4(dst_ipv4) => {
                     let src_ipv4 = self.local_ipv4;
                     self.build_udp_ipv4_packet(src_ipv4, dst_ipv4, src_port, port, &payload)?
-                }
+                },
                 IpAddr::V6(dst_ipv6) => {
                     let src_ipv6 = self.local_ipv6.ok_or_else(|| {
                         prtip_core::Error::Config(
@@ -942,7 +942,7 @@ impl UdpScanner {
                         )
                     })?;
                     self.build_udp_ipv6_packet(src_ipv6, dst_ipv6, src_port, port, &payload)?
-                }
+                },
             };
 
             // Track connection state (target IP, port, src_port are in DashMap key)
@@ -1090,7 +1090,7 @@ impl UdpScanner {
                             (target_ip, target_port, source_port),
                             PortState::Open,
                         )))
-                    }
+                    },
                     1 => {
                         // ICMP message
                         let icmp_packet = match IcmpPacket::new(ipv4_packet.payload()) {
@@ -1129,10 +1129,10 @@ impl UdpScanner {
                         } else {
                             Ok(None)
                         }
-                    }
+                    },
                     _ => Ok(None),
                 }
-            }
+            },
             6 => {
                 // Parse IPv6 packet
                 let ipv6_packet = match Ipv6Packet::new(ip_payload) {
@@ -1158,7 +1158,7 @@ impl UdpScanner {
                             (target_ip, target_port, source_port),
                             PortState::Open,
                         )))
-                    }
+                    },
                     58 => {
                         // ICMPv6 message
                         let icmpv6_packet = match Icmpv6Packet::new(ipv6_packet.payload()) {
@@ -1195,10 +1195,10 @@ impl UdpScanner {
                         } else {
                             Ok(None)
                         }
-                    }
+                    },
                     _ => Ok(None),
                 }
-            }
+            },
             _ => Ok(None),
         }
     }

@@ -101,10 +101,10 @@ impl PluginManager {
                             );
                             self.metadata_cache.insert(plugin_name, metadata);
                             count += 1;
-                        }
+                        },
                         Err(e) => {
                             warn!("Failed to parse {}: {}", toml_path.display(), e);
-                        }
+                        },
                     }
                 }
             }

@@ -104,7 +104,7 @@ impl LogWidget {
                 let minutes = (total_seconds % 3600) / 60;
                 let seconds = total_seconds % 60;
                 format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
-            }
+            },
             Err(_) => "??:??:??".to_string(),
         }
     }
@@ -220,57 +220,57 @@ pub fn handle_log_widget_event(event: Event, ui_state: &mut UIState) -> bool {
             KeyCode::Up => {
                 log_state.scroll_up();
                 true
-            }
+            },
             KeyCode::Down => {
                 log_state.scroll_down();
                 true
-            }
+            },
             KeyCode::PageUp => {
                 log_state.page_up();
                 true
-            }
+            },
             KeyCode::PageDown => {
                 log_state.page_down();
                 true
-            }
+            },
 
             // Auto-scroll toggle
             KeyCode::Char('s') => {
                 log_state.toggle_auto_scroll();
                 true
-            }
+            },
 
             // Clear log
             KeyCode::Char('c') => {
                 log_state.clear();
                 true
-            }
+            },
 
             // Filters
             KeyCode::Char('1') => {
                 log_state.set_filter(EventFilter::All);
                 true
-            }
+            },
             KeyCode::Char('2') => {
                 log_state.set_filter(EventFilter::Ports);
                 true
-            }
+            },
             KeyCode::Char('3') => {
                 log_state.set_filter(EventFilter::Hosts);
                 true
-            }
+            },
             KeyCode::Char('4') => {
                 log_state.set_filter(EventFilter::Services);
                 true
-            }
+            },
             KeyCode::Char('5') => {
                 log_state.set_filter(EventFilter::Errors);
                 true
-            }
+            },
             KeyCode::Char('6') => {
                 log_state.set_filter(EventFilter::Warnings);
                 true
-            }
+            },
 
             _ => false,
         }

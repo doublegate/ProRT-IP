@@ -183,7 +183,7 @@ impl TlsHandshake {
             Some(v) => {
                 debug!("Unknown TLS version: {:?}", v);
                 "TLS"
-            }
+            },
             None => "unknown",
         }
         .to_string();

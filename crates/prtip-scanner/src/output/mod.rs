@@ -142,7 +142,7 @@ impl ResultWriter {
             Self::Memory(vec) => {
                 vec.push(result.clone());
                 Ok(())
-            }
+            },
             Self::Mmap { writer, .. } => writer.write_entry(result).map_err(prtip_core::Error::Io),
         }
     }
@@ -174,7 +174,7 @@ impl ResultWriter {
                 // Open reader and collect all entries
                 let reader = MmapResultReader::open(path).map_err(prtip_core::Error::Io)?;
                 Ok(reader.iter().collect())
-            }
+            },
         }
     }
 
@@ -189,7 +189,7 @@ impl ResultWriter {
             Self::Mmap { path, .. } => {
                 // Open reader and get count
                 MmapResultReader::open(path).map(|r| r.len()).unwrap_or(0)
-            }
+            },
         }
     }
 

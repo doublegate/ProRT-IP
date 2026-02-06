@@ -229,7 +229,7 @@ impl ProgressAggregator {
                 s.detected_services = 0;
                 s.errors = 0;
                 s.warnings.clear();
-            }
+            },
 
             ScanEvent::ProgressUpdate {
                 percentage,
@@ -251,13 +251,13 @@ impl ProgressAggregator {
                 s.overall_progress = *percentage;
                 s.eta = eta;
                 s.throughput = throughput;
-            }
+            },
 
             ScanEvent::StageChanged { to_stage, .. } => {
                 let mut s = state.write();
                 s.current_stage = *to_stage;
                 s.stage_progress = 0.0; // Reset stage progress
-            }
+            },
 
             ScanEvent::HostDiscovered { .. } => {
                 // Record host completion first (async)
@@ -266,7 +266,7 @@ impl ProgressAggregator {
                 // Then update state
                 let mut s = state.write();
                 s.discovered_hosts += 1;
-            }
+            },
 
             ScanEvent::PortFound {
                 state: port_state, ..
@@ -282,33 +282,33 @@ impl ProgressAggregator {
                     PortState::Open => s.open_ports += 1,
                     PortState::Closed => s.closed_ports += 1,
                     PortState::Filtered => s.filtered_ports += 1,
-                    PortState::Unknown => {} // Ignore unknown state
+                    PortState::Unknown => {}, // Ignore unknown state
                 }
-            }
+            },
 
             ScanEvent::ServiceDetected { .. } => {
                 let mut s = state.write();
                 s.detected_services += 1;
-            }
+            },
 
             ScanEvent::WarningIssued { message, .. } => {
                 let mut s = state.write();
                 s.warnings.push(message.clone());
-            }
+            },
 
             ScanEvent::ScanError { .. } => {
                 let mut s = state.write();
                 s.errors += 1;
-            }
+            },
 
             ScanEvent::ScanCompleted { .. } => {
                 let mut s = state.write();
                 s.current_stage = ScanStage::Completed;
                 s.overall_progress = 100.0;
                 s.eta = None;
-            }
+            },
 
-            _ => {}
+            _ => {},
         }
     }
 

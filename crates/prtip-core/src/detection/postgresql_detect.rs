@@ -195,7 +195,7 @@ impl ProtocolDetector for PostgresqlDetect {
                 service_info.product = Some("PostgreSQL".to_string());
                 service_info.confidence = 0.6;
                 return Ok(Some(service_info));
-            }
+            },
         };
 
         // Parse version string

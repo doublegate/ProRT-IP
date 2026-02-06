@@ -120,13 +120,13 @@ async fn test_tls_overhead_real_server() {
                     "TLS certificate not extracted on iteration {}",
                     i + 1
                 );
-            }
+            },
             Ok(Err(e)) => {
                 eprintln!("  Iteration {}: Error: {:?}", i + 1, e);
-            }
+            },
             Err(_) => {
                 eprintln!("  Iteration {}: Timeout", i + 1);
-            }
+            },
         }
 
         // Small delay between iterations to avoid rate limiting
@@ -243,13 +243,13 @@ async fn test_tcp_baseline_performance() {
                     i + 1,
                     elapsed.as_secs_f64() * 1000.0
                 );
-            }
+            },
             Ok(Err(e)) => {
                 eprintln!("  Iteration {}: Error: {:?}", i + 1, e);
-            }
+            },
             Err(_) => {
                 eprintln!("  Iteration {}: Timeout", i + 1);
-            }
+            },
         }
 
         tokio::time::sleep(Duration::from_millis(100)).await;

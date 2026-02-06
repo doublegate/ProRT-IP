@@ -2034,7 +2034,7 @@ pub fn parse_certificate(cert_der: &[u8]) -> Result<CertificateInfo, Error> {
                 GeneralName::DNSName(dns) => san.push(dns.to_string()),
                 GeneralName::IPAddress(ip) => san.push(format!("{:?}", ip)),
                 GeneralName::RFC822Name(email) => san.push(email.to_string()),
-                _ => {} // Ignore other types for legacy list
+                _ => {}, // Ignore other types for legacy list
             }
         }
     }

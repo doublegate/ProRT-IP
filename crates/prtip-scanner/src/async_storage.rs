@@ -108,15 +108,15 @@ pub async fn async_storage_worker(
                             Ok(count) => {
                                 total_written += count;
                                 debug!("Flushed {} results (total: {})", count, total_written);
-                            }
+                            },
                             Err(e) => {
                                 error!("Failed to flush buffer: {}", e);
                                 return Err(e);
-                            }
+                            },
                         }
                         last_flush = std::time::Instant::now();
                     }
-                }
+                },
 
                 // Channel closed (recv returned None)
                 Ok(None) => {
@@ -126,11 +126,11 @@ pub async fn async_storage_worker(
                             Ok(count) => {
                                 total_written += count;
                                 info!("Final flush: {} results (total: {})", count, total_written);
-                            }
+                            },
                             Err(e) => {
                                 error!("Failed to flush final buffer: {}", e);
                                 return Err(e);
-                            }
+                            },
                         }
                     }
 
@@ -139,7 +139,7 @@ pub async fn async_storage_worker(
                         scan_id, total_written
                     );
                     break;
-                }
+                },
 
                 // Timeout - do periodic flush
                 Err(_) => {
@@ -153,15 +153,15 @@ pub async fn async_storage_worker(
                                     "Periodic flush: {} results (total: {})",
                                     count, total_written
                                 );
-                            }
+                            },
                             Err(e) => {
                                 error!("Failed to flush buffer: {}", e);
                                 return Err(e);
-                            }
+                            },
                         }
                         last_flush = std::time::Instant::now();
                     }
-                }
+                },
             }
         }
         Ok(())

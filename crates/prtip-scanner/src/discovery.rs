@@ -328,11 +328,11 @@ impl DiscoveryEngine {
                 Err(Error::Network(
                     "ARP ping not yet implemented for IPv4. Use TCP SYN or ICMP ping.".to_string(),
                 ))
-            }
+            },
             IpAddr::V6(target_v6) => {
                 // NDP replaces ARP for IPv6
                 self.ndp_neighbor_discovery(target_v6).await
-            }
+            },
         }
     }
 
@@ -466,22 +466,22 @@ impl DiscoveryEngine {
                     // Successfully connected - host is definitely alive
                     debug!("Host {} alive (TCP {} open)", target, port);
                     return Ok(true);
-                }
+                },
                 Ok(Err(e)) if e.kind() == std::io::ErrorKind::ConnectionRefused => {
                     // Connection refused means host is alive, just port is closed
                     debug!("Host {} alive (TCP {} refused)", target, port);
                     return Ok(true);
-                }
+                },
                 Ok(Err(e)) => {
                     // Other errors (unreachable, etc.) - try next port
                     trace!("TCP {} error for {}: {}", port, target, e);
                     continue;
-                }
+                },
                 Err(_) => {
                     // Timeout - try next port
                     trace!("TCP {} timeout for {}", port, target);
                     continue;
-                }
+                },
             }
         }
 

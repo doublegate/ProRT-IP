@@ -230,15 +230,15 @@ impl AdaptiveConfig {
             ResourceStatus::MemoryConstrained => {
                 // Reduce batch size to lower memory footprint
                 (self.base_parallelism, self.base_batch_size / 2)
-            }
+            },
             ResourceStatus::CpuConstrained => {
                 // Reduce parallelism to lower CPU usage
                 (self.base_parallelism / 2, self.base_batch_size)
-            }
+            },
             ResourceStatus::Constrained => {
                 // Reduce both
                 (self.base_parallelism / 2, self.base_batch_size / 2)
-            }
+            },
         }
     }
 

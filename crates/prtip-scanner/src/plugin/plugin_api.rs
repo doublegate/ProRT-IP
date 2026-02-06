@@ -195,7 +195,7 @@ impl Plugin for LuaPlugin {
                     "Plugin {} error: {}",
                     self.name, err_str
                 ))))
-            }
+            },
             Ok(_) => Ok(()), // Other values treated as success
             Err(e) => Err(prtip_core::Error::from(std::io::Error::other(format!(
                 "Plugin {} Lua error: {}",
@@ -471,7 +471,7 @@ impl ScanPlugin for LuaScanPlugin {
                 }
 
                 Ok(())
-            }
+            },
             Err(e) => {
                 // If Lua returns nil or error doesn't happen, it's OK
                 if e.to_string().contains("attempt to index a nil value") {
@@ -482,7 +482,7 @@ impl ScanPlugin for LuaScanPlugin {
                         e
                     ))))
                 }
-            }
+            },
         }
     }
 
@@ -910,7 +910,7 @@ impl DetectionPlugin for LuaDetectionPlugin {
                     os_type,
                     confidence,
                 }))
-            }
+            },
             Ok(_) => Ok(None), // Other return types treated as no detection
             Err(e) => Err(prtip_core::Error::from(std::io::Error::other(format!(
                 "Lua error in analyze_banner: {}",
@@ -985,7 +985,7 @@ impl DetectionPlugin for LuaDetectionPlugin {
                     os_type,
                     confidence,
                 }))
-            }
+            },
             Ok(_) => Ok(None), // Other return types treated as no detection
             Err(e) => Err(prtip_core::Error::from(std::io::Error::other(format!(
                 "Lua error in probe_service: {}",

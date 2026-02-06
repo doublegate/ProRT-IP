@@ -83,7 +83,7 @@ impl PacketCapture for WindowsCapture {
                 return Err(Error::Network(
                     "Unsupported channel type (expected Ethernet)".to_string(),
                 ))
-            }
+            },
             Err(e) => {
                 let err_msg = format!(
                     "Failed to create channel on {}: {}. \
@@ -91,7 +91,7 @@ impl PacketCapture for WindowsCapture {
                     iface.name, e
                 );
                 return Err(Error::Network(err_msg));
-            }
+            },
         };
 
         self.interface = Some(iface);
@@ -138,12 +138,12 @@ impl PacketCapture for WindowsCapture {
             match rx.next() {
                 Ok(packet) => {
                     return Ok(Some(packet.to_vec()));
-                }
+                },
                 Err(_e) => {
                     // pnet errors don't expose inner types, just continue on error
                     // Most errors will be timeouts
                     continue;
-                }
+                },
             }
         }
 

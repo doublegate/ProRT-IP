@@ -32,7 +32,7 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             state.completed = 0;
             state.progress_percentage = 0.0;
             state.scan_start_time = Some(Instant::now()); // Track scan start time
-        }
+        },
 
         ScanEvent::ScanCompleted {
             open_ports,
@@ -47,12 +47,12 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             state.closed_ports = closed_ports;
             state.filtered_ports = filtered_ports;
             state.detected_services = detected_services;
-        }
+        },
 
         ScanEvent::ScanError { .. } => {
             let mut state = scan_state.write();
             state.errors += 1;
-        }
+        },
 
         // Progress events
         ScanEvent::ProgressUpdate {
@@ -83,12 +83,12 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             if state.throughput_history.len() > MAX_THROUGHPUT_SAMPLES {
                 state.throughput_history.pop_front();
             }
-        }
+        },
 
         ScanEvent::StageChanged { to_stage, .. } => {
             let mut state = scan_state.write();
             state.stage = to_stage;
-        }
+        },
 
         // Discovery events
         ScanEvent::HostDiscovered { ip, .. } => {
@@ -96,7 +96,7 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             if !state.discovered_hosts.contains(&ip) {
                 state.discovered_hosts.push(ip);
             }
-        }
+        },
 
         ScanEvent::PortFound {
             ip,
@@ -125,7 +125,7 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             if state.port_discoveries.len() > MAX_PORT_DISCOVERIES {
                 state.port_discoveries.pop_front();
             }
-        }
+        },
 
         ScanEvent::ServiceDetected {
             ip,
@@ -154,15 +154,15 @@ pub fn handle_scan_event(event: ScanEvent, scan_state: Arc<RwLock<ScanState>>) {
             if state.service_detections.len() > MAX_SERVICE_DETECTIONS {
                 state.service_detections.pop_front();
             }
-        }
+        },
 
         // Diagnostic events
         ScanEvent::WarningIssued { message, .. } => {
             let mut state = scan_state.write();
             state.warnings.push(message);
-        }
+        },
 
         // Other events - no state updates needed for now
-        _ => {}
+        _ => {},
     }
 }

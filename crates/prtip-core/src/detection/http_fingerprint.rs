@@ -197,19 +197,19 @@ impl ProtocolDetector for HttpFingerprint {
                         service_info.os_type = Some(os.clone());
                         additional_info.push(os);
                     }
-                }
+                },
                 "x-powered-by" => {
                     has_powered_by = true;
                     if let Some(powered) = Self::parse_powered_by(&value) {
                         additional_info.push(powered);
                     }
-                }
+                },
                 "x-aspnet-version" => {
                     if let Some(aspnet) = Self::parse_aspnet_version(&value) {
                         additional_info.push(format!("ASP.NET {}", aspnet));
                     }
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
 

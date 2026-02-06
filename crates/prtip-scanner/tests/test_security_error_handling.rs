@@ -262,12 +262,12 @@ async fn test_security_network_unreachable_handling() {
                 "Unreachable target should be Filtered"
             );
             println!("✓ Network unreachable handled gracefully (Filtered)");
-        }
+        },
         Err(e) => {
             // If Err, should have clear error message
             let msg = format!("{}", e);
             println!("✓ Network unreachable handled gracefully (Error: {})", msg);
-        }
+        },
     }
 }
 

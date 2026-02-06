@@ -288,10 +288,10 @@ impl EventLogger {
                                     current_file = Some(writer);
                                 }
                             }
-                        }
+                        },
                         Err(e) => {
                             eprintln!("Failed to create log file {}: {}", path.display(), e);
-                        }
+                        },
                     }
                 }
 
@@ -328,10 +328,10 @@ impl EventLogger {
                                             let writer = BufWriter::new(file);
                                             current_file = Some(writer);
                                             current_file_path = Some(rotated_path);
-                                        }
+                                        },
                                         Err(e) => {
                                             eprintln!("Failed to create rotated log file: {}", e);
-                                        }
+                                        },
                                     }
                                 }
                             }

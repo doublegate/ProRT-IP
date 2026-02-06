@@ -245,7 +245,7 @@ impl ServiceProbeDb {
                             if let Ok(byte) = u8::from_str_radix(&hex, 16) {
                                 result.push(byte);
                             }
-                        }
+                        },
                         '\\' => result.push(b'\\'),
                         _ => result.push(next as u8),
                     }

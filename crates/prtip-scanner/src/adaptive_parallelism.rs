@@ -119,23 +119,23 @@ pub fn calculate_parallelism(
         0..=1000 => {
             // Small scans: conservative to minimize overhead
             MIN_PARALLELISM
-        }
+        },
         1001..=5000 => {
             // Medium scans: moderate parallelism
             100
-        }
+        },
         5001..=10000 => {
             // Large scans: aggressive parallelism
             500
-        }
+        },
         10001..=20000 => {
             // Very large scans: maximum parallelism
             1000
-        }
+        },
         _ => {
             // Huge scans (>20K ports): ultra-high parallelism
             1500
-        }
+        },
     };
 
     // Check system ulimit and adjust if necessary
@@ -177,12 +177,12 @@ fn get_ulimit_constraint(ulimit_override: Option<u64>) -> usize {
             let safe_limit = (effective_limit / 2) as usize;
 
             safe_limit.clamp(MIN_PARALLELISM, MAX_PARALLELISM)
-        }
+        },
         Err(e) => {
             warn!("Failed to detect file descriptor limits: {}", e);
             warn!("Using default constraint: {}", MAX_PARALLELISM);
             MAX_PARALLELISM
-        }
+        },
     }
 }
 
@@ -221,23 +221,23 @@ pub fn get_scan_type_parallelism(
         ScanType::Connect => {
             // TCP Connect: full handshake, more resource intensive
             base
-        }
+        },
         ScanType::Syn => {
             // SYN scan: stateless, can handle higher concurrency
             (base * 2).min(MAX_PARALLELISM)
-        }
+        },
         ScanType::Udp => {
             // UDP: slower due to lack of response, reduce concurrency
             (base / 2).max(MIN_PARALLELISM)
-        }
+        },
         ScanType::Fin | ScanType::Null | ScanType::Xmas | ScanType::Ack => {
             // Stealth scans: similar to SYN
             (base * 2).min(MAX_PARALLELISM)
-        }
+        },
         ScanType::Idle => {
             // Idle (zombie) scan: extremely slow, very low concurrency
             MIN_PARALLELISM
-        }
+        },
     }
 }
 

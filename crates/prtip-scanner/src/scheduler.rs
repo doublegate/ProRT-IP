@@ -246,32 +246,32 @@ impl ScanScheduler {
                                             tx_core
                                         );
                                     }
-                                }
+                                },
                                 Err(e) => warn!("Failed to allocate core for scheduler: {}", e),
                             }
 
                             Some(Arc::new(manager))
-                        }
+                        },
                         Err(e) => {
                             warn!(
                                 "NUMA initialization failed: {}, falling back to non-NUMA mode",
                                 e
                             );
                             None
-                        }
+                        },
                     }
-                }
+                },
                 Ok(_) => {
                     info!("Single-node system detected, NUMA optimization disabled");
                     None
-                }
+                },
                 Err(e) => {
                     warn!(
                         "NUMA detection failed: {}, falling back to non-NUMA mode",
                         e
                     );
                     None
-                }
+                },
             }
         } else {
             None
@@ -339,11 +339,11 @@ impl ScanScheduler {
                     // Store results via storage backend (non-blocking for async!)
                     self.storage_backend.add_results_batch(results.clone())?;
                     all_results.extend(results);
-                }
+                },
                 Err(e) => {
                     error!("Error scanning target {:?}: {}", target, e);
                     // Continue with other targets
-                }
+                },
             }
         }
 
@@ -455,7 +455,7 @@ impl ScanScheduler {
                     }
 
                     results
-                }
+                },
                 ScanType::Syn => {
                     // SYN scan (has PCAPNG support now!)
                     use crate::SynScanner;
@@ -485,7 +485,7 @@ impl ScanScheduler {
                     }
                     writer.flush()?;
                     writer.collect()
-                }
+                },
                 ScanType::Udp => {
                     // UDP scan (has PCAPNG support already!)
                     let mut udp_scanner = UdpScanner::new(self.config.clone())?;
@@ -513,7 +513,7 @@ impl ScanScheduler {
                     }
                     writer.flush()?;
                     writer.collect()
-                }
+                },
                 ScanType::Fin | ScanType::Null | ScanType::Xmas | ScanType::Ack => {
                     // Stealth scans (have PCAPNG support now!)
                     use crate::{StealthScanType, StealthScanner};
@@ -560,13 +560,13 @@ impl ScanScheduler {
                     }
                     writer.flush()?;
                     writer.collect()
-                }
+                },
                 ScanType::Idle => {
                     // Idle scan (Phase 5 feature)
                     return Err(prtip_core::Error::Config(
                         "Idle scan not yet implemented".to_string(),
                     ));
-                }
+                },
             };
 
             match scan_result {
@@ -585,11 +585,11 @@ impl ScanScheduler {
                             aggregator.push(result)?;
                         }
                     }
-                }
+                },
                 Err(e) => {
                     warn!("Error scanning {}: {}", host, e);
                     // Continue with other hosts
-                }
+                },
             }
         }
 
@@ -1026,12 +1026,12 @@ impl ScanScheduler {
                             ))
                             .await;
                         }
-                    }
+                    },
                     Err(e) => {
                         warn!("Error scanning {}: {}", host, e);
                         // Cancel bridge task
                         bridge_handle.abort();
-                    }
+                    },
                 }
             }
         }
@@ -1087,7 +1087,7 @@ impl ScanScheduler {
                                         match (&service_info.product, &service_info.version) {
                                             (Some(product), Some(version)) => {
                                                 Some(format!("{} {}", product, version))
-                                            }
+                                            },
                                             (Some(product), None) => Some(product.clone()),
                                             (None, Some(version)) => Some(version.clone()),
                                             (None, None) => None,
@@ -1133,13 +1133,13 @@ impl ScanScheduler {
 
                                     continue;
                                 }
-                            }
+                            },
                             Err(e) => {
                                 debug!(
                                     "Service detection failed for {}:{}: {}",
                                     result.target_ip, result.port, e
                                 );
-                            }
+                            },
                         }
 
                         // If service detection failed and banner grabbing is enabled, try that
@@ -1153,13 +1153,13 @@ impl ScanScheduler {
                                             result.target_ip, result.port
                                         );
                                     }
-                                }
+                                },
                                 Err(e) => {
                                     debug!(
                                         "Banner grab failed for {}:{}: {}",
                                         result.target_ip, result.port, e
                                     );
-                                }
+                                },
                             }
                         }
                     }

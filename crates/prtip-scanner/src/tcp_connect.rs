@@ -172,7 +172,7 @@ impl TcpConnectScanner {
                     // Connection succeeded - port is open
                     debug!("Port {} open on {}", addr.port(), addr.ip());
                     return Ok(PortState::Open);
-                }
+                },
                 Ok(Err(e)) => {
                     // Connection error
                     match e.kind() {
@@ -180,12 +180,12 @@ impl TcpConnectScanner {
                             // Explicit RST received - port is closed
                             debug!("Port {} closed on {}", addr.port(), addr.ip());
                             return Ok(PortState::Closed);
-                        }
+                        },
                         std::io::ErrorKind::PermissionDenied => {
                             // Firewall or policy blocked the connection
                             warn!("Permission denied for {}", addr);
                             return Ok(PortState::Filtered);
-                        }
+                        },
                         std::io::ErrorKind::AddrInUse | std::io::ErrorKind::AddrNotAvailable => {
                             // Local address/port issue
                             warn!("Address unavailable for {}: {}", addr, e);
@@ -194,16 +194,16 @@ impl TcpConnectScanner {
                             }
                             // Retry with different source port
                             continue;
-                        }
+                        },
                         _ => {
                             // Other I/O errors (network unreachable, etc.)
                             warn!("I/O error connecting to {}: {}", addr, e);
                             if attempt == self.retries {
                                 return Ok(PortState::Filtered);
                             }
-                        }
+                        },
                     }
-                }
+                },
                 Err(_elapsed) => {
                     // Timeout - port filtered or no response
                     debug!(
@@ -215,7 +215,7 @@ impl TcpConnectScanner {
                     if attempt == self.retries {
                         return Ok(PortState::Filtered);
                     }
-                }
+                },
             }
 
             // Small delay before retry to avoid overwhelming the target
@@ -392,7 +392,7 @@ impl TcpConnectScanner {
                                     node_id
                                 );
                             }
-                        }
+                        },
                         Err(e) => debug!("Failed to allocate core for worker {}: {}", worker_id, e),
                     }
                 }
@@ -442,10 +442,10 @@ impl TcpConnectScanner {
                             PortState::Open => p.increment_open(),
                             PortState::Closed => p.increment_closed(),
                             PortState::Filtered => p.increment_filtered(),
-                            PortState::Unknown => {} // Don't increment state counters for unknown
+                            PortState::Unknown => {}, // Don't increment state counters for unknown
                         }
                     }
-                }
+                },
                 Ok(Err(e)) => {
                     if let Some(p) = progress {
                         p.increment_completed();
@@ -455,7 +455,7 @@ impl TcpConnectScanner {
                         p.increment_error(ErrorCategory::Other);
                     }
                     warn!("Scan error: {}", e);
-                }
+                },
                 Err(e) => warn!("Task join error: {}", e),
             }
         }

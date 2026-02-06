@@ -167,25 +167,25 @@ impl ScanProgress {
         match category {
             ErrorCategory::ConnectionRefused => {
                 self.connection_refused.fetch_add(1, Ordering::Relaxed);
-            }
+            },
             ErrorCategory::Timeout => {
                 self.timeouts.fetch_add(1, Ordering::Relaxed);
-            }
+            },
             ErrorCategory::NetworkUnreachable => {
                 self.network_unreachable.fetch_add(1, Ordering::Relaxed);
-            }
+            },
             ErrorCategory::HostUnreachable => {
                 self.host_unreachable.fetch_add(1, Ordering::Relaxed);
-            }
+            },
             ErrorCategory::PermissionDenied => {
                 self.permission_denied.fetch_add(1, Ordering::Relaxed);
-            }
+            },
             ErrorCategory::TooManyOpenFiles => {
                 self.too_many_files.fetch_add(1, Ordering::Relaxed);
-            }
+            },
             ErrorCategory::Other => {
                 self.other_errors.fetch_add(1, Ordering::Relaxed);
-            }
+            },
         }
     }
 

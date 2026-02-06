@@ -64,7 +64,7 @@ impl ScanTarget {
                         input
                     )))
                 }
-            }
+            },
             Err(e) => Err(Error::InvalidTarget(format!(
                 "Failed to resolve hostname '{}': {}",
                 input, e
@@ -91,7 +91,7 @@ impl ScanTarget {
                 } else {
                     size
                 }
-            }
+            },
             IpNetwork::V6(net) => {
                 let prefix = net.prefix();
                 if prefix >= 64 {
@@ -99,7 +99,7 @@ impl ScanTarget {
                 } else {
                     u64::MAX // Too large to represent
                 }
-            }
+            },
         }
     }
 
@@ -212,7 +212,7 @@ impl fmt::Display for PortRange {
                     write!(f, "{}", range)?;
                 }
                 Ok(())
-            }
+            },
         }
     }
 }
@@ -267,12 +267,12 @@ impl Iterator for PortRangeIterator {
                         match next_range {
                             PortRange::Single(p) => self.current_port = *p,
                             PortRange::Range(_start, _) => self.current_port = *_start,
-                            _ => {}
+                            _ => {},
                         }
                     }
                 }
                 Some(*port)
-            }
+            },
             PortRange::Range(_start, end) => {
                 if self.current_port > *end {
                     self.current_range_idx += 1;
@@ -281,7 +281,7 @@ impl Iterator for PortRangeIterator {
                             match next_range {
                                 PortRange::Single(p) => self.current_port = *p,
                                 PortRange::Range(s, _) => self.current_port = *s,
-                                _ => {}
+                                _ => {},
                             }
                         }
                         return self.next();
@@ -300,7 +300,7 @@ impl Iterator for PortRangeIterator {
                             match next_range {
                                 PortRange::Single(p) => self.current_port = *p,
                                 PortRange::Range(s, _) => self.current_port = *s,
-                                _ => {}
+                                _ => {},
                             }
                         }
                     }
@@ -309,7 +309,7 @@ impl Iterator for PortRangeIterator {
                 }
 
                 Some(port)
-            }
+            },
             PortRange::List(_) => unreachable!("Lists should be flattened"),
         }
     }
@@ -539,7 +539,7 @@ impl From<&ScanResult> for ScanResultRkyv {
                 let mut bytes = [0u8; 16];
                 bytes[..4].copy_from_slice(&ipv4.octets());
                 (bytes, true)
-            }
+            },
             IpAddr::V6(ipv6) => (ipv6.octets(), false),
         };
 

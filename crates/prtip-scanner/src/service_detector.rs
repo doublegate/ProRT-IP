@@ -249,10 +249,10 @@ impl ServiceDetector {
                     debug!("Port {}: NULL probe matched: {}", port, info.service);
                     info.raw_response = Some(raw_response);
                     return Ok(info);
-                }
+                },
                 Err(e) => {
                     debug!("Port {}: NULL probe failed: {}", port, e);
-                }
+                },
             }
         }
 
@@ -273,10 +273,10 @@ impl ServiceDetector {
                         );
                         info.raw_response = Some(raw_response);
                         return Ok(info);
-                    }
+                    },
                     Err(e) => {
                         debug!("Port {}: Probe {} failed: {}", port, probe.name, e);
-                    }
+                    },
                 }
             }
         }
@@ -467,11 +467,11 @@ impl ServiceDetector {
                     cert.san.len()
                 );
                 Some(cert)
-            }
+            },
             Err(e) => {
                 debug!("Failed to parse certificate: {}", e);
                 None
-            }
+            },
         };
 
         // Parse full certificate chain
@@ -491,11 +491,11 @@ impl ServiceDetector {
                         chain.is_valid
                     );
                     Some(chain)
-                }
+                },
                 Err(e) => {
                     debug!("Failed to parse certificate chain: {}", e);
                     None
-                }
+                },
             }
         };
 
@@ -553,11 +553,11 @@ impl ServiceDetector {
         match timeout(probe_timeout, stream.read(&mut buf)).await {
             Ok(Ok(n)) if n > 0 => {
                 response.extend_from_slice(&buf[..n]);
-            }
+            },
 
             _ => {
                 return Err(Error::Network("No response".to_string()));
-            }
+            },
         }
 
         // Log the raw response for debugging

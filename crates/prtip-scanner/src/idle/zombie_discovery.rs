@@ -164,11 +164,11 @@ impl ZombieDiscovery {
                             break;
                         }
                     }
-                }
+                },
                 Err(_) => {
                     // Skip hosts that fail (unresponsive, filtered, etc.)
                     continue;
-                }
+                },
             }
         }
 

@@ -125,7 +125,7 @@ pub fn enumerate_interfaces() -> Result<Vec<NetworkInterface>, InterfaceError> {
                     if !is_link_local {
                         ipv6_addresses.push(ipv6);
                     }
-                }
+                },
             }
         }
 

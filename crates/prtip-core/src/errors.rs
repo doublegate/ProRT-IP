@@ -80,16 +80,16 @@ impl ScanErrorKind {
             ),
             ScanErrorKind::NetworkUnreachable => {
                 Some("Check network connectivity and routing tables")
-            }
+            },
             ScanErrorKind::HostUnreachable => {
                 Some("Verify target is online and reachable, check firewall rules")
-            }
+            },
             ScanErrorKind::PermissionDenied => {
                 Some("Run with elevated privileges (sudo/root) or use CAP_NET_RAW capability")
-            }
+            },
             ScanErrorKind::TooManyOpenFiles => {
                 Some("Reduce batch size (--batch-size) or increase ulimit (ulimit -n)")
-            }
+            },
             ScanErrorKind::Other => None,
         }
     }
@@ -239,7 +239,7 @@ fn categorize_io_error(err: &io::Error) -> ScanErrorKind {
             } else {
                 ScanErrorKind::Other
             }
-        }
+        },
     }
 }
 

@@ -60,7 +60,7 @@ impl NumaTopology {
                 Err(e) => {
                     warn!("NUMA detection failed: {}, falling back to single-node", e);
                     Ok(Self::SingleNode)
-                }
+                },
             }
         }
 
@@ -85,7 +85,7 @@ impl NumaTopology {
                     e
                 );
                 return Ok(Self::SingleNode);
-            }
+            },
         };
 
         // Get NUMA nodes (Memory objects, not in normal hierarchy)
@@ -108,7 +108,7 @@ impl NumaTopology {
                 None => {
                     warn!("NUMA node without os_index, skipping");
                     continue;
-                }
+                },
             };
             let cores = Self::get_cores_for_node(&topo, node_obj)?;
 
@@ -149,7 +149,7 @@ impl NumaTopology {
             Ok(depth) => depth,
             Err(_) => {
                 return Err(NumaError::Detection("Failed to query PU depth".to_string()));
-            }
+            },
         };
 
         let pu_objs: Vec<_> = topo.objects_at_depth(pu_depth).collect();
@@ -234,7 +234,7 @@ impl NumaTopology {
             Self::SingleNode => None,
             Self::MultiNode { cores_per_node, .. } => {
                 cores_per_node.get(&node_id).map(|v| v.as_slice())
-            }
+            },
         }
     }
 
@@ -246,10 +246,10 @@ impl NumaTopology {
                 std::thread::available_parallelism()
                     .map(|n| n.get())
                     .unwrap_or(1)
-            }
+            },
             Self::MultiNode { cores_per_node, .. } => {
                 cores_per_node.values().map(|v| v.len()).sum()
-            }
+            },
         }
     }
 }
@@ -332,7 +332,7 @@ mod tests {
         match topo {
             NumaTopology::SingleNode => {
                 println!("Single-node system detected (expected on most test systems)");
-            }
+            },
             NumaTopology::MultiNode {
                 node_count,
                 cores_per_node,
@@ -351,7 +351,7 @@ mod tests {
                     println!("  Node {}: {:?}", node_id, cores);
                     assert!(!cores.is_empty());
                 }
-            }
+            },
         }
     }
 }

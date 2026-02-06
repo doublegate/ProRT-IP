@@ -295,13 +295,13 @@ impl CdnDetector {
                 if let Some(provider) = self.ipv4_prefix_map.get(&prefix) {
                     return Some(*provider);
                 }
-            }
+            },
             IpAddr::V6(ipv6) => {
                 let prefix = Self::ipv6_to_prefix48(*ipv6);
                 if let Some(provider) = self.ipv6_prefix_map.get(&prefix) {
                     return Some(*provider);
                 }
-            }
+            },
         }
 
         // Fallback to linear search for edge cases (rare)

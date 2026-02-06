@@ -278,11 +278,11 @@ impl SynScanner {
                     return Ok(
                         ScanResult::new(target, port, state).with_response_time(response_time)
                     );
-                }
+                },
                 Ok(Err(e)) => {
                     warn!("Error waiting for response: {}", e);
                     break;
-                }
+                },
                 Err(_) => {
                     // Timeout - retry if we haven't exceeded max retries
                     if retry < max_retries {
@@ -321,7 +321,7 @@ impl SynScanner {
                         )
                         .await?;
                     }
-                }
+                },
             }
         }
 
@@ -450,7 +450,7 @@ impl SynScanner {
                     pool.reset();
                     Ok::<_, prtip_core::Error>(())
                 })?;
-            }
+            },
             (IpAddr::V6(src_ipv6), IpAddr::V6(dst_ipv6)) => {
                 // IPv6 SYN packet - Sprint 5.1
                 let mut builder = TcpPacketBuilder::new()
@@ -504,13 +504,13 @@ impl SynScanner {
                         "Packet capture not initialized".to_string(),
                     ));
                 }
-            }
+            },
             _ => {
                 return Err(prtip_core::Error::Config(format!(
                     "IP version mismatch: local {} vs target {}",
                     local_ip, target
                 )));
-            }
+            },
         }
 
         Ok(sequence)
@@ -600,7 +600,7 @@ impl SynScanner {
                     // Copy packet bytes for batching (zero-copy up to this point)
                     Ok(packet.to_vec())
                 })
-            }
+            },
             (IpAddr::V6(src_ipv6), IpAddr::V6(dst_ipv6)) => {
                 // IPv6 SYN packet - Sprint 5.1
                 let mut builder = TcpPacketBuilder::new()
@@ -626,7 +626,7 @@ impl SynScanner {
                 // Build IPv6+TCP packet (returns Vec<u8> directly)
                 let packet = builder.build_ipv6_packet(src_ipv6, dst_ipv6)?;
                 Ok(packet)
-            }
+            },
             _ => Err(prtip_core::Error::Config(format!(
                 "IP version mismatch: local {} vs target {}",
                 local_ip, target
@@ -685,7 +685,7 @@ impl SynScanner {
                     pool.reset();
                     Ok::<_, prtip_core::Error>(())
                 })?;
-            }
+            },
             (IpAddr::V6(src_ipv6), IpAddr::V6(dst_ipv6)) => {
                 // Build and send IPv6 RST packet
                 let mut builder = TcpPacketBuilder::new()
@@ -719,13 +719,13 @@ impl SynScanner {
                         src_port
                     );
                 }
-            }
+            },
             _ => {
                 return Err(prtip_core::Error::Config(format!(
                     "IP version mismatch: local {} vs target {}",
                     local_ip, target
                 )));
-            }
+            },
         }
 
         Ok(())
@@ -849,7 +849,7 @@ impl SynScanner {
 
                 // Unknown response
                 Ok(None)
-            }
+            },
             IpAddr::V6(target_ipv6) => {
                 // Parse IPv6 packet
                 let ipv6_packet = match Ipv6Packet::new(eth_packet.payload()) {
@@ -917,7 +917,7 @@ impl SynScanner {
 
                 // Unknown response
                 Ok(None)
-            }
+            },
         }
     }
 
@@ -1090,7 +1090,7 @@ impl SynScanner {
                 };
 
                 Ok(Some(((target_ip, target_port, source_port), state)))
-            }
+            },
             6 => {
                 // Parse IPv6 packet
                 let ipv6_packet = match Ipv6Packet::new(ip_payload) {
@@ -1125,7 +1125,7 @@ impl SynScanner {
                 };
 
                 Ok(Some(((target_ip, target_port, source_port), state)))
-            }
+            },
             _ => Ok(None),
         }
     }
@@ -1461,10 +1461,10 @@ impl SynScanner {
                             }
                         }
                         let _ = tx.send(result).await;
-                    }
+                    },
                     Err(e) => {
                         warn!("Error scanning {}:{}: {}", target, port, e);
-                    }
+                    },
                 }
             });
 
@@ -1710,7 +1710,7 @@ mod tests {
         match ipv6_packet {
             Ok(packet) => {
                 assert!(!packet.is_empty(), "IPv6 packet should not be empty");
-            }
+            },
             Err(e) => {
                 // Expected error if no local IPv6 address is available
                 assert!(
@@ -1719,7 +1719,7 @@ mod tests {
                     "Error should indicate IP version mismatch or missing IPv6: {}",
                     e
                 );
-            }
+            },
         }
     }
 

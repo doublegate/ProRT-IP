@@ -137,14 +137,6 @@ jobs:
           # Requires Npcap: https://npcap.com/
           \`\`\`
 
-          ### macOS (x86_64)
-          \`\`\`bash
-          wget https://github.com/doublegate/ProRT-IP/releases/download/$VERSION/prtip-$VERSION_NUM-x86_64-apple-darwin.tar.gz
-          tar xzf prtip-$VERSION_NUM-x86_64-apple-darwin.tar.gz
-          sudo mv prtip /usr/local/bin/
-          chmod +x /usr/local/bin/prtip
-          \`\`\`
-
           ### Build from Source
           \`\`\`bash
           git clone https://github.com/doublegate/ProRT-IP.git
@@ -260,15 +252,16 @@ jobs:
             os: windows-latest
             archive: zip
 
-          # macOS - Intel x86_64 (older Macs)
-          - target: x86_64-apple-darwin
-            os: macos-13
-            archive: tar.gz
-
-          # macOS - Apple Silicon ARM64 (M1/M2/M3/M4)
-          - target: aarch64-apple-darwin
-            os: macos-latest
-            archive: tar.gz
+          # DISABLED: macOS builds removed
+          # # macOS - Intel x86_64 (older Macs)
+          # - target: x86_64-apple-darwin
+          #   os: macos-13
+          #   archive: tar.gz
+          #
+          # # macOS - Apple Silicon ARM64 (M1/M2/M3/M4)
+          # - target: aarch64-apple-darwin
+          #   os: macos-latest
+          #   archive: tar.gz
 
           # FreeBSD - x86_64 (for BSD users)
           - target: x86_64-unknown-freebsd

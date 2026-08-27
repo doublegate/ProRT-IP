@@ -324,12 +324,12 @@ const MINIMAL_PROBES: &str = r#"
 Probe TCP NULL q||
 Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
 ports 80,443,8080
-match http m|^HTTP/1\.[01]| p/HTTP/
-match http m|^HTTP/1\.[01] \d+ | p/HTTP/ v/$1/
+match http m|\r\nServer: Apache/([\w.]+)| p/Apache-httpd/ v/$1/ cpe:/a:apache:http_server/
+match http m|\r\nServer: ([\w.+-]+)/([\w.]+)| p/$1/ v/$2/
 
-Probe TCP SSHVersionRequest q|SSH-2.0-OpenSSH_7.4\r\n|
+Probe TCP NULL q||
 ports 22
-match ssh m|^SSH-([\\d.]+)-OpenSSH[_-]([\\w.]+)| p/OpenSSH/ v/$2/ i/protocol $1/
+match ssh m|^SSH-([\d.]+)-OpenSSH[_-]([\w.]+)| p/OpenSSH/ v/$2/ i/protocol-$1/ cpe:/a:openbsd:openssh/
 "#;
 
 let probe_db = ServiceProbeDb::parse(MINIMAL_PROBES)

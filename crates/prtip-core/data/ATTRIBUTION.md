@@ -127,6 +127,35 @@ Remediation, all of it in this change:
 4. Coverage claims across the README, the docs tree and the CLI help were
    corrected to the real numbers above.
 
+### Where the line was drawn
+
+Two kinds of Nmap-shaped material were found during this remediation, and they
+were treated differently on purpose.
+
+**Removed as Covered Software.** The vendored corpus and the port ordering are
+the *output of Insecure.Com's own measurement and curation*: two decades of
+accumulated probe/match rules, and a ranking of ports by observed frequency.
+Selection and arrangement of that kind is the substance of the data files the
+NPSL names, so both were removed and rebuilt from scratch.
+
+**Kept, being protocol facts rather than anyone's expression.** Some example
+and test-fixture lines carried a truncated TLS ClientHello,
+`\x16\x03\x00\x00S\x01\x00\x00O\x03\x00`. Every byte of that string is dictated
+by the TLS record and handshake layout (RFC 6101 / RFC 2246): a handshake record
+type, a version, two length fields, and a ClientHello message type. Any
+implementation emitting a minimal ClientHello produces the same bytes, so there
+is no authorship in it to license. Those lines were nevertheless rewritten to
+use ProRT-IP's own `TLSSessionReq` probe, because after the corpus was replaced
+they no longer described what ProRT-IP actually sends — an accuracy fix, not a
+licensing one.
+
+The remaining probe-format examples in the `docs/` tree were neither: they were
+invented by earlier documentation authors, several with syntax this project's
+parser does not accept. They were replaced with real lines from
+`service-probes.txt` so that the documentation matches the shipped corpus.
+
+---
+
 ProRT-IP remains interface-compatible with a number of Nmap command-line flags
 (`-sS`, `-sV`, `-oX`, …). That is an independent reimplementation of a
 command-line interface and involves no Nmap code or data.

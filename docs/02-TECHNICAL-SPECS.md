@@ -495,8 +495,8 @@ Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
 rarity 1
 ports 80,443,8080,8443
 
-match http m|^HTTP/1\.[01] \d\d\d| p/HTTP/ v/$1/
-match http m|^Server: ([^\r\n]+)| p/HTTP/ v/$1/
+match http m|\r\nServer: nginx/([\w.]+)| p/nginx/ v/$1/ cpe:/a:nginx:nginx/
+match http m|\r\nServer: ([\w.+-]+)/([\w.]+)| p/$1/ v/$2/
 ```
 
 ---

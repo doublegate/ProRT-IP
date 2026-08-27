@@ -97,8 +97,8 @@ Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
 ports 80,443,8080
 sslports 443,8443
 rarity 1
-match http m|^HTTP/1\.[01]| p/HTTP/
-softmatch http m|^HTTP|
+match http m|^HTTP/1\.[01] [45]\d\d| p/HTTP/ i/bad-request/
+softmatch http m|^HTTP/1\.[01] \d{3} |
 ```
 
 ### Probe Directive
@@ -123,14 +123,14 @@ Probe TCP NULL q||
 ```
 *Sends no data, waits for server banner (many services self-announce)*
 
-**SSH Version Request:**
+**Redis PING Probe:**
 ```
-Probe TCP SSHVersionRequest q|SSH-2.0-OpenSSH_Scanner\r\n|
+Probe TCP RedisPING q|PING\r\n|
 ```
 
 **SMTP EHLO:**
 ```
-Probe TCP SMTPEhlo q|EHLO example.com\r\n|
+Probe TCP SMTPHelo q|EHLO prtip.invalid\r\n|
 ```
 
 ### Ports Directive
@@ -222,17 +222,17 @@ rarity 1
 
 **Specialized Database (rarity 7):**
 ```
-Probe TCP Adabas q|\x00\x00\x00\x0c\x00\x00\x00\x01...|
+Probe TCP MSSQLPreLogin q|\x12\x01\x00\x14\x00\x00\x01\x00\x00\x00\x06\x00\x06\xff\x00\x00\x00\x00\x00\x00|
 rarity 7
 ```
 *Only used at intensity 7-9*
 
-**Exotic Protocol (rarity 9):**
+**Exotic Protocol (rarity 8):**
 ```
-Probe TCP ObscureService q|...|
-rarity 9
+Probe TCP FingerProbe q|root\r\n|
+rarity 8
 ```
-*Only at maximum intensity 9*
+*Only used at intensity 8-9 (the corpus's highest assigned rarity)*
 
 ### Match Directive
 
@@ -259,30 +259,30 @@ rarity 9
 
 **HTTP Server Detection:**
 ```
-match http m|^HTTP/1\.[01] \d\d\d| p/HTTP/
+match http m|^HTTP/1\.[01] [45]\d\d| p/HTTP/ i/bad-request/
 ```
 
 **Apache Version Extraction:**
 ```
-match http m|^HTTP/1\.[01] \d\d\d .*\r\nServer: Apache/([\d.]+)| p/Apache httpd/ v/$1/
+match http m|\r\nServer: Apache/([\w.]+)| p/Apache-httpd/ v/$1/ cpe:/a:apache:http_server/
 ```
 *Captures version in group 1 ($1)*
 
-**Nginx with OS:**
+**Optional Fields (schematic):**
 ```
-match http m|^HTTP/1\.[01] \d\d\d .*\r\nServer: nginx/([\d.]+).*\((Ubuntu)\)| p/Nginx/ v/$1/ i/$2/ o/Linux/
+match <service> m|<regex>| p/<product>/ v/$1/ i/$2/ o/<ostype>/
 ```
-*Captures version ($1) and OS hint ($2)*
+*`$1`, `$2`, etc. reference regex capture groups; any optional field left off the line is simply omitted*
 
-**OpenSSH with Platform:**
+**OpenSSH Version Extraction:**
 ```
-match ssh m|^SSH-2\.0-OpenSSH_([\w._-]+) (Debian|Ubuntu)-(\S+)| p/OpenSSH/ v/$1/ i/$2 $3/ o/Linux/
+match ssh m|^SSH-([\d.]+)-OpenSSH[_-]([\w.]+)| p/OpenSSH/ v/$2/ i/protocol-$1/ cpe:/a:openbsd:openssh/
 ```
-*Extracts version, distribution, and package version*
+*Extracts SSH protocol version ($1) and OpenSSH version ($2)*
 
 **MySQL with CPE:**
 ```
-match mysql m|^\x4e\x00\x00\x00\x0a(5\.[\d.]+)| p/MySQL/ v/$1/ cpe:/a:oracle:mysql:$1/
+match mysql m|^[\s\S]{3}\n(\d+\.\d+\.\d+[\w.-]*)\x00| p/MySQL/ v/$1/ cpe:/a:oracle:mysql/
 ```
 *Binary protocol with version extraction and CVE identifier*
 
@@ -303,19 +303,19 @@ match mysql m|^\x4e\x00\x00\x00\x0a(5\.[\d.]+)| p/MySQL/ v/$1/ cpe:/a:oracle:mys
 
 **Generic HTTP:**
 ```
-softmatch http m|^HTTP/|
+softmatch http m|^HTTP/1\.[01] \d{3} |
 ```
 *Matches any HTTP response, even without Server header*
 
 **Generic SSH:**
 ```
-softmatch ssh m|^SSH-|
+softmatch ssh m|^SSH-[\d.]+-|
 ```
 *Matches SSH banner without extracting version*
 
 **Generic FTP:**
 ```
-softmatch ftp m|^220 |
+softmatch ftp m|^220[- ]|
 ```
 *Matches FTP greeting code*
 
@@ -344,21 +344,21 @@ Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
 ```
 *`\r\n` = CRLF line endings required by HTTP*
 
-**Binary MySQL Handshake:**
+**Binary PostgreSQL SSLRequest:**
 ```
-Probe TCP MySQLHandshake q|\x00\x00\x00\x0a\x35\x2e\x35\x2e\x35|
+Probe TCP PostgresSSLRequest q|\x00\x00\x00\x08\x04\xd2\x16\x2f|
 ```
 *Each `\xHH` is a single byte*
 
-**SMTP with Null Terminator:**
+**Null-Terminated Payload (schematic):**
 ```
-Probe TCP SMTPQuit q|QUIT\r\n\0|
+Probe <TCP|UDP> <Name> q|<text>\0|
 ```
-*Some implementations expect null terminator*
+*Some implementations expect a null terminator*
 
 **Mixed Text and Binary:**
 ```
-Probe TCP CustomProtocol q|HELLO\x00\x01\x02WORLD\r\n|
+Probe TCP AMQPHeader q|AMQP\x00\x00\x09\x01|
 ```
 *Text strings mixed with binary bytes*
 
@@ -519,9 +519,9 @@ Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
 ports 80,443,8080,8443,8000-8100
 sslports 443,8443
 rarity 1
-match http m|^HTTP/1\.[01] \d\d\d| p/HTTP/
-match http m|^HTTP/1\.[01] \d\d\d .*\r\nServer: Apache/([\d.]+)| p/Apache httpd/ v/$1/
-match http m|^HTTP/1\.[01] \d\d\d .*\r\nServer: nginx/([\d.]+)| p/Nginx/ v/$1/
+match http m|^HTTP/1\.[01] [45]\d\d| p/HTTP/ i/bad-request/
+match http m|\r\nServer: Apache/([\w.]+)| p/Apache-httpd/ v/$1/ cpe:/a:apache:http_server/
+match http m|\r\nServer: nginx/([\w.]+)| p/nginx/ v/$1/ cpe:/a:nginx:nginx/
 ```
 
 **Response Examples:**
@@ -571,20 +571,20 @@ rarity 2
 - Custom text services
 - Misconfigured services
 
-### SSLSessionReq (TLS Handshake)
+### TLSSessionReq (TLS Handshake)
 
 **Purpose:** Detect TLS/SSL services and extract certificate information.
 
 **Definition:**
 ```
-Probe TCP SSLSessionReq q|\x16\x03\x00\x00S\x01\x00\x00O\x03\x00...|
-sslports 443,465,993,995,636,990,8443
-rarity 1
+Probe TCP TLSSessionReq q|\x16\x03\x01\x00\x35\x01\x00\x00\x31\x03\x03PRTIP-CLIENT-HELLO-RANDOM-32BYTE\x00\x00\x08\xc0\x2f\xc0\x30\x00\x2f\x00\x35\x01\x00\x00\x00|
+ports 443,465,636,853,990,993,995,8443,8883,9443,10443
+rarity 2
 ```
 
 **Binary Protocol:**
 - `\x16` = TLS handshake
-- `\x03\x00` = SSL 3.0
+- `\x03\x01` = TLS 1.0 record layer
 - ClientHello message with cipher suites
 
 **Services Detected:**
@@ -603,17 +603,17 @@ PORT     STATE  SERVICE  VERSION
 |_ Valid: 2024-01-01 to 2025-01-01
 ```
 
-### MySQLHandshake
+### MySQL/MariaDB Detection
 
 **Purpose:** Detect MySQL/MariaDB servers and extract version.
 
-**Definition:**
+**Definition:** (via the NULL probe's passive banner grab -- MySQL and MariaDB both
+announce their version unprompted, so no dedicated active probe is needed)
 ```
-Probe TCP MySQLHandshake q|\x00\x00\x00\x0a\x35\x2e\x35\x2e\x35|
-ports 3306
-rarity 3
-match mysql m|^\x4e\x00\x00\x00\x0a(5\.[\d.]+)| p/MySQL/ v/$1/ cpe:/a:oracle:mysql:$1/
-match mysql m|^\x4e\x00\x00\x00\x0a(5\.[\d.]+).*MariaDB| p/MariaDB/ v/$1/
+Probe TCP NULL q||
+rarity 1
+match mysql m|^[\s\S]{3}\n([\w.-]*MariaDB[\w.-]*)\x00| p/MariaDB/ v/$1/ cpe:/a:mariadb:mariadb/
+match mysql m|^[\s\S]{3}\n(\d+\.\d+\.\d+[\w.-]*)\x00| p/MySQL/ v/$1/ cpe:/a:oracle:mysql/
 ```
 
 **Binary Protocol:**
@@ -677,62 +677,62 @@ Capture groups extract version information from responses:
 
 **Example:**
 ```
-match http m|Server: Apache/([\d.]+) \((Ubuntu|Debian)\)| p/Apache httpd/ v/$1/ i/$2/
+match http m|\r\nServer: SimpleHTTP/([\w.]+) Python/([\w.]+)| p/Python-http.server/ v/$1/ i/Python-$2/
 ```
 
 **Response:**
 ```
-Server: Apache/2.4.52 (Ubuntu)
+Server: SimpleHTTP/0.6 Python/3.11.2
 ```
 
 **Captured:**
-- `$1` = `2.4.52` (version)
-- `$2` = `Ubuntu` (platform)
+- `$1` = `0.6` (SimpleHTTP version)
+- `$2` = `3.11.2` (Python interpreter version)
 
 **Result:**
 ```
-Product: Apache httpd
-Version: 2.4.52
-Info: Ubuntu
+Product: Python-http.server
+Version: 0.6
+Info: Python-3.11.2
 ```
 
 ### Version Extraction Fields
 
 **Product (`p/.../`):**
 ```
-match http m|Server: (Apache|Nginx)| p/$1/
+match http m|\r\nServer: ([\w.+-]+)/([\w.]+)| p/$1/ v/$2/
 ```
 *Extracts product name dynamically*
 
 **Version (`v/.../`):**
 ```
-match ssh m|SSH-[\d.]+-OpenSSH_([\d.p]+)| v/$1/
+match ssh m|^SSH-([\d.]+)-OpenSSH[_-]([\w.]+)| p/OpenSSH/ v/$2/ i/protocol-$1/ cpe:/a:openbsd:openssh/
 ```
-*Extracts version from capture group*
+*Extracts OpenSSH version into `v/$2/`*
 
 **Info (`i/.../`):**
 ```
-match http m|Apache/[\d.]+ \(([^)]+)\)| i/$1/
+match http m|\r\nServer: Apache-Coyote/([\w.]+)| p/Apache-Tomcat/ i/Coyote-$1/ cpe:/a:apache:tomcat/
 ```
-*Extracts platform/OS hint*
+*Extracts the embedded Coyote connector version into `i/Coyote-$1/`*
 
 **Hostname (`h/.../`):**
 ```
-match http m|Host: ([^\r\n]+)| h/$1/
+match irc m|^:([\w.-]+) NOTICE [\s\S]{0,40}\*\*\*| p/IRCd/ h/$1/
 ```
-*Extracts hostname from Host header*
+*Extracts the IRC server's announced hostname*
 
 **OS Type (`o/.../`):**
 ```
-match ssh m|Ubuntu| o/Linux/
+match <service> m|<regex>| o/<ostype>/
 ```
-*Hardcoded OS type*
+*Schematic -- the current corpus does not yet populate `o/` for any rule*
 
 **Device Type (`d/.../`):**
 ```
-match upnp m|UPnP/1.0| d/media device/
+match <service> m|<regex>| d/<devicetype>/
 ```
-*Identifies device category*
+*Schematic -- the current corpus does not yet populate `d/` for any rule*
 
 ### CPE Identifiers
 
@@ -759,7 +759,7 @@ cpe:/a:openbsd:openssh:8.9p1
 
 **Usage in Match:**
 ```
-match mysql m|MySQL/([\d.]+)| p/MySQL/ v/$1/ cpe:/a:oracle:mysql:$1/
+match mysql m|^[\s\S]{3}\n(\d+\.\d+\.\d+[\w.-]*)\x00| p/MySQL/ v/$1/ cpe:/a:oracle:mysql/
 ```
 
 **Security Benefit:**
@@ -1084,13 +1084,13 @@ Content-Length: 1024
 
 **Match Rule:**
 ```
-match http m|Server: Apache/([\d.]+) \((Ubuntu|Debian)\)| p/Apache httpd/ v/$1/ i/$2/ o/Linux/
+match http m|\r\nServer: Apache/([\w.]+)| p/Apache-httpd/ v/$1/ cpe:/a:apache:http_server/
 ```
 
 **Result:**
 ```
 PORT    STATE  SERVICE  VERSION
-80/tcp  open   http     Apache httpd 2.4.52 (Ubuntu Linux)
+80/tcp  open   http     Apache httpd 2.4.52
 ```
 
 **CPE Identifier:** `cpe:/a:apache:http_server:2.4.52`
@@ -1116,18 +1116,17 @@ SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.1
 
 **Match Rule:**
 ```
-match ssh m|^SSH-2\.0-OpenSSH_([\w.]+) (Ubuntu|Debian)-(\S+)| p/OpenSSH/ v/$1/ i/$2 $3/ o/Linux/
+match ssh m|^SSH-([\d.]+)-OpenSSH[_-]([\w.]+)| p/OpenSSH/ v/$2/ i/protocol-$1/ cpe:/a:openbsd:openssh/
 ```
 
 **Captured Groups:**
-- `$1` = `8.9p1` (OpenSSH version)
-- `$2` = `Ubuntu` (distribution)
-- `$3` = `3ubuntu0.1` (package version)
+- `$1` = `2.0` (SSH protocol version)
+- `$2` = `8.9p1` (OpenSSH version)
 
 **Result:**
 ```
 PORT    STATE  SERVICE  VERSION
-22/tcp  open   ssh      OpenSSH 8.9p1 (Ubuntu 3ubuntu0.1 Linux)
+22/tcp  open   ssh      OpenSSH 8.9p1 (protocol-2.0)
 ```
 
 **Security Analysis:**
@@ -1148,12 +1147,12 @@ Probe TCP NULL q||
 
 **Response (Binary Protocol):**
 ```
-\x4e\x00\x00\x00\x0a5.7.42-0ubuntu0.18.04.1\x00\x2a\x00...
+\x4e\x00\x00\x0a5.7.42-0ubuntu0.18.04.1\x00\x2a\x00...
 ```
 
 **Match Rule:**
 ```
-match mysql m|^\x4e\x00\x00\x00\x0a(5\.[\d.]+)| p/MySQL/ v/$1/ cpe:/a:oracle:mysql:$1/
+match mysql m|^[\s\S]{3}\n(\d+\.\d+\.\d+[\w.-]*)\x00| p/MySQL/ v/$1/ cpe:/a:oracle:mysql/
 ```
 
 **Captured:**
@@ -1168,7 +1167,7 @@ PORT      STATE  SERVICE  VERSION
 **Security Notes:**
 - MySQL 5.7 reached EOL October 2023
 - Upgrade to MySQL 8.0+ recommended
-- CVE check: `cpe:/a:oracle:mysql:5.7.42`
+- CVE check: `cpe:/a:oracle:mysql/`, version 5.7.42
 
 ---
 

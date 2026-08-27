@@ -21,10 +21,10 @@ rarity 1
 match http m|^HTTP/1\.[01]| p/HTTP/
 match https m|^HTTP/1\.[01]| p/HTTPS/
 
-Probe TCP TLSSessionReq q|\x16\x03\x00\x00S\x01\x00\x00O\x03\x00|
-ports 443,8443,465,587,993,995,636,990
-rarity 1
-match ssl m|^\x16\x03| p/SSL/
+Probe TCP TLSSessionReq q|\x16\x03\x01\x00\x35\x01\x00\x00\x31\x03\x03PRTIP-CLIENT-HELLO-RANDOM-32BYTE\x00\x00\x08\xc0\x2f\xc0\x30\x00\x2f\x00\x35\x01\x00\x00\x00|
+ports 443,465,636,853,990,993,995,8443,8883,9443,10443
+rarity 2
+match ssl m|^\x16\x03[\x00-\x04]| p/TLS/ i/server-hello/
 "#;
     ServiceProbeDb::parse(db_content).expect("Failed to parse test probe database")
 }

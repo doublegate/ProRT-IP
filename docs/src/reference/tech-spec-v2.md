@@ -957,16 +957,16 @@ Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
 rarity 1
 ports 80,443,8080,8443,8000,8888,9000
 
-match http m|^HTTP/1\.[01] (\d\d\d)| p/HTTP/ v/$1/
-match http m|^Server: ([^\r\n]+)| p/$1/
-match http m|^Server: Apache/([^\s]+)| p/Apache httpd/ v/$1/
-match nginx m|^Server: nginx/([^\s]+)| p/nginx/ v/$1/
+match http m|\r\nServer: Apache/([\w.]+)| p/Apache-httpd/ v/$1/ cpe:/a:apache:http_server/
+match http m|\r\nServer: nginx/([\w.]+)| p/nginx/ v/$1/ cpe:/a:nginx:nginx/
+match http m|\r\nServer: ([\w.+-]+)/([\w.]+)| p/$1/ v/$2/
+match http m|\r\nServer: ([\w.+-]+)\r\n| p/$1/
 
-Probe TCP TLSSessionReq q|\x16\x03\x00\x00S\x01\x00\x00O\x03\x00|
+Probe TCP TLSSessionReq q|\x16\x03\x01\x00\x35\x01\x00\x00\x31\x03\x03PRTIP-CLIENT-HELLO-RANDOM-32BYTE\x00\x00\x08\xc0\x2f\xc0\x30\x00\x2f\x00\x35\x01\x00\x00\x00|
 rarity 2
 ports 443,8443,8444,9443,4443,10443,12443,18091,18092
 
-match ssl m|^\x16\x03[\x00\x01\x02\x03]|s p/SSL/ v/TLSv1/
+match ssl m|^\x16\x03[\x00-\x04]| p/TLS/ i/server-hello/
 ```
 
 **Probe Components:**

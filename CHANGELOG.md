@@ -124,6 +124,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   grant the project actually makes. This corrects the declaration to match the
   licence text; it grants no less than before.
 
+### Fixed
+
+- **`cargo fmt --all -- --check` passes again.** CI runs that exact command and the
+  repository has no `rustfmt.toml`, so the default style is the only one the gate
+  accepts — but commit 87f0bea had introduced match arms terminated with `},` and
+  `_ => {},`, which default rustfmt removes. The tree had been failing its own
+  formatting gate by 4,870 diff lines. The whole fix is one run of `cargo fmt --all`
+  across 81 files, 577 insertions against 577 deletions, every hunk a trailing comma.
+  To keep that style deliberately, add a `rustfmt.toml` setting
+  `match_block_trailing_comma = true`, so the gate and the style agree.
+- **Probe-file examples across the documentation now match the shipped corpus.**
+  `docs/src/reference/service-probes.md`, `docs/src/reference/tech-spec-v2.md`,
+  `docs/02-TECHNICAL-SPECS.md` and `bug_fix/01-Service-Detection/03-Fix-Guide.md`
+  illustrated the format with lines that were invented rather than taken from any
+  real corpus — several using syntax this project's parser does not accept, such as
+  a trailing `|s` regex flag. Every concrete example is now copied verbatim from
+  `crates/prtip-core/data/service-probes.txt`; examples that teach the grammar
+  rather than show a real rule use angle-bracket placeholders, matching
+  `tools/gen-service-probes/FORMAT.md`. The "Custom Probes" walkthrough keeps its
+  deliberately fictional `InternalApp` / `MyService` / `MonitorProbe` examples,
+  which exist to show a reader how to write a probe for their own private service.
+- **The TLS test fixtures and doc examples now use ProRT-IP's own `TLSSessionReq`
+  probe.** They previously carried a truncated ClientHello copied from Nmap. Those
+  bytes are dictated by the TLS record and handshake layout rather than authored by
+  anyone, so this is an accuracy fix and not part of the licensing remediation:
+  after the corpus was replaced they simply no longer described what ProRT-IP
+  sends. `crates/prtip-core/data/ATTRIBUTION.md` records why that material was
+  treated differently from the corpus and the port ordering.
+- **`cargo clippy --workspace --all-targets -- -D warnings` passes again**, and with
+  it the repository's own `.git/hooks/pre-commit`, which runs that exact gate. Four
+  lints were failing: `unnecessary_sort_by` in `cdn_detector.rs` and `help.rs`, and
+  `collapsible_match` in `events/types.rs` and `port_selection.rs`. Only the first
+  two were visible before now — clippy aborts the build on the first failing crate,
+  so `prtip-core`'s two lints masked the ones in `prtip-cli` and `prtip-tui`. All
+  four are behaviour-preserving rewrites (`sort_by` to `sort_by_key`, nested `if`
+  to a match guard falling through to the existing catch-all arm); the full suite
+  is unchanged at 2,563 passing.
+
 ### Known issues
 
 - None outstanding for the licensing remediation. The `nmap-services`-derived port

@@ -894,12 +894,14 @@ Window: 5840  (typical Linux)
 
 #### Fingerprint Database
 
-ProRT-IP includes a comprehensive OS fingerprint database:
+ProRT-IP bundles no OS fingerprint database. The parser and matcher below accept a
+caller-supplied database in `nmap-os-db` format; a caller of the library API must
+provide and load their own signature file.
 
 ```rust
 // Location: crates/prtip-core/src/os_db.rs
 pub struct OsDatabase {
-    fingerprints: Vec<OsFingerprint>,  // 2,600+ fingerprints
+    fingerprints: Vec<OsFingerprint>,  // Populated from a caller-supplied database
     index: HashMap<String, Vec<usize>>,  // Fast lookup by attribute
 }
 
@@ -912,10 +914,8 @@ pub struct OsFingerprint {
 ```
 
 **Database Statistics:**
-- **Total Fingerprints:** 2,600+
-- **OS Families:** 15+ (Linux, Windows, BSD, macOS, iOS, Android, etc.)
-- **Vendors:** 200+ (Microsoft, Apple, Cisco, Juniper, etc.)
-- **Match Accuracy:** 85-95% for common OSes
+- **Total Fingerprints:** None bundled; depends on the caller-supplied database
+- **Match Accuracy:** Not measured (depends entirely on the caller-supplied database)
 
 ---
 
@@ -932,7 +932,7 @@ ProRT-IP supports configurable probe intensity (0-9):
 | **2-6** | Incremental | 3-8 sec | Balanced (increasingly thorough) |
 | **7** | Common + comprehensive | ~10 sec | **Default recommended** |
 | **8** | Nearly all probes | ~20 sec | Thorough detection |
-| **9** | All 187 probes | ~30 sec | Exhaustive (slow) |
+| **9** | All 37 probes | ~30 sec | Exhaustive (slow) |
 
 **Example:**
 
@@ -947,9 +947,10 @@ prtip -sV --version-intensity 0 -p 80,443 192.168.1.1
 prtip -sV --version-intensity 9 -p 1-1000 192.168.1.1
 ```
 
-#### nmap-service-probes Format
+#### ProRT-IP Service Probe Format
 
-ProRT-IP uses Nmap-compatible service probe definitions:
+ProRT-IP uses its own clean-room service probe corpus, written in the format
+documented in `tools/gen-service-probes/FORMAT.md`:
 
 ```
 Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
@@ -982,14 +983,16 @@ match ssl m|^\x16\x03[\x00\x01\x02\x03]|s p/SSL/ v/TLSv1/
 
 **Probe Database:**
 
-- **Total Probes:** 187
-- **Protocols Supported:** HTTP, HTTPS, FTP, SSH, SMTP, POP3, IMAP, Telnet, RDP, VNC, MySQL, PostgreSQL, MongoDB, Redis, and 50+ more
-- **Match Patterns:** 1,200+ regex patterns
+- **Total Probes:** 37 (25 TCP, 12 UDP)
+- **Protocols Supported:** HTTP, HTTPS, FTP, SSH, SMTP, POP3, IMAP, DNS, SMB, RDP, LDAP, MySQL, PostgreSQL, MongoDB, Redis, and the common brokers and UDP services
+- **Match Patterns:** 226 (183 `match` + 43 `softmatch`)
+- **Ports Covered:** 96 distinct ports
 
 **Detection Accuracy:**
-- **Common Services:** 85-90% (HTTP, HTTPS, SSH, FTP)
-- **Databases:** 80-85% (MySQL, PostgreSQL, MongoDB)
-- **Proprietary Protocols:** 60-70% (vendor-specific)
+
+Not measured. This is a young, deliberately small corpus targeting the
+services that dominate real scan results; it does not attempt exhaustive
+coverage.
 
 ---
 

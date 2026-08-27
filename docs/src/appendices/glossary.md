@@ -400,13 +400,13 @@ Technique for identifying systems, services, or protocols based on their unique 
 
 **OS Fingerprinting (`-O`):**
 - TCP/IP stack analysis (16-probe sequence)
-- Nmap OS database (2,600+ signatures)
+- Caller-supplied signature database, none bundled (Nmap-DB-format-compatible)
 - Requires open + closed port
 
 **Service Fingerprinting (`-sV`):**
 - Banner analysis
-- Probe matching (187 service probes)
-- 85-90% accuracy
+- Probe matching (37 service probes, 226 match rules)
+- Accuracy not yet measured
 
 **Related Terms:** OS Detection, Service Detection, Banner Grabbing
 
@@ -1019,7 +1019,7 @@ PORT    STATE  SERVICE
 ### OS Detection
 **Category:** Network Scanning
 
-Identifying the operating system of a target by analyzing TCP/IP stack behavior. ProRT-IP's OS fingerprinting (`-O`) uses Nmap's database (2,600+ signatures).
+Identifying the operating system of a target by analyzing TCP/IP stack behavior. ProRT-IP's OS fingerprinting (`-O`) parser is Nmap-DB-format-compatible, but ProRT-IP bundles no signature database — the caller supplies one.
 
 **Probes (16 total):**
 1. **SEQ:** TCP Sequence number prediction
@@ -1399,11 +1399,11 @@ int sendmmsg(int sockfd, struct mmsghdr *msgvec,
 ### Service Detection
 **Category:** Network Scanning
 
-Identifying application protocols and versions on open ports. ProRT-IP's service detection (`-sV`) achieves **85-90% accuracy**.
+Identifying application protocols and versions on open ports. ProRT-IP's service detection (`-sV`) uses its own clean-room probe corpus; detection accuracy is not yet measured.
 
 **Methods:**
 1. **Banner Grabbing:** Read initial response
-2. **Probe Matching:** Send probes from nmap-service-probes (187 probes)
+2. **Probe Matching:** Send probes from ProRT-IP's service probe corpus (37 probes, 226 match rules)
 3. **Protocol Analysis:** Interpret responses
 
 **Example:**
@@ -1424,7 +1424,7 @@ PORT    STATE  SERVICE  VERSION
 - 7: Default (balance)
 - 9: All probes (slowest, most accurate)
 
-**Related Terms:** Banner Grabbing, Version Detection, nmap-service-probes
+**Related Terms:** Banner Grabbing, Version Detection, Service Probes
 
 ---
 
@@ -1697,7 +1697,7 @@ prtip -sV --version-intensity 2 -p 80 target.com
 prtip -sV --version-intensity 9 -p 80 target.com
 ```
 
-**Related Terms:** Service Detection, Banner Grabbing, nmap-service-probes
+**Related Terms:** Service Detection, Banner Grabbing, Service Probes
 
 ---
 

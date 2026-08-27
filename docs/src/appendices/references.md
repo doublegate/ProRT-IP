@@ -204,8 +204,8 @@ Network scanning, packet analysis, and security tools referenced by ProRT-IP.
   The gold standard for network scanning. ProRT-IP is Nmap-compatible with 50+ flags (`-sS`, `-sV`, `-O`, `-p`, `-T0-T5`).
   - [Nmap Reference Guide](https://nmap.org/book/man.html)
   - [NSE Scripts](https://nmap.org/nsedoc/) (1,200+ scripts)
-  - [OS Fingerprinting Database](https://nmap.org/book/osdetect.html) (2,600+ signatures, used by ProRT-IP)
-  - [Service Probes](https://github.com/nmap/nmap/blob/master/nmap-service-probes) (ProRT-IP uses 187 of 1,000+ probes)
+  - [OS Fingerprinting Database](https://nmap.org/book/osdetect.html) (2,600+ signatures; ProRT-IP's parser is format-compatible but bundles none — bring your own)
+  - [Service Probes](https://github.com/nmap/nmap/blob/master/nmap-service-probes) (Nmap's own database, 1,000+ probes; ProRT-IP ships its own clean-room corpus of 37 probes, 226 match rules, GPL-3.0-compatible)
 
 - **[Masscan](https://github.com/robertdavidgraham/masscan)** - Mass IP Port Scanner
   Author: Robert Graham

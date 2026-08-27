@@ -168,15 +168,15 @@ RUST_LOG=trace prtip -sS target.com    # Maximum verbosity
 ### v0.4.0 (Phase 4 Complete)
 - Partial IPv6 support (TCP Connect only)
 - 8 scan types available
-- Service detection: 500+ services
-- OS fingerprinting with Nmap database
+- Service detection: probe-based (37 probes, 226 match rules today; young, growing corpus)
+- OS fingerprinting: parser is Nmap-DB-format-compatible; no signature database bundled
 - PCAPNG packet capture
 - Rate limiting with -1.8% overhead
 
 ### v0.5.0 (Phase 5 Complete)
 - **Full IPv6 support** (all scan types)
 - TLS certificate analysis
-- Enhanced service detection (85-90% accuracy)
+- Enhanced service detection (accuracy not yet measured)
 - Idle scan implementation
 - Lua plugin system
 - Comprehensive fuzz testing (230M+ executions)

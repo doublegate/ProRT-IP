@@ -407,9 +407,9 @@ sudo prtip -sS -sV --version-intensity 9 -p 80,443 scanme.nmap.org
 ```
 
 **Comparison:**
-- **Intensity 3:** ~1-2 seconds, 70-80% accuracy
-- **Intensity 7:** ~3-5 seconds, 85-90% accuracy
-- **Intensity 9:** ~10-15 seconds, 90-95% accuracy
+- **Intensity 3:** ~1-2 seconds, fewer probes tried (accuracy not yet measured)
+- **Intensity 7:** ~3-5 seconds, more probes tried (accuracy not yet measured)
+- **Intensity 9:** ~10-15 seconds, all probes tried (accuracy not yet measured)
 
 ---
 

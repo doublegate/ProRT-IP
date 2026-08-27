@@ -7,6 +7,128 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **`crates/prtip-core/data/nmap-service-probes` (BREAKING for service detection coverage).**
+  The vendored file (17,128 lines, 2.57 MB) is distributed under the **Nmap Public
+  Source License**, not GPL-2.0 as `ATTRIBUTION.md` previously claimed — and plain
+  GPLv2 would not have been GPLv3-compatible either. The NPSL states that a work
+  which "Reads or includes Covered Software data files, such as `nmap-os-db` or
+  `nmap-service-probes`" is a Derivative Work, and that Derivative Works may not be
+  distributed under plain GPL terms without the licensor's permission. ProRT-IP
+  declares `license = "GPL-3.0"` and compiled that file into every binary via
+  `include_str!`, so the combination was not distributable as licensed.
+- **Runtime search for Nmap data files.** `ServiceProbeDb::load_from_system()` no
+  longer probes `/usr/share/nmap/nmap-service-probes` and friends: merely *reading*
+  those files triggers the NPSL Derivative Work clause above. It now looks only for
+  ProRT-IP's own `service-probes.txt`.
+- **The `nmap-services`-derived port ordering behind `-F` and `--top-ports`
+  (BREAKING for which ports those flags select).** `TOP_100_PORTS` and
+  `TOP_1000_PORTS` were, by their own module documentation, "based on
+  nmap-services frequency data". `nmap-services` is NPSL-covered exactly as
+  `nmap-service-probes` is, so that ordering carried the same defect. Both arrays
+  are gone, along with a second hand-copied duplicate of the 100-port array in
+  `crates/prtip-scanner/examples/common_fast_scan.rs`.
+
+### Added
+
+- **`crates/prtip-core/data/service-probes.txt`** — a clean-room service-detection
+  corpus, GPL-3.0-or-later like the rest of ProRT-IP. Built from the IANA Service
+  Name and Transport Protocol Port Number Registry (retrieved 2026-08-27) for every
+  port assignment, plus probe payloads and match expressions hand-authored from
+  published protocol specifications (IETF RFCs, OASIS MQTT v3.1.1, UPnP Device
+  Architecture 2.0, Microsoft Open Specifications, and vendor protocol
+  documentation). No content is derived from any NPSL-licensed file.
+- **`tools/gen-service-probes/`** — the generator that rebuilds the corpus, so it
+  stays reproducible rather than being a one-off blob: `fetch-iana.sh` (registry
+  download + reduction), a committed registry snapshot, `overlay.txt` (the single
+  hand-maintained file of protocol knowledge), `generate.py` (merge + lint,
+  `--check` mode for CI), and `FORMAT.md` (the probe-file grammar).
+- **`PRIORITY_PORTS_100` / `PRIORITY_PORTS_1000` and `get_priority_ports()`** in
+  `crates/prtip-core/src/top_ports.rs` — a clean-room replacement for the removed
+  ordering, generated from the same committed IANA registry snapshot. `-F` selects
+  the first 100; `--top-ports N` selects the first N. The old names
+  (`TOP_100_PORTS`, `TOP_1000_PORTS`, `get_top_ports()`) remain as `#[deprecated]`
+  aliases so existing callers still compile.
+- **`tools/gen-top-ports/`** — the generator, alongside `gen-service-probes/` and
+  sharing its committed registry snapshot rather than duplicating it: `RULE.md`
+  (the ranking rule, its rationale, and the licensing analysis behind it),
+  `generate.py` (implements the rule; `--check` for CI, `--explain N` to audit the
+  ordering by eye), and `README.md`.
+- A `generated-data` CI job that runs `--check` for **both** generators, so a stale
+  corpus or a stale port array fails the build. The corpus generator's `--check`
+  mode existed but had never been wired into CI.
+- Two honesty gates in `top_ports.rs`: `test_expected_ports_in_priority_100` pins
+  the ports the rule currently ranks into the first hundred, and
+  `test_ordering_is_not_frequency_derived` asserts that 3389 and 8080 are *not*
+  there — a frequency-derived list would rank both highly, so that test failing
+  means either the rule changed or a frequency-derived ordering was reintroduced.
+- Two honesty gates in `service_db.rs`: `test_embedded_corpus_fully_parses` asserts
+  every `match`/`softmatch` line in the corpus is actually loaded (the parser drops
+  rules whose regex fails to compile *silently*), and
+  `test_embedded_corpus_is_not_npsl_derived` guards against reintroduction.
+
+### Changed
+
+- **`-F` and `--top-ports` now select different ports than in v1.0.0, and different
+  ports than Nmap.** The new ordering is an *editorial ranking of IANA port
+  assignments*, not a frequency ranking. The rule groups each registry assignment
+  into one of thirteen service families from the registry's own service names and
+  descriptions, ranks those families by how much an operator learns from finding
+  one open, orders within a family by (well-known before registered, TCP before
+  UDP-only, then ascending port number), and interleaves the families so any prefix
+  of the list spans all of them. Every tie is broken by ascending port number.
+  Ports 3389 (RDP) and 8080 (HTTP-alt), which a frequency-ordered list would put in
+  its first hundred, land at 309 and 532 here; both are still inside
+  `--top-ports 1000`. The full rule and its rationale are in
+  `tools/gen-top-ports/RULE.md`. **Scripts that relied on `-F` covering a specific
+  port must now name that port with `-p`.**
+- **No hit-rate or coverage figure is published for `-F` or `--top-ports` any
+  more.** The "~90% of real-world open ports", "~85% coverage", "~99% of services",
+  "covers 90% of real-world services" and "top 20 / 100 / 1000 → ~60% / ~85% / ~95%"
+  claims across the README, the `docs/` tree, the mdBook, the man page and the CLI
+  help were never measured by this project and could not be true of a
+  non-frequency-ordered list in any case. They are gone rather than restated with
+  smaller numbers. Where a figure was useful context, the docs now cite Izhikevich,
+  Teixeira and Durumeric, *LZR: Identifying Unexpected Internet Services* (USENIX
+  Security 2021), which found only about 3% of HTTP services run on port 80 — a
+  reminder that frequency-ordered lists are a weaker heuristic than their
+  reputation suggests.
+- **`--port-ratio` is documented as accepted-but-inert.** It was parsed and
+  range-validated but never consulted by port selection, while its help text
+  described "fine-grained port selection based on frequency". ProRT-IP ships no
+  port-frequency data and can implement no such threshold; the help now says so.
+- **Service-detection coverage is dramatically smaller and the docs now say so.**
+  The removed database carried 187 probes, ~11,951 `match` lines and 203
+  `softmatch` lines accumulated over two decades. The replacement carries
+  **37 probes (25 TCP, 12 UDP), 183 `match` rules and 43 `softmatch` rules across
+  96 ports**. It targets the services that dominate real scan results and will not
+  identify uncommon, embedded or proprietary services.
+- Every published claim of "187 probes", "11,951 patterns", "500+/1000+ services"
+  and "85-90% service detection accuracy" has been corrected across the README,
+  the `docs/` tree and the CLI help. The detection rate of the new corpus has not
+  been measured, so no percentage is claimed.
+- Corrected a related false claim: ProRT-IP bundles **no** OS fingerprint database.
+  `os_db.rs` provides a parser; the caller supplies the signatures. Claims of
+  "2,600+ OS fingerprints" were never backed by shipped data.
+- The probe file format is now named the ProRT-IP service probe format and is
+  documented in `tools/gen-service-probes/FORMAT.md`.
+- `crates/prtip-core/data/ATTRIBUTION.md` rewritten: the false
+  "GPL-2.0 (compatible with ProRT-IP's GPL-3.0)" claim is gone, replaced by a
+  per-source provenance table with licences, URLs and retrieval dates, the real
+  coverage counts, and a record of this remediation.
+- **`Cargo.toml` now declares `license = "GPL-3.0-or-later"` instead of
+  `"GPL-3.0"`.** `GPL-3.0` is a deprecated SPDX identifier and, read strictly, is
+  the *only*-version form. `LICENSE` has always granted "either version 3 of the
+  License, or (at your option) any later version", so the manifest understated the
+  grant the project actually makes. This corrects the declaration to match the
+  licence text; it grants no less than before.
+
+### Known issues
+
+- None outstanding for the licensing remediation. The `nmap-services`-derived port
+  ordering listed here previously is resolved above.
+
 ## [1.0.0] - 2025-01-25
 
 ### Executive Summary

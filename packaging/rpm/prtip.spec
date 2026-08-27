@@ -23,8 +23,8 @@ detection and OS fingerprinting capabilities.
 
 Features:
 - TCP SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle scan types
-- Service version detection (85-90% accuracy, 187 Nmap probes)
-- OS fingerprinting (16-probe technique, 2,600+ signatures)
+- Service version detection (ProRT-IP probe corpus: 37 probes, 226 match rules)
+- OS fingerprinting (16-probe technique; signature set supplied by the user)
 - Evasion techniques (fragmentation, decoys, TTL manipulation)
 - TUI dashboard with real-time visualization
 - Full IPv6 support
@@ -56,8 +56,8 @@ cargo test --release --locked
 * Sat Jan 25 2025 ProRT-IP Contributors <noreply@github.com> - 1.0.0-1
 - Initial release
 - TCP SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle scan types
-- Service version detection (85-90% accuracy)
-- OS fingerprinting (2,600+ signatures)
+- Service version detection (37-probe ProRT-IP corpus)
+- OS fingerprinting (caller-supplied signature set)
 - TUI dashboard with real-time visualization
 - Full IPv6 support
 - Nmap-compatible CLI flags

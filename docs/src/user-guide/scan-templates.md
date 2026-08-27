@@ -82,7 +82,7 @@ prtip --template databases -sV db-servers.txt
 
 ### quick
 
-Fast scan of top 100 most common ports without service detection.
+Fast scan of the first 100 ports of ProRT-IP's priority list, without service detection. That list is an IANA-derived editorial ranking, not a frequency ranking.
 
 | Setting | Value |
 |---------|-------|

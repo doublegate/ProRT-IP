@@ -1,11 +1,16 @@
 //! OS fingerprint database parser and storage
 //!
-//! This module implements parsing and storage for nmap-os-db format fingerprints.
-//! It handles thousands of OS signatures with efficient matching algorithms.
+//! This module implements parsing and storage for the ProRT-IP OS fingerprint
+//! format, with efficient matching against a caller-supplied signature set.
+//!
+//! ProRT-IP does **not** bundle an OS fingerprint database and does not read
+//! `nmap-os-db`: the Nmap Public Source License classifies a work that reads
+//! that data file as a Derivative Work, which is incompatible with ProRT-IP's
+//! GPL-3.0 licensing. Callers must supply their own signatures.
 //!
 //! # Format
 //!
-//! The nmap-os-db format consists of:
+//! The format consists of:
 //! - MatchPoints: Weights for each test attribute
 //! - Fingerprint entries with Name, Class, CPE, and test results
 //!
@@ -140,7 +145,7 @@ impl OsFingerprintDb {
         }
     }
 
-    /// Parse database from string (nmap-os-db format)
+    /// Parse database from string (ProRT-IP OS fingerprint format)
     pub fn parse(content: &str) -> Result<Self, Error> {
         let mut db = Self::new();
         let mut current_fingerprint: Option<OsFingerprint> = None;

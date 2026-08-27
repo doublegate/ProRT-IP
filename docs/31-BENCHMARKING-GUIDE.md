@@ -37,7 +37,7 @@
 - "15% overhead" IPv6 (Sprint 5.1)
 - "500-800ms per port" idle scan (Sprint 5.3)
 - "1.33μs" TLS certificate parsing (Sprint 5.5)
-- "85-90% accuracy" service detection (Sprint 5.2)
+- Service detection accuracy (Sprint 5.2) — not yet measured
 
 ### What We Measure
 
@@ -361,7 +361,7 @@ Benchmark 1: prtip -sU -p 53,161,123 127.0.0.1
 
 ### Scenario 4: Service Detection Overhead
 
-**Purpose:** Validate 85-90% accuracy + low overhead
+**Purpose:** Validate low overhead (accuracy not yet measured)
 
 **Commands:**
 - Baseline: `prtip -sS -p 22,80,443 127.0.0.1` (no -sV)

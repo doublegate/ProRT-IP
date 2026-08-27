@@ -64,7 +64,7 @@ ProRT-IP WarScan stands on the shoulders of giants. We acknowledge and thank the
 - **Project**: <https://nmap.org/>
 - **License**: Nmap Public Source License (NPSL) / GPLv2
 - **Contribution**: Pioneer of network scanning, service detection, and OS fingerprinting
-- **Recognition**: ProRT-IP's service detection and OS fingerprinting strategies are inspired by Nmap's proven methodologies. We use compatible probe database formats (nmap-service-probes, nmap-os-db) to leverage decades of collective security research.
+- **Recognition**: ProRT-IP's service detection and OS fingerprinting strategies are inspired by Nmap's proven methodologies. ProRT-IP's service probe corpus is its own clean-room implementation (see `crates/prtip-core/data/ATTRIBUTION.md`), and OS fingerprinting is a caller-supplied database against the same probe-and-match approach Nmap pioneered.
 - **Creator**: Gordon "Fyodor" Lyon and the Nmap development team
 
 #### Masscan

@@ -19,7 +19,7 @@ use std::path::PathBuf;
     about = "Protocol/Port Real-Time War Scanner",
     long_about = "ProRT-IP WarScan - High-performance network scanner\n\n\
                   Combines Masscan speed (1M+ pps) with Nmap detection depth.\n\n\
-                  🚀 PERFORMANCE: 3-48x faster than nmap while maintaining accuracy\n\
+                  🚀 PERFORMANCE: 3-48x faster than nmap on port-scan throughput\n\
                   🔄 NMAP-COMPATIBLE: Supports 50+ nmap-style flags for familiar operation\n\
                   ✅ PRODUCTION-READY: 868 tests passing, cross-platform support\n\n\
                   Both nmap and ProRT-IP syntaxes are fully supported - mix and match freely!",
@@ -59,10 +59,13 @@ COMPATIBILITY:\n\
     ProRT-IP accepts familiar nmap flags like -sS, -sV, -O, -oN, -oX, etc.\n\
     See docs/NMAP_COMPATIBILITY.md for comprehensive compatibility guide.\n\n\
 PERFORMANCE:\n\
-    ProRT-IP is 3-48x faster than nmap while maintaining 100% accuracy:\n\
+    Port-scan throughput, measured against nmap on the same targets:\n\
     • 1K ports:    66ms (nmap: 3.2s)  → 48x faster\n\
     • Services:   2.3s (nmap: 8.1s)  → 3.5x faster\n\
-    • OS detect:  1.8s (nmap: 5.4s)  → 3x faster\n\n\
+    • OS detect:  1.8s (nmap: 5.4s)  → 3x faster\n\
+    The service and OS timings are NOT like-for-like: ProRT-IP's service probe\n\
+    corpus is far smaller than nmap's, and ProRT-IP bundles no OS fingerprint\n\
+    database. Speed here is partly a consequence of doing less work.\n\n\
 DOCUMENTATION:\n\
     Repository:       https://github.com/doublegate/ProRT-IP\n\
     Nmap Compat:      docs/NMAP_COMPATIBILITY.md\n\
@@ -338,7 +341,7 @@ pub struct Args {
         long,
         value_name = "FILE",
         help_heading = "DETECTION",
-        help = "Load service probes from custom file (default: embedded nmap-service-probes)"
+        help = "Load service probes from custom file (default: embedded ProRT-IP corpus)"
     )]
     pub probe_db: Option<String>,
 
@@ -859,10 +862,12 @@ pub struct Args {
           help_heading = "NMAP-COMPATIBLE OUTPUT")]
     pub output_all: Option<String>,
 
-    /// Fast scan (nmap -F) - Scan top 100 most common ports
+    /// Fast scan (nmap -F) - Scan ProRT-IP's 100-port priority list
     ///
-    /// Scans only the 100 most frequently used ports based on nmap-services
-    /// frequency database. Dramatically faster than default 1-1000 range.
+    /// Scans 100 ports selected by an editorial ranking of IANA port
+    /// assignments, NOT by measured frequency. The selection therefore differs
+    /// from nmap -F and offers no hit-rate guarantee; name the ports you need
+    /// with -p. See tools/gen-top-ports/RULE.md.
     ///
     /// Example: prtip -F 192.168.1.1
     #[arg(
@@ -873,10 +878,11 @@ pub struct Args {
     )]
     pub fast_scan: bool,
 
-    /// Scan top N most common ports (nmap --top-ports \<N\>)
+    /// Scan the first N ports of the priority list (nmap --top-ports \<N\>)
     ///
-    /// Scans the N most common ports based on nmap-services frequency database.
-    /// Useful for quick scans: --top-ports 10 for quickest, --top-ports 1000 for thorough.
+    /// The ordering is an editorial ranking of IANA port assignments, NOT
+    /// measured frequency, so the selection differs from nmap's --top-ports at
+    /// every N. Smaller N is faster, not more accurate.
     ///
     /// Example: prtip --top-ports 1000 target.com
     #[arg(
@@ -900,10 +906,12 @@ pub struct Args {
     )]
     pub no_randomize: bool,
 
-    /// Scan ports more common than specified ratio (nmap --port-ratio \<ratio\>)
+    /// Accepted for nmap CLI compatibility; currently has NO effect
     ///
-    /// Scan ports more common than the given ratio (0.0-1.0).
-    /// Advanced option for fine-grained port selection based on frequency.
+    /// nmap's --port-ratio selects ports above a measured open-frequency
+    /// threshold. ProRT-IP ships no port-frequency data and can implement no
+    /// such threshold, so the value is validated (0.0-1.0) and then ignored.
+    /// Use -p or --top-ports instead.
     ///
     /// Example: prtip --port-ratio 0.5 \<target\>
     #[arg(
@@ -1508,14 +1516,14 @@ impl Args {
     ///
     /// Returns the ports string to be parsed, considering fast scan and top ports flags.
     pub fn get_effective_ports(&self) -> String {
-        use prtip_core::top_ports::{get_top_ports, ports_to_spec};
+        use prtip_core::top_ports::{get_priority_ports, ports_to_spec};
 
         if self.fast_scan {
-            // Fast scan: top 100 ports
-            ports_to_spec(&get_top_ports(100))
+            // Fast scan: the 100-port priority list
+            ports_to_spec(&get_priority_ports(100))
         } else if let Some(n) = self.top_ports {
-            // Top N ports
-            ports_to_spec(&get_top_ports(n))
+            // First N of the priority list
+            ports_to_spec(&get_priority_ports(n))
         } else {
             // Use specified ports
             self.ports.clone()

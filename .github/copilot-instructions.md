@@ -162,7 +162,7 @@ The CLI binary is named `prtip` (not `prtip-cli`)
 ### Example Usage
 ```bash
 prtip -sS -p 1-1000 10.0.0.0/24          # SYN scan
-prtip -F 192.168.1.1                      # Fast scan (top 100 ports)
+prtip -F 192.168.1.1                      # Fast scan (100-port priority list, IANA-derived)
 prtip -A -p 80,443 target.com             # Aggressive scan with detection
 ```
 
@@ -205,8 +205,8 @@ When making changes:
 - **UDP**: Protocol-specific payloads (DNS, SNMP, NetBIOS) with ICMP interpretation
 
 ### Detection Capabilities
-- **Service Detection**: 187 probes, 85-90% accuracy
-- **OS Fingerprinting**: 16-probe system, 2,600+ signature database
+- **Service Detection**: ProRT-IP's own probe corpus (37 probes, 226 match rules, 96 ports); detection rate not yet measured
+- **OS Fingerprinting**: 16-probe system against a caller-supplied signature set (none bundled)
 - **TLS Detection**: Certificate chain analysis
 
 ### Performance Features

@@ -26,7 +26,7 @@ ProRT-IP project guidance for Claude Code.
 |----------|---------|
 | **TCP** | SYN (default), Connect, FIN/NULL/Xmas (stealth), ACK (firewall), Idle (anonymity) |
 | **UDP** | Protocol payloads (DNS, SNMP, NetBIOS), ICMP interpretation, ~10-100x slower |
-| **Detection** | Service (187 probes, 85-90%), OS fingerprinting (16-probe, 2,600+ DB) |
+| **Detection** | Service (37 probes, 226 match rules), OS fingerprinting (16-probe technique, caller-supplied signature DB) |
 | **Timing** | T0-T5 (paranoid→insane), packet fragmentation, decoy scanning |
 | **TUI** | 60 FPS, 4-tab dashboard, 10K+ events/sec, real-time metrics |
 
@@ -65,7 +65,7 @@ ratatui = "0.29"   # TUI
 
 ```bash
 prtip -sS -p 1-1000 10.0.0.0/24          # SYN scan
-prtip -F 192.168.1.1                      # Fast (top 100)
+prtip -F 192.168.1.1                      # Fast (100-port priority list, IANA-derived)
 prtip -A -p 80,443 target.com             # Aggressive
 ```
 

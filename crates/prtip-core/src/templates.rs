@@ -244,11 +244,14 @@ impl TemplateManager {
         templates.insert("databases".to_string(), tmpl);
 
         // Template: quick
-        let mut tmpl = ScanTemplate::new("quick", "Fast scan of top 100 most common ports");
+        let mut tmpl = ScanTemplate::new(
+            "quick",
+            "Fast scan of the first 100 ports of the priority list",
+        );
         tmpl.scan_type = Some("SYN".to_string());
         tmpl.service_detection = Some(false);
         tmpl.timing = Some("T4".to_string());
-        // Note: Top 100 ports would be set via CLI flag -F or --top-ports 100
+        // Note: the port set is applied via the CLI flag -F or --top-ports 100
         templates.insert("quick".to_string(), tmpl);
 
         // Template: thorough

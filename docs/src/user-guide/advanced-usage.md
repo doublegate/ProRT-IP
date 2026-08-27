@@ -46,7 +46,11 @@ sudo prtip -sS -F 192.168.1.10
 ```
 
 **Explanation:**
-- `-F`: Fast scan (top 100 ports)
+- `-F`: Fast scan -- the first 100 ports of ProRT-IP's priority list, an
+  IANA-derived editorial ranking rather than a measured-frequency ranking. It
+  selects different ports than `nmap -F` and carries no coverage guarantee; use
+  `-p` when a specific port matters. See
+  [Port Specification](../reference/port-specification.md).
 - Completes in seconds
 
 **Expected Output:**

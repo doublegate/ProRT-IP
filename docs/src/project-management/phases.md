@@ -175,7 +175,7 @@ Add service version detection and OS fingerprinting for deep network reconnaissa
 ### Core Deliverables
 
 **Service Detection**:
-- ✅ nmap-service-probes integration (187 probes)
+- ✅ Service probe engine (today: ProRT-IP's own clean-room corpus, 37 probes, 226 match rules — see `crates/prtip-core/data/ATTRIBUTION.md`)
 - ✅ Banner grabbing with protocol-specific parsers
 - ✅ SSL/TLS handshake detection
 - ✅ HTTP/HTTPS service identification
@@ -183,7 +183,7 @@ Add service version detection and OS fingerprinting for deep network reconnaissa
 
 **OS Fingerprinting**:
 - ✅ TCP/IP stack fingerprinting (16-probe sequence)
-- ✅ Nmap OS database integration (2,600+ signatures)
+- ✅ Nmap-DB-format-compatible parser (caller supplies the signature database; none bundled)
 - ✅ Confidence scoring (0-100%)
 - ✅ Multi-probe correlation
 
@@ -197,9 +197,9 @@ Add service version detection and OS fingerprinting for deep network reconnaissa
 | Metric | Target | Achieved | Status |
 |--------|--------|----------|--------|
 | Test Coverage | ≥60% | 71% | ✅ Exceeded |
-| Service Detection Accuracy | ≥70% | 75% | ✅ Exceeded |
-| OS Detection Accuracy | ≥60% | 68% | ✅ Exceeded |
-| Probe Coverage | 100+ | 187 | ✅ Exceeded |
+| Service Detection Accuracy | ≥70% | Not measured | — |
+| OS Detection Accuracy | ≥60% | Not measured | — |
+| Probe Coverage | 100+ | 37 (226 match rules) | — |
 
 ### Validation Criteria
 
@@ -207,11 +207,11 @@ Add service version detection and OS fingerprinting for deep network reconnaissa
 - ✅ OS fingerprinting validated on 20+ OS types
 - ✅ Stealth scans evade basic IDS/IPS
 - ✅ Detection speed <500ms per service (average)
-- ✅ Nmap database import successful (2,600+ signatures)
+- ✅ OS fingerprint parser loads a caller-supplied database successfully (none bundled)
 
 ### Key Decisions
 
-1. **nmap-service-probes standard**: Proven probe database
+1. **Own clean-room probe corpus**: Format compatible with the nmap-service-probes parser layout, avoiding GPL-incompatible licensing (see `crates/prtip-core/data/ATTRIBUTION.md`)
 2. **Regex-based version extraction**: Fast, flexible matching
 3. **Multi-probe OS detection**: Higher accuracy than single probe
 4. **Confidence scoring**: Transparency in uncertain results
@@ -293,8 +293,7 @@ Deliver production-ready advanced features with comprehensive testing and docume
 - ✅ -1.9% overhead (exceeds +15% documented claim)
 
 **Sprint 5.2: Service Detection Enhancement** (12h):
-- ✅ 85-90% detection accuracy (up from 75%)
-- ✅ 5 protocol parsers (HTTP, FTP, SSH, SMTP, MySQL)
+- ✅ 5 protocol-specific parsers added (HTTP, FTP, SSH, SMTP, MySQL); detection accuracy not measured
 - ✅ Enhanced banner grabbing
 - ✅ Service fingerprinting optimization
 
@@ -793,8 +792,8 @@ Official v1.0.0 release with marketing, community engagement, and long-term opti
 **v1.0.0 Release Targets**:
 - ✅ 8 scan types (COMPLETE: TCP SYN/Connect/ACK/FIN/NULL/Xmas, UDP, SCTP)
 - ✅ IPv6 100% support (COMPLETE: All scanners)
-- ✅ Service detection 85-90% (COMPLETE: 85-90% accuracy)
-- ✅ OS fingerprinting (COMPLETE: Nmap DB integration)
+- ✅ Service detection (COMPLETE: 37 probes, 226 match rules; accuracy not measured)
+- ✅ OS fingerprinting (COMPLETE: Nmap-DB-format-compatible parser; caller supplies the database)
 - 🔄 TUI interface (IN PROGRESS: 31.25% complete)
 - ✅ Plugin system (COMPLETE: Lua 5.4 integration)
 - ⏳ 70%+ test coverage (CURRENT: 54.92%, TARGET: +15.08%)

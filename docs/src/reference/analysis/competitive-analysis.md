@@ -7,7 +7,7 @@ This document provides a comprehensive comparison of ProRT-IP against other netw
 | Feature | ProRT-IP | Nmap | Masscan | RustScan | ZMap |
 |---------|----------|------|---------|----------|------|
 | **Speed (pps)** | 10M+ | 1K-10K | 10M+ | 10M+ | 10M+ |
-| **Service Detection** | 85-90% | 95%+ | None | Nmap wrapper | None |
+| **Service Detection** | Not measured | 95%+ | None | Nmap wrapper | None |
 | **OS Fingerprinting** | Yes | Yes | No | Nmap wrapper | No |
 | **IPv6 Support** | 100% | Yes | Limited | Partial | Yes |
 | **Stealth Scans** | 8 types | 6 types | SYN only | SYN only | SYN only |
@@ -33,12 +33,12 @@ This document provides a comprehensive comparison of ProRT-IP against other netw
 
 | Scanner | Accuracy | Probe Count | Version Detection |
 |---------|----------|-------------|-------------------|
-| ProRT-IP | 85-90% | 187 | Yes |
+| ProRT-IP | Not measured | 37 (226 match rules) | Yes |
 | Nmap | 95%+ | 11,000+ | Yes |
 | Masscan | N/A | N/A | No |
 | RustScan | Via Nmap | Via Nmap | Via Nmap |
 
-ProRT-IP optimizes for the most common services, covering 85-90% of real-world scenarios with significantly fewer probes.
+ProRT-IP optimizes for the most common services with a young, growing corpus of far fewer probes than Nmap; detection rate has not been measured.
 
 ### Stealth Capabilities
 

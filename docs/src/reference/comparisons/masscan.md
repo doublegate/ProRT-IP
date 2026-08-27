@@ -8,9 +8,9 @@ Comprehensive technical comparison between ProRT-IP and Masscan, the Internet-sc
 
 **Masscan dominates pure speed** with custom TCP/IP stack achieving 25 million pps (10GbE + PF_RING DNA), 1.6 million pps on standard Linux, capable of scanning the entire IPv4 Internet in under 6 minutes.
 
-**ProRT-IP balances speed with detection depth**, achieving 10M+ pps stateless (Masscan-class performance) while maintaining 85-90% service detection accuracy and 8 scan types through modern Rust async I/O architecture.
+**ProRT-IP balances speed with detection depth**, achieving 10M+ pps stateless (Masscan-class performance) while adding service detection (accuracy not yet measured) and 8 scan types through modern Rust async I/O architecture.
 
-**The fundamental tradeoff**: Masscan provides maximum speed for pure port discovery but lacks service detection, OS fingerprinting, and advanced scan types. ProRT-IP achieves comparable stateless speed (10M+ pps) while adding comprehensive detection capabilities (500+ services, OS fingerprinting, TLS certificate analysis, 8 scan types).
+**The fundamental tradeoff**: Masscan provides maximum speed for pure port discovery but lacks service detection, OS fingerprinting, and advanced scan types. ProRT-IP achieves comparable stateless speed (10M+ pps) while adding a growing detection layer (37 probes, 226 match rules; OS fingerprinting via caller-supplied database; TLS certificate analysis; 8 scan types).
 
 ---
 
@@ -23,8 +23,8 @@ Comprehensive technical comparison between ProRT-IP and Masscan, the Internet-sc
 | **Speed (Maximum)** | 25M pps (10GbE + PF_RING) | 10M+ pps stateless |
 | **Speed (Standard)** | 1.6M pps (Linux bare metal) | 50K+ pps stateful |
 | **Speed (Windows/macOS)** | 300K pps (platform limit) | 50K+ pps (consistent) |
-| **Service Detection** | Basic banner grabbing only | 500+ services (85-90%) |
-| **OS Fingerprinting** | None (architectural limit) | 2,600+ DB (Nmap-compatible) |
+| **Service Detection** | Basic banner grabbing only | 37 probes, 226 match rules (not measured) |
+| **OS Fingerprinting** | None (architectural limit) | Caller-supplied DB (Nmap-compatible format), none bundled |
 | **Scan Types** | SYN only (stateless) | 8 (TCP, UDP, stealth) |
 | **IPv6 Support** | Basic (limited testing) | 100% (all scan types) |
 | **Stateless Mode** | Yes (core architecture) | Yes (10M+ pps) |
@@ -76,12 +76,12 @@ Comprehensive technical comparison between ProRT-IP and Masscan, the Internet-sc
 
 ✅ **Speed matters but detection depth is critical**
 - 10M+ pps stateless for rapid discovery (Masscan-class)
-- 50K+ pps stateful with 85-90% service detection
+- 50K+ pps stateful with integrated service detection (accuracy not yet measured)
 - Single tool for both breadth and depth (no multi-stage workflow)
 
 ✅ **Production security assessments require accuracy**
-- Service version detection (500+ services, growing database)
-- OS fingerprinting (Nmap-compatible, 2,600+ signatures)
+- Service version detection (37 probes, 226 match rules; growing corpus)
+- OS fingerprinting (Nmap-DB-format-compatible parser; caller supplies the signature database)
 - TLS certificate analysis (X.509v3, chain validation, SNI support)
 
 ✅ **Memory safety is required**
@@ -140,7 +140,7 @@ Comprehensive technical comparison between ProRT-IP and Masscan, the Internet-sc
 | Scanner | Capability | Database Size | Detection Rate | Notes |
 |---------|------------|---------------|----------------|-------|
 | **Masscan** | Basic banner grabbing | 12 protocols | N/A (no detection) | HTTP, FTP, SSH, SSL, SMB, SMTP, IMAP4, POP3, Telnet, RDP, VNC, memcached |
-| **ProRT-IP** | Comprehensive detection | 500+ services | 85-90% accuracy | 187 probes, version extraction, CPE identifiers |
+| **ProRT-IP** | Comprehensive detection | 37 probes, 226 match rules | Not yet measured | version extraction, CPE identifiers |
 
 **Masscan's Banner Grabbing**:
 - Completes TCP handshakes for 12 common protocols
@@ -150,7 +150,7 @@ Comprehensive technical comparison between ProRT-IP and Masscan, the Internet-sc
 - Output: Raw text (requires manual parsing for version extraction)
 
 **ProRT-IP's Service Detection**:
-- 187 protocol-specific probes from nmap-service-probes
+- 37 protocol-specific probes (226 match rules) from ProRT-IP's own clean-room corpus
 - Intelligent version extraction with regex pattern matching
 - CPE (Common Platform Enumeration) identifier generation
 - Automatic detection without source IP conflicts
@@ -161,7 +161,7 @@ Comprehensive technical comparison between ProRT-IP and Masscan, the Internet-sc
 | Scanner | Capability | Method | Database | Accuracy |
 |---------|------------|--------|----------|----------|
 | **Masscan** | None | N/A (architectural limit) | N/A | N/A |
-| **ProRT-IP** | Full support | 16-probe sequence | 2,600+ signatures (Nmap DB) | Comparable to Nmap |
+| **ProRT-IP** | Full support | 16-probe sequence | Caller-supplied (Nmap DB format), none bundled | Not yet measured |
 
 **Why Masscan Lacks OS Fingerprinting**:
 Stateless architecture prevents OS detection. OS fingerprinting requires:
@@ -173,7 +173,7 @@ Masscan's fire-and-forget model cannot correlate multiple responses, making OS d
 
 **ProRT-IP's OS Fingerprinting**:
 - 16-probe sequence (SEQ tests, TCP tests T1-T7, UDP test U1, ICMP tests IE1-IE2)
-- Nmap database compatible (2,600+ OS fingerprints)
+- Nmap-DB-format-compatible parser; caller supplies the fingerprint database (none bundled)
 - Timing analysis with RTT measurements
 - Confidence scoring for ambiguous results
 
@@ -397,7 +397,7 @@ fi
 
 **3. Bug Bounty Rapid Reconnaissance**
 ```bash
-# Fast discovery with detection (85-90% accuracy sufficient)
+# Fast discovery with detection (accuracy not yet measured)
 prtip -sS -sV --top-ports 1000 -T5 --max-rate 100000 \
   bug-bounty-scope.txt --with-db --database bounty-recon.db
 
@@ -433,13 +433,13 @@ prtip -sS -sV -p 1-1000 -T4 targets.txt --with-db --database macos-scan.db
 
 **What You Gain**:
 
-**Service Detection** (85-90% accuracy with 500+ service database)
+**Service Detection** (37 probes, 226 match rules; accuracy not yet measured)
 - Version extraction (Apache 2.4.52, OpenSSH 8.9, MySQL 5.7)
 - CPE identifiers for vulnerability correlation
 - TLS certificate analysis (X.509v3, chain validation, SNI support)
 - 10x faster than Nmap comprehensive probing
 
-**OS Fingerprinting** (Nmap database compatible, 2,600+ signatures)
+**OS Fingerprinting** (Nmap-DB-format-compatible parser; caller supplies the database, none bundled)
 - 16-probe sequence (TCP options, window sizes, ICMP responses)
 - Confidence scoring for ambiguous results
 - Critical for targeted exploitation and compliance reporting
@@ -796,8 +796,8 @@ tcpdump -r scan-packets.pcapng 'tcp[tcpflags] & (tcp-syn) != 0'
 
 ### Choose ProRT-IP If:
 
-✅ **Speed + detection balance critical** (10M+ pps stateless, 50K+ pps with 85-90% detection)
-✅ **Service versions and OS fingerprinting required** (500+ services, Nmap DB compatible)
+✅ **Speed + detection balance critical** (10M+ pps stateless, 50K+ pps stateful, integrated detection)
+✅ **Service versions and OS fingerprinting required** (37 probes/226 match rules; Nmap-DB-format-compatible OS parser)
 ✅ **Memory safety mandatory** (production environments, strict security policies, Rust guarantees)
 ✅ **Cross-platform consistency matters** (50K+ pps on Linux/Windows/macOS vs Masscan's platform limits)
 ✅ **Modern features valuable** (database storage, real-time TUI, event system, rate limiting -1.8%)

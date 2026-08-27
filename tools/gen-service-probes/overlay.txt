@@ -1,0 +1,523 @@
+# ProRT-IP service-probe overlay
+#
+# Hand-authored probe payloads and match expressions. Every payload in this file
+# was constructed from a published protocol specification; every match expression
+# was written from the wire format described in that specification or from the
+# vendor's own public documentation of its banner/Server token.
+#
+# NOTHING in this file is copied, transcribed, sampled or derived from any
+# NPSL-licensed source (nmap-service-probes, nmap-os-db) or any other database
+# whose licence is incompatible with GPL-3.0.
+#
+# ---------------------------------------------------------------------------
+# Overlay directives
+# ---------------------------------------------------------------------------
+#   probe <TCP|UDP> <Name> q|<payload>|   start a probe block
+#   rarity <1-9>                          1 = always send, 9 = only at max intensity
+#   iana <service-name>...                expand to ports via the IANA registry
+#   extra-ports <port,port,...>           de-facto ports IANA does not assign
+#   sslports <port,port,...>              ports where the probe is wrapped in TLS
+#   match / softmatch                     emitted verbatim into the corpus
+#
+# ---------------------------------------------------------------------------
+# Authoring constraints imposed by the ProRT-IP probe format (see FORMAT.md)
+# ---------------------------------------------------------------------------
+#   * No '|' anywhere in a payload or a pattern (use \x7c for a literal pipe).
+#   * p/ v/ i/ h/ o/ d/ values must not contain spaces (use '-').
+#   * Patterns are Rust `regex` syntax: no backreferences, no lookaround.
+#   * Responses are matched after a lossy UTF-8 conversion, so every non-ASCII
+#     byte collapses to U+FFFD and a RUN of invalid bytes may collapse to a
+#     SINGLE U+FFFD. Anchor binary patterns on ASCII-range bytes only and use
+#     [\s\S] (not a fixed byte) wherever a high byte can appear.
+#
+# ===========================================================================
+# TCP probes
+# ===========================================================================
+
+# --- NULL: pure banner grab. Services that speak first identify themselves. ---
+# Generic (no `ports`) so it is attempted against every TCP port.
+probe TCP NULL q||
+rarity 1
+
+# SSH identification string -- RFC 4253 section 4.2
+match ssh m|^SSH-([\d.]+)-OpenSSH[_-]([\w.]+)| p/OpenSSH/ v/$2/ i/protocol-$1/ cpe:/a:openbsd:openssh/
+match ssh m|^SSH-([\d.]+)-dropbear[_-]?([\w.]*)| p/Dropbear-sshd/ v/$2/ i/protocol-$1/
+match ssh m|^SSH-([\d.]+)-libssh[_-]([\w.]+)| p/libssh/ v/$2/ i/protocol-$1/
+match ssh m|^SSH-([\d.]+)-Go| p/Go-x-crypto-ssh/ i/protocol-$1/
+match ssh m|^SSH-([\d.]+)-Erlang| p/Erlang-sshd/ i/protocol-$1/
+match ssh m|^SSH-([\d.]+)-mod_sftp[_/]([\w.]+)| p/ProFTPD-mod_sftp/ v/$2/
+match ssh m|^SSH-([\d.]+)-ROSSSH| p/MikroTik-RouterOS-sshd/
+match ssh m|^SSH-([\d.]+)-Cisco[_-]([\w.]+)| p/Cisco-SSH/ v/$2/
+match ssh m|^SSH-([\d.]+)-([\w.+-]+)| p/$2/ i/protocol-$1/
+softmatch ssh m|^SSH-[\d.]+-|
+
+# SMTP greeting -- RFC 5321 section 4.2/4.3.1 (checked before FTP: both use 220)
+match smtp m|^220[- ][\w.-]* ESMTP Postfix| p/Postfix-smtpd/ cpe:/a:postfix:postfix/
+match smtp m|^220[- ][\w.-]* ESMTP Exim ([\w.]+)| p/Exim-smtpd/ v/$1/ cpe:/a:exim:exim/
+match smtp m|^220[- ][\w.-]* ESMTP Sendmail ([\w./+-]+)| p/Sendmail/ v/$1/
+match smtp m|^220[- ][\w.-]* ESMTP OpenSMTPD| p/OpenSMTPD/
+match smtp m|^220[- ][\w.-]* ESMTP Haraka| p/Haraka/
+match smtp m|^220[- ][\w.-]*[Mm]icrosoft ESMTP MAIL Service[\s\S]*?([\d.]{5,})| p/Microsoft-ESMTP/ v/$1/
+match smtp m|^220[- ][\w.-]* [\w-]*[Ss]mtpd| p/smtpd/
+match smtp m|^220[- ][\w.-]* ESMTP| p/ESMTP/
+softmatch smtp m|^220[- ][\w.-]*[\s\S]{0,80}SMTP|
+
+# FTP greeting -- RFC 959 section 4.2
+match ftp m|^220[- ][\s\S]{0,80}\(vsFTPd ([\w.]+)\)| p/vsftpd/ v/$1/ cpe:/a:vsftpd:vsftpd/
+match ftp m|^220[- ]ProFTPD ([\w.]+) Server| p/ProFTPD/ v/$1/ cpe:/a:proftpd:proftpd/
+match ftp m|^220[- ][\s\S]{0,60}Pure-FTPd| p/Pure-FTPd/
+match ftp m|^220[- ][\s\S]{0,60}FileZilla Server ([\w.]+)| p/FileZilla-ftpd/ v/$1/
+match ftp m|^220[- ][\s\S]{0,60}Microsoft FTP Service| p/Microsoft-ftpd/
+match ftp m|^220[- ][\s\S]{0,60}FTP server \(([\w.\s-]{0,40})\)| p/FTP/ i/$1/
+match ftp m|^220[- ][\s\S]{0,80}FTP| p/FTP/
+match ftp m|^220[- ][\s\S]{0,40}\r\n| p/FTP/
+softmatch ftp m|^220[- ]|
+
+# POP3 -- RFC 1939 section 3
+match pop3 m|^\+OK [\s\S]{0,80}Dovecot ready| p/Dovecot-pop3d/ cpe:/a:dovecot:dovecot/
+match pop3 m|^\+OK POP3 [\w.-]+ ([\w.]+) server ready| p/POP3/ v/$1/
+match pop3 m|^\+OK [\s\S]{0,80}Courier| p/Courier-pop3d/
+match pop3 m|^\+OK| p/POP3/
+softmatch pop3 m|^\+OK|
+
+# IMAP4rev1 -- RFC 3501 section 7.1.1
+match imap m|^\* OK [\s\S]{0,80}Dovecot| p/Dovecot-imapd/ cpe:/a:dovecot:dovecot/
+match imap m|^\* OK [\s\S]{0,80}Courier-IMAP| p/Courier-imapd/
+match imap m|^\* OK [\s\S]{0,80}Cyrus IMAP ([\w.-]+)| p/Cyrus-imapd/ v/$1/
+match imap m|^\* OK[\s\S]{0,80}IMAP4rev1| p/IMAP4rev1/
+match imap m|^\* OK| p/IMAP/
+softmatch imap m|^\* OK|
+
+# NNTP -- RFC 3977 section 5.1
+match nntp m|^20[01] [\s\S]{0,80}InterNetNews[\s\S]{0,20}([\d][\w.]+)| p/INN/ v/$1/
+match nntp m|^20[01] [\s\S]{0,80}NNTP| p/NNTP/
+softmatch nntp m|^20[01] [\w.-]+ |
+
+# ManageSieve -- RFC 5804 section 1.7
+match sieve m|^"IMPLEMENTATION" "([\w.\s-]{0,40})"| p/ManageSieve/ i/$1/
+softmatch sieve m|^"IMPLEMENTATION"|
+
+# IRC -- RFC 2812 / RFC 1459 registration burst
+match irc m|^:([\w.-]+) NOTICE [\s\S]{0,40}\*\*\*| p/IRCd/ h/$1/
+softmatch irc m|^:[\w.-]+ NOTICE |
+
+# RFB / VNC -- RFC 6143 section 7.1.1 ProtocolVersion handshake
+match vnc m|^RFB (\d{3})\.(\d{3})\n| p/VNC/ v/$1.$2/ i/protocol-$1.$2/
+
+# rsync daemon -- rsync protocol documentation (daemon greeting)
+match rsync m|^@RSYNCD: ([\d.]+)| p/rsyncd/ v/$1/ i/protocol-$1/
+
+# MySQL / MariaDB handshake packet v10 -- MySQL client/server protocol docs.
+# Layout: 3-byte length, 1-byte sequence, 0x0a protocol version, NUL-terminated
+# server version string. 0x0a survives the lossy conversion as '\n'.
+match mysql m|^[\s\S]{3}\n([\w.-]*MariaDB[\w.-]*)\x00| p/MariaDB/ v/$1/ cpe:/a:mariadb:mariadb/
+match mysql m|^[\s\S]{3}\n(\d+\.\d+\.\d+[\w.-]*)\x00| p/MySQL/ v/$1/ cpe:/a:oracle:mysql/
+match mysql m|^[\s\S]{3}[\s\S]{0,4}is not allowed to connect to this| p/MySQL/ i/unauthorized-host/
+match mysql m|^[\s\S]{3}[\s\S]{0,4}Host [\s\S]{0,40} is blocked| p/MySQL/ i/host-blocked/
+
+# Telnet option negotiation -- RFC 854. IAC (0xFF) and most option bytes are not
+# valid UTF-8, so they arrive as U+FFFD.
+softmatch telnet m|^\x{FFFD}\x{FFFD}|
+
+# chargen -- RFC 864
+match chargen m|^[!-~]{72}\r\n[!-~]{72}| p/chargen/
+
+# TeamSpeak 3 ServerQuery -- TeamSpeak server query documentation
+match teamspeak m|^TS3\r\n| p/TeamSpeak3-ServerQuery/
+
+# Generic printable banner: report the first line as extra info, nothing more.
+softmatch banner m|^[\x20-\x7e]{4,}\r?\n|
+
+# --- GenericLines: provoke an error banner from line-oriented services --------
+probe TCP GenericLines q|\r\n\r\n|
+rarity 2
+match http m|^HTTP/1\.[01] [45]\d\d| p/HTTP/ i/bad-request/
+match smtp m|^500[- ][\s\S]{0,60}[Cc]ommand| p/SMTP/
+match ftp m|^500[- ][\s\S]{0,60}[Cc]ommand| p/FTP/
+softmatch banner m|^[\x20-\x7e]{4,}\r?\n|
+
+# --- GetRequest: HTTP/1.0 GET, the single highest-value probe ---------------
+probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
+rarity 1
+iana http https http-alt
+extra-ports 81,591,3000,4567,5000,7001,8000,8081,8088,8090,8180,8443,8888,9000,9090,9200,9300,9443,10000
+sslports 443,8443,9443
+
+# Server tokens below are each taken from the corresponding project's own
+# published documentation of the Server response header.
+match http m|\r\nServer: Apache/([\w.]+)| p/Apache-httpd/ v/$1/ cpe:/a:apache:http_server/
+match http m|\r\nServer: Apache\r\n| p/Apache-httpd/ cpe:/a:apache:http_server/
+match http m|\r\nServer: nginx/([\w.]+)| p/nginx/ v/$1/ cpe:/a:nginx:nginx/
+match http m|\r\nServer: nginx\r\n| p/nginx/ cpe:/a:nginx:nginx/
+match http m|\r\nServer: openresty/([\w.]+)| p/OpenResty/ v/$1/
+match http m|\r\nServer: Microsoft-IIS/([\w.]+)| p/Microsoft-IIS/ v/$1/ cpe:/a:microsoft:internet_information_services/
+match http m|\r\nServer: Microsoft-HTTPAPI/([\w.]+)| p/Microsoft-HTTPAPI/ v/$1/
+match http m|\r\nServer: lighttpd/([\w.]+)| p/lighttpd/ v/$1/ cpe:/a:lighttpd:lighttpd/
+match http m|\r\nServer: Caddy\r\n| p/Caddy/
+match http m|\r\nServer: Jetty\(([\w.]+)| p/Jetty/ v/$1/ cpe:/a:eclipse:jetty/
+match http m|\r\nServer: Apache-Coyote/([\w.]+)| p/Apache-Tomcat/ i/Coyote-$1/ cpe:/a:apache:tomcat/
+match http m|\r\nServer: gunicorn/([\w.]+)| p/Gunicorn/ v/$1/
+match http m|\r\nServer: Werkzeug/([\w.]+)| p/Werkzeug-httpd/ v/$1/
+match http m|\r\nServer: WSGIServer/([\w.]+)| p/Python-WSGIServer/ v/$1/
+match http m|\r\nServer: uvicorn\r\n| p/Uvicorn/
+match http m|\r\nServer: Cowboy\r\n| p/Cowboy/
+match http m|\r\nServer: Kestrel\r\n| p/Microsoft-Kestrel/
+match http m|\r\nServer: envoy\r\n| p/Envoy/
+match http m|\r\nServer: istio-envoy\r\n| p/Istio-Envoy/
+match http m|\r\nServer: CherryPy/([\w.]+)| p/CherryPy/ v/$1/
+match http m|\r\nServer: TornadoServer/([\w.]+)| p/Tornado/ v/$1/
+match http m|\r\nServer: SimpleHTTP/([\w.]+) Python/([\w.]+)| p/Python-http.server/ v/$1/ i/Python-$2/
+match http m|\r\nServer: WEBrick/([\w.]+)| p/WEBrick/ v/$1/
+match http m|\r\nServer: thttpd/([\w.]+)| p/thttpd/ v/$1/
+match http m|\r\nServer: mini_httpd/([\w.]+)| p/mini_httpd/ v/$1/
+match http m|\r\nServer: Boa/([\w.]+)| p/Boa-httpd/ v/$1/
+match http m|\r\nServer: GoAhead-Webs| p/GoAhead-WebServer/
+match http m|\r\nServer: Hiawatha v([\w.]+)| p/Hiawatha-httpd/ v/$1/
+match http m|\r\nServer: squid/([\w.]+)| p/Squid-http-proxy/ v/$1/ cpe:/a:squid-cache:squid/
+match http m|\r\nServer: HAProxy\r\n| p/HAProxy/
+match http m|\r\nServer: AkamaiGHost| p/Akamai-Ghost/
+match http m|\r\nServer: cloudflare\r\n| p/Cloudflare/
+match http m|\r\nServer: AmazonS3\r\n| p/Amazon-S3/
+match http m|\r\nServer: Google Frontend| p/Google-Frontend/
+match http m|\r\nServer: MinIO\r\n| p/MinIO/
+match http m|\r\nServer: Traefik\r\n| p/Traefik/
+match http m|\r\nServer: ATS/([\w.]+)| p/Apache-Traffic-Server/ v/$1/
+match http m|\r\nServer: Varnish\r\n| p/Varnish-cache/
+match http m|\r\nServer: Zope/| p/Zope/
+match http m|\r\nServer: MochiWeb/([\w.]+)| p/MochiWeb/ v/$1/
+match http m|\r\nServer: BaseHTTP/([\w.]+)| p/Python-BaseHTTP/ v/$1/
+match http m|\r\nServer: Rocket\r\n| p/Rocket/
+match http m|\r\nServer: actix-web/([\w.]+)| p/actix-web/ v/$1/
+match http m|\r\nServer: hyper/([\w.]+)| p/hyper/ v/$1/
+
+# Application fingerprints visible in headers or body -- each documented by the
+# corresponding project.
+match http m|\r\nX-Jenkins: ([\w.]+)| p/Jenkins/ v/$1/ cpe:/a:jenkins:jenkins/
+match http m|\r\nX-Powered-By: Express\r\n| p/Express/
+match http m|\r\nX-Powered-By: PHP/([\w.]+)| p/PHP/ v/$1/ cpe:/a:php:php/
+match http m|\r\nX-Powered-By: ASP\.NET\r\n| p/ASP.NET/
+match http m|\r\nX-Powered-By: Next\.js| p/Next.js/
+match http m|\r\nX-Elastic-Product: Elasticsearch| p/Elasticsearch/ cpe:/a:elastic:elasticsearch/
+match http m|\r\nX-Influxdb-Version: ([\w.]+)| p/InfluxDB/ v/$1/
+match http m|\r\nX-Grafana-Trace-Id| p/Grafana/
+match http m|\r\nDocker-Distribution-Api-Version: registry/([\w.]+)| p/Docker-Registry/ v/$1/
+match http m|\r\nOcs-Api-Version| p/Nextcloud/
+match http m|\r\nX-Sonatype-Nexus| p/Sonatype-Nexus/
+match http m|"cluster_name"[\s\S]{0,120}"lucene_version"| p/Elasticsearch/ cpe:/a:elastic:elasticsearch/
+match http m|\{"kibana"| p/Kibana/
+match http m|<title>Grafana</title>| p/Grafana/
+match http m|\r\nWWW-Authenticate: Negotiate\r\n| p/HTTP/ i/kerberos-auth/
+
+# Generic Server-token fallbacks -- keep last.
+match http m|\r\nServer: ([\w.+-]+)/([\w.]+)| p/$1/ v/$2/
+match http m|\r\nServer: ([\w.+-]+)\r\n| p/$1/
+softmatch http m|^HTTP/1\.[01] \d{3} |
+
+# --- HTTPOptions: some servers answer OPTIONS but not GET -------------------
+probe TCP HTTPOptions q|OPTIONS / HTTP/1.0\r\n\r\n|
+rarity 5
+iana http https http-alt
+extra-ports 81,8000,8081,8088,8443,8888,9443
+sslports 443,8443,9443
+match http m|\r\nServer: ([\w.+-]+)/([\w.]+)| p/$1/ v/$2/
+match http m|\r\nServer: ([\w.+-]+)\r\n| p/$1/
+match http m|\r\nDAV: 1| p/WebDAV/
+softmatch http m|^HTTP/1\.[01] \d{3} |
+
+# --- TLSSessionReq: minimal ClientHello -------------------------------------
+# Record layer 0x16 / version 0x0301 (RFC 5246 appendix E allows the legacy
+# record version); handshake ClientHello 0x01 with client_version 0x0303, a
+# fixed 32-byte random, no session id, four cipher suites, null compression,
+# no extensions. Structure per RFC 5246 section 7.4.1.2 / RFC 8446 section 4.1.2.
+probe TCP TLSSessionReq q|\x16\x03\x01\x00\x35\x01\x00\x00\x31\x03\x03PRTIP-CLIENT-HELLO-RANDOM-32BYTE\x00\x00\x08\xc0\x2f\xc0\x30\x00\x2f\x00\x35\x01\x00\x00\x00|
+rarity 2
+iana https imaps pop3s ldaps submissions ftps domain-s secure-mqtt
+extra-ports 8443,9443,10443
+match ssl m|^\x16\x03[\x00-\x04]| p/TLS/ i/server-hello/
+match ssl m|^\x15\x03[\x00-\x04]| p/TLS/ i/alert/
+softmatch ssl m|^[\x15\x16]\x03|
+
+# --- SMTP EHLO: capability list from a server already greeted by NULL -------
+probe TCP SMTPHelo q|EHLO prtip.invalid\r\n|
+rarity 6
+iana smtp submission submissions
+extra-ports 2525
+sslports 465
+match smtp m|^250[- ][\w.-]+[\s\S]{0,400}STARTTLS| p/ESMTP/ i/STARTTLS/
+match smtp m|^250[- ][\w.-]+| p/ESMTP/
+match smtp m|^5\d\d[- ][\s\S]{0,60}EHLO| p/SMTP/
+softmatch smtp m|^[25]\d\d[- ]|
+
+# --- Redis inline PING -- Redis serialization protocol (RESP) documentation --
+probe TCP RedisPING q|PING\r\n|
+rarity 5
+iana redis
+extra-ports 6380,6381,16379
+match redis m|^\+PONG\r\n| p/Redis/
+match redis m|^-NOAUTH| p/Redis/ i/auth-required/
+match redis m|^-DENIED| p/Redis/ i/protected-mode/
+match redis m|^-ERR operation not permitted| p/Redis/ i/auth-required/
+
+# --- memcached ASCII protocol -- memcached protocol.txt ---------------------
+probe TCP MemcachedVersion q|version\r\n|
+rarity 6
+iana memcache
+match memcached m|^VERSION ([\w.]+)\r\n| p/Memcached/ v/$1/ cpe:/a:memcached:memcached/
+match memcached m|^ERROR\r\n| p/Memcached/
+
+# --- MongoDB OP_QUERY isMaster -- MongoDB wire protocol specification -------
+probe TCP MongoDBIsMaster q|\x3a\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\xd4\x07\x00\x00\x00\x00\x00\x00admin.$cmd\x00\x00\x00\x00\x00\x01\x00\x00\x00\x13\x00\x00\x00\x10isMaster\x00\x01\x00\x00\x00\x00|
+rarity 6
+iana mongodb
+extra-ports 27018,27019,28017
+match mongodb m|maxWireVersion| p/MongoDB/ cpe:/a:mongodb:mongodb/
+match mongodb m|(?i)ismaster| p/MongoDB/ cpe:/a:mongodb:mongodb/
+match mongodb m|(?i)unsupported opcode| p/MongoDB/ i/OP_QUERY-removed/
+
+# --- PostgreSQL SSLRequest -- PostgreSQL frontend/backend protocol docs -----
+# Length 8, request code 80877103 (0x04d2162f). Server answers a single byte:
+# 'S' (SSL available) or 'N' (not available).
+probe TCP PostgresSSLRequest q|\x00\x00\x00\x08\x04\xd2\x16\x2f|
+rarity 6
+iana postgresql
+extra-ports 5433
+match postgresql m|^S$| p/PostgreSQL/ i/SSL-supported/
+match postgresql m|^N$| p/PostgreSQL/ i/SSL-not-supported/
+match postgresql m|^E[\s\S]{0,8}FATAL| p/PostgreSQL/
+softmatch postgresql m|^[SNE]|
+
+# --- LDAP anonymous simple bind -- RFC 4511 section 4.2, BER per X.690 ------
+probe TCP LDAPBindReq q|\x30\x0c\x02\x01\x01\x60\x07\x02\x01\x03\x04\x00\x80\x00|
+rarity 6
+iana ldap ldaps msft-gc
+extra-ports 3269
+sslports 636,3269
+match ldap m|^0[\s\S]\x02\x01\x01a[\s\S]\x0a\x01\x00| p/LDAP/ i/anonymous-bind-accepted/
+match ldap m|^0[\s\S]\x02\x01\x01a| p/LDAP/
+softmatch ldap m|^0[\s\S]\x02\x01\x01|
+
+# --- RDP negotiation request -- MS-RDPBCGR (X.224 CR TPDU + RDP_NEG_REQ) ----
+probe TCP RDPNegReq q|\x03\x00\x00\x13\x0e\xe0\x00\x00\x00\x00\x00\x01\x00\x08\x00\x03\x00\x00\x00|
+rarity 6
+iana ms-wbt-server
+extra-ports 3388,3390
+match ms-wbt-server m|^\x03\x00\x00[\s\S]\x0e[\s\S][\s\S]{0,8}\x02\x00\x08\x00| p/Microsoft-Terminal-Services/
+match ms-wbt-server m|^\x03\x00\x00[\s\S]\x0e| p/Microsoft-Terminal-Services/
+softmatch ms-wbt-server m|^\x03\x00\x00|
+
+# --- SMB negotiate -- MS-CIFS SMB_COM_NEGOTIATE offering SMB1 and SMB2 ------
+probe TCP SMBNegotiate q|\x00\x00\x00\x45\xffSMB\x72\x00\x00\x00\x00\x18\x01\x28\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x2f\x4b\x00\x00\x00\x00\x00\x22\x00\x02NT LM 0.12\x00\x02SMB 2.002\x00\x02SMB 2.???\x00|
+rarity 5
+iana netbios-ssn microsoft-ds
+match smb m|^\x00[\s\S]{0,6}SMB\x72| p/SMB/ i/SMB1/
+match smb m|^\x00[\s\S]{0,6}SMB| p/SMB/
+softmatch netbios-ssn m|^\x00[\s\S]{0,6}SMB|
+
+# --- AMQP 0-9-1 protocol header -- AMQP 0-9-1 specification section 4.2.2 ---
+probe TCP AMQPHeader q|AMQP\x00\x00\x09\x01|
+rarity 6
+iana amqp
+extra-ports 5671,5673
+match amqp m|(?i)rabbitmq| p/RabbitMQ/ cpe:/a:pivotal_software:rabbitmq/
+match amqp m|(?i)qpid| p/Apache-Qpid/
+match amqp m|^AMQP| p/AMQP/ i/version-mismatch/
+softmatch amqp m|AMQP|
+
+# --- MQTT 3.1.1 CONNECT -- OASIS MQTT v3.1.1 section 3.1 --------------------
+probe TCP MQTTConnect q|\x10\x12\x00\x04MQTT\x04\x02\x00\x3c\x00\x06prtip1|
+rarity 6
+iana mqtt secure-mqtt
+sslports 8883
+match mqtt m|^ \x02\x00\x00| p/MQTT/ i/connection-accepted/
+match mqtt m|^ \x02\x00[\x01-\x05]| p/MQTT/ i/connection-refused/
+softmatch mqtt m|^ \x02|
+
+# --- ONC RPC portmapper NULL call -- RFC 1057 / RFC 1833 -------------------
+# TCP record marking (RFC 1057 section 10) + CALL, prog 100000 vers 2 proc 0.
+# The XID is the ASCII string "PRTP" so the echoed reply is easy to anchor on.
+probe TCP RPCCheckTCP q|\x80\x00\x00\x28PRTP\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86\xa0\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|
+rarity 6
+iana sunrpc
+match rpcbind m|^[\s\S]{0,4}PRTP\x00\x00\x00\x01| p/RPC-portmapper/ i/rpcbind-v2/
+softmatch rpcbind m|^[\s\S]{0,4}PRTP|
+
+# --- DNS version.bind CH TXT over TCP -- RFC 1035 + the version.bind ---------
+# convention documented in BIND's own administrator reference manual.
+probe TCP DNSVersionBindTCP q|\x00\x1ePR\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03|
+rarity 6
+iana domain
+match domain m|^[\s\S]{0,2}PR[\s\S]{0,60}bind\x00[\s\S]{0,24}(9\.[\w.-]+)| p/ISC-BIND/ v/$1/ cpe:/a:isc:bind/
+match domain m|^[\s\S]{0,2}PR[\s\S]{0,60}bind\x00[\s\S]{0,24}(dnsmasq[\w.-]*)| p/dnsmasq/ v/$1/
+match domain m|^[\s\S]{0,2}PR[\s\S]{0,4}\x00\x01| p/DNS/
+softmatch domain m|^[\s\S]{0,2}PR|
+
+# --- Git smart protocol -- Git pack-protocol documentation ------------------
+probe TCP GitProtocol q|002agit-upload-pack /probe\x00host=localhost\x00|
+rarity 7
+iana git
+match git m|^[0-9a-f]{4}ERR | p/Git-daemon/
+match git m|^[0-9a-f]{4}[0-9a-f]{40} | p/Git-daemon/
+softmatch git m|^[0-9a-f]{4}|
+
+# --- Java RMI JRMP StreamProtocol handshake -- Java RMI wire protocol spec ---
+probe TCP JavaRMI q|JRMI\x00\x02\x4b|
+rarity 7
+iana rmiregistry
+extra-ports 1098,1050,4444
+match java-rmi m|^N\x00| p/Java-RMI-registry/
+softmatch java-rmi m|^N|
+
+# --- X11 connection setup -- X Window System protocol specification ---------
+# Byte order 'l', protocol-major-version 11, minor 0, no authorization.
+probe TCP X11Probe q|l\x00\x0b\x00\x00\x00\x00\x00\x00\x00|
+rarity 7
+extra-ports 6000,6001,6002,6003,6004,6005,6006,6007
+match X11 m|^\x01[\s\S]\x0b\x00| p/X11/ i/access-granted/
+match X11 m|^\x00[\s\S]\x0b\x00[\s\S]{0,4}No protocol specified| p/X11/ i/access-denied/
+match X11 m|^\x00[\s\S]\x0b\x00| p/X11/ i/access-denied/
+softmatch X11 m|^[\x00\x01][\s\S]\x0b\x00|
+
+# --- SIP OPTIONS over TCP -- RFC 3261 section 11 ---------------------------
+probe TCP SIPOptionsTCP q|OPTIONS sip:probe@example.invalid SIP/2.0\r\nVia: SIP/2.0/TCP 127.0.0.1:5060;branch=z9hG4bKprtip\r\nFrom: <sip:probe@example.invalid>;tag=prtip\r\nTo: <sip:probe@example.invalid>\r\nCall-ID: prtip-probe@example.invalid\r\nCSeq: 1 OPTIONS\r\nMax-Forwards: 70\r\nContent-Length: 0\r\n\r\n|
+rarity 7
+iana sip sips
+sslports 5061
+match sip m|^SIP/2\.0 \d{3}[\s\S]{0,400}\r\nServer: ([\w.+/-]+)| p/$1/
+match sip m|^SIP/2\.0 \d{3}[\s\S]{0,400}\r\nUser-Agent: ([\w.+/-]+)| p/$1/
+match sip m|^SIP/2\.0 \d{3} | p/SIP/
+softmatch sip m|^SIP/2\.0 |
+
+# --- finger -- RFC 1288 ------------------------------------------------------
+probe TCP FingerProbe q|root\r\n|
+rarity 8
+iana finger
+match finger m|(?i)^login[: ]| p/finger/
+match finger m|(?i)no one logged on| p/finger/
+softmatch finger m|(?i)^\s*login|
+
+# --- whois -- RFC 3912 -------------------------------------------------------
+probe TCP WhoisQuery q|prtip-probe.invalid\r\n|
+rarity 8
+iana nicname
+match whois m|(?i)no match for| p/whois/
+match whois m|(?i)^%[\s\S]{0,60}whois| p/whois/
+softmatch whois m|(?i)whois|
+
+# --- Apache ZooKeeper four-letter word -- ZooKeeper administrator guide ------
+# Port 2181 is a de-facto assignment; IANA lists 2181/tcp as "eforward".
+probe TCP ZooKeeperSrvr q|srvr\x0a|
+rarity 8
+extra-ports 2181,2182,2183
+match zookeeper m|^Zookeeper version: ([\w.-]+)| p/Apache-ZooKeeper/ v/$1/ cpe:/a:apache:zookeeper/
+match zookeeper m|(?i)srvr is not executed because it is not in the whitelist| p/Apache-ZooKeeper/ i/four-letter-words-restricted/
+softmatch zookeeper m|(?i)zookeeper|
+
+# --- Microsoft SQL Server TDS PRELOGIN -- MS-TDS section 2.2.6.5 -----------
+probe TCP MSSQLPreLogin q|\x12\x01\x00\x14\x00\x00\x01\x00\x00\x00\x06\x00\x06\xff\x00\x00\x00\x00\x00\x00|
+rarity 7
+iana ms-sql-s
+extra-ports 1434,14330
+match ms-sql-s m|^\x04\x01| p/Microsoft-SQL-Server/ cpe:/a:microsoft:sql_server/
+softmatch ms-sql-s m|^\x04|
+
+# ===========================================================================
+# UDP probes
+# ===========================================================================
+
+# --- DNS version.bind CH TXT over UDP -- RFC 1035 --------------------------
+probe UDP DNSVersionBind q|PR\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03|
+rarity 1
+iana domain
+extra-ports 5353,5355
+match domain m|^PR[\s\S]{0,60}bind\x00[\s\S]{0,24}(9\.[\w.-]+)| p/ISC-BIND/ v/$1/ cpe:/a:isc:bind/
+match domain m|^PR[\s\S]{0,60}bind\x00[\s\S]{0,24}(dnsmasq[\w.-]*)| p/dnsmasq/ v/$1/
+match domain m|^PR[\s\S]{0,60}bind\x00[\s\S]{0,24}(Unbound[\w.-]*)| p/Unbound/ v/$1/
+match domain m|^PR[\s\S]{0,60}bind\x00[\s\S]{0,24}(PowerDNS[\w.-]*)| p/PowerDNS/ v/$1/
+match domain m|^PR[\s\S]{0,4}\x00\x01| p/DNS/
+softmatch domain m|^PR|
+
+# --- NTP client request, mode 3 -- RFC 5905 section 7.3 ---------------------
+probe UDP NTPRequest q|\x23\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|
+rarity 1
+iana ntp
+match ntp m|^[\x1c\x24\x2c][\x00-\x10][\s\S]{2}| p/NTP/ i/mode-4-server/
+softmatch ntp m|^[\x04\x0c\x14\x1c\x24\x2c]|
+
+# --- SNMPv1 GetRequest for sysDescr.0 -- RFC 1157, BER per X.690 -----------
+probe UDP SNMPv1public q|\x30\x29\x02\x01\x00\x04\x06public\xa0\x1c\x02\x04PRTP\x02\x01\x00\x02\x01\x00\x30\x0e\x30\x0c\x06\x08\x2b\x06\x01\x02\x01\x01\x01\x00\x05\x00|
+rarity 2
+iana snmp
+extra-ports 162,10161
+match snmp m|^0[\s\S]{0,3}\x02\x01\x00\x04\x06public[\s\S]{0,40}\x04[\s\S]([\x20-\x7e]{6,})| p/SNMPv1/ i/$1/
+match snmp m|^0[\s\S]{0,3}\x02\x01\x00\x04\x06public| p/SNMPv1/ i/community-public/
+softmatch snmp m|^0[\s\S]{0,3}\x02\x01[\x00-\x03]\x04|
+
+# --- NetBIOS node status request -- RFC 1002 section 4.2.17 ----------------
+probe UDP NBTStat q|PR\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x20CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x00\x00\x21\x00\x01|
+rarity 3
+iana netbios-ns
+match netbios-ns m|^PR[\s\S]{0,8}\x00\x21\x00\x01| p/NetBIOS-name-service/
+softmatch netbios-ns m|^PR\x00|
+
+# --- TFTP read request -- RFC 1350 section 5 -------------------------------
+probe UDP TFTPGet q|\x00\x01prtip-probe\x00netascii\x00|
+rarity 5
+iana tftp
+match tftp m|^\x00\x05\x00[\x00-\x07]| p/TFTP/ i/error-response/
+softmatch tftp m|^\x00\x05|
+
+# --- SSDP M-SEARCH -- UPnP Device Architecture 2.0 section 1.3.2 -----------
+probe UDP SSDPMSearch q|M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: "ssdp:discover"\r\nMX: 1\r\nST: ssdp:all\r\n\r\n|
+rarity 4
+iana ssdp
+match upnp m|^HTTP/1\.1 200 OK[\s\S]{0,400}\r\nSERVER: ([\x20-\x7e]{4,60})\r\n| p/UPnP/ i/$1/
+match upnp m|(?i)^HTTP/1\.1 200 OK[\s\S]{0,400}usn:| p/UPnP/
+softmatch upnp m|^HTTP/1\.1 200 OK|
+
+# --- mDNS service enumeration -- RFC 6762 / RFC 6763 -----------------------
+probe UDP MDNSQuery q|\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x09_services\x07_dns-sd\x04_udp\x05local\x00\x00\x0c\x00\x01|
+rarity 5
+iana mdns
+match mdns m|_services\x07_dns-sd| p/mDNS/
+match mdns m|\x05local\x00| p/mDNS/
+softmatch mdns m|local\x00|
+
+# --- CoAP GET /.well-known/core -- RFC 7252 / RFC 6690 ---------------------
+probe UDP CoAPRequest q|\x40\x01PR\xbb.well-known\x04core|
+rarity 6
+iana coap
+extra-ports 5684
+match coap m|^`[\s\S]PR| p/CoAP/
+match coap m|(?i)well-known/core| p/CoAP/
+softmatch coap m|^`|
+
+# --- IPMI RMCP Get Channel Authentication Capabilities -- IPMI v2.0 spec ---
+probe UDP IPMIRMCP q|\x06\x00\xff\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x09\x20\x18\xc8\x81\x04\x38\x8e\x04\xb5|
+rarity 6
+iana asf-rmcp
+match ipmi m|^\x06\x00[\s\S]\x07| p/IPMI-RMCP/
+softmatch ipmi m|^\x06\x00|
+
+# --- SIP OPTIONS over UDP -- RFC 3261 section 11 ---------------------------
+probe UDP SIPOptionsUDP q|OPTIONS sip:probe@example.invalid SIP/2.0\r\nVia: SIP/2.0/UDP 127.0.0.1:5060;branch=z9hG4bKprtip\r\nFrom: <sip:probe@example.invalid>;tag=prtip\r\nTo: <sip:probe@example.invalid>\r\nCall-ID: prtip-probe@example.invalid\r\nCSeq: 1 OPTIONS\r\nMax-Forwards: 70\r\nContent-Length: 0\r\n\r\n|
+rarity 5
+iana sip
+extra-ports 5062,5080
+match sip m|^SIP/2\.0 \d{3}[\s\S]{0,400}\r\nServer: ([\w.+/-]+)| p/$1/
+match sip m|^SIP/2\.0 \d{3}[\s\S]{0,400}\r\nUser-Agent: ([\w.+/-]+)| p/$1/
+match sip m|^SIP/2\.0 \d{3} | p/SIP/
+softmatch sip m|^SIP/2\.0 |
+
+# --- ONC RPC portmapper NULL call over UDP -- RFC 1057 / RFC 1833 ----------
+probe UDP RPCCheckUDP q|PRTP\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86\xa0\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|
+rarity 6
+iana sunrpc
+match rpcbind m|^PRTP\x00\x00\x00\x01| p/RPC-portmapper/ i/rpcbind-v2/
+softmatch rpcbind m|^PRTP|
+
+# --- memcached UDP -- memcached protocol.txt (8-byte UDP frame header) ------
+probe UDP MemcachedUDP q|\x00\x00\x00\x00\x00\x01\x00\x00version\r\n|
+rarity 7
+iana memcache
+match memcached m|VERSION ([\w.]+)\r\n| p/Memcached/ v/$1/ cpe:/a:memcached:memcached/
+softmatch memcached m|VERSION |

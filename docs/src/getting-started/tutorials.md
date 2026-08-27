@@ -238,10 +238,10 @@ sudo prtip -sV -p 80 scanme.nmap.org
 sudo prtip -sV --version-intensity 9 -p 80 scanme.nmap.org
 ```
 
-**Trade-offs:**
-- **Low intensity (2):** 5-10 seconds per port, 70% accuracy
-- **Default (7):** 15-30 seconds per port, 85-90% accuracy
-- **High intensity (9):** 30-60 seconds per port, 95% accuracy
+**Trade-offs (accuracy not yet measured for any level):**
+- **Low intensity (2):** 5-10 seconds per port, fewer probes tried
+- **Default (7):** 15-30 seconds per port, more probes tried
+- **High intensity (9):** 30-60 seconds per port, all probes tried
 
 ### Protocol-Specific Detection
 
@@ -590,7 +590,7 @@ sudo prtip -sS -p 80,443 192.168.0.0/16 -T4
 **Optimization:**
 - Use `-T4` or `-T5` for faster scanning
 - Limit port range (`-p 80,443` vs `-p 1-65535`)
-- Use `--top-ports 100` for most common ports
+- Use `--top-ports 100` to scan a fixed 100-port list instead of a range
 
 ### Top Ports Scanning
 
@@ -600,7 +600,11 @@ sudo prtip -F 192.168.1.0/24
 ```
 
 **Explanation:**
-- `-F`: Fast mode (scans top 100 ports)
+- `-F`: Fast mode -- the first 100 ports of ProRT-IP's priority list, an
+  IANA-derived editorial ranking rather than a measured-frequency ranking. It
+  selects different ports than `nmap -F` and carries no coverage guarantee; use
+  `-p` when a specific port matters. See
+  [Port Specification](../reference/port-specification.md).
 - Equivalent to `--top-ports 100`
 
 **Top Ports Lists:**

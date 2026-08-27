@@ -29,8 +29,8 @@ WarScan consolidates and advances the best of today's network scanning and analy
 
 - **Multi-Protocol Scanning:** TCP (SYN, Connect, FIN, NULL, Xmas, ACK, Idle/Zombie), UDP, ICMP/ICMPv6, NDP
 - **IPv6 Support:** ✅ **Complete IPv6 support (all 8 scanners)** - Full dual-stack implementation
-- **Service Detection:** 187 embedded protocol probes + 5 protocol-specific parsers (HTTP, SSH, SMB, MySQL, PostgreSQL) + SSL/TLS handshake (85-90% detection rate)
-- **OS Fingerprinting:** 2,600+ signatures using 16-probe technique
+- **Service Detection:** 37 embedded protocol probes (226 match rules) + 5 protocol-specific parsers (HTTP, SSH, SMB, MySQL, PostgreSQL) + SSL/TLS handshake (detection rate not measured)
+- **OS Fingerprinting:** 16-probe technique matched against a caller-supplied signature database (none bundled)
 - **Evasion Techniques:** IP fragmentation (-f, --mtu), TTL manipulation (--ttl), bad checksums (--badsum), decoy scanning (-D RND:N), idle/zombie scan (-sI)
 - **High Performance:** Asynchronous I/O with lock-free coordination, zero-copy packet building, adaptive rate limiting (-1.8% overhead)
 - **Cross-Platform:** Linux, Windows, macOS, FreeBSD support with NUMA optimization

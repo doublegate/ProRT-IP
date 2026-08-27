@@ -8,9 +8,9 @@ Comprehensive technical comparison between ProRT-IP and Nmap, the industry-stand
 
 **Nmap dominates as the industry standard** with 600+ NSE scripts, 7,319 service signatures, 2,982 OS fingerprints, and two decades of field testing. Released in 1997 by Gordon Lyon (Fyodor), Nmap has evolved from a simple port scanner into a comprehensive reconnaissance framework trusted by security professionals worldwide.
 
-**ProRT-IP modernizes network scanning** with Rust's memory safety, async I/O performance (50K+ pps stateful, 165x faster than Nmap), and a growing detection ecosystem (85-90% service accuracy). While Nmap maintains superior detection depth through NSE scripting and larger signature databases, ProRT-IP delivers comparable results at dramatically higher speeds without sacrificing security.
+**ProRT-IP modernizes network scanning** with Rust's memory safety, async I/O performance (50K+ pps stateful, 165x faster than Nmap), and a young, growing detection ecosystem (37 service probes, 226 match rules; detection accuracy not yet measured). Nmap maintains far superior detection depth through NSE scripting and a much larger signature database; ProRT-IP trades that depth for dramatically higher speed.
 
-**The fundamental tradeoff**: Nmap provides 100% detection accuracy with comprehensive NSE scripts but scans at ~300K pps maximum. ProRT-IP achieves 85-90% detection accuracy at 50K+ pps stateful (165x faster) or 10M+ pps stateless (33x faster than Nmap's maximum).
+**The fundamental tradeoff**: Nmap provides comprehensive NSE-scripted detection but scans at ~300K pps maximum. ProRT-IP runs at 50K+ pps stateful (165x faster) or 10M+ pps stateless (33x faster than Nmap's maximum) with a much smaller, unmeasured-accuracy detection corpus.
 
 ---
 
@@ -22,8 +22,8 @@ Comprehensive technical comparison between ProRT-IP and Nmap, the industry-stand
 | **Language** | C/C++ + Lua (NSE) | Rust (memory-safe) |
 | **Speed (Stateful)** | ~300K pps (T5 max) | 50K+ pps (165x faster) |
 | **Speed (Stateless)** | N/A (requires state) | 10M+ pps (Masscan-class) |
-| **Service Detection** | 7,319 signatures (100%) | 500+ services (85-90%) |
-| **OS Fingerprinting** | 2,982 signatures (16-probe) | 2,600+ DB (Nmap-compatible) |
+| **Service Detection** | 7,319 signatures | 37 probes, 226 match rules (not measured) |
+| **OS Fingerprinting** | 2,982 signatures (16-probe) | 16-probe technique; caller-supplied DB, none bundled |
 | **NSE Scripts** | 600+ (14 categories) | Lua 5.4 plugin system |
 | **Scan Types** | 12+ (including SCTP) | 8 (TCP, UDP, stealth) |
 | **IPv6 Support** | ✅ Full (all scan types) | ✅ Full (all scan types) |
@@ -74,7 +74,7 @@ Comprehensive technical comparison between ProRT-IP and Nmap, the industry-stand
 ✅ **Speed is critical but detection matters**
 - Large networks requiring fast discovery + comprehensive service detection
 - Security assessments with time constraints but accuracy requirements
-- Bug bounty hunting (rapid reconnaissance, 85-90% detection sufficient)
+- Bug bounty hunting (rapid reconnaissance; detection corpus is smaller but growing)
 
 ✅ **Memory safety is required**
 - Production environments with strict security policies
@@ -126,19 +126,19 @@ Comprehensive technical comparison between ProRT-IP and Nmap, the industry-stand
 
 | Scanner | Database Size | Detection Rate | Probe Count | Intensity Levels |
 |---------|---------------|----------------|-------------|------------------|
-| **Nmap** | 7,319 signatures | 100% (industry standard) | 3,000+ probes | 0-9 (10 levels) |
-| **ProRT-IP** | 500+ services | 85-90% (growing) | 187 probes | 2-9 (light to comprehensive) |
+| **Nmap** | 7,319 signatures | Not independently verified here | 3,000+ probes | 0-9 (10 levels) |
+| **ProRT-IP** | 226 match rules | Not yet measured | 37 probes | 2-9 (light to comprehensive) |
 
 **Nmap's Advantage**: The **nmap-service-probes database** contains 3,000+ signature patterns covering 350+ protocols, each with probe strings, regex patterns, version extraction rules, and CPE identifiers. Intensity level 9 (`--version-all`) exhaustively tests every probe regardless of likelihood.
 
-**ProRT-IP's Advantage**: 187 probes achieve 85-90% detection accuracy in 5-10% of Nmap's time by focusing on statistically common services. **Actively growing** database with community contributions.
+**ProRT-IP's Position**: A young, clean-room probe corpus (37 probes, 226 match rules — see `crates/prtip-core/data/ATTRIBUTION.md`) targeting the services that dominate real scan results. Detection accuracy has not been measured, and the corpus does not attempt to match Nmap's coverage.
 
 ### OS Fingerprinting
 
 | Scanner | Database Size | Probe Sequence | Confidence Scoring |
 |---------|---------------|----------------|-------------------|
 | **Nmap** | 2,982 signatures | 16 specialized probes | 0-100% (confidence levels) |
-| **ProRT-IP** | 2,600+ signatures | 16 probes (Nmap DB compatible) | 0-100% (confidence levels) |
+| **ProRT-IP** | Caller-supplied (none bundled) | 16 probes (Nmap DB format compatible) | 0-100% (confidence levels) |
 
 **Nmap's 16-Probe Sequence**:
 1. **SEQ tests**: Six TCP SYN packets (100ms apart) analyzing ISN generation, TCP timestamps, predictability
@@ -146,7 +146,7 @@ Comprehensive technical comparison between ProRT-IP and Nmap, the industry-stand
 3. **UDP test (U1)**: Closed UDP port expecting ICMP port unreachable
 4. **ICMP tests (IE1, IE2)**: Echo requests studying response characteristics
 
-**ProRT-IP Implementation**: Compatible with Nmap's database and probe sequence, achieving similar accuracy with modern Rust implementation.
+**ProRT-IP Implementation**: The probe sequence and matching logic are compatible with Nmap's `nmap-os-db` format, but ProRT-IP bundles no signature database — a caller of the library API must supply and parse their own.
 
 ---
 
@@ -178,8 +178,8 @@ Comprehensive technical comparison between ProRT-IP and Nmap, the industry-stand
 
 | Feature | Nmap | ProRT-IP | Comparison |
 |---------|------|----------|------------|
-| **Service Detection** | `-sV` (7,319 sigs) | `-sV` (500+ services) | Nmap: 100% accuracy, ProRT-IP: 85-90% at 10x speed |
-| **OS Fingerprinting** | `-O` (2,982 sigs) | `-O` (2,600+ DB) | Comparable accuracy, Nmap DB compatible |
+| **Service Detection** | `-sV` (7,319 sigs) | `-sV` (37 probes, 226 match rules) | Much smaller corpus; ProRT-IP accuracy not measured |
+| **OS Fingerprinting** | `-O` (2,982 sigs bundled) | `-O` (caller-supplied DB; none bundled) | Same probe technique and DB format, no bundled signatures |
 | **TLS Certificate** | `--script ssl-cert` | Native X.509v3 | ProRT-IP: 1.33μs parsing, SNI support |
 | **Banner Grabbing** | Automatic with `-sV` | Automatic with `-sV` | Both capture banners |
 | **RPC Enumeration** | `-sV` + portmapper | ❌ | Nmap advantage |
@@ -352,7 +352,7 @@ prtip -sS -sV -p- -T5 --max-rate 500000 192.168.1.0/24
 
 **2. Time-Sensitive Assessments**
 ```bash
-# Bug bounty reconnaissance (85-90% detection, 50K+ pps)
+# Bug bounty reconnaissance (50K+ pps, detection accuracy not measured)
 prtip -sS -sV --top-ports 1000 -T4 bug-bounty-scope.txt
 
 # CTF competitions (rapid full port scan)
@@ -409,13 +409,13 @@ prtip --live -sS -p- -T5 large-network.txt
 
 ### What You Keep
 
-**Service Detection**: 85-90% accuracy (500+ services, growing database)
-- Sufficient for most security assessments
-- 10x faster detection than Nmap comprehensive probing
+**Service Detection**: 37 probes, 226 match rules (young, growing corpus; accuracy not measured)
+- Faster detection than Nmap comprehensive probing
+- Covers the services that dominate real scan results
 
-**OS Fingerprinting**: Nmap database compatible (2,600+ signatures)
+**OS Fingerprinting**: Nmap `nmap-os-db` format compatible; caller supplies the signature database (none bundled)
 - Same 16-probe sequence
-- Comparable accuracy with modern implementation
+- Modern Rust implementation
 
 **Nmap-Compatible CLI**: 50+ familiar flags (`-sS`, `-sV`, `-O`, `-p`, `-T0-T5`, `-oX`, `-oN`, `-oG`)
 - Minimal learning curve for Nmap users
@@ -697,7 +697,7 @@ tshark -r scan.pcapng -Y "tcp.port == 443"
 
 ### Choose ProRT-IP If:
 
-✅ **Speed is critical but detection matters** (large networks, time-sensitive assessments, 85-90% accuracy sufficient)
+✅ **Speed is critical but detection matters** (large networks, time-sensitive assessments; smaller, growing detection corpus)
 ✅ **Memory safety is required** (production environments, strict security policies, Rust prevents buffer overflows)
 ✅ **Modern features matter** (database storage, real-time TUI, stream-to-disk, adaptive parallelism)
 ✅ **IPv6 first-class** (mixed environments, cloud-native infrastructure, consistent performance)
@@ -717,7 +717,7 @@ tshark -r scan.pcapng -Y "tcp.port == 443"
 **Many security professionals use both tools**:
 
 1. **ProRT-IP for rapid reconnaissance** (10M+ pps stateless discovery)
-2. **ProRT-IP for stateful enumeration** (50K+ pps with 85-90% detection)
+2. **ProRT-IP for stateful enumeration** (50K+ pps; detection accuracy not measured)
 3. **Nmap for deep inspection** (100% service detection, NSE vulnerability scripts)
 4. **ProRT-IP for continuous monitoring** (database storage, change detection)
 

@@ -7,9 +7,9 @@ Detect operating systems through TCP/IP stack behavior analysis.
 **OS Fingerprinting** determines a target's operating system by analyzing unique characteristics in its TCP/IP stack implementation. Different operating systems implement TCP/IP slightly differently—these subtle variations create distinctive "fingerprints" that can be used for identification.
 
 **ProRT-IP Implementation:**
-- **2,600+ OS signatures** (Linux, Windows, BSD, macOS, embedded devices, IoT)
+- **Caller-supplied signature set** — none bundled; parser is Nmap-DB-format-compatible
 - **16-probe sequence** inspired by Nmap's methodology
-- **95% accuracy** on well-known operating systems
+- **Accuracy** not yet measured; depends entirely on the signature set you provide
 - **Passive and active** detection modes
 
 **Use Cases:**
@@ -302,25 +302,16 @@ Reason: No open ports found, or firewall blocking probes
 
 ### Signature Database
 
-ProRT-IP includes **2,600+ OS signatures** covering:
-
-**Major Operating Systems:**
-- **Linux**: Ubuntu, Debian, RHEL, CentOS, Fedora, Arch, Gentoo
-- **Windows**: XP, Vista, 7, 8, 8.1, 10, 11, Server 2008-2022
-- **BSD**: FreeBSD, OpenBSD, NetBSD, DragonFly BSD
-- **macOS**: 10.x (Yosemite - Monterey), 11.x (Big Sur), 12.x (Monterey)
-
-**Specialized Systems:**
-- **Embedded**: OpenWrt, DD-WRT, Tomato, pfSense, OPNsense
-- **IoT Devices**: Raspberry Pi OS, Armbian, Yocto-based
-- **Network Equipment**: Cisco IOS, Juniper Junos, MikroTik RouterOS
-- **Virtualization**: VMware ESXi, Citrix XenServer, Proxmox
+ProRT-IP bundles **no OS signature database**. Coverage of Linux distributions,
+Windows, BSD variants, macOS, embedded systems, IoT devices, network equipment,
+and virtualization platforms depends entirely on the signature file you supply
+in the Nmap-DB-compatible format.
 
 ### Fingerprint Matching Algorithm
 
 1. **Collect Responses**: Send 16-probe sequence, record all responses
 2. **Extract Attributes**: Parse ISN, options, IP ID, window sizes
-3. **Calculate Similarity**: Compare against 2,600+ signatures
+3. **Calculate Similarity**: Compare against the caller-supplied signature set
 4. **Rank Matches**: Sort by similarity score (0-100%)
 5. **Return Best Match**: Highest scoring match with confidence level
 

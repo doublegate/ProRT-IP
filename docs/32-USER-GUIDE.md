@@ -474,10 +474,16 @@ prtip -p 1-100 TARGET          # Ports 1-100
 prtip -p- TARGET               # All ports (1-65535)
 ```
 
-**Common Ports (Fast):**
+**Priority Ports (Fast):**
 ```bash
-prtip -F TARGET                # Top 100 ports
+prtip -F TARGET                # First 100 ports of the priority list
 ```
+
+> **`-F` / `--top-ports` ordering.** The list is an *editorial ranking of IANA
+> port assignments*, not a measured-frequency ranking — ProRT-IP ships no
+> port-frequency data. These flags therefore select a different set of ports than
+> nmap at every N, and no hit-rate or coverage figure is published for them. Name
+> the ports you need with `-p`. Rule: `tools/gen-top-ports/RULE.md`.
 
 **Exclude Ports:**
 ```bash
@@ -2115,8 +2121,8 @@ cat debug.log | grep WARN
 
 **Feature Comparison:**
 - ✅ Scan Types: Full parity (SYN, Connect, UDP, Stealth, Idle)
-- ✅ Service Detection: 85-90% accuracy (Nmap: 90-95%)
-- ✅ OS Fingerprinting: 2,000+ signatures (Nmap: 2,600+)
+- 🔄 Service Detection: 37 probes, 226 match rules, growing corpus (Nmap: 600+ probes; accuracy not measured for either)
+- 🔄 OS Fingerprinting: caller-supplied signature database, none bundled (Nmap: 2,600+ bundled)
 - ✅ Evasion: Full parity (fragmentation, TTL, decoys, idle)
 - 🔄 NSE Scripts: Lua plugins (partial parity, growing)
 
@@ -2265,11 +2271,11 @@ cargo test
 
 ### Q8: How accurate is service detection?
 
-**A:** ProRT-IP achieves 85-90% accuracy:
+**A:** Detection accuracy is not yet measured for ProRT-IP's probe corpus.
 
 **Detection Methods:**
 1. **NULL Probe:** Listen for self-announcing services (FTP, SSH banners)
-2. **Protocol Probes:** 187 embedded nmap-service-probes
+2. **Protocol Probes:** 37 embedded ProRT-IP service probes (226 match rules)
 3. **Banner Parsing:** HTTP headers, SSH versions, SMB dialects, etc.
 4. **TLS Handshake:** Extract certificate details
 
@@ -2279,8 +2285,8 @@ cargo test
 - **Custom Services:** May require custom plugins
 
 **Comparison:**
-- Nmap: 90-95% (slightly higher due to larger probe database)
-- ProRT-IP: 85-90% (good, improving)
+- Nmap: 90-95% (Nmap's own published figure, much larger probe database)
+- ProRT-IP: not yet measured; corpus is intentionally smaller and still growing
 
 **See:** [24-SERVICE-DETECTION-GUIDE.md](24-SERVICE-DETECTION-GUIDE.md) for details
 

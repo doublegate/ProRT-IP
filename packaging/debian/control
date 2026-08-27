@@ -27,8 +27,8 @@ Description: Modern high-performance network scanner
  .
  Features:
   - TCP SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle scan types
-  - Service version detection (85-90% accuracy, 187 Nmap probes)
-  - OS fingerprinting (16-probe technique, 2,600+ signatures)
+  - Service version detection (ProRT-IP probe corpus: 37 probes, 226 match rules)
+  - OS fingerprinting (16-probe technique; signature set supplied by the user)
   - Evasion techniques (fragmentation, decoys, TTL manipulation)
   - TUI dashboard with real-time visualization
   - Full IPv6 support

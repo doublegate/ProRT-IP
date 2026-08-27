@@ -543,22 +543,27 @@ impl HelpSystem {
                          prtip -p 1-1000,8000-9000   # Multiple ranges\n\
                          prtip -p-                    # All 65535 ports\n\n\
                 {} {} (Fast Scan)\n\
-                  Scan only the top 100 most common ports from nmap-services database.\n\
-                  Dramatically faster than default 1-1000 range (~66ms vs ~200ms).\n\n\
+                  Scan ProRT-IP's 100-port priority list. Much faster than the default\n\
+                  1-1000 range.\n\n\
+                  The ordering is an EDITORIAL RANKING OF IANA PORT ASSIGNMENTS, not\n\
+                  measured frequency: ProRT-IP ships no port-frequency data, so this\n\
+                  selects a different 100 ports than nmap -F and carries no hit-rate or\n\
+                  coverage guarantee. Name the ports you care about with -p.\n\
+                  Rule: tools/gen-top-ports/RULE.md\n\n\
                   Usage: prtip -F <target>\n\
                   Equivalent to: prtip --top-ports 100 <target>\n\n\
-                {} {} (Top Ports)\n\
-                  Scan the N most common ports based on nmap-services frequency database.\n\
-                  Balances speed vs comprehensiveness.\n\n\
+                {} {} (Priority Ports)\n\
+                  Scan the first N ports of that same priority list. Smaller N is\n\
+                  faster; it is not more accurate.\n\n\
                   Usage: prtip --top-ports 10 <target>     # Quickest (10 ports)\n\
                          prtip --top-ports 100 <target>    # Fast (100 ports)\n\
                          prtip --top-ports 1000 <target>   # Thorough (1000 ports)\n\
                          prtip --top-ports 5000 <target>   # Comprehensive\n\n\
                 {} {} (Port Ratio)\n\
-                  Scan ports more common than specified ratio (0.0-1.0). Advanced option\n\
-                  for fine-grained control over which ports to scan based on frequency.\n\n\
-                  Usage: prtip --port-ratio 0.5 <target>   # Top 50%% of ports\n\
-                         prtip --port-ratio 0.1 <target>   # Top 10%% of ports\n\n\
+                  Accepted for nmap CLI compatibility; currently has NO effect. nmap\n\
+                  selects ports above a measured open-frequency threshold; ProRT-IP has\n\
+                  no such data, so the value is validated and ignored.\n\n\
+                  Usage: prtip --port-ratio 0.5 <target>   # accepted, no effect\n\n\
                 {} {} (No Randomize)\n\
                   Scan ports in sequential order (1, 2, 3...) instead of randomized.\n\
                   Slightly faster but more detectable by IDS/IPS systems.\n\n\
@@ -697,25 +702,29 @@ impl HelpSystem {
                 {} {}\n\
                   Control how many probes to send per port (0-9). Higher intensity\n\
                   increases accuracy but takes longer.\n\n\
-                  0:  Light probing (fastest, ~50%% accuracy)\n\
+                  0:  Light probing (fastest, fewest probes)\n\
                   1-6: Increasing probe count\n\
-                  7:  Default (balanced, ~80%% accuracy)\n\
-                  8-9: Comprehensive probing (slowest, ~95%% accuracy)\n\n\
-                  Usage: prtip -sV --version-intensity 9 <target>    # Max accuracy\n\
+                  7:  Default (balanced)\n\
+                  8-9: Comprehensive probing (slowest, every probe)\n\n\
+                  Usage: prtip -sV --version-intensity 9 <target>    # Max coverage\n\
                          prtip -sV --version-intensity 3 <target>    # Fast\n\n\
                 {} {}\n\
                   Disable TLS/SSL service detection. Faster but misses HTTPS, SMTPS,\n\
                   IMAPS, and other TLS-wrapped services.\n\n\
-                  Usage: prtip -sV --no-tls <target>\n\
-                  Performance: ~30%% faster but 20-30%% lower detection rate\n\n\
+                  Usage: prtip -sV --no-tls <target>\n\n\
                 {} {}\n\
-                  Use custom service probe database instead of embedded nmap-service-probes.\n\
+                  Use a custom service probe corpus instead of the embedded one.\n\
                   Useful for detecting proprietary or uncommon services.\n\n\
                   Usage: prtip -sV --probe-db custom-probes.txt <target>\n\n\
                 {}\n\
-                ProRT-IP uses the same nmap-service-probes database as Nmap (187 probes)\n\
-                for accurate service detection. The probe database contains protocol-specific\n\
-                signatures for identifying 1000+ services.\n\n\
+                ProRT-IP embeds its own service probe corpus, written from published\n\
+                protocol specifications and the IANA port registry and licensed GPL-3.0\n\
+                like the rest of the project. It currently carries 37 probes (25 TCP,\n\
+                12 UDP) and 226 match rules covering 96 ports.\n\n\
+                This corpus is young and deliberately small: it targets the services\n\
+                that dominate real scan results and will not identify uncommon,\n\
+                embedded or proprietary services. Supply your own corpus with\n\
+                --probe-db to extend it.\n\n\
                 {}\n\
                 1. Open port discovered\n\
                 2. Connect to port\n\
@@ -1139,9 +1148,9 @@ impl HelpSystem {
                     .to_string(),
             },
             Example {
-                title: "Fast scan of top 100 ports".to_string(),
+                title: "Fast scan of the 100-port priority list".to_string(),
                 command: "prtip -F 192.168.1.1".to_string(),
-                description: "Quick scan of 100 most common ports (~66ms)".to_string(),
+                description: "Quick scan of a fixed 100-port list (~66ms)".to_string(),
             },
             Example {
                 title: "Full port scan (all 65535 ports)".to_string(),
@@ -1170,10 +1179,11 @@ impl HelpSystem {
                 description: "Create .txt, .xml, and .gnmap files with scan results".to_string(),
             },
             Example {
-                title: "Scan top 1000 ports with service detection".to_string(),
+                title: "Scan 1000 priority ports with service detection".to_string(),
                 command: "prtip --top-ports 1000 -sV target.com".to_string(),
-                description: "Thorough scan of 1000 most common ports with version detection"
-                    .to_string(),
+                description:
+                    "Thorough scan of the first 1000 priority ports with version detection"
+                        .to_string(),
             },
             Example {
                 title: "Show only open ports from large scan".to_string(),

@@ -27,7 +27,7 @@
 **ProRT-IP WarScan** is a professional network scanning tool written in Rust that delivers:
 
 - **Speed:** 10M+ packets/second stateless scanning (Masscan/ZMap class)
-- **Depth:** Comprehensive service detection and OS fingerprinting (Nmap class)
+- **Depth:** Service detection and OS fingerprinting built in (a young, deliberately small probe corpus — see [Service Detection](#service-detection))
 - **Safety:** Memory-safe Rust implementation prevents entire vulnerability classes
 - **Stealth:** Advanced evasion techniques (timing, decoys, fragmentation, TTL manipulation, idle scans)
 - **Modern TUI:** Real-time dashboard with 60 FPS rendering and 4-tab interface
@@ -38,7 +38,7 @@
 | Category | Features |
 |----------|----------|
 | **Scanning** | TCP SYN, Connect, FIN, NULL, Xmas, ACK, Idle/Zombie, UDP |
-| **Detection** | Service detection (85-90% accuracy), OS fingerprinting (2,600+ signatures) |
+| **Detection** | Service detection (37 probes, 226 match rules), OS fingerprinting (caller-supplied signature database) |
 | **Protocol** | Full IPv4/IPv6 dual-stack, 8 UDP protocol payloads |
 | **Performance** | 10M+ pps stateless, adaptive rate limiting (-1.8% overhead) |
 | **Evasion** | Packet fragmentation, TTL control, decoys, timing templates (T0-T5) |
@@ -81,7 +81,7 @@ sudo setcap cap_net_raw,cap_net_admin=eip target/release/prtip
 # SYN scan (requires privileges)
 prtip -sS -p 80,443 192.168.1.0/24
 
-# Fast scan (top 100 ports)
+# Fast scan (100-port priority list)
 prtip -F 192.168.1.1
 
 # Service detection
@@ -117,7 +117,7 @@ prtip -sI zombie_ip target -p 80    # Maximum anonymity
 
 ### Service Detection
 
-187 embedded protocol probes with 85-90% detection accuracy:
+37 embedded protocol probes (25 TCP, 12 UDP) with 226 match rules, covering 96 distinct ports. Detection accuracy is not yet measured.
 
 ```bash
 prtip -sV -p 22,80,443 target                    # Service detection
@@ -229,9 +229,22 @@ prtip -sU -p 53,161 target          # UDP scan
 
 # Port specification
 prtip -p- target                    # All 65535 ports
-prtip -F target                     # Top 100 ports
-prtip --top-ports 1000 target       # Top 1000 ports
+prtip -F target                     # First 100 ports of the priority list
+prtip --top-ports 1000 target       # First 1000 of the same list
 
+```
+
+**`-F` and `--top-ports` note.** The port ordering behind these flags is an
+**editorial ranking of IANA port assignments, not a measured-frequency ranking**
+— ProRT-IP ships no port-frequency data, because no measured dataset it may
+redistribute under GPL-3.0 exists (`nmap-services` is NPSL-licensed; scans.io and
+Censys are non-commercial only). They therefore select a **different set of ports
+than Nmap, Masscan or RustScan at every N**, and ProRT-IP publishes no hit-rate or
+coverage figure for them. If a specific port matters, name it with `-p`. The rule
+that produces the list is written out in
+[`tools/gen-top-ports/RULE.md`](tools/gen-top-ports/RULE.md).
+
+```bash
 # Detection
 prtip -sV target                    # Service detection
 prtip -O target                     # OS fingerprinting

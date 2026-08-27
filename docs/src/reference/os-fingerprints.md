@@ -4,12 +4,12 @@ Technical reference for ProRT-IP's operating system fingerprinting signature dat
 
 ## Overview
 
-**OS Fingerprints** are distinctive patterns in TCP/IP stack behavior used to identify operating systems. ProRT-IP uses a comprehensive database of **2,600+ OS signatures** covering major operating systems, embedded devices, and network equipment.
+**OS Fingerprints** are distinctive patterns in TCP/IP stack behavior used to identify operating systems. ProRT-IP ships the 16-probe fingerprint parser and matcher; it **bundles no OS signature database** — you supply your own signature set in the Nmap-DB-compatible format.
 
 **Key Features:**
-- **2,600+ signatures** - Linux, Windows, BSD, macOS, IoT devices, network equipment
+- **Caller-supplied signature set** - none bundled; parser is Nmap-DB-format-compatible
 - **16-probe sequence** - Inspired by Nmap's OS detection methodology
-- **95% accuracy** - High confidence on well-known operating systems
+- **Accuracy** - not yet measured; depends entirely on the signature set you provide
 - **Passive and active modes** - Banner analysis and active probing
 - **CPE identifiers** - Common Platform Enumeration for CVE matching
 
@@ -23,36 +23,20 @@ Technical reference for ProRT-IP's operating system fingerprinting signature dat
 
 ## Fingerprint Database
 
-### Database Statistics
+### No Bundled Database
 
-ProRT-IP's OS fingerprint database includes signatures for:
-
-| Category | Count | Examples |
-|----------|-------|----------|
-| **Linux Distributions** | 800+ | Ubuntu, Debian, RHEL, CentOS, Fedora, Arch, Gentoo |
-| **Windows** | 450+ | XP, Vista, 7, 8, 8.1, 10, 11, Server 2008-2022 |
-| **BSD Variants** | 300+ | FreeBSD, OpenBSD, NetBSD, DragonFly BSD |
-| **macOS** | 250+ | 10.x (Yosemite-Monterey), 11.x (Big Sur), 12.x+ |
-| **Embedded Systems** | 400+ | OpenWrt, DD-WRT, Tomato, pfSense, OPNsense |
-| **IoT Devices** | 200+ | Raspberry Pi OS, Armbian, Yocto-based |
-| **Network Equipment** | 200+ | Cisco IOS, Juniper Junos, MikroTik RouterOS |
-| **Virtualization** | 100+ | VMware ESXi, Citrix XenServer, Proxmox |
-
-**Total:** 2,600+ unique signatures
+ProRT-IP does not ship an OS fingerprint database. The `OsDetector` parser
+reads a signature file in the Nmap-DB-compatible format that you point it
+at (see [`load_fingerprints`](api-reference.md)); coverage of Linux
+distributions, Windows, BSD variants, macOS, embedded systems, IoT devices,
+network equipment, and virtualization platforms depends entirely on the
+signature set you supply.
 
 ### Signature Coverage
 
-**Operating System Families:**
-- **Linux**: Kernels 2.4 through 6.x (2002-2024)
-- **Windows**: XP through 11, Server 2003-2022
-- **BSD**: FreeBSD 8.x-14.x, OpenBSD 5.x-7.x, NetBSD 7.x-10.x
-- **macOS**: OS X 10.6 (Snow Leopard) through macOS 14 (Sonoma)
-- **Embedded**: Custom Linux kernels, RTOS, stripped TCP/IP stacks
-
-**Update Frequency:**
-- Database updated quarterly with new OS releases
-- Community contributions for rare/specialized systems
-- Nmap database synchronization for compatibility
+Coverage of specific OS families, kernel/version ranges, and update cadence
+is determined by whichever signature file you load — ProRT-IP does not
+maintain, version, or synchronize one itself.
 
 ---
 
@@ -473,7 +457,7 @@ U1(R=N)                                                              # UDP filte
 - Measure window sizes
 
 **4. Signature Comparison:**
-- Compare extracted attributes against 2,600+ signatures
+- Compare extracted attributes against the caller-supplied signature set
 - Calculate similarity score for each signature (0-100%)
 - Weight different attributes:
   - High weight: SEQ attributes (GCD, ISR, SP) - 30%
@@ -813,14 +797,10 @@ OPS(...)
 ..." >> ~/.prtip/os-fingerprints.db
 ```
 
-**Option B: Embedded Database**
-
-Submit to ProRT-IP repository:
-1. Fork: https://github.com/doublegate/ProRT-IP
-2. Edit: `crates/prtip-core/data/nmap-os-db`
-3. Add fingerprint at end of file
-4. Test with: `prtip -sS -O TARGET` (should now match)
-5. Submit pull request
+ProRT-IP ships no embedded OS fingerprint database, so there is no
+repository file to submit a signature to — share your local
+`~/.prtip/os-fingerprints.db` entries with the community directly (mailing
+list, forum, gist) instead.
 
 #### Step 5: Test Fingerprint
 
@@ -840,9 +820,10 @@ prtip -sS -O -p 80,443 TARGET
 - Look for patterns (ranges in SP, ISR)
 - Generalize signature to match variants
 
-#### Step 6: Submit to Community
+#### Step 6: Share with the Community
 
-**Contributing to ProRT-IP fingerprint database:**
+**Since ProRT-IP bundles no fingerprint database, there is nothing to send
+a pull request against.** To share a new signature:
 
 1. **Test on multiple targets:**
    - Verify signature works on 3+ instances of same OS
@@ -854,14 +835,11 @@ prtip -sS -O -p 80,443 TARGET
    - Distribution: `cat /etc/os-release`
    - TCP/IP stack tuning: `sysctl net.ipv4`
 
-3. **Create pull request:**
-   - Title: "Add fingerprint: Linux 6.5 (Custom Distribution X)"
-   - Description: Testing details, OS sources, sample targets
-   - Include test results from 3+ targets
-
-4. **Upstream synchronization:**
-   - ProRT-IP syncs with Nmap database quarterly
-   - Contribute to Nmap: https://nmap.org/submit/
+3. **Share your signature file:**
+   - Post the entry (mailing list, forum, gist) with testing details, OS
+     sources, and sample targets
+   - Other users load it into their own `--os-db` file — ProRT-IP does not
+     maintain or version a shared database itself
 
 ---
 

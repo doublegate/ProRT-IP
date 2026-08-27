@@ -24,7 +24,7 @@ The benchmarking framework enables:
 | ~15% overhead | IPv6 scanning | IPv6 vs IPv4 baseline | ✅ Validated |
 | 500-800ms/port | Idle scan timing | 3-packet stealth scan | ✅ Validated |
 | 1.33μs | TLS parsing | X.509v3 certificate | ✅ Validated |
-| 85-90% accuracy | Service detection | nmap-service-probes | ✅ Validated |
+| Not measured | Service detection | ProRT-IP service probe corpus (37 probes, 226 match rules) | ⏸️ Not validated |
 
 ### What We Measure
 
@@ -312,7 +312,7 @@ prtip -sT -p 80,443,8080 127.0.0.1
 
 ### Scenario 3: Service Detection Overhead
 
-**Purpose:** Validate 85-90% accuracy + low overhead
+**Purpose:** Validate low overhead (detection accuracy is not measured by this benchmark)
 
 **Commands:**
 

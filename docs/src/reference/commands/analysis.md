@@ -39,7 +39,7 @@ prtip [SCAN TYPE] [OPTIONS] [TARGETS]
 | `-p` | `-p 80,443,8080` | Port list |
 | `-p` | `-p-` | All 65535 ports |
 | `-F` | `-F` | Fast (top 100) |
-| `--top-ports` | `--top-ports 1000` | Most common N ports |
+| `--top-ports` | `--top-ports 1000` | First N of the IANA-derived priority list (not a frequency ranking) |
 
 ## Target Specification
 

@@ -5,6 +5,25 @@
 **Previous Version:** 0.5.9
 **Status:** VALIDATED - Production Ready
 
+> **CORRECTION (2026-08-27) — the service-detection and OS-fingerprinting figures
+> in this report are withdrawn.**
+>
+> 1. The "85-90% service detection accuracy" figure quoted throughout was never
+>    measured. The v1.0.0 release checklist itself recorded it as
+>    *"Not accuracy-tested — Deferred"*. Treat every accuracy percentage below as
+>    unverified.
+> 2. The probe database this report describes (187 probes) was Nmap's
+>    `nmap-service-probes`, which is Nmap-Public-Source-License-encumbered and
+>    incompatible with ProRT-IP's GPL-3.0 licensing. It has been removed and
+>    replaced with ProRT-IP's own clean-room corpus: **37 probes, 226 match
+>    rules, 96 ports**. See `crates/prtip-core/data/ATTRIBUTION.md`.
+> 3. The "2,600+ OS signatures" figure never corresponded to shipped data.
+>    ProRT-IP bundles **no** OS fingerprint database; the caller supplies one.
+>
+> The port-scan throughput numbers in this report are unaffected. This block is
+> a correction, not a rewrite: the original text is left intact below as the
+> historical record of what was claimed at v1.0.0.
+
 ---
 
 ## Executive Summary

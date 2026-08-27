@@ -102,8 +102,8 @@ jobs:
           ## ✨ Key Features
 
           - **7 scan types:** TCP Connect, SYN, UDP, FIN, NULL, Xmas, ACK
-          - **OS fingerprinting:** 16-probe Nmap sequence with weighted scoring
-          - **Service detection:** nmap-service-probes format with 500+ probes
+          - **OS fingerprinting:** 16-probe sequence with weighted scoring (signature set supplied by the user)
+          - **Service detection:** ProRT-IP probe corpus (37 probes, 226 match rules, 96 ports)
           - **Banner grabbing:** HTTP, FTP, SSH, SMTP, DNS, SNMP (6 protocols + TLS)
           - **Timing templates:** T0-T5 (Paranoid to Insane) with RTT estimation
           - **Adaptive rate limiting:** Masscan-inspired circular buffer with dynamic batching

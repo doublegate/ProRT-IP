@@ -99,8 +99,8 @@ cat > "$OUTPUT_DIR/welcome.html" << EOF
     <h2>Features</h2>
     <ul>
         <li>8 scan types (SYN, Connect, UDP, FIN, NULL, Xmas, ACK, Idle)</li>
-        <li>Service detection (85-90% accuracy)</li>
-        <li>OS fingerprinting (2,600+ signatures)</li>
+        <li>Service detection (37-probe ProRT-IP corpus, 226 match rules)</li>
+        <li>OS fingerprinting (caller-supplied signature set)</li>
         <li>TUI dashboard with real-time visualization</li>
         <li>Full IPv6 support</li>
     </ul>

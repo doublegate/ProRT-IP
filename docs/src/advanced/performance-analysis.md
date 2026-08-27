@@ -233,8 +233,8 @@ massif-visualizer massif.out
 | Stateful scan (1K active conns) | ~50 MB | ~50KB per connection |
 | Stateful scan (100K active conns) | ~5 GB | Connection state dominates |
 | Result storage (1M entries) | ~250 MB | In-memory before DB write |
-| OS fingerprint DB | ~10 MB | 2,000+ fingerprints loaded |
-| Service probe DB | ~5 MB | 500+ probes loaded |
+| OS fingerprint DB | N/A | caller-supplied signature set (none bundled) |
+| Service probe DB | ~20 KB | 37 probes, 226 match rules |
 
 ### Memory Leak Detection
 

@@ -486,7 +486,7 @@ sudo prtip -O -sV -p 1-1000 192.168.1.10
 
 **Method:** Sends protocol-specific probes to identify software name and version
 
-**Accuracy:** 85-90% detection rate
+**Accuracy:** not yet measured (37 probes, 226 match rules)
 
 **Example:**
 ```bash
@@ -526,7 +526,7 @@ prtip --banner-grab -p 21,22,25,80,443 192.168.1.10
 
 **Description:** Path to custom service detection probe database.
 
-**Default:** Built-in nmap-service-probes database
+**Default:** Built-in ProRT-IP service probe corpus
 
 **Example:**
 ```bash
@@ -928,7 +928,7 @@ prtip -sS -p 80,443 192.168.1.1 -oA scan-results
 
 #### `-F` (Fast Scan)
 
-**Description:** Fast scan (top 100 most common ports).
+**Description:** Fast scan -- the first 100 ports of ProRT-IP's priority list. That ordering is an IANA-derived editorial ranking, not a frequency ranking, so it selects different ports than `nmap -F` and carries no coverage guarantee.
 
 **Equivalent:** `--fast-scan`
 
@@ -939,7 +939,7 @@ prtip -F 192.168.1.1
 
 #### `--top-ports <N>`
 
-**Description:** Scan N most common ports.
+**Description:** Scan the first N ports of the priority list (same ordering as `-F`).
 
 **Example:**
 ```bash

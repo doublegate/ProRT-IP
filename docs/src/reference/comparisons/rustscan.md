@@ -8,7 +8,7 @@ Comprehensive technical comparison between ProRT-IP and RustScan, the modern por
 
 **RustScan transformed network reconnaissance from a waiting game into an instant operation**. Created in 2020 by Autumn Skerritt as a three-day Rust learning project, this tool has evolved into a production-grade scanner with 18,200+ GitHub stars. RustScan scans all 65,535 ports in 3-8 seconds through single-threaded asynchronous I/O (async-std runtime, 4,500 concurrent connections), then automatically pipes discovered ports to Nmap for detailed enumeration. The hybrid approach achieves 60-250x speed advantage over Nmap's default port discovery while maintaining comprehensive analysis capabilities.
 
-**ProRT-IP provides comparable speed with integrated detection**, achieving 10M+ pps stateless (similar to RustScan's rapid discovery) and 50K+ pps stateful with 85-90% service detection accuracy. Unlike RustScan's preprocessing-only design (requires Nmap for service enumeration), ProRT-IP integrates comprehensive detection in a single tool through Tokio multi-threaded async I/O and built-in service fingerprinting.
+**ProRT-IP provides comparable speed with integrated detection**, achieving 10M+ pps stateless (similar to RustScan's rapid discovery) and 50K+ pps stateful with a built-in (37-probe, 226-match-rule) service detection corpus; detection accuracy is not yet measured. Unlike RustScan's preprocessing-only design (requires Nmap for service enumeration), ProRT-IP integrates detection in a single tool through Tokio multi-threaded async I/O and built-in service fingerprinting.
 
 **The fundamental difference**: RustScan optimizes exclusively for fast port discovery (do one thing exceptionally well, delegate enumeration to Nmap), making it ideal for CTF competitions and bug bounties where seconds matter. ProRT-IP balances comparable stateless speed (10M+ pps) with integrated detection (service versions, OS fingerprinting, TLS certificates), eliminating multi-tool orchestration while maintaining single-pass comprehensive assessment capabilities.
 
@@ -23,10 +23,10 @@ Comprehensive technical comparison between ProRT-IP and RustScan, the modern por
 | **First Released** | 2020 (3-day learning project) | 2024 (new project) |
 | **Language** | Rust (single-threaded async-std) | Rust (multi-threaded Tokio) |
 | **Speed (65K Ports)** | 3-8 seconds (60-250x faster than Nmap) | 6-10 seconds stateless, 15-30 min stateful |
-| **Detection Method** | None (requires Nmap integration) | Integrated (500+ services, 85-90% accuracy) |
+| **Detection Method** | None (requires Nmap integration) | Integrated (37 probes, 226 match rules; accuracy not measured) |
 | **Architecture** | Single-threaded async I/O (4,500 concurrent) | Multi-threaded async I/O (adaptive parallelism) |
-| **Service Detection** | Via Nmap only (automatic piping) | Native (187 probes, version extraction, CPE) |
-| **OS Fingerprinting** | Via Nmap only | Native (2,600+ signatures, Nmap-compatible DB) |
+| **Service Detection** | Via Nmap only (automatic piping) | Native (37 probes, version extraction, CPE) |
+| **OS Fingerprinting** | Via Nmap only | Native 16-probe technique (caller-supplied DB, Nmap-format-compatible) |
 | **Scan Types** | TCP Connect (full handshake), UDP (v2.3.0+) | 8 types (SYN, Connect, FIN, NULL, Xmas, ACK, UDP, Idle) |
 | **Primary Use Case** | Rapid port discovery + Nmap delegation | Single-pass comprehensive assessment |
 | **Nmap Integration** | Automatic (core feature, preprocessing model) | Optional (compatibility layer, standalone capable) |
@@ -81,12 +81,12 @@ Comprehensive technical comparison between ProRT-IP and RustScan, the modern por
 ✅ **Single-pass comprehensive assessment required**
 - Service detection + OS fingerprinting + TLS certificates in one tool
 - 10M+ pps stateless for rapid discovery (comparable to RustScan)
-- 50K+ pps stateful with 85-90% detection accuracy
+- 50K+ pps stateful (detection accuracy not yet measured)
 - No multi-tool pipeline orchestration needed
 
 ✅ **Detection capabilities critical**
-- Service version identification (500+ services, growing database)
-- OS fingerprinting (Nmap-compatible, 2,600+ signatures, 16-probe sequence)
+- Service version identification (37 probes, 226 match rules, growing corpus)
+- OS fingerprinting (Nmap-format-compatible, 16-probe sequence, caller-supplied signature database)
 - TLS certificate analysis (X.509v3, chain validation, SNI support)
 - Version extraction and CPE identifiers for vulnerability correlation
 
@@ -151,7 +151,7 @@ Comprehensive technical comparison between ProRT-IP and RustScan, the modern por
 
 **Detection Phase**:
 - RustScan: Requires Nmap integration (automatic, adds 10-15 seconds for service detection on open ports only)
-- ProRT-IP: Integrated service detection during scan (no separate phase, 85-90% accuracy, 187 probes)
+- ProRT-IP: Integrated service detection during scan (no separate phase, 37 probes; accuracy not measured)
 
 **Total Time for Comprehensive Assessment**:
 - RustScan + Nmap: 3-8s (discovery) + 10-15s (Nmap enumeration on open ports) = **~13-23 seconds**
@@ -170,7 +170,7 @@ Comprehensive technical comparison between ProRT-IP and RustScan, the modern por
 |---------|------------|--------|----------|----------------|-------|
 | **RustScan** | None (core) | N/A | N/A | N/A | Requires Nmap integration for service detection |
 | **RustScan + Nmap** | Comprehensive detection | Signature matching | 1,000+ services (Nmap DB) | ~95% (Nmap quality) | Automatic piping: `rustscan -a TARGET -- -sV` |
-| **ProRT-IP** | Integrated detection | Signature matching | 500+ services (growing) | 85-90% accuracy | 187 probes, version extraction, CPE identifiers |
+| **ProRT-IP** | Integrated detection | Signature matching | 37 probes, 226 match rules (growing) | Not measured | Version extraction, CPE identifiers |
 
 **RustScan Workflow**:
 ```bash
@@ -199,8 +199,8 @@ prtip -sS -sV -p 22,80,443,3306 192.168.1.100           # 2-5 minutes targeted
 | Scanner | Capability | Method | Database | Accuracy |
 |---------|------------|--------|----------|----------|
 | **RustScan** | None (core) | N/A | N/A | N/A |
-| **RustScan + Nmap** | Full support (via Nmap) | 16-probe sequence | 2,600+ signatures | Comparable to Nmap |
-| **ProRT-IP** | Native support | 16-probe sequence | 2,600+ signatures (Nmap DB) | Comparable to Nmap |
+| **RustScan + Nmap** | Full support (via Nmap) | 16-probe sequence | 2,600+ signatures (bundled) | Comparable to Nmap |
+| **ProRT-IP** | Native support | 16-probe sequence | Caller-supplied (Nmap DB format compatible; none bundled) | Not measured |
 
 **RustScan OS Fingerprinting**:
 ```bash
@@ -261,8 +261,8 @@ prtip -sS -sV -p 443 TARGET  # Automatic certificate extraction with SNI support
 |---------|----------|----------|
 | **Stateless Scanning** | ❌ (full handshakes only) | ✅ 10M+ pps maximum |
 | **Stateful Scanning** | ✅ TCP Connect (4,500 concurrent) | ✅ 50K+ pps with detection |
-| **Service Detection** | ❌ (requires Nmap) | ✅ Native (500+ services, 85-90%) |
-| **OS Fingerprinting** | ❌ (requires Nmap) | ✅ Native (2,600+ signatures) |
+| **Service Detection** | ❌ (requires Nmap) | ✅ Native (37 probes, 226 match rules; accuracy not measured) |
+| **OS Fingerprinting** | ❌ (requires Nmap) | ✅ Native 16-probe technique (caller-supplied DB, none bundled) |
 | **TLS Certificate** | ❌ (requires Nmap scripts) | ✅ Native (X.509v3, SNI, 1.33μs) |
 | **Nmap Integration** | ✅ Automatic piping (core feature) | ✅ Optional compatibility layer |
 | **Scripting Engine** | ✅ RSE (Python, Lua, Shell) | ✅ Lua 5.4 plugin system |
@@ -354,8 +354,8 @@ prtip -sS -sV -p 443 TARGET  # Automatic certificate extraction with SNI support
    - Mode switching without tool change (seamless workflow)
 
 3. **Integrated Detection Pipeline**
-   - Service detection: 187 probes, 500+ service database, 85-90% accuracy
-   - OS fingerprinting: 16-probe sequence, 2,600+ signatures (Nmap-compatible DB)
+   - Service detection: 37 probes, 226 match rules (accuracy not measured)
+   - OS fingerprinting: 16-probe sequence, caller-supplied signature database (Nmap-format-compatible, none bundled)
    - TLS certificate analysis: X.509v3 parser, SNI support, 1.33μs parsing
    - Single-pass comprehensive assessment (no multi-tool orchestration)
 
@@ -653,8 +653,8 @@ tshark -r scan-evidence.pcapng -Y "tcp.flags.syn==1" -T fields -e ip.dst -e tcp.
 #### What You Gain
 
 **Integrated Detection** (eliminate Nmap dependency for most use cases)
-- Service version identification (500+ services, 85-90% accuracy, 187 probes)
-- OS fingerprinting (Nmap-compatible, 2,600+ signatures)
+- Service version identification (37 probes, 226 match rules; accuracy not measured)
+- OS fingerprinting (Nmap-format-compatible, caller-supplied signature database)
 - TLS certificate analysis (X.509v3, SNI support, chain validation)
 
 **Advanced Scan Types** (8 types vs RustScan's TCP Connect only)
@@ -1127,7 +1127,7 @@ echo "[*] Complete! Evidence preserved for forensic analysis"
 ### Choose ProRT-IP If:
 
 ✅ **Single-pass comprehensive assessment** required (service + OS + TLS in one tool)
-✅ **Detection capabilities critical** (85-90% service accuracy, OS fingerprinting, TLS certificates)
+✅ **Detection capabilities critical** (service detection, OS fingerprinting, TLS certificates all integrated)
 ✅ **Advanced scan types needed** (SYN, FIN, NULL, Xmas, ACK, UDP, Idle—8 total)
 ✅ **Database storage and historical tracking valuable** (SQLite, queries, change detection)
 ✅ **Cross-platform native executables** matter (Linux, macOS, Windows, FreeBSD—no Docker)

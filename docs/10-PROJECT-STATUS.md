@@ -41,8 +41,8 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 - [ ] 1M+ packets/second in stateless mode
 - [ ] 50K+ packets/second in stateful mode
 - [ ] <100MB memory for stateless scans
-- [ ] Service detection for 500+ protocols
-- [ ] OS fingerprinting with 2000+ signatures
+- [ ] Service detection (37 embedded probes, 226 match rules)
+- [ ] OS fingerprinting matched against a caller-supplied signature database
 - [ ] Cross-platform support (Linux, Windows, macOS)
 - [ ] CLI, TUI, and plugin system
 
@@ -61,7 +61,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | **CI Platforms** | 9/9 passing | ✅ All Green | Linux, Windows, macOS, Alpine |
 | **Release Targets** | 8/8 building | ✅ Complete | x86_64, ARM64, musl, FreeBSD |
 | **Scan Types** | 8 | ✅ Complete | Connect, SYN, UDP, Stealth×4, Idle |
-| **Detection Rate** | 85-90% | ✅ High | Service detection (5 parsers) |
+| **Service Detection** | 37 probes, 226 match rules | ✅ Complete | 5 protocol parsers; detection rate not measured |
 | **IPv6 Coverage** | 100% (8/8 scanners) | ✅ Complete | All scanners support dual-stack |
 | **Evasion Techniques** | 6 | ✅ Complete | Fragmentation, TTL, checksum, decoy, source port, idle |
 | **Rate Limiting** | V3 default (-1.8% overhead) | ✅ Sprint 5.X COMPLETE | AdaptiveRateLimiterV3 promoted to default (2025-11-02) |
@@ -86,7 +86,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 | Sprint | Status | Duration | Deliverables | Tests Added |
 |--------|--------|----------|--------------|-------------|
 | 5.1: IPv6 Completion | ✅ COMPLETE | 30h | 6/6 scanners, 23-IPv6-GUIDE.md (1,958L), 6 CLI flags | +51 (1,338→1,389) |
-| 5.2: Service Detection | ✅ COMPLETE | 12h | 5 parsers (85-90% detection), 24-SERVICE-DETECTION-GUIDE.md (659L) | +23 (1,389→1,412) |
+| 5.2: Service Detection | ✅ COMPLETE | 12h | 5 parsers (detection rate not measured), 24-SERVICE-DETECTION-GUIDE.md (659L) | +23 (1,389→1,412) |
 | 5.3: Idle Scan | ✅ COMPLETE | 18h | Full Nmap parity, 25-IDLE-SCAN-GUIDE.md (650L), 99.5% accuracy | +54 (1,412→1,466) |
 | Sprint 5.X: V3 Promotion | ✅ COMPLETE | ~8h total | AdaptiveRateLimiterV3 -1.8% overhead, V3 default, 26-RATE-LIMITING-GUIDE.md v2.0.0 | Zero (all passing) |
 | 5.5: TLS Certificate Analysis | ✅ COMPLETE | 18h | X.509v3 parsing, SNI, 27-TLS-CERTIFICATE-GUIDE.md (2,160L), 1.33μs parsing | +50 (1,466→1,516) |
@@ -229,7 +229,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 - **Completed**: 2025-10-30
 - **Effort**: 12 hours (under budget, 15-18h estimated)
 - **Deliverables**:
-  - 85-90% detection rate (+10-15pp improvement from Phase 4)
+  - Detection rate not measured (historical figure referenced the now-removed nmap-derived probe corpus)
   - 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
   - docs/24-SERVICE-DETECTION-GUIDE.md (659 lines)
   - +23 tests (1,389 → 1,412)
@@ -374,7 +374,7 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
 
 **2025-10-12:**
 
-- ✅ **Service Detection Fix VERIFIED:** Embedded nmap-service-probes working (187 probes)
+- ✅ **Service Detection Fix VERIFIED:** Embedded ProRT-IP service probe corpus working (37 probes)
   - Fix confirmed: ServiceProbeDb::default() loads embedded probes successfully
   - Integration test: HTTP service detected on example.com:80
   - No code changes needed - hybrid implementation already complete
@@ -420,8 +420,8 @@ Build a modern, high-performance network scanner combining the speed of Masscan/
   - Cycle 6: Port filtering infrastructure
   - Cycle 7: Advanced filtering and exclusion lists
 - ✅ **Phase 3 COMPLETE:** Detection Systems fully implemented (commit 6204882)
-  - OS fingerprinting with 16-probe sequence (2,000+ signatures)
-  - Service version detection (500+ protocol probes)
+  - OS fingerprinting with 16-probe sequence (signature database is caller-supplied; none bundled)
+  - Service version detection (37 embedded probes, 226 match rules)
   - Banner grabbing with protocol-specific handlers
   - 6 new modules: os_db, service_db, os_probe, os_fingerprinter, service_detector, banner_grabber
 - ✅ **Phase 2 COMPLETE:** Advanced Scanning fully implemented
@@ -846,7 +846,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 
 **Deliverables:**
 
-- [ ] Accurate OS detection (2000+ fingerprints)
+- [ ] Accurate OS detection (matched against a caller-supplied fingerprint database)
 - [ ] Confidence scores
 - [ ] CPE format output
 
@@ -1102,7 +1102,7 @@ Following Phase 2, five systematic enhancement cycles incorporated best practice
 **Target:** End of Phase 3
 **Status:** Not Started
 
-- [ ] OS fingerprinting (1000+ signatures)
+- [ ] OS fingerprinting (matched against a caller-supplied signature database)
 - [ ] Service detection (100+ protocols)
 - [ ] Banner grabbing with SSL
 
@@ -1186,10 +1186,10 @@ All Phase 4 and Phase 5 (Sprint 5.1-5.4) issues have been resolved. CI is 7/7 pa
    - **Impact**: No action needed, CI properly configured
 
 4. **Service detection embedded probes** - ✅ Resolved 2025-10-12
-   - **Issue**: Unclear if nmap-service-probes were loading correctly
-   - **Resolution**: Verified ServiceProbeDb::default() loads 187 probes
+   - **Issue**: Unclear if the embedded service probe corpus was loading correctly
+   - **Resolution**: Verified ServiceProbeDb::default() loads the embedded probes (37 probes, 226 match rules)
    - **Testing**: Integration test confirms HTTP detection on example.com:80
-   - **Impact**: 70-80% detection rate validated
+   - **Impact**: Detection rate not measured
 
 5. **Progress bar real-time updates** - ✅ Resolved Phase 4 (Sprint 4.12)
    - **Issue**: Progress bar not updating in real-time on large scans
@@ -1274,7 +1274,7 @@ For future issue tracking and bug reports, see:
   - tls_analyzer.rs module (~500 lines)
   - 15-20 new tests
   - docs/27-TLS-ANALYSIS-GUIDE.md
-  - Detection rate 85-90% → 90-95%
+  - Detection rate improvement (not measured)
 - **Target Version**: v0.4.4 or v0.4.5
 
 **Documentation Session 3** (3 hours)
@@ -1432,7 +1432,7 @@ For future issue tracking and bug reports, see:
 ### 2025-10-30
 - ✅ **v0.4.3 released** (Idle Scan implementation, full Nmap -sI parity)
 - ✅ **Sprint 5.3 documentation complete** (25-IDLE-SCAN-GUIDE.md, 650 lines, 42KB comprehensive guide)
-- ✅ **Sprint 5.2 execution complete** (Service detection 85-90%, 5 protocol parsers)
+- ✅ **Sprint 5.2 execution complete** (Service detection, 5 protocol parsers; rate not measured)
 - ✅ **bitflags migration** (hwloc v0.5.0 → hwlocality v1.0.0-alpha.11, eliminated future-compat warning)
 - ✅ **Sprint 5.1 verification** (100% complete, Grade A+, 30h / 30h on estimate)
 - 📊 **Tests**: 1,412 → 1,466 (+54, Sprint 5.3 idle scan tests)
@@ -1552,7 +1552,7 @@ For future issue tracking and bug reports, see:
 | **Scan Types** | 8 | ✅ Complete | Connect, SYN, UDP, FIN/NULL/Xmas, ACK, Idle |
 | **Protocols** | 9 | ✅ Complete | TCP, UDP, ICMP, ICMPv6, NDP, HTTP, SSH, SMB, DNS |
 | **Evasion Techniques** | 6 | ✅ Complete | Fragmentation, TTL, checksum, decoy, source port, idle |
-| **Detection Methods** | 3 | ✅ Complete | Service (85-90%), OS fingerprinting, banner grabbing |
+| **Detection Methods** | 3 | ✅ Complete | Service (37 probes, 226 match rules), OS fingerprinting, banner grabbing |
 | **Output Formats** | 5 | ✅ Complete | Text, JSON, XML, Greppable, PCAPNG |
 | **CLI Flags (Nmap)** | 50+ | ✅ Complete | 2.5x increase from Phase 3 (20 → 50+) |
 | **Timing Templates** | 6 | ✅ Complete | T0 (Paranoid) → T5 (Insane) |

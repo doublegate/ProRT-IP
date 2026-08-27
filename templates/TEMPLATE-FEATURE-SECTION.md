@@ -152,7 +152,7 @@ option = "value"
 | `[ADVANCED_COMMAND]` | Bash | Complex CLI example | "-sS -6 -p 1-65535 --ipv6-discovery 2001:db8::1" |
 | `[COMBINED_COMMAND]` | Bash | Feature combination example | "-sS -sV -O --ipv6 target" |
 | `[METRIC_N]` | String | Performance metric name | "Scan Speed" |
-| `[VALUE]` | Number/String | Metric value | "10M pps" or "85-90%" |
+| `[VALUE]` | Number/String | Metric value (must be measured, not aspirational) | "10M pps" or "37 probes" |
 | `[BASELINE_COMPARISON]` | String | Comparison to baseline/competitors | "+200% vs Nmap" |
 | `[BENCHMARK_N]` | String | Benchmark scenario | "65K ports IPv6 scan" |
 | `[RESULT]` | String | Benchmark result | "287ms (103K pps)" |
@@ -327,11 +327,11 @@ prtip -sS -sU -p 1-1000 target.com
 
 #### Overview
 
-Deep service detection using nmap-service-probes database (187 probes, 2,600+ signatures). Achieves 85-90% accurate identification of services, versions, and additional metadata through intelligent protocol-based probing.
+Deep service detection using ProRT-IP's own probe corpus (37 probes, 226 match rules across 96 ports). Identifies services, versions, and additional metadata through protocol-based probing. Detection rate is not yet measured.
 
 **Key Capabilities:**
-- 187 protocol-specific probes (HTTP, SSH, FTP, SMTP, etc.)
-- 2,600+ service/version signatures
+- 37 protocol-specific probes (HTTP, TLS, SSH, FTP, SMTP, DNS, SMB, RDP, LDAP, etc.)
+- 226 service/version match rules
 - Banner grabbing and regex matching
 - CPE (Common Platform Enumeration) extraction
 - OS hints from service banners
@@ -360,7 +360,7 @@ Target Port (Open)
       ↓
   Probe Executor ──→ Send up to 5 probes in parallel
       ↓
-  Response Parser ──→ Regex match against 2,600+ signatures
+  Response Parser ──→ Regex match against 226 match rules
       ↓
 Service/Version ──→ Extract CPE, OS hints, metadata
 ```
@@ -396,11 +396,11 @@ prtip -sS -sV -p 22,80,443,3306 webserver.com
 
 | Metric | Value | Comparison |
 |--------|-------|------------|
-| Accuracy | 85-90% | Matches Nmap service detection |
-| Probe Count | 187 probes | Nmap-service-probes v7.94 |
-| Signature Count | 2,600+ | Full nmap database coverage |
+| Accuracy | Not yet measured | State a measured number or none at all |
+| Probe Count | 37 probes | ProRT-IP corpus (tools/gen-service-probes) |
+| Match rules | 226 | 183 match + 43 softmatch |
 | Avg. Detection Time | 2-5s per port | Depends on probe count |
-| Memory Usage | ~500 MB | Probe/signature database |
+| Memory Usage | ~20 KB corpus, compiled regexes | Probe corpus is embedded in the binary |
 
 **Benchmarks:**
 - 10 ports HTTP/SSH/FTP: ~3.2s (parallel probing)

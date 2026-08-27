@@ -442,7 +442,7 @@ fn test_ssh_version_detection() {
 **Location:** `crates/prtip-scanner/src/service_detector.rs`
 
 **Coverage:**
-- Service probe loading (nmap-service-probes format)
+- Service probe loading (ProRT-IP service probe format)
 - Probe matching (regex patterns)
 - SSL/TLS detection
 - NULL probe (send nothing, read banner)
@@ -457,8 +457,8 @@ fn test_ssh_version_detection() {
 fn test_probe_loading_from_embedded_data() {
     let detector = ServiceDetector::new(/* intensity */ 7);
 
-    // Should load 187 embedded probes
-    assert!(detector.probe_count() >= 187);
+    // Should load 37 embedded probes
+    assert!(detector.probe_count() >= 37);
 }
 
 #[test]
@@ -1277,7 +1277,7 @@ fuzz_target!(|data: &[u8]| {
 - **Effort:** 1 day
 
 **8. Expand Service Detection Tests (MEDIUM)**
-- **Challenge:** Only 19 tests for 187 embedded probes
+- **Challenge:** Only 19 tests for 37 embedded probes
 - **Solution:** Add tests for more protocols (SSL/TLS, HTTP/2, etc.)
 - **Impact:** Increase confidence in service detection accuracy
 - **Effort:** 1 week

@@ -37,7 +37,7 @@ ProRT-IP balances Masscan-inspired **speed** (10M+ pps capable) with Nmap-compat
 Stateless Throughput: 10,200 pps (localhost)
 Stateful Throughput:   6,600 pps (localhost)
 Rate Limiter Overhead: -1.8% (faster than unlimited)
-Service Detection:     85-90% accuracy
+Service Detection:     37 probes, 226 match rules (accuracy not measured)
 Memory Footprint:      <1 MB stateless, <100 MB/10K hosts
 TLS Parsing:           1.33μs per certificate
 IPv6 Overhead:         ~15% vs IPv4

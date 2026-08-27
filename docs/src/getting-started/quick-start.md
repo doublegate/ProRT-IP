@@ -82,16 +82,15 @@ PORT    STATE   SERVICE
 
 ### Task 1: Fast Scan (Top 100 Ports)
 
-Quickly check the most commonly used ports:
+Quickly check a fixed 100-port list:
 
 ```bash
 prtip -F scanme.nmap.org
 ```
 
 **Explanation:**
-- `-F`: Fast mode (scans top 100 most common ports)
+- `-F`: Fast mode (scans the first 100 ports of ProRT-IP's priority list -- an IANA-derived editorial ranking, not a frequency ranking, so it selects different ports than `nmap -F`)
 - Completes in 2-5 seconds
-- Covers 90% of real-world services
 
 **When to Use:**
 - Initial reconnaissance

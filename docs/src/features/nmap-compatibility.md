@@ -380,24 +380,33 @@ sudo prtip -sS target.com   # Explicitly specify SYN scan
 
 ### Default Ports
 
-**Nmap:** Scans top 1000 most common ports from nmap-services database
-**ProRT-IP v0.5.2:** Scans top 100 ports (faster default)
+**Nmap:** Scans its top 1000 most common ports, ordered by measured frequency
+from the `nmap-services` database.
+**ProRT-IP:** Scans the first 100 ports of its own priority list.
 
-**To Match Nmap:**
+**To scan 1000 ports:**
 ```bash
 prtip --top-ports 1000 target.com
 ```
 
-**Rationale:** Top 100 ports cover ~80-90% of services in typical networks while completing scans 10x faster.
+**These are not the same 1000 ports.** ProRT-IP's ordering is an editorial
+ranking of IANA port assignments, not a frequency ranking -- it ships no
+port-frequency data, because no measured dataset it could redistribute under
+GPL-3.0 exists (`nmap-services` is NPSL; scans.io and Censys are non-commercial
+only). `-F` and `--top-ports N` therefore select a different set of ports than
+nmap at every N, and ProRT-IP publishes no coverage or hit-rate figure for them.
+See [the port specification reference](../reference/port-specification.md) and
+`tools/gen-top-ports/RULE.md` for the rule.
 
-**Port Coverage Comparison:**
+**Speed comparison** (port counts only -- neither column is a coverage claim,
+and the two tools are not scanning the same ports):
 
-| Port Count | Coverage | ProRT-IP Time | Nmap Time |
-|------------|----------|---------------|-----------|
-| Top 20 | ~60% | 10ms | 500ms |
-| Top 100 | ~85% | 42ms | 1.8s |
-| Top 1000 | ~95% | 66ms | 3.2s |
-| All 65535 | 100% | 190ms | 18min |
+| Port Count | ProRT-IP Time | Nmap Time |
+|------------|---------------|-----------|
+| 20 | 10ms | 500ms |
+| 100 | 42ms | 1.8s |
+| 1000 | 66ms | 3.2s |
+| All 65535 | 190ms | 18min |
 
 ---
 
@@ -473,10 +482,10 @@ prtip -sV --version-intensity 7 target.com
 |-----------|--------|---------------------|-------|
 | `-p <ports>` | ✅ Full | `--ports <ports>` | Ranges/lists (22,80,443 or 1-1000) |
 | `-p-` | ✅ Full | `--ports 1-65535` | Scan all 65535 ports |
-| `-F` | ✅ Full | `--top-ports 100` | Fast scan (top 100 ports) |
-| `--top-ports <n>` | ✅ Full | Same | Scan top N most common ports |
+| `-F` | ⚠️ Flag only | `--top-ports 100` | Selects a *different* 100 ports than nmap -- IANA-derived editorial ranking, not frequency |
+| `--top-ports <n>` | ⚠️ Flag only | Same | Same N, different ports, at every N |
 | `-r` | ⏳ Planned | N/A | Sequential port scanning |
-| `--port-ratio <ratio>` | ⏳ Planned | N/A | Scan ports by frequency |
+| `--port-ratio <ratio>` | ❌ Inert | N/A | Accepted and range-validated, then ignored: ProRT-IP ships no port-frequency data to threshold on |
 
 ### Output Formats
 

@@ -15,9 +15,10 @@ is a modern network scanner written in Rust that combines the speed of Masscan
 fingerprinting capabilities.
 .PP
 ProRT-IP supports 8 scan types (TCP SYN, Connect, UDP, FIN, NULL, Xmas, ACK,
-Idle), service version detection (85-90% accuracy with 187 Nmap probes), OS
-fingerprinting (16-probe technique with 2,600+ signatures), and various evasion
-techniques.
+Idle), service version detection using ProRT-IP's own probe corpus (37 probes,
+226 match rules across 96 ports; detection rate not yet measured), OS
+fingerprinting (16-probe technique against a signature set you supply), and
+various evasion techniques.
 .SH TARGET SPECIFICATION
 Targets can be specified as:
 .TP
@@ -44,10 +45,35 @@ Use \fB-iL\fR \fIfilename\fR to read targets from file
 Specify port ranges. Examples: 80, 1-1000, 22,80,443, - (all ports)
 .TP
 .B \-F
-Fast scan (top 100 most common ports)
+Fast scan: the first 100 ports of ProRT-IP's priority list. Equivalent to
+.BR \-\-top\-ports " 100."
 .TP
 .BI \-\-top\-ports " N"
-Scan the N most common ports
+Scan the first N ports of the priority list.
+.TP
+.BI \-\-port\-ratio " ratio"
+Accepted for nmap command-line compatibility; currently has no effect. nmap
+selects ports above a measured open-frequency threshold. ProRT-IP ships no
+port-frequency data and can implement no such threshold, so the value is
+range-validated and then ignored. Use
+.B \-p
+or
+.B \-\-top\-ports
+instead.
+.PP
+.B "The priority list is an editorial ranking of IANA port assignments, not a"
+.B "frequency ranking."
+It is produced by applying a written rule
+.RI ( tools/gen\-top\-ports/RULE.md )
+to a snapshot of the IANA Service Name and Transport Protocol Port Number
+Registry. No input to it is a measurement, so
+.B \-F
+and
+.B \-\-top\-ports
+select a different set of ports than nmap, masscan or any other scanner whose
+list derives from measured frequency data, and ProRT\-IP publishes no hit\-rate
+or coverage figure for them. If a particular port matters, name it with
+.BR \-p .
 .SH SCAN TECHNIQUES
 .TP
 .B \-sS

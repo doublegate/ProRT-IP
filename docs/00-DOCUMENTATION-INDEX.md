@@ -420,7 +420,7 @@ Complete IPv6 support across all 6 scanner types with 100% feature parity to IPv
 ### 4.2 Service Detection
 
 **Overview:**
-85-90% detection rate using 187 Nmap probes, 5 protocol parsers, and intelligent heuristics.
+ProRT-IP's own probe corpus (37 probes, 226 match rules, 96 ports), 5 protocol parsers, and intelligent heuristics. Detection rate is not yet measured.
 
 **Documentation:**
 

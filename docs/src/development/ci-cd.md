@@ -581,7 +581,7 @@ Modern network scanner combining Masscan speed with Nmap detection depth.
 
 - **7 scan types:** TCP Connect, SYN, UDP, FIN, NULL, Xmas, ACK
 - **OS fingerprinting:** 16-probe Nmap sequence
-- **Service detection:** 500+ probes
+- **Service detection:** 37 probes, 226 match rules
 - **Timing templates:** T0-T5 (Paranoid to Insane)
 
 ## 📦 Installation

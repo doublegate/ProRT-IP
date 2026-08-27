@@ -8,12 +8,12 @@
 
 ## Executive Summary
 
-ProRT-IP WarScan v1.0.0 marks the first stable release of a modern, high-performance network scanner written in Rust. This release combines Masscan's scanning speed (10M+ packets/second) with Nmap's detection depth (85-90% service detection accuracy), all with memory-safe implementation that eliminates entire vulnerability classes.
+ProRT-IP WarScan v1.0.0 marks the first stable release of a modern, high-performance network scanner written in Rust. This release combines Masscan's scanning speed (10M+ packets/second) with Nmap-inspired detection depth, all with memory-safe implementation that eliminates entire vulnerability classes.
 
 Version 1.0.0 represents the culmination of 8 development phases delivering:
 - **8 scan types** for comprehensive network reconnaissance
-- **85-90% service detection** using 187 embedded Nmap probes
-- **2,600+ OS fingerprints** with 16-probe fingerprinting
+- **Service detection** using ProRT-IP's own probe corpus (37 probes, 226 match rules; detection rate not yet measured)
+- **OS fingerprinting** via a 16-probe TCP/IP stack technique, matched against a caller-supplied signature database
 - **Full IPv6 support** across all scanner types
 - **Production TUI** with 60 FPS rendering and 4-tab dashboard
 - **Plugin system** with Lua 5.4 sandboxed execution
@@ -38,8 +38,8 @@ Version 1.0.0 represents the culmination of 8 development phases delivering:
 
 ### Detection
 
-- **Service Detection:** 85-90% accuracy with 187 Nmap probes
-- **OS Fingerprinting:** 2,600+ signatures with 16-probe fingerprinting
+- **Service Detection:** ProRT-IP's own probe corpus (37 probes, 226 match rules); detection accuracy not yet measured
+- **OS Fingerprinting:** 16-probe TCP/IP stack technique; matches against a caller-supplied signature database (none bundled)
 - **Version Detection:** Major/minor version identification
 - **Banner Grabbing:** Protocol-aware with timeout handling
 

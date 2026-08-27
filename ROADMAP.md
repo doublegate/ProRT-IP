@@ -48,8 +48,8 @@ This document provides a high-level overview of the ProRT-IP WarScan development
   - 2,372 insertions, 1,093 deletions (net: ~1,279 lines)
   - 391 tests passing after Phase 3 + Enhancement Cycles 1-5
   - 6 new detection modules (os_db, service_db, os_probe, os_fingerprinter, service_detector, banner_grabber)
-  - OS fingerprinting with 16-probe sequence (2,000+ signatures)
-  - Service version detection (500+ protocol probes)
+  - OS fingerprinting with 16-probe sequence (signature database is caller-supplied; none bundled)
+  - Service version detection (ProRT-IP probe corpus: 37 probes, 226 match rules)
   - Banner grabbing with protocol-specific handlers
   - CLI flags: -O, --sV, --version-intensity, --banner-grab
 
@@ -116,10 +116,10 @@ This document provides a high-level overview of the ProRT-IP WarScan development
 **Key Deliverables**:
 
 - ✅ OS fingerprinting (16-probe sequence) - os_probe.rs, os_fingerprinter.rs, os_db.rs
-- ✅ Service version detection (nmap-service-probes format) - service_detector.rs, service_db.rs
+- ✅ Service version detection (ProRT-IP service probe format) - service_detector.rs, service_db.rs
 - ✅ Banner grabbing with protocol-specific handlers - banner_grabber.rs
 - ✅ Application-level protocol identification (HTTP, FTP, SSH, SMTP, POP3, IMAP)
-- ✅ Database parsers for 2,000+ OS signatures and 500+ service probes
+- ✅ Database parsers: OS signatures (caller-supplied, none bundled) and 37 embedded service probes (226 match rules)
 
 **Milestone**: ✅ M3 - Comprehensive detection (Achieved)
 

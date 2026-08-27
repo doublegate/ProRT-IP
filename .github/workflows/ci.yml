@@ -107,6 +107,20 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
+  # Job 2b: Generated data files must match a fresh run of their generator.
+  # Both generators read only committed inputs and are pure stdlib Python 3.
+  generated-data:
+    name: Generated Data Freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check service-probes corpus is current
+        run: python3 tools/gen-service-probes/generate.py --check
+
+      - name: Check port priority lists are current
+        run: python3 tools/gen-top-ports/generate.py --check
+
   # Job 3: Clippy linting
   clippy:
     name: Clippy Lint

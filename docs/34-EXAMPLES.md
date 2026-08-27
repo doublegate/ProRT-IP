@@ -281,16 +281,16 @@ PORT     STATE SERVICE  VERSION
 
 **Scenario:** Compare detection accuracy at different intensity levels
 
-**Low Intensity (fast, less accurate):**
+**Low Intensity (fast, fewer probes tried):**
 ```bash
 sudo prtip -sS -sV --version-intensity 3 -p 80,443 192.168.1.10
-# Time: ~2 seconds, Accuracy: 70-80%
+# Time: ~2 seconds (accuracy not yet measured)
 ```
 
-**High Intensity (slow, more accurate):**
+**High Intensity (slow, all probes tried):**
 ```bash
 sudo prtip -sS -sV --version-intensity 9 -p 80,443 192.168.1.10
-# Time: ~15 seconds, Accuracy: 90-95%
+# Time: ~15 seconds (accuracy not yet measured)
 ```
 
 ---

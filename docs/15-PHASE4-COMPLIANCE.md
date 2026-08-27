@@ -80,8 +80,8 @@ This document catalogs all features, implementations, and capabilities completed
 | **TCP Host Discovery** | ✅ Complete | SYN/ACK ping | `crates/prtip-scanner/src/discovery.rs` | `--ping-types` |
 | **UDP Host Discovery** | ✅ Complete | Common services | `crates/prtip-scanner/src/discovery.rs` | `--ping-types` |
 | **ARP Discovery (Local)** | ✅ Complete | Layer 2 discovery | `crates/prtip-network/src/arp.rs` | `--ping-types arp` |
-| **Service Detection** | ✅ Complete | 187 embedded probes, 50% rate | `crates/prtip-scanner/src/service_detector.rs` | `--sV`, `--version-intensity` |
-| **OS Fingerprinting** | ✅ Complete | 16-probe sequence, 2000+ sigs | `crates/prtip-scanner/src/os_fingerprinter.rs` | `-O`, `--os-detect` |
+| **Service Detection** | ✅ Complete | 37 probes, 226 match rules; rate not yet measured | `crates/prtip-scanner/src/service_detector.rs` | `--sV`, `--version-intensity` |
+| **OS Fingerprinting** | ✅ Complete | 16-probe sequence, caller-supplied signature set (none bundled) | `crates/prtip-scanner/src/os_fingerprinter.rs` | `-O`, `--os-detect` |
 | **Banner Grabbing** | ✅ Complete | 6 protocols + TLS | `crates/prtip-scanner/src/banner_grabber.rs` | `--banner-grab` |
 
 **Detection Summary:** 100% Phase 3-4 goals achieved

@@ -9,8 +9,9 @@
 //!
 //! ## Prerequisites
 //! - Root privileges or CAP_NET_RAW capability
-//! - nmap-service-probes database file
 //! - Running services on target (SSH, HTTP, etc.)
+//!
+//! The probe corpus is embedded in the binary; no external database is needed.
 //!
 //! ## Usage
 //! ```bash
@@ -70,37 +71,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Step 2: Load service detection database
     println!("Phase 2: Loading service detection database...");
 
-    // Try common locations for nmap-service-probes
-    let probe_paths = vec![
-        "/usr/share/nmap/nmap-service-probes",
-        "/opt/homebrew/share/nmap/nmap-service-probes",
-        "./nmap-service-probes",
-    ];
-
-    let mut probe_data = None;
-    for path in &probe_paths {
-        if let Ok(data) = std::fs::read_to_string(path) {
-            probe_data = Some(data);
-            println!("  Loaded probe database from: {}", path);
-            break;
+    // The ProRT-IP probe corpus is embedded at compile time. An override can be
+    // supplied on the command line; otherwise the embedded corpus is used.
+    let db = match std::env::args().nth(1) {
+        Some(path) => {
+            println!("  Loading probe corpus from: {}", path);
+            ServiceProbeDb::load_from_file(&path)?
         }
-    }
-
-    let probe_data = match probe_data {
-        Some(data) => data,
         None => {
-            println!("  ⚠ Warning: nmap-service-probes not found");
-            println!("  Searched: {:?}", probe_paths);
-            println!("  Service detection will use default probes only");
-            String::new() // Use empty string for basic detection
-        },
+            println!("  Using the embedded ProRT-IP probe corpus");
+            ServiceProbeDb::with_embedded_probes()?
+        }
     };
-
-    let db = if !probe_data.is_empty() {
-        ServiceProbeDb::parse(&probe_data)?
-    } else {
-        ServiceProbeDb::default()
-    };
+    println!("  Loaded {} probes", db.len());
 
     // Create service detector with intensity 7 (comprehensive)
     let service_detector = ServiceDetector::new(db, 7);

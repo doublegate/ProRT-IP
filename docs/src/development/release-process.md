@@ -20,7 +20,7 @@ Comprehensive guide to ProRT-IP's release management, versioning strategy, and d
 |---------|------|------|------------|
 | **0.5.2** | 2025-11-14 | Minor | Sprint 6.2 Live Dashboard Complete (TUI 4-tab system, real-time metrics) |
 | **0.5.1** | 2025-11-14 | Minor | Sprint 6.1 TUI Framework (60 FPS rendering, event-driven architecture) |
-| **0.5.0** | 2025-11-07 | Minor | **Phase 5 Complete** (IPv6 100%, Service Detection 85-90%, Plugin System) |
+| **0.5.0** | 2025-11-07 | Minor | **Phase 5 Complete** (IPv6 100%, Service Detection enhancements, Plugin System) |
 | **0.4.9** | 2025-11-06 | Patch | Documentation polish, mdBook integration |
 | **0.4.8** | 2025-11-06 | Patch | CI/CD optimization, CodeQL analysis |
 | **0.4.7** | 2025-11-06 | Patch | Fuzz testing framework, structure-aware fuzzing |

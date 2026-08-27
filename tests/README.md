@@ -197,8 +197,8 @@ Tests port specification parsing:
 
 Microbenchmarks for critical paths:
 - Port scanning (100, 1K, 10K ports)
-- nmap-service-probes parsing (187 probes)
-- nmap-os-db parsing (2600+ entries)
+- ProRT-IP service probe corpus parsing (37 probes, 226 match rules)
+- OS fingerprint parsing (caller-supplied signature set)
 - Rate limiter throughput
 - Packet construction (SYN, UDP, etc.)
 
@@ -224,7 +224,9 @@ Regression detection:
 
 **Contents:**
 - `sample_nmap_outputs/` - Example nmap outputs for comparison
-- `test_service_probes.txt` - Subset of nmap-service-probes
+- `test_service_probes.txt` - Small hand-written probe corpus for parser tests.
+  Must be authored from published protocol specifications; never copied from
+  `nmap-service-probes` or any other NPSL-licensed file.
 - `mock_targets.json` - Mock target configurations
 
 ---

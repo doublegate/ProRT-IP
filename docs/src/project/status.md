@@ -17,7 +17,7 @@
 | **CI/CD Platforms** | 7/7 passing | ✅ All Green |
 | **Release Targets** | 8/8 building | ✅ Complete |
 | **Scan Types** | 8 | ✅ Complete |
-| **Service Detection** | 85-90% accuracy | ✅ High |
+| **Service Detection** | 37 probes, 226 match rules | ✅ Not yet measured |
 | **IPv6 Coverage** | 100% (6/6 scanners) | ✅ Complete |
 | **Rate Limiting** | -1.8% overhead | ✅ Industry-leading |
 
@@ -155,8 +155,7 @@ See [Project Roadmap](./roadmap.md#phase-6-tui-interface-in-progress) for comple
 - Performance: 15% average overhead (within target)
 
 **Sprint 5.2: Service Detection** (12 hours)
-- 85-90% detection rate
-- 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
+- 5 protocol parsers added (HTTP, SSH, SMB, MySQL, PostgreSQL); detection rate not measured
 - 24-SERVICE-DETECTION-GUIDE.md (659 lines)
 - +23 tests (1,389 → 1,412)
 - <1% performance overhead
@@ -316,8 +315,8 @@ See [Project Roadmap](./roadmap.md#phase-6-tui-interface-in-progress) for comple
 - +176 tests (215 → 391)
 
 **Phase 3: Detection Systems** (October 8, 2025)
-- OS fingerprinting (2,000+ signatures)
-- Service detection (500+ protocol probes)
+- OS fingerprinting (caller-supplied signature database, none bundled)
+- Service detection (37 probes, 226 match rules)
 - Banner grabbing
 - +252 tests (391 → 643)
 - 55% code coverage
@@ -372,7 +371,7 @@ See [Project Roadmap](./roadmap.md#phase-6-tui-interface-in-progress) for comple
 | **Scan Types** | 8 | ✅ Complete | Connect, SYN, UDP, FIN/NULL/Xmas, ACK, Idle |
 | **Protocols** | 9 | ✅ Complete | TCP, UDP, ICMP, ICMPv6, NDP, HTTP, SSH, SMB, DNS |
 | **Evasion Techniques** | 6 | ✅ Complete | Fragmentation, TTL, checksum, decoy, source port, idle |
-| **Detection Methods** | 3 | ✅ Complete | Service (85-90%), OS fingerprinting, banner grabbing |
+| **Detection Methods** | 3 | ✅ Complete | Service (not yet measured), OS fingerprinting, banner grabbing |
 | **Output Formats** | 5 | ✅ Complete | Text, JSON, XML, Greppable, PCAPNG |
 | **CLI Flags (Nmap)** | 50+ | ✅ Complete | Comprehensive compatibility |
 | **Timing Templates** | 6 | ✅ Complete | T0 (Paranoid) → T5 (Insane) |
@@ -440,7 +439,7 @@ See [Project Roadmap](./roadmap.md#phase-6-tui-interface-in-progress) for comple
 - ✅ **Sprint 5.5:** TLS certificate analysis (X.509v3, 1.33μs parsing)
 - ✅ **Sprint 5.X:** Rate Limiting V3 (-1.8% overhead, promoted to default)
 - ✅ **Sprint 5.3:** Idle scan (Nmap parity, 99.5% accuracy)
-- ✅ **Sprint 5.2:** Service detection (85-90%, 5 parsers)
+- ✅ **Sprint 5.2:** Service detection (5 parsers added, accuracy not measured)
 - ✅ **Sprint 5.1:** IPv6 completion (100% coverage)
 
 **October 16-27:**
@@ -587,7 +586,7 @@ See [Project Roadmap](./roadmap.md) for complete phase details and timelines.
 - Maximum anonymity
 
 **v0.4.2** (2025-10-30) - Sprint 5.2
-- Service detection (85-90%)
+- Service detection (accuracy not measured)
 - 5 protocol parsers
 - <1% overhead
 
@@ -620,7 +619,7 @@ See [Project Roadmap](./roadmap.md) for complete phase details and timelines.
 ### Foundation Releases
 
 **v0.3.0** (2025-10-08) - Phase 3 Complete
-- OS fingerprinting (2,000+ signatures)
+- OS fingerprinting (caller-supplied signature database, none bundled)
 - Service detection foundation
 - Banner grabbing
 - 643 tests passing

@@ -12,7 +12,7 @@
 | **Fuzz** | 230M+ executions, 0 crashes | 5 targets |
 | **CI/CD** | 9/9 workflows | Production-ready |
 
-**Features**: 8 scan types, 9 protocols, IPv6 100%, SNI, Service Detection 85-90%, Idle Scan, Rate Limiting -1.8%, Plugin System (Lua), Benchmarking, **TUI** (60 FPS, 11 widgets), comprehensive docs
+**Features**: 8 scan types, 9 protocols, IPv6 100%, SNI, Service Detection (37 probes, 226 match rules; rate not measured), Idle Scan, Rate Limiting -1.8%, Plugin System (Lua), Benchmarking, **TUI** (60 FPS, 11 widgets), comprehensive docs
 
 ## Phase 7: Polish & Release ✅
 

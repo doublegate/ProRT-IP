@@ -11,7 +11,7 @@ ProRT-IP's performance characteristics across all scan types, features, and depl
 | **Stateless Throughput** | 10,200 pps (localhost) | Between Nmap (6,600 pps) and Masscan (300K+ pps) |
 | **Stateful Throughput** | 6,600 pps (localhost) | Comparable to Nmap (~6,000 pps) |
 | **Rate Limiter Overhead** | -1.8% (faster than unlimited) | Industry-leading (Nmap: +5-10%) |
-| **Service Detection** | 85-90% accuracy | Nmap-compatible (87-92%) |
+| **Service Detection** | 37 probes, 226 match rules; not yet measured | Corpus far smaller than Nmap's |
 | **Memory Footprint** | <1MB stateless, <100MB/10K hosts | Efficient (Nmap: ~50MB/10K hosts) |
 | **TLS Parsing** | 1.33μs per certificate | Fast (production-ready) |
 | **IPv6 Overhead** | ~15% vs IPv4 | Acceptable (larger headers) |
@@ -138,8 +138,8 @@ ProRT-IP balances three competing goals:
 | Operation | Latency | Notes |
 |-----------|---------|-------|
 | **Regex Matching (banner)** | <5ms | Compiled once, lazy_static |
-| **Service Probe Matching** | <20ms | 187 probes, parallel |
-| **OS Signature Matching** | <50ms | 2,600+ signatures |
+| **Service Probe Matching** | <20ms | 37 probes, parallel |
+| **OS Signature Matching** | <50ms | against caller-supplied signature database |
 | **TLS Certificate Parsing** | 1.33μs | Fast X.509 decode |
 
 **I/O Operations:**
@@ -183,8 +183,8 @@ ProRT-IP balances three competing goals:
 
 | Component | Memory | Notes |
 |-----------|--------|-------|
-| **Probe Database** | 2.8 MB | 187 probes, compiled regexes |
-| **OS Signature DB** | 4.5 MB | 2,600+ signatures |
+| **Probe Database** | ~20 KB | 37 probes, compiled regexes |
+| **OS Signature DB** | Varies | caller-supplied; none bundled |
 | **Per-Service State** | ~50 KB | Banner buffer, probe history |
 
 **Plugin System Overhead:**
@@ -305,7 +305,7 @@ ProRT-IP balances three competing goals:
 - HTTP: ~15ms (single probe)
 - SSH: ~18ms (banner + version probe)
 - MySQL: ~35ms (multi-probe sequence)
-- Unknown: ~50ms (all 187 probes tested)
+- Unknown: ~50ms (all 37 probes tested)
 
 **Optimization:**
 

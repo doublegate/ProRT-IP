@@ -277,20 +277,16 @@ openssl s_client -connect 192.168.1.1:443 -showcerts
 ```bash
 # List available probes
 prtip --list-probes | grep -i http
-# ProRT-IP uses 187 embedded probes by default
+# ProRT-IP uses 37 embedded probes (226 match rules) by default
 ```
 
-**Expected Detection Rates:**
+**Detection Coverage Notes:**
 
-| Service Type | Detection Rate | Notes |
-|--------------|----------------|-------|
-| HTTP/HTTPS | 95-100% | Excellent with TLS support |
-| SSH | 90-95% | Banner typically sent immediately |
-| FTP | 85-90% | Banner on connection |
-| SMTP | 85-90% | Standard greeting |
-| DNS | 80-85% | Requires specific queries |
-| Database (MySQL, PostgreSQL) | 75-85% | May require authentication |
-| Custom/Proprietary | 20-50% | Limited probe coverage |
+Detection rates are not yet measured for any service type. As a rule of thumb,
+self-announcing services (HTTP/HTTPS, SSH, FTP, SMTP) are easier to identify
+because they send a banner on connection; services requiring a specific query
+(DNS) or authentication (MySQL, PostgreSQL) or custom/proprietary protocols
+are harder, since the probe corpus is still young and growing.
 
 ---
 
@@ -341,8 +337,8 @@ prtip -sS -p 22,80,443 192.168.1.1
 
 **4. Check OS fingerprint database:**
 ```bash
-# ProRT-IP uses 2600+ signatures
-# Coverage: Windows, Linux, BSD, macOS, network devices
+# ProRT-IP bundles no OS fingerprint database; the caller supplies its own
+# signature set. Coverage depends on the signature set provided.
 
 # Manual OS identification via TTL
 # TTL 64 = Linux/Unix

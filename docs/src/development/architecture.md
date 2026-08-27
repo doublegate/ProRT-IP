@@ -116,14 +116,14 @@ Implements scanning techniques and detection capabilities:
 - Stateless and stateful modes
 
 **Service Detection:**
-- 187 Nmap-compatible probes
-- 85-90% detection accuracy
+- 37 probes, 226 match rules (ProRT-IP's own clean-room corpus)
+- Detection accuracy not yet measured
 - Protocol-specific parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
 
 **OS Fingerprinting:**
 - 16-probe fingerprinting sequence
-- 2,600+ OS signature database
-- Nmap database compatibility
+- Caller-supplied signature database (none bundled)
+- Nmap-DB-format-compatible parser
 
 **Stealth Module:**
 - Packet fragmentation

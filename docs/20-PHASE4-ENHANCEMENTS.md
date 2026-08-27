@@ -18,7 +18,7 @@ Following the completion of Phase 4 (Performance Optimization) with v0.4.0, this
 - **Comprehensive Testing:** 1,338 tests (100% pass rate) with 62.5% coverage exceeds most competitors
 - **Error Handling:** Circuit breaker, retry logic, resource monitoring, user-friendly messages - unmatched in the industry
 - **Performance Engineering:** Zero-copy packet building (58.8ns), NUMA optimization, lock-free aggregator
-- **Feature Completeness:** 7 scan types, 5 evasion techniques, service detection (187 probes), OS fingerprinting (2,600+ signatures)
+- **Feature Completeness:** 7 scan types, 5 evasion techniques, service detection (37 probes, 226 match rules), OS fingerprinting (caller-supplied signature database)
 - **Quality Focus:** Zero clippy warnings, zero production panics, 100% unwrap audit complete
 - **Cross-Platform Support:** 8/8 release targets production-ready (Linux, Windows, macOS, FreeBSD)
 
@@ -943,14 +943,14 @@ Following the completion of Phase 4 (Performance Optimization) with v0.4.0, this
 | Idle Scan | ❌ | ✅ | ❌ | ❌ | ❌ | **GAP HIGH:** Nmap signature feature |
 | SCTP | ❌ | ✅ | ❌ | ❌ | ❌ | **GAP LOW:** Rare protocol |
 | **Service Detection** | | | | | | |
-| Protocol Probes | ✅ (187) | ✅ (600+) | ❌ | ❌ (via Nmap) | ❌ | **GAP MEDIUM:** Fewer probes |
-| Version Detection | ✅ | ✅ | ❌ | ❌ (via Nmap) | ❌ | **PARITY** |
-| Banner Grabbing | ✅ (6 protocols) | ✅ (extensive) | ❌ | ❌ | ❌ | **PARITY** |
+| Protocol Probes | ✅ (37) | ✅ (600+) | ❌ | ❌ (via Nmap) | ❌ | **GAP:** Far fewer probes; corpus is young and growing |
+| Version Detection | ✅ | ✅ | ❌ | ❌ (via Nmap) | ❌ | **GAP:** Smaller corpus than Nmap |
+| Banner Grabbing | ✅ (6 protocols) | ✅ (extensive) | ❌ | ❌ | ❌ | **GAP:** Fewer protocols than Nmap |
 | SSL/TLS Handshake | ✅ | ✅ | ❌ | ❌ | ❌ | **PARITY** |
-| Detection Rate | 70-80% | 85-90% | N/A | N/A | N/A | **GAP LOW:** 10% lower than Nmap |
+| Detection Rate | Not measured | 85-90% | N/A | N/A | N/A | **GAP:** ProRT-IP has no accuracy measurement yet |
 | **OS Fingerprinting** | | | | | | |
-| Fingerprinting | ✅ (2,600+ sigs) | ✅ (2,600+ sigs) | ❌ | ❌ (via Nmap) | ❌ | **PARITY** (same nmap-os-db) |
-| Accuracy | 90%+ | 90%+ | N/A | N/A | N/A | **PARITY** |
+| Fingerprinting | ✅ (caller-supplied DB; none bundled) | ✅ (bundled nmap-os-db) | ❌ | ❌ (via Nmap) | ❌ | **GAP:** ProRT-IP ships no signature database |
+| Accuracy | Not measured | 90%+ | N/A | N/A | N/A | **GAP:** ProRT-IP has no accuracy measurement yet |
 | **Evasion/Stealth** | | | | | | |
 | Fragmentation | ✅ (-f, --mtu) | ✅ | ❌ | ❌ | ❌ | **PARITY** |
 | TTL Manipulation | ✅ (--ttl) | ✅ | ❌ | ❌ | ❌ | **PARITY** |
@@ -1010,8 +1010,8 @@ Following the completion of Phase 4 (Performance Optimization) with v0.4.0, this
 **Summary:**
 
 - **ProRT-IP Leads:** Error handling, testing/quality, architecture (zero-copy, NUMA), evasion (full Nmap parity)
-- **ProRT-IP Matches:** Service detection, OS fingerprinting, most output formats, cross-platform, evasion techniques
-- **ProRT-IP Gaps:** Plugin system (HIGH), Idle scan (HIGH), IPv6 (MEDIUM), CLI examples (MEDIUM), UDP payloads (LOW)
+- **ProRT-IP Matches:** Most output formats, cross-platform, evasion techniques
+- **ProRT-IP Gaps:** Service detection corpus size, OS fingerprint database (none bundled), plugin system (HIGH), Idle scan (HIGH), IPv6 (MEDIUM), CLI examples (MEDIUM), UDP payloads (LOW)
 
 ---
 

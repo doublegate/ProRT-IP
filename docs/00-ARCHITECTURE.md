@@ -28,7 +28,7 @@ ProRT-IP WarScan is a modern, high-performance network reconnaissance tool writt
 - **Speed:** Internet-scale scanning (full IPv4 sweep in <6 minutes on appropriate hardware)
 - **Safety:** Memory-safe Rust implementation eliminating buffer overflows and use-after-free vulnerabilities
 - **Stealth:** Six evasion techniques including timing controls, decoys, fragmentation, TTL manipulation, bad checksums, and idle (zombie) scanning
-- **Completeness:** Full-featured from host discovery through OS/service detection (85-90% detection rate, 187 Nmap probes)
+- **Completeness:** Full-featured from host discovery through OS/service detection (37 probes, 226 match rules; detection rate not yet measured)
 - **IPv6 Support:** 100% coverage across all 6 scanner types (TCP SYN, TCP Connect, UDP, Stealth, Discovery, Decoy)
 - **Rate Limiting:** Two-tier system (hostgroup control + AdaptiveRateLimiterV3) with -1.8% average overhead (faster than no limiting!)
 - **Extensibility:** Plugin architecture and scripting engine for custom workflows
@@ -45,11 +45,11 @@ ProRT-IP WarScan is a modern, high-performance network reconnaissance tool writt
 - Decoy (source address spoofing for anonymity)
 - Idle/Zombie (maximum anonymity via third-party relay)
 
-**Detection:** 85-90% accuracy
-- Service detection (187 Nmap probes embedded)
+**Detection:** accuracy not yet measured
+- Service detection (37 probes, 226 match rules embedded)
 - Protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
 - Ubuntu/Debian/RHEL version mapping from banners
-- OS fingerprinting (16 probes, 2,600+ signatures)
+- OS fingerprinting (16 probes, caller-supplied signature set; none bundled)
 
 **Performance:** Production-Ready
 - Common ports: 5.15ms (29x faster than Nmap)

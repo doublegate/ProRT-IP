@@ -1,14 +1,19 @@
 //! Service detection probe database parser
 //!
-//! This module implements parsing for nmap-service-probes format.
+//! This module implements parsing for the ProRT-IP service probe format.
 //! It handles probe definitions, match rules, and version extraction.
 //!
 //! # Format
 //!
-//! The nmap-service-probes format consists of:
+//! The ProRT-IP service probe format consists of:
 //! - Probe definitions with protocol, name, and payload
 //! - Match rules with regex patterns and version extraction
 //! - Softmatch rules for partial matches
+//!
+//! The grammar is documented in `tools/gen-service-probes/FORMAT.md`. The
+//! embedded corpus (`crates/prtip-core/data/service-probes.txt`) is generated
+//! by `tools/gen-service-probes/generate.py` from the IANA port registry plus a
+//! hand-authored overlay; see `crates/prtip-core/data/ATTRIBUTION.md`.
 //!
 //! # Example
 //!
@@ -33,8 +38,8 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::str::FromStr;
 
-// Embed nmap-service-probes at compile time
-const EMBEDDED_SERVICE_PROBES: &str = include_str!("../data/nmap-service-probes");
+// Embed the ProRT-IP service probe corpus at compile time
+const EMBEDDED_SERVICE_PROBES: &str = include_str!("../data/service-probes.txt");
 
 /// Service probe database
 #[derive(Debug, Clone)]
@@ -113,7 +118,7 @@ impl ServiceProbeDb {
         }
     }
 
-    /// Parse database from string (nmap-service-probes format)
+    /// Parse database from string (ProRT-IP service probe format)
     pub fn parse(content: &str) -> Result<Self, Error> {
         let mut db = Self::new();
         let mut current_probe: Option<ServiceProbe> = None;
@@ -442,14 +447,21 @@ impl ServiceProbeDb {
         Self::parse(EMBEDDED_SERVICE_PROBES)
     }
 
-    /// Load from standard nmap locations
+    /// Load a system-installed ProRT-IP probe corpus
+    ///
+    /// Only ProRT-IP's own corpus is searched for. ProRT-IP deliberately does
+    /// **not** read `nmap-service-probes` or `nmap-os-db`: the Nmap Public
+    /// Source License classifies a work that reads those data files as a
+    /// Derivative Work, which is incompatible with ProRT-IP's plain GPL-3.0
+    /// licensing. Point `--probe-db` at a file explicitly if you need a
+    /// different corpus and have satisfied yourself about its licence.
     pub fn load_from_system() -> Result<Self, Error> {
         let paths = [
-            "/usr/share/nmap/nmap-service-probes",                // Linux
-            "/usr/local/share/nmap/nmap-service-probes",          // BSD/macOS Homebrew
-            "/opt/nmap/share/nmap-service-probes",                // Alternative
-            "C:\\Program Files\\Nmap\\nmap-service-probes",       // Windows
-            "C:\\Program Files (x86)\\Nmap\\nmap-service-probes", // Windows 32-bit
+            "/usr/share/prtip/service-probes.txt",             // Linux
+            "/usr/local/share/prtip/service-probes.txt",       // BSD/macOS Homebrew
+            "/opt/prtip/share/service-probes.txt",             // Alternative
+            "C:\\Program Files\\ProRT-IP\\service-probes.txt", // Windows
+            "C:\\ProgramData\\ProRT-IP\\service-probes.txt",   // Windows (shared data)
         ];
 
         for path in &paths {
@@ -459,7 +471,7 @@ impl ServiceProbeDb {
         }
 
         Err(Error::Config(
-            "nmap-service-probes not found in standard locations".to_string(),
+            "service-probes.txt not found in standard locations".to_string(),
         ))
     }
 
@@ -474,19 +486,19 @@ impl ServiceProbeDb {
     pub fn load_default() -> Result<Self, Error> {
         // 1. Try embedded probes (always available)
         if let Ok(db) = Self::with_embedded_probes() {
-            eprintln!("Service detection: Using embedded nmap-service-probes");
+            eprintln!("Service detection: Using embedded ProRT-IP service-probes");
             return Ok(db);
         }
 
         // 2. Try system installation
         if let Ok(db) = Self::load_from_system() {
-            eprintln!("Service detection: Using system nmap-service-probes");
+            eprintln!("Service detection: Using system service-probes.txt");
             return Ok(db);
         }
 
         // 3. Return empty with warning
         eprintln!("Warning: No service probes available");
-        eprintln!("Service detection disabled. Install nmap or use --probe-db <file>");
+        eprintln!("Service detection disabled. Use --probe-db <file> to supply a corpus");
         Ok(Self::new())
     }
 }
@@ -628,12 +640,80 @@ softmatch http m|^HTTP|
     fn test_embedded_probes_exist() {
         let db = ServiceProbeDb::default();
         assert!(!db.is_empty(), "Probe database should not be empty");
+        // The ProRT-IP corpus is deliberately small and hand-authored. This
+        // floor tracks the committed corpus; raise it when the corpus grows,
+        // never lower it to make a failing suite green.
         assert!(
-            db.probes.len() > 100,
-            "Should have >100 probes, got {}",
+            db.probes.len() >= 30,
+            "Should have >=30 probes, got {}",
             db.probes.len()
         );
         eprintln!("Loaded {} service probes", db.probes.len());
+    }
+
+    /// Honesty gate: every `match`/`softmatch` line in the embedded corpus must
+    /// actually be loaded.
+    ///
+    /// `parse_match_line` silently drops any rule whose regex fails to compile,
+    /// so without this test the corpus could shrink invisibly. If this fails,
+    /// fix the offending rule in `tools/gen-service-probes/overlay.txt` and
+    /// regenerate - do not relax the assertion.
+    #[test]
+    fn test_embedded_corpus_fully_parses() {
+        let expected_matches = EMBEDDED_SERVICE_PROBES
+            .lines()
+            .filter(|l| l.trim_start().starts_with("match "))
+            .count();
+        let expected_soft = EMBEDDED_SERVICE_PROBES
+            .lines()
+            .filter(|l| l.trim_start().starts_with("softmatch "))
+            .count();
+        let expected_probes = EMBEDDED_SERVICE_PROBES
+            .lines()
+            .filter(|l| l.trim_start().starts_with("Probe "))
+            .count();
+
+        let db = ServiceProbeDb::with_embedded_probes().unwrap();
+        let loaded_matches: usize = db.probes.iter().map(|p| p.matches.len()).sum();
+        let loaded_soft: usize = db.probes.iter().map(|p| p.soft_matches.len()).sum();
+
+        assert_eq!(
+            db.probes.len(),
+            expected_probes,
+            "probe count mismatch: corpus declares {} Probe lines, parser loaded {}",
+            expected_probes,
+            db.probes.len()
+        );
+        assert_eq!(
+            loaded_matches, expected_matches,
+            "match rule mismatch: corpus has {} match lines, parser loaded {} \
+             (a regex failed to compile)",
+            expected_matches, loaded_matches
+        );
+        assert_eq!(
+            loaded_soft, expected_soft,
+            "softmatch rule mismatch: corpus has {} softmatch lines, parser loaded {} \
+             (a regex failed to compile)",
+            expected_soft, loaded_soft
+        );
+    }
+
+    /// The corpus must not reintroduce a dependency on NPSL-licensed data.
+    #[test]
+    fn test_embedded_corpus_is_not_npsl_derived() {
+        let lower = EMBEDDED_SERVICE_PROBES.to_ascii_lowercase();
+        assert!(
+            !lower.contains("insecure.com"),
+            "corpus contains an Insecure.Com copyright notice"
+        );
+        assert!(
+            !lower.contains("covered software"),
+            "corpus contains Nmap Public Source License boilerplate"
+        );
+        assert!(
+            EMBEDDED_SERVICE_PROBES.contains("SPDX-License-Identifier: GPL-3.0-or-later"),
+            "corpus must declare its own GPL-3.0 licence header"
+        );
     }
 
     #[test]

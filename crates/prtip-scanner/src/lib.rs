@@ -9,7 +9,7 @@
 //! providing:
 //!
 //! - **8 Scan Types**: SYN, Connect, UDP, FIN/NULL/Xmas, ACK, Idle/Zombie
-//! - **Service Detection**: 85-90% accuracy with 187+ protocol probes
+//! - **Service Detection**: 37 protocol probes / 226 match rules over 96 ports
 //! - **TLS Analysis**: X.509v3 certificate parsing, chain validation, cipher detection
 //! - **Stealth Techniques**: Fragmentation, decoys, timing control, TTL manipulation
 //! - **Rate Limiting**: Industry-leading -1.8% overhead with V3 algorithm
@@ -31,8 +31,9 @@
 //! ## Discovery & Detection
 //!
 //! - [`discovery`]: Host discovery via ICMP, ARP, TCP SYN pings, and NDP
-//! - [`service_detector`]: Service fingerprinting with nmap-service-probes
-//! - [`os_fingerprinter`]: OS detection with 2,600+ fingerprints
+//! - [`service_detector`]: Service fingerprinting with the ProRT-IP probe corpus
+//! - [`os_fingerprinter`]: OS detection against a caller-supplied signature set
+//!   (ProRT-IP bundles no OS fingerprint database)
 //! - [`tls_certificate`]: X.509v3 certificate parsing and chain validation
 //! - [`banner_grabber`]: Application banner collection and analysis
 //!
@@ -90,9 +91,8 @@
 //! // Create SYN scanner
 //! let scanner = SynScanner::new(Config::default())?;
 //!
-//! // Load service detection database
-//! let probe_data = std::fs::read_to_string("/usr/share/nmap/nmap-service-probes")?;
-//! let db = ServiceProbeDb::parse(&probe_data)?;
+//! // Load service detection database (embedded ProRT-IP corpus)
+//! let db = ServiceProbeDb::with_embedded_probes()?;
 //! let service_detector = ServiceDetector::new(db, 7);
 //!
 //! // Scan ports
@@ -189,7 +189,7 @@
 //! # Performance
 //!
 //! - **SYN Scan**: 10M+ packets/second (stateless)
-//! - **Service Detection**: 85-90% accuracy, ~500ms per service
+//! - **Service Detection**: ~500ms per service (detection rate not yet measured)
 //! - **Rate Limiting**: -1.8% overhead (V3 algorithm)
 //! - **IPv6**: <15% overhead vs IPv4
 //! - **TLS Parsing**: 1.33μs average per certificate

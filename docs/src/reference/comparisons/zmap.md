@@ -8,7 +8,7 @@ Comprehensive technical comparison between ProRT-IP and ZMap, the academic Inter
 
 **ZMap revolutionized Internet measurement** through stateless scanning architecture achieving 1.44 million pps at gigabit speeds (97-98% theoretical maximum) and 14.23 million pps at 10 gigabit speeds. Developed at the University of Michigan in 2013, ZMap completes full IPv4 scans in 42-45 minutes (gigabit) or 4 minutes 29 seconds (10 gigabit), representing a **1,300-fold speedup over Nmap** for Internet-wide surveys.
 
-**ProRT-IP balances speed with comprehensive detection**, achieving comparable stateless performance (10M+ pps, similar to ZMap gigabit) while maintaining 85-90% service detection accuracy through modern Rust async I/O architecture. ProRT-IP's stateful mode (50K+ pps) adds service version detection (500+ services), OS fingerprinting (2,600+ signatures), and TLS certificate analysis unavailable in ZMap's core.
+**ProRT-IP balances speed with comprehensive detection**, achieving comparable stateless performance (10M+ pps, similar to ZMap gigabit) through modern Rust async I/O architecture; service detection accuracy is not yet measured. ProRT-IP's stateful mode (50K+ pps) adds service version detection (37 probes, 226 match rules), OS fingerprinting (caller-supplied database, none bundled), and TLS certificate analysis unavailable in ZMap's core.
 
 **The fundamental tradeoff**: ZMap optimizes exclusively for horizontal scanning (many hosts, single port) through single-probe methodology and zero per-connection state, making it the gold standard for Internet-wide research but requiring separate tools (ZGrab2, LZR) for application-layer detection. ProRT-IP achieves comparable stateless speed (10M+ pps) while integrating comprehensive detection in a single tool, though ZMap reaches higher maximum speeds (14.23 Mpps) with specialized 10 gigabit hardware.
 
@@ -23,8 +23,8 @@ Comprehensive technical comparison between ProRT-IP and ZMap, the academic Inter
 | **Speed (Gigabit)** | 1.44 Mpps (97-98% theoretical max) | 10M+ pps stateless |
 | **Speed (10 Gigabit)** | 14.23 Mpps (96% theoretical max) | 10M+ pps (hardware-limited) |
 | **IPv4 Full Scan** | 42-45 minutes (gigabit), 4m 29s (10G) | ~15 minutes (stateless, 10M+ pps) |
-| **Service Detection** | None (requires ZGrab2) | 85-90% accuracy (500+ services) |
-| **OS Fingerprinting** | None | Full support (2,600+ signatures) |
+| **Service Detection** | None (requires ZGrab2) | Not yet measured (37 probes, 226 match rules) |
+| **OS Fingerprinting** | None | Full support (caller-supplied database, none bundled) |
 | **Scan Types** | TCP SYN, ICMP, UDP | 8 types (SYN, Connect, FIN, NULL, Xmas, ACK, UDP, Idle) |
 | **Methodology** | Single probe per target | Single probe (stateless) or adaptive (stateful) |
 | **Coverage** | 98% (accepts 2% packet loss) | 99%+ (stateful retries) |
@@ -74,12 +74,12 @@ Comprehensive technical comparison between ProRT-IP and ZMap, the academic Inter
 ✅ **Single-pass comprehensive assessment is required**
 - Service detection + OS fingerprinting + TLS certificates in one tool
 - 10M+ pps stateless for rapid discovery (ZMap gigabit-class)
-- 50K+ pps stateful with 85-90% detection accuracy
+- 50K+ pps stateful with integrated detection (accuracy not yet measured)
 - No multi-tool pipeline orchestration needed
 
 ✅ **Detection capabilities are critical**
-- Service version identification (500+ services, growing database)
-- OS fingerprinting (Nmap-compatible, 2,600+ signatures)
+- Service version identification (37 probes, 226 match rules; growing corpus)
+- OS fingerprinting (Nmap-DB-format-compatible parser; caller supplies the database)
 - TLS certificate analysis (X.509v3, chain validation, SNI support)
 - Banner grabbing for application-layer identification
 
@@ -149,14 +149,14 @@ Comprehensive technical comparison between ProRT-IP and ZMap, the academic Inter
 | **ZMap** | None (core) | N/A | N/A | N/A | Requires ZGrab2 for application-layer |
 | **ZMap + ZGrab2** | Application-layer | Stateful handshakes | 12 protocols | Protocol-specific | HTTP, HTTPS, SSH, Telnet, FTP, SMTP, POP3, IMAP, Modbus, BACNET, S7, Fox |
 | **ZMap + LZR** | Protocol identification | 5 handshakes | 99% accurate | Multi-protocol | Addresses Layer 4/Layer 7 gap |
-| **ProRT-IP** | Comprehensive detection | Signature matching | 500+ services | 85-90% accuracy | 187 probes, version extraction, CPE identifiers |
+| **ProRT-IP** | Comprehensive detection | Signature matching | 37 probes, 226 match rules | Not measured | version extraction, CPE identifiers |
 
 ### OS Fingerprinting
 
 | Scanner | Capability | Method | Database | Accuracy |
 |---------|------------|--------|----------|----------|
 | **ZMap** | None | N/A (architectural limitation) | N/A | N/A |
-| **ProRT-IP** | Full support | 16-probe sequence | 2,600+ signatures (Nmap DB) | Comparable to Nmap |
+| **ProRT-IP** | Full support | 16-probe sequence | Caller-supplied (Nmap DB format), none bundled | Not measured |
 
 **Key Difference**: ZMap's stateless architecture fundamentally precludes OS fingerprinting (requires multiple probes and response correlation). ZGrab2 provides application-layer data but not OS detection. ProRT-IP integrates OS fingerprinting directly.
 
@@ -433,8 +433,8 @@ prtip db query pentest.db --port 8080
 
 **What You Gain:**
 
-**Service Detection** (85-90% accuracy with 500+ service database)
-**OS Fingerprinting** (Nmap database compatible, 2,600+ signatures)
+**Service Detection** (37 probes, 226 match rules; accuracy not yet measured)
+**OS Fingerprinting** (Nmap-DB-format-compatible parser; caller supplies the database, none bundled)
 **TLS Certificate Analysis** (X.509v3, chain validation, SNI support)
 **Multiple Scan Types** (8 types vs ZMap's SYN/ICMP/UDP basic)
 **Memory Safety** (Rust compile-time guarantees vs C manual memory)
@@ -722,7 +722,7 @@ prtip db query scan.db --target 192.168.1.100
 ### Choose ProRT-IP If:
 
 ✅ **Single-pass comprehensive assessment** required (service + OS + TLS in one tool)
-✅ **Detection capabilities critical** (85-90% service accuracy, OS fingerprinting, TLS certificates)
+✅ **Detection capabilities critical** (integrated service detection, OS fingerprinting, TLS certificates)
 ✅ **Production security operations** (memory safety, error handling, database storage)
 ✅ **Cross-platform consistency** matters (10M+ pps on Linux/Windows/macOS)
 ✅ **Multiple scan types needed** (8 types: SYN, Connect, FIN, NULL, Xmas, ACK, UDP, Idle)
@@ -737,7 +737,7 @@ prtip db query scan.db --target 192.168.1.100
 prtip --stateless -p 80,443 --max-rate 10000000 enterprise-network.txt -oJ rapid.json
 ```
 
-**Phase 2: ProRT-IP Stateful Enumeration** (50K+ pps with 85-90% detection)
+**Phase 2: ProRT-IP Stateful Enumeration** (50K+ pps with integrated detection)
 
 ```bash
 prtip -sS -sV -O -p- discovered-hosts.txt --with-db --database comprehensive.db

@@ -30,7 +30,7 @@ This roadmap outlines the complete development journey for ProRT-IP WarScan from
 | **Enhancement Cycles 1-8** | **Ongoing** | **Reference Optimizations** | **Crypto, concurrency, resources, CLI, progress, filtering, exclusions, perf/stealth** | **✅ COMPLETE** |
 | Phase 3 | Weeks 7-10 | Detection Systems | OS fingerprinting, service detection, banner grabbing | ✅ COMPLETE |
 | Phase 4 | Weeks 11-13 | Performance & Evasion | Zero-copy, NUMA, PCAPNG, evasion techniques, error handling | ✅ COMPLETE (1,166 tests, v0.3.9-v0.4.0) |
-| **Phase 5** | **Weeks 14-20** | **Advanced Features** | **IPv6 100%, Service Detection 85-90%, Idle Scan, Rate Limiting, TLS Analysis, Plugin System, Benchmarking, Documentation** | **✅ COMPLETE (100% - 10/10 sprints, v0.4.1-v0.5.0)** |
+| **Phase 5** | **Weeks 14-20** | **Advanced Features** | **IPv6 100%, Service Detection (37 probes, 226 match rules), Idle Scan, Rate Limiting, TLS Analysis, Plugin System, Benchmarking, Documentation** | **✅ COMPLETE (100% - 10/10 sprints, v0.4.1-v0.5.0)** |
 | Phase 6 | Weeks 21-22 | TUI Interface | Interactive terminal dashboard + Network Optimizations (8 sprints) | ✅ COMPLETE |
 | **Phase 7** | **Weeks 23-24** | **Polish & Release** | **Documentation, packaging, security audit, v1.0.0 release** | **✅ COMPLETE** |
 | Phase 8 | Post-v1.0 | Future Enhancements | Web UI, desktop GUI, distributed scanning | 📋 PLANNED |
@@ -245,14 +245,14 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 - ✅ Complete 16-probe implementation
 - ✅ Fingerprint database format (nmap-os-db compatible)
-- ✅ OS detection with 2,000+ signatures (OsFingerprinter - 115 lines)
+- ✅ OS detection against a caller-supplied signature database (OsFingerprinter - 115 lines; ProRT-IP bundles no signatures)
 
 #### Week 8: Service Detection Framework ✅
 
 **Sprint 3.2 - COMPLETE**
 
 - ✅ Implement service probe database schema (service_db.rs - 451 lines)
-- ✅ Parse `nmap-service-probes` format with regex matching
+- ✅ Parse the ProRT-IP service probe format with regex matching
 - ✅ Add intensity levels 0-9 for probe selection
 - ✅ Create port-indexed probe lookup for optimization
 - ✅ Build softmatch rules for partial matches
@@ -405,7 +405,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 #### Sprint 5.2: Service Detection Enhancement ✅ COMPLETE (v0.4.2, Oct 30, 12h)
 
-**Status:** ✅ 100% COMPLETE (Milestone: 85-90% Detection Rate Achieved)
+**Status:** ✅ 100% COMPLETE (Milestone: 5 protocol-specific parsers added)
 **Completed:** 2025-10-30
 **Effort:** 12 hours / 15-18 hours estimated (under budget, 33% better)
 
@@ -420,7 +420,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 - [x] Service Detection Guide (docs/24-SERVICE-DETECTION-GUIDE.md, 659 lines)
 
 **Deliverables:**
-- Detection rate improvement: 70-80% → 85-90% (+10-15 percentage points)
+- Detection rate improvement: not measured (historical figures for this sprint referenced the now-removed nmap-derived probe corpus; see `crates/prtip-core/data/ATTRIBUTION.md`)
 - 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL)
 - 23 new tests (1,389 → 1,412)
 - <1% performance overhead (0.05ms per target)
@@ -660,7 +660,7 @@ Following Phase 2 completion, systematic enhancement cycles incorporated optimiz
 
 **Completed (100%):**
 - ✅ Sprint 5.1: IPv6 Completion (100% coverage, 15% overhead)
-- ✅ Sprint 5.2: Service Detection (85-90% rate, 5 parsers)
+- ✅ Sprint 5.2: Service Detection (5 protocol parsers added; rate not measured)
 - ✅ Sprint 5.3: Idle Scan (Nmap parity, 99.5% accuracy)
 - ✅ Sprint 5.4 + 5.X: Rate Limiting V3 (-1.8% overhead, industry-leading)
 - ✅ Sprint 5.5: TLS Certificate Analysis (X.509v3, 1.33μs parsing)
@@ -1087,8 +1087,8 @@ Each 2-week sprint follows this structure:
 
 ### Milestone 3: Detection Capabilities (End of Phase 3)
 
-- [x] OS fingerprinting with 2,000+ signatures (Phase 3 deliverable)
-- [x] Service detection for 500+ protocols (service_db.rs)
+- [x] OS fingerprinting against a caller-supplied signature database (Phase 3 deliverable; no signatures bundled)
+- [x] Service detection with 37 embedded probes, 226 match rules (service_db.rs)
 - [x] Banner grabbing with SSL support (banner_grabber.rs)
 
 **Success Criteria:**

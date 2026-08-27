@@ -17,8 +17,8 @@
 
 ### Detection Systems
 
-- **OS fingerprinting:** 16-probe sequence (6 TCP SYN, 2 ICMP, 1 ECN, 6 unusual TCP, 1 UDP)
-- **Service detection:** nmap-service-probes format with 500+ probes
+- **OS fingerprinting:** 16-probe sequence (6 TCP SYN, 2 ICMP, 1 ECN, 6 unusual TCP, 1 UDP); matches against a caller-supplied signature database
+- **Service detection:** ProRT-IP service probe format (37 probes, 226 match rules)
 - **Banner grabbing:** 6 protocols + TLS support (HTTP, HTTPS, FTP, SSH, SMTP, DNS, SNMP)
 
 ### Performance & Stealth

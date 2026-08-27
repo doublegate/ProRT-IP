@@ -672,7 +672,7 @@ impl ServiceDetector {
     /// * `intensity` - Detection intensity (0-9)
     ///   - 0: Registered ports only
     ///   - 7: Recommended default (common + comprehensive)
-    ///   - 9: All 187 probes (exhaustive)
+    ///   - 9: All 37 probes (exhaustive)
     ///
     /// # Example
     /// ```rust
@@ -688,7 +688,7 @@ impl ServiceDetector {
     /// ```no_run
     /// # use prtip_detect::ServiceDetector;
     /// let mut detector = ServiceDetector::new(7);
-    /// detector.load_probes("probes/nmap-service-probes")?;
+    /// detector.load_probes("probes/service-probes.txt")?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn load_probes(&mut self, path: &str) -> Result<()>

@@ -21,8 +21,8 @@ ProRT-IP is a modern network scanner written in Rust that combines the speed of 
 |---------|------|----------|
 | **Speed** | ~300K pps max | 1M+ pps stateless, 50K+ pps stateful |
 | **Memory Safety** | C (manual memory) | Rust (compile-time guarantees) |
-| **Service Detection** | 1000+ services | 500+ services (growing) |
-| **OS Fingerprinting** | 2600+ signatures | Compatible with Nmap DB |
+| **Service Detection** | 1000+ services | 37 probes, 226 match rules (young, growing corpus) |
+| **OS Fingerprinting** | 2600+ signatures | Parser is Nmap-DB-format-compatible; no signature database bundled |
 | **Maturity** | 25+ years | New project |
 | **Scripting** | NSE (Lua) | Lua plugin system |
 

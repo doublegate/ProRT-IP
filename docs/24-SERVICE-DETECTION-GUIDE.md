@@ -3,7 +3,7 @@
 **Document Version:** 1.0
 **Last Updated:** 2025-10-30
 **Phase:** Sprint 5.2 (Service Detection Enhancement)
-**Target:** Improve detection rate from 70-80% to 85-90%
+**Target:** Improve detection rate via protocol-specific parsers (rate not measured)
 
 ## Table of Contents
 
@@ -20,19 +20,20 @@
 
 ProRT-IP's service detection combines two complementary approaches:
 
-1. **Regex-Based Detection** (`service_db.rs`): Fast pattern matching using nmap-service-probes database (187 probes, 5,572 match patterns)
+1. **Regex-Based Detection** (`service_db.rs`): Fast pattern matching using the ProRT-IP service probe corpus (37 probes, 226 match rules)
 2. **Protocol-Specific Detection** (Sprint 5.2): Deep protocol parsing for accurate version and OS information
 
 ### Detection Coverage
 
-| Protocol | Coverage | Improvement | Confidence |
-|----------|----------|-------------|------------|
-| **HTTP** | 25-30% | +3-5pp | 0.5-1.0 |
-| **SSH** | 10-15% | +2-3pp | 0.6-1.0 |
-| **SMB** | 5-10% | +2-3pp | 0.7-0.95 |
-| **MySQL** | 3-5% | +1-2pp | 0.7-0.95 |
-| **PostgreSQL** | 3-5% | +1-2pp | 0.7-0.95 |
-| **Total** | 46-65% | +10-15pp | Variable |
+| Protocol | Parser | Confidence |
+|----------|--------|------------|
+| **HTTP** | ✅ | 0.5-1.0 |
+| **SSH** | ✅ | 0.6-1.0 |
+| **SMB** | ✅ | 0.7-0.95 |
+| **MySQL** | ✅ | 0.7-0.95 |
+| **PostgreSQL** | ✅ | 0.7-0.95 |
+
+Coverage and detection-rate improvement figures are not measured for the current probe corpus.
 
 ### Key Features
 
@@ -567,7 +568,7 @@ prtip -sS --no-service-detect target.com
 
 ## References
 
-1. **Nmap Service Probes**: `nmap-service-probes` database (187 probes, 5,572 patterns)
+1. **ProRT-IP Service Probes**: `service-probes.txt` corpus (37 probes, 226 match rules) — see `crates/prtip-core/data/ATTRIBUTION.md` for sourcing
 2. **RFC 4253**: SSH Protocol Architecture
 3. **MS-SMB2**: SMB 2 and 3 Protocol Specification
 4. **MySQL Protocol**: Client/Server Protocol Documentation
@@ -582,6 +583,6 @@ prtip -sS --no-service-detect target.com
 ---
 
 **Sprint 5.2 Deliverable**: Service Detection Enhancement
-**Improvement**: +10-15pp detection rate (70-80% → 85-90%)
+**Improvement**: 5 protocol-specific parsers added (detection rate not measured)
 **Test Coverage**: 23 new unit tests (198 total passing)
 **Performance**: <1% overhead vs regex-only detection

@@ -89,10 +89,10 @@ ProRT-IP WarScan is developed through a structured 8-phase roadmap spanning appr
 
 **Key Achievements:**
 - ✅ OS fingerprinting with 16-probe sequence
-- ✅ Service detection engine (500+ protocol probes)
+- ✅ Service detection engine (37 probes, 226 match rules)
 - ✅ Banner grabbing (6 protocol handlers)
-- ✅ nmap-os-db compatible (2,000+ signatures)
-- ✅ nmap-service-probes format parsing
+- ✅ nmap-os-db compatible parser (caller-supplied signatures, none bundled)
+- ✅ ProRT-IP service probe format parsing
 - ✅ Intensity levels 0-9 for probe selection
 
 **Technical Implementation:**
@@ -166,7 +166,7 @@ ProRT-IP WarScan is developed through a structured 8-phase roadmap spanning appr
 
 #### Sprint 5.2: Service Detection Enhancement ✅
 - **Duration:** 12 hours (under budget)
-- **Achievement:** 85-90% detection rate (+10-15pp improvement)
+- **Achievement:** 5 new protocol-specific parsers added (detection rate not measured)
 - **Parsers:** HTTP, SSH, SMB, MySQL, PostgreSQL
 - **Tests:** +23 new tests (1,389 → 1,412)
 - **Performance:** <1% overhead (0.05ms per target)

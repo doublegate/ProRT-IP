@@ -4,23 +4,22 @@ Learn how ProRT-IP identifies services, versions, and operating systems through 
 
 ## Overview
 
-ProRT-IP's service detection combines two complementary approaches for industry-leading accuracy:
+ProRT-IP's service detection combines two complementary approaches:
 
-1. **Regex-Based Detection** (`service_db.rs`): Fast pattern matching using nmap-service-probes database (187 probes, 5,572 match patterns)
+1. **Regex-Based Detection** (`service_db.rs`): Fast pattern matching using the ProRT-IP service probe corpus (37 probes, 226 match rules)
 2. **Protocol-Specific Detection**: Deep protocol parsing for accurate version and OS information (Sprint 5.2)
 
 ### Detection Coverage
 
-| Protocol | Coverage | Improvement | Confidence |
-|----------|----------|-------------|------------|
-| **HTTP** | 25-30% | +3-5pp | 0.5-1.0 |
-| **SSH** | 10-15% | +2-3pp | 0.6-1.0 |
-| **SMB** | 5-10% | +2-3pp | 0.7-0.95 |
-| **MySQL** | 3-5% | +1-2pp | 0.7-0.95 |
-| **PostgreSQL** | 3-5% | +1-2pp | 0.7-0.95 |
-| **Total** | 46-65% | +10-15pp | Variable |
+| Protocol | Parser | Confidence |
+|----------|--------|------------|
+| **HTTP** | ✅ | 0.5-1.0 |
+| **SSH** | ✅ | 0.6-1.0 |
+| **SMB** | ✅ | 0.7-0.95 |
+| **MySQL** | ✅ | 0.7-0.95 |
+| **PostgreSQL** | ✅ | 0.7-0.95 |
 
-**Overall Detection Rate:** 85-90% (improved from 70-80% baseline)
+**Overall Detection Rate:** Not measured for the current probe corpus.
 
 ### Key Features
 
@@ -587,14 +586,14 @@ prtip -sS --no-service-detect target.com
 
 **References:**
 
-1. **Nmap Service Probes**: `nmap-service-probes` database (187 probes, 5,572 patterns)
+1. **ProRT-IP Service Probes**: `service-probes.txt` corpus (37 probes, 226 match rules) — see `crates/prtip-core/data/ATTRIBUTION.md` for sourcing
 2. **RFC 4253**: SSH Protocol Architecture
 3. **MS-SMB2**: SMB 2 and 3 Protocol Specification
 4. **MySQL Protocol**: Client/Server Protocol Documentation
 5. **PostgreSQL Protocol**: Frontend/Backend Protocol Documentation
 
 **Sprint 5.2 Achievement:**
-- Detection rate improvement: +10-15pp (70-80% → 85-90%)
+- Detection rate improvement: not measured (historical figure referenced the now-removed nmap-derived probe corpus)
 - Test coverage: 23 new unit tests (2,111 total passing as of Phase 6)
 - Performance overhead: <1% vs regex-only detection
 - New protocol modules: 5 (HTTP, SSH, SMB, MySQL, PostgreSQL)

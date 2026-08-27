@@ -35,8 +35,8 @@ ProRT-IP WarScan is a modern network scanner written in Rust that combines the s
 |---------|------|---------|
 | **Speed** | ~300K pps max | 1M+ pps stateless, 50K+ pps stateful |
 | **Memory Safety** | C (manual memory management) | Rust (compile-time guarantees) |
-| **Service Detection** | 1000+ services | 500+ services (growing) |
-| **OS Fingerprinting** | 2600+ signatures | Compatible with Nmap DB |
+| **Service Detection** | 1000+ services | 37 probes, 226 match rules (young, growing corpus) |
+| **OS Fingerprinting** | 2600+ signatures | Parser is Nmap-DB-format-compatible; no signature database bundled — bring your own |
 | **Maturity** | 25+ years | New project |
 
 WarScan is **not** a replacement for Nmap in all scenarios. Nmap's NSE scripting engine and decades of fingerprints remain unmatched. WarScan excels at fast, large-scale scans and provides a modern, safe alternative.

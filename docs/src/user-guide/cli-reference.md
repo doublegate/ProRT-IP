@@ -55,8 +55,8 @@ prtip -p- target.com                 # All 65535 ports
 ### Top Ports
 
 ```bash
--F                                   # Fast scan (top 100 ports)
---top-ports <N>                      # Scan top N ports
+-F                                   # First 100 ports of the priority list
+--top-ports <N>                      # First N of the priority list
 ```
 
 **Examples:**

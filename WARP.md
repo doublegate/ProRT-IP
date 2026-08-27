@@ -132,7 +132,7 @@ ProRT-IP is organized as a Rust workspace with four core crates:
   
 - **`prtip-scanner`**: Scanning orchestration and detection logic
   - Scan types: SYN, Connect, UDP, Stealth (FIN/NULL/Xmas), ACK
-  - Detection: service detection (187 probes), OS fingerprinting (2000+ signatures)
+  - Detection: service detection (37 probes, 226 match rules), OS fingerprinting (caller-supplied signature database)
   - Orchestration: `ScanScheduler`, adaptive parallelism, rate limiting
   - Storage: async result aggregation, SQLite persistence
   
@@ -152,8 +152,8 @@ ProRT-IP combines two scanning strategies:
 
 2. **Deep Enumeration** (Nmap-inspired)
    - Stateful connections to discovered endpoints
-   - Service version detection with 187 protocol-specific probes
-   - OS fingerprinting with 16-probe technique and 2000+ signature database
+   - Service version detection with 37 protocol-specific probes (226 match rules)
+   - OS fingerprinting with 16-probe technique, matched against a caller-supplied signature database
    - Banner grabbing and TLS certificate extraction
 
 This hybrid design maximizes efficiency: spend minimal resources on discovery, then invest deeper analysis only where warranted.

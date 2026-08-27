@@ -6,7 +6,7 @@ Comprehensive technical comparisons between ProRT-IP and other network scanning 
 
 Modern network reconnaissance demands both rapid port discovery across large attack surfaces and detailed service enumeration for vulnerability assessment. The scanning tool landscape spans from Masscan's 25 million packets per second raw speed to Nmap's comprehensive 600+ NSE scripts and 7,319 service signatures.
 
-**ProRT-IP bridges this gap**, combining Masscan/ZMap-level speed (10M+ pps stateless scanning) with Nmap-depth detection capabilities (85-90% service detection accuracy, OS fingerprinting, TLS certificate analysis). Written in memory-safe Rust with async I/O, ProRT-IP provides the performance of stateless scanners while maintaining the safety and detection capabilities of traditional tools.
+**ProRT-IP bridges this gap**, combining Masscan/ZMap-level speed (10M+ pps stateless scanning) with a growing detection layer (service detection, OS fingerprinting, TLS certificate analysis; accuracy not yet measured). Written in memory-safe Rust with async I/O, ProRT-IP provides the performance of stateless scanners while maintaining the safety and detection capabilities of traditional tools.
 
 ---
 
@@ -14,7 +14,7 @@ Modern network reconnaissance demands both rapid port discovery across large att
 
 | Tool | Speed (pps) | Detection | Platform | Best For |
 |------|-------------|-----------|----------|----------|
-| **ProRT-IP** | **10M+ stateless, 50K+ stateful** | **85-90% service, OS, TLS** | **Linux/Win/macOS** | **Speed + depth combined** |
+| **ProRT-IP** | **10M+ stateless, 50K+ stateful** | **service, OS, TLS (accuracy not yet measured)** | **Linux/Win/macOS** | **Speed + depth combined** |
 | **Nmap** | ~300K max | 100% (industry standard) | Linux/Win/macOS | Comprehensive audits |
 | **Masscan** | 25M (optimal) | Basic banners only | Linux (best) | Internet-scale recon |
 | **ZMap** | 1.4M | Research-focused | Linux | Academic research |
@@ -31,7 +31,7 @@ Modern network reconnaissance demands both rapid port discovery across large att
 
 - **Stateless Mode**: 10M+ pps (comparable to Masscan)
 - **Stateful Mode**: 50K+ pps (165x faster than Nmap)
-- **Full Detection**: 85-90% service accuracy, OS fingerprinting, TLS analysis
+- **Full Detection**: service detection (accuracy not yet measured), OS fingerprinting, TLS analysis
 - **Memory Safety**: Rust prevents buffer overflows, use-after-free, data races
 
 ### Modern Architecture
@@ -50,8 +50,8 @@ Modern network reconnaissance demands both rapid port discovery across large att
 
 - **8 Scan Types**: SYN, Connect, FIN, NULL, Xmas, ACK, UDP, Idle
 - **IPv6 Support**: 100% coverage (all scan types, not just TCP Connect)
-- **Service Detection**: 500+ services, 85-90% accuracy
-- **OS Fingerprinting**: Nmap database compatibility, 2,600+ signatures
+- **Service Detection**: 37 probes, 226 match rules (young, growing corpus); accuracy not yet measured
+- **OS Fingerprinting**: Nmap-DB-format-compatible parser; no signature database bundled — bring your own
 - **TLS Certificate Analysis**: X.509v3 parsing, chain validation, SNI support
 - **Rate Limiting**: Industry-leading -1.8% overhead (faster with limiter!)
 - **Plugin System**: Lua 5.4 with sandboxing and capabilities
@@ -176,9 +176,9 @@ Modern network reconnaissance demands both rapid port discovery across large att
 
 ### Detection Accuracy
 
-**Comprehensive Detection (90%+ accuracy):**
+**Comprehensive Detection:**
 - Nmap: 100% (7,319 service signatures, 25+ years)
-- ProRT-IP: 85-90% (500+ services, growing)
+- ProRT-IP: not yet measured (37 probes, 226 match rules, growing)
 
 **Integration-Based Detection:**
 - RustScan: Nmap accuracy (automatic integration)
@@ -221,7 +221,7 @@ Modern network reconnaissance demands both rapid port discovery across large att
 
 | Feature | ProRT-IP | Nmap | Masscan | ZMap | RustScan | Naabu |
 |---------|----------|------|---------|------|----------|-------|
-| **Service Detection** | 85-90% | 100% | Basic | Research | Nmap integration | Nmap integration |
+| **Service Detection** | Not measured | 100% | Basic | Research | Nmap integration | Nmap integration |
 | **Version Detection** | ✅ | ✅ | ❌ | ZGrab | Nmap | Nmap |
 | **OS Fingerprinting** | ✅ | ✅ | ❌ | ❌ | Nmap | ❌ |
 | **TLS Analysis** | ✅ (X.509v3) | ✅ (NSE) | Basic | ZGrab | Nmap | ❌ |
@@ -293,7 +293,7 @@ Modern network reconnaissance demands both rapid port discovery across large att
 ### Question 1: What's your primary constraint?
 
 **Speed** → Masscan (25M pps) or ProRT-IP Stateless (10M+ pps)
-**Accuracy** → Nmap (100% detection) or ProRT-IP Stateful (85-90%)
+**Accuracy** → Nmap (100% detection) or ProRT-IP Stateful (not yet measured)
 **Both** → **ProRT-IP** (optimal balance)
 **Time** → RustScan (3-8 seconds full scan) or Naabu (similar)
 
@@ -306,8 +306,8 @@ Modern network reconnaissance demands both rapid port discovery across large att
 
 ### Question 3: What detection do you need?
 
-**Service versions** → Nmap (7,319 signatures) or ProRT-IP (500+, 85-90%)
-**OS fingerprinting** → Nmap (2,982 fingerprints) or ProRT-IP (Nmap DB)
+**Service versions** → Nmap (7,319 signatures) or ProRT-IP (37 probes, 226 match rules; not yet measured)
+**OS fingerprinting** → Nmap (2,982 fingerprints) or ProRT-IP (caller-supplied, Nmap-DB-format-compatible)
 **TLS certificates** → ProRT-IP (X.509v3, SNI) or Nmap (NSE scripts)
 **Basic discovery** → Masscan (fast) or Naabu (cloud-optimized)
 
@@ -382,8 +382,8 @@ Each comparison includes:
 - Database storage (historical tracking)
 
 **What you keep:**
-- Service detection (85-90% accuracy, growing)
-- OS fingerprinting (Nmap database compatibility)
+- Service detection (37 probes, 226 match rules; growing; accuracy not yet measured)
+- OS fingerprinting (Nmap-DB-format-compatible parser; bring your own database)
 - Similar CLI flags (50+ Nmap-compatible options)
 - XML output compatibility
 
@@ -396,7 +396,7 @@ Each comparison includes:
 ### From Masscan to ProRT-IP:
 
 **What you gain:**
-- Service detection (85-90% accuracy vs basic banners)
+- Service detection (accuracy not yet measured, vs basic banners)
 - OS fingerprinting (vs none)
 - TLS certificate analysis (vs basic SSL grabbing)
 - Safety (Rust memory safety vs C manual management)
@@ -415,7 +415,7 @@ Each comparison includes:
 ### From RustScan to ProRT-IP:
 
 **What you gain:**
-- Native service detection (85-90% vs Nmap integration)
+- Native service detection (accuracy not yet measured, vs Nmap integration)
 - More scan types (8 vs 2: SYN/Connect)
 - Stealth capabilities (6 types vs none)
 - Database storage (historical tracking)

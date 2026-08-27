@@ -488,7 +488,7 @@ Scanner          Zombie                  Target
 | 8 | Nearly all | Thorough |
 | 9 | All probes | Exhaustive |
 
-#### Probe Format (nmap-service-probes style)
+#### Probe Format (ProRT-IP service probe format)
 
 ```
 Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|

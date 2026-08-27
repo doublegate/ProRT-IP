@@ -48,7 +48,7 @@ This guide provides comprehensive documentation for developers contributing to P
 ProRT-IP WarScan is a modern network scanner that combines:
 
 - **Masscan Speed**: 10M+ packets/second capability via stateless scanning
-- **Nmap Depth**: 85-90% service detection accuracy with 187 probes
+- **Nmap-Inspired Depth**: Service detection with 37 probes (226 match rules); accuracy not yet measured
 
 ### High-Level Architecture
 
@@ -191,8 +191,11 @@ ProRT-IP/
 |           +-- widgets/          # UI widgets
 |
 +-- data/                         # Embedded data files
-|   +-- nmap-service-probes       # Service detection probes
-|   +-- nmap-os-db                # OS fingerprint database
+|   +-- service-probes.txt        # ProRT-IP service detection probe corpus
+|   +-- ATTRIBUTION.md            # Data sourcing and licence notes
+|
+# (No OS fingerprint database is bundled; a caller of the OsFingerprinter API
+#  must supply and parse its own signature database.)
 |
 +-- docs/                         # Documentation
 |   +-- 00-ARCHITECTURE.md

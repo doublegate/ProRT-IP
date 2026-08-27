@@ -31,7 +31,7 @@
 **ProRT-IP WarScan** (Protocol/Port Real-Time IP War Scanner) is a modern, high-performance network scanner written in Rust that combines:
 
 - **Speed of Masscan/ZMap:** 10M+ packets/second stateless scanning
-- **Depth of Nmap:** Comprehensive service detection (85-90% accuracy) and OS fingerprinting (2,600+ signatures)
+- **Nmap-Inspired Depth:** Service detection (37 probes, 226 match rules) and OS fingerprinting (caller-supplied signature database)
 - **Safety of Rust:** Memory-safe implementation preventing entire vulnerability classes
 - **Stealth Capabilities:** Advanced evasion techniques including timing controls, decoys, fragmentation, TTL manipulation, and idle scanning
 
@@ -41,8 +41,8 @@
 |---------|-------------|
 | **Multi-Protocol** | TCP (SYN, Connect, FIN, NULL, Xmas, ACK, Idle), UDP, ICMP/ICMPv6, NDP |
 | **IPv6 Support** | Full dual-stack implementation across all 8 scanner types |
-| **Service Detection** | 187 embedded Nmap probes + 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL) |
-| **OS Fingerprinting** | 16-probe technique with 2,600+ signatures |
+| **Service Detection** | 37 embedded ProRT-IP probes (226 match rules) + 5 protocol parsers (HTTP, SSH, SMB, MySQL, PostgreSQL) |
+| **OS Fingerprinting** | 16-probe technique matched against a caller-supplied signature database |
 | **Evasion** | Fragmentation (-f, --mtu), TTL manipulation, bad checksums, decoys (-D), idle scan (-sI) |
 | **TUI Dashboard** | 60 FPS real-time visualization with 4-tab interface |
 | **Plugin System** | Lua 5.4 sandboxed scripting engine |
@@ -355,8 +355,14 @@ prtip [OPTIONS] [TARGET...]
 | `-p RANGE` | `-p 1-1000` | Port range |
 | `-p LIST` | `-p 22,80,443` | Port list |
 | `-p-` | `-p-` | All 65535 ports |
-| `-F` | `-F` | Top 100 ports |
-| `--top-ports N` | `--top-ports 1000` | Top N ports |
+| `-F` | `-F` | First 100 ports of the priority list |
+| `--top-ports N` | `--top-ports 1000` | First N of the priority list |
+
+> **`-F` / `--top-ports` ordering.** The list is an *editorial ranking of IANA
+> port assignments*, not a measured-frequency ranking — ProRT-IP ships no
+> port-frequency data. These flags therefore select a different set of ports than
+> nmap at every N, and no hit-rate or coverage figure is published for them. Name
+> the ports you need with `-p`. Rule: `tools/gen-top-ports/RULE.md`.
 
 ### 4.4 Scan Types
 
@@ -613,16 +619,18 @@ Service detection identifies what software and version is running on open ports.
 prtip -sV -p 1-1000 target.com
 ```
 
-### 6.2 Detection Accuracy
+### 6.2 Detection Method
 
-| Protocol | Accuracy | Method |
-|----------|----------|--------|
-| HTTP | 90%+ | Headers, response analysis |
-| SSH | 95%+ | Version banner |
-| MySQL | 90%+ | Handshake protocol |
-| PostgreSQL | 90%+ | Startup message |
-| SMB | 85%+ | Negotiate protocol |
-| Generic | 85%+ | Nmap probe database |
+Per-protocol accuracy has not been measured. Detection method by protocol:
+
+| Protocol | Method |
+|----------|--------|
+| HTTP | Headers, response analysis |
+| SSH | Version banner |
+| MySQL | Handshake protocol |
+| PostgreSQL | Startup message |
+| SMB | Negotiate protocol |
+| Generic | ProRT-IP service probe corpus |
 
 ### 6.3 Detection Intensity
 
@@ -682,7 +690,7 @@ ProRT-IP uses a 16-probe sequence:
 - 6 unusual TCP probes
 - 1 UDP probe
 
-Responses are compared against 2,600+ signatures.
+Responses are compared against a caller-supplied signature database — ProRT-IP does not bundle one.
 
 ### 7.3 Requirements
 

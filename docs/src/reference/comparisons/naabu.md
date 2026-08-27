@@ -8,7 +8,7 @@ Comprehensive technical comparison between ProRT-IP and Naabu, the Go-based port
 
 **Naabu transformed bug bounty reconnaissance** through intelligent engineering choices that prioritize workflow efficiency over raw speed. Built by ProjectDiscovery (a funded company with $25M Series A in 2021 and 100,000+ engineers), Naabu scans the **top 100 ports by default at 1000 packets per second** using either SYN scanning (with root privileges) or CONNECT scanning (without). What makes Naabu unique is not maximum speed—RustScan and Masscan outpace it in certain scenarios—but rather its **workflow optimizations**: automatic IP deduplication (reduces scan time by 80% on subdomain lists), built-in CDN/WAF detection, seamless ProjectDiscovery toolchain integration (Subfinder → Naabu → httpx → Nuclei), and clean handoff to Nmap for detailed service enumeration.
 
-**ProRT-IP provides comparable speed with integrated detection**, achieving 10M+ pps stateless (exceeding Naabu's optimized 7000 pps) and 50K+ pps stateful with 85-90% service detection accuracy—eliminating the need for two-tool workflows in most scenarios.
+**ProRT-IP provides comparable speed with integrated detection**, achieving 10M+ pps stateless (exceeding Naabu's optimized 7000 pps) and 50K+ pps stateful with a built-in (37-probe, 226-match-rule) service detection corpus, accuracy not yet measured—eliminating the need for two-tool workflows in most scenarios.
 
 **The fundamental difference**: Naabu optimizes for **bug bounty domain-based reconnaissance** with IP deduplication and ProjectDiscovery ecosystem integration, making it ideal for scanning hundreds of subdomains that resolve to shared infrastructure. ProRT-IP balances comparable stateless speed (10M+ pps) with **integrated comprehensive detection** (service + OS + TLS in single tool), eliminating Nmap dependency and providing database storage for historical tracking.
 
@@ -26,10 +26,10 @@ Comprehensive technical comparison between ProRT-IP and Naabu, the Go-based port
 | **Language** | Go | Rust |
 | **Speed (Top 100 Ports)** | 7-11 seconds (optimized 7000 pps) | 3-5 seconds stateless |
 | **Speed (65K Ports)** | 10-11 seconds (optimized, discovery only) | 6-10 seconds stateless, 15-30 min comprehensive |
-| **Detection Method** | None (requires Nmap integration) | Integrated (187 probes, 500+ services) |
+| **Detection Method** | None (requires Nmap integration) | Integrated (37 probes, 226 match rules) |
 | **Architecture** | Goroutines (25 default, 100+ configurable) | Tokio multi-threaded async |
-| **Service Detection** | None (Nmap via `-nmap` flag) | 85-90% accuracy, version extraction, CPE |
-| **OS Fingerprinting** | None (Nmap via `-nmap` flag) | Native (Nmap-compatible, 2,600+ signatures) |
+| **Service Detection** | None (Nmap via `-nmap` flag) | Not yet measured, version extraction, CPE |
+| **OS Fingerprinting** | None (Nmap via `-nmap` flag) | Native (Nmap-DB-format-compatible parser; caller supplies the database) |
 | **Scan Types** | 3 (SYN, CONNECT, UDP) | 8 (SYN, Connect, FIN, NULL, Xmas, ACK, UDP, Idle) |
 | **Primary Use Case** | Bug bounty reconnaissance, web app testing | Comprehensive security assessment |
 | **Unique Feature** | IP deduplication (80% time reduction on subdomains) | Single-pass comprehensive (service+OS+TLS) |
@@ -69,7 +69,7 @@ Comprehensive technical comparison between ProRT-IP and Naabu, the Go-based port
 ### Use ProRT-IP When:
 
 ✅ **Single-pass comprehensive assessment** required (service + OS + TLS in one tool)
-✅ **Detection capabilities critical** (85-90% service accuracy, no Nmap dependency)
+✅ **Detection capabilities critical** (integrated service detection, no Nmap dependency)
 ✅ **Advanced scan types needed** (8 types including stealth FIN/NULL/Xmas, Idle)
 ✅ **Database storage and historical tracking** valuable (SQLite queries, change detection)
 ✅ **Cross-platform native executables** matter (Windows/FreeBSD native, no Docker)
@@ -97,7 +97,7 @@ Comprehensive technical comparison between ProRT-IP and Naabu, the Go-based port
 | **Naabu** | Optimized | 7000 pps, 100 workers | **~10-11 seconds** | None | Discovery only, requires Nmap |
 | **RustScan** | Default | 4500 batch, 1500ms timeout | **~8 seconds** | None | Discovery only, auto-Nmap |
 | **Naabu** | Default | 1000 pps, 25 workers | **~488 seconds (8+ min)** | None | Unoptimized |
-| **ProRT-IP** | Stateful SYN (T5) | Integrated detection | **~15-30 minutes** | 85-90% service, OS, TLS | Single-pass comprehensive |
+| **ProRT-IP** | Stateful SYN (T5) | Integrated detection | **~15-30 minutes** | service, OS, TLS (not measured) | Single-pass comprehensive |
 | **Nmap** | Full (-p- -A -T5) | Integrated detection | **~17 minutes** | ~95% service, OS, scripts | Single-pass comprehensive |
 
 ### Naabu Configuration Impact
@@ -137,7 +137,7 @@ When **service detection and OS fingerprinting** are required goals:
 |---------|------------|--------|----------|----------------|-------------|
 | **Naabu** | None (core) | N/A | N/A | N/A | Requires Nmap via `-nmap` flag |
 | **Naabu Workflow** | Via Nmap | Signature matching | 1,000+ (Nmap DB) | ~95% | Two-phase (Naabu discovery → Nmap enumeration) |
-| **ProRT-IP** | Integrated | Signature matching | 500+ (growing) | 85-90% | Single-pass (187 probes, version extraction, CPE) |
+| **ProRT-IP** | Integrated | Signature matching | 37 probes, 226 match rules (growing) | Not measured | Single-pass (version extraction, CPE) |
 
 **Naabu Workflow Example**:
 ```bash
@@ -160,7 +160,7 @@ prtip -sS -sV -p- target.com -oJ results.json --with-db
 |---------|------------|--------|----------|----------|--------------|
 | **Naabu** | None (core) | N/A | N/A | N/A | Requires Nmap |
 | **Naabu + Nmap** | Full support (via Nmap) | 16-probe | 2,600+ | Comparable to Nmap | Two-phase workflow |
-| **ProRT-IP** | Native support | 16-probe | 2,600+ (Nmap DB) | Comparable to Nmap | Integrated single-pass |
+| **ProRT-IP** | Native support | 16-probe | Caller-supplied (Nmap DB format), none bundled | Not measured | Integrated single-pass |
 
 **Naabu OS Detection Example**:
 ```bash
@@ -213,8 +213,8 @@ prtip -sS -sV --tls-cert -p 443,8443 target.com -oJ tls-results.json
 
 | Feature | Naabu | ProRT-IP |
 |---------|-------|----------|
-| **Service Detection** | ❌ (requires Nmap) | ✅ 85-90% accuracy, 187 probes, CPE |
-| **OS Fingerprinting** | ❌ (requires Nmap) | ✅ Nmap-compatible, 2,600+ signatures |
+| **Service Detection** | ❌ (requires Nmap) | ✅ 37 probes, 226 match rules, CPE (accuracy not measured) |
+| **OS Fingerprinting** | ❌ (requires Nmap) | ✅ Nmap-DB-format-compatible parser; caller supplies the database |
 | **TLS Certificate** | ❌ (limited Nmap NSE) | ✅ X.509v3, SNI, chain validation |
 | **IP Deduplication** | ✅ **Automatic (hash-based tracking)** | ❌ Not applicable (IP-based scanning) |
 | **CDN/WAF Detection** | ✅ **Built-in (Cloudflare/Akamai/Incapsula/Sucuri)** | ❌ Not specialized |
@@ -310,10 +310,10 @@ prtip -sS -sV --tls-cert -p 443,8443 target.com -oJ tls-results.json
    - Stateful: Comprehensive detection without Nmap dependency
    - User chooses tradeoff based on reconnaissance goals
 
-3. **Integrated Detection Pipeline** (service 187 probes, OS 16-probe, TLS X.509v3)
+3. **Integrated Detection Pipeline** (service 37 probes/226 match rules, OS 16-probe, TLS X.509v3)
    - Single-pass comprehensive assessment (no tool switching)
-   - 85-90% service detection accuracy
-   - Nmap-compatible OS fingerprinting (2,600+ signatures)
+   - Service detection accuracy not yet measured
+   - Nmap-DB-format-compatible OS fingerprinting parser; caller supplies the database
    - TLS certificate extraction (1.33μs parsing, chain validation, SNI)
 
 4. **Event-Driven Architecture** (pub-sub system, -4.1% overhead, 18 event types)
@@ -673,8 +673,8 @@ tshark -r scan-evidence.pcapng -T fields -e frame.time -e ip.src -e tcp.dstport 
 #### What You Gain
 
 **Integrated Detection** (eliminate Nmap dependency for most use cases)
-- Service version detection (85-90% accuracy, 187 probes, CPE identifiers)
-- OS fingerprinting (Nmap-compatible, 2,600+ signatures, 16-probe sequence)
+- Service version detection (37 probes, 226 match rules, CPE identifiers; accuracy not measured)
+- OS fingerprinting (Nmap-DB-format-compatible parser, caller-supplied database, 16-probe sequence)
 - TLS certificate analysis (X.509v3, chain validation, SNI support, 1.33μs parsing)
 
 **Advanced Scan Types** (8 types vs Naabu's 3)
@@ -1257,7 +1257,7 @@ echo "[+] Checksums: $EVIDENCE_DIR.tar.gz.sha256"
 ### Choose ProRT-IP If:
 
 ✅ **Single-pass comprehensive assessment** required (service + OS + TLS in one tool without Nmap dependency)
-✅ **Detection capabilities critical** (85-90% service accuracy, 187 probes, version extraction, CPE identifiers)
+✅ **Detection capabilities critical** (37 probes, 226 match rules, version extraction, CPE identifiers; accuracy not measured)
 ✅ **Advanced scan types needed** (8 types including stealth FIN/NULL/Xmas and Idle anonymity)
 ✅ **Database storage and historical tracking** valuable (SQLite queries, change detection between scans)
 ✅ **Cross-platform native executables** matter (Windows/FreeBSD/macOS/Linux native, no Docker requirement)

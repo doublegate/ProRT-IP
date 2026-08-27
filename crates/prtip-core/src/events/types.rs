@@ -332,14 +332,14 @@ impl ScanEvent {
                         total: *total,
                     });
                 }
-            },
+            }
             ScanEvent::ServiceDetected { confidence, .. }
-            | ScanEvent::OsDetected { confidence, .. } => {
-                if *confidence < 0.0 || *confidence > 1.0 {
-                    return Err(ValidationError::InvalidConfidence(*confidence));
-                }
-            },
-            _ => {},
+            | ScanEvent::OsDetected { confidence, .. }
+                if !(0.0..=1.0).contains(confidence) =>
+            {
+                return Err(ValidationError::InvalidConfidence(*confidence));
+            }
+            _ => {}
         }
         Ok(())
     }
@@ -384,7 +384,7 @@ impl ScanEvent {
             } => format!("Service detected: {} on {}:{}", service_name, ip, port),
             ScanEvent::OsDetected { ip, os_name, .. } => {
                 format!("OS detected: {} on {}", os_name, ip)
-            },
+            }
             ScanEvent::WarningIssued { message, .. } => format!("Warning: {}", message),
             ScanEvent::ScanError { error, .. } => format!("Error: {}", error),
             _ => format!("{:?}", self.event_type()),

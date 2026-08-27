@@ -179,7 +179,7 @@ impl CdnDetector {
     pub fn new() -> Self {
         let mut ranges = Self::get_known_ranges();
         // Sort by network address for binary search
-        ranges.sort_by(|a, b| a.cidr.cmp(&b.cidr));
+        ranges.sort_by_key(|r| r.cidr);
 
         Self { ranges }
     }

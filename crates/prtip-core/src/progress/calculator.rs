@@ -144,7 +144,7 @@ impl ProgressCalculator {
                 Some(prev_rate) => {
                     // EWMA: new_rate = alpha × current + (1 - alpha) × previous
                     EWMA_ALPHA * current_rate + (1.0 - EWMA_ALPHA) * prev_rate
-                },
+                }
                 None => current_rate, // First sample
             });
 

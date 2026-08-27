@@ -268,7 +268,7 @@ async fn test_pcapng_error_handling() {
             // Expected - cannot create writer with invalid path
             // This test verifies graceful degradation
             return;
-        },
+        }
     };
 
     let target = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));

@@ -400,7 +400,7 @@ impl ExtensionHeader {
                 buffer[4..8].copy_from_slice(&id.to_be_bytes());
 
                 Ok(buffer)
-            },
+            }
             ExtensionHeader::HopByHop(data)
             | ExtensionHeader::Routing(data)
             | ExtensionHeader::DestinationOptions(data) => {
@@ -417,7 +417,7 @@ impl ExtensionHeader {
                 buffer[2..2 + data.len()].copy_from_slice(data);
 
                 Ok(buffer)
-            },
+            }
         }
     }
 }

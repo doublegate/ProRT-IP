@@ -78,13 +78,13 @@ impl PacketCapture for LinuxCapture {
                 return Err(Error::Network(
                     "Unsupported channel type (expected Ethernet)".to_string(),
                 ))
-            },
+            }
             Err(e) => {
                 return Err(Error::Network(format!(
                     "Failed to create channel on {}: {}",
                     iface.name, e
                 )))
-            },
+            }
         };
 
         self.interface = Some(iface);
@@ -131,12 +131,12 @@ impl PacketCapture for LinuxCapture {
             match rx.next() {
                 Ok(packet) => {
                     return Ok(Some(packet.to_vec()));
-                },
+                }
                 Err(_e) => {
                     // pnet errors don't expose inner types, just continue on error
                     // Most errors will be timeouts
                     continue;
-                },
+                }
             }
         }
 

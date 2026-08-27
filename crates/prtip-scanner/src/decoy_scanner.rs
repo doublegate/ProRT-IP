@@ -255,7 +255,7 @@ impl DecoyScanner {
                     .into_iter()
                     .map(IpAddr::V4)
                     .collect()
-            },
+            }
             IpAddr::V6(target_v6) => {
                 // Extract IPv6 addresses from exclude list
                 let exclude_v6: Vec<Ipv6Addr> = exclude
@@ -271,7 +271,7 @@ impl DecoyScanner {
                     .into_iter()
                     .map(IpAddr::V6)
                     .collect()
-            },
+            }
         }
     }
 
@@ -431,7 +431,7 @@ impl DecoyScanner {
                 } else {
                     rand::thread_rng().gen_range(0..=all_decoys.len())
                 }
-            },
+            }
         };
 
         all_decoys.insert(position, real_ip);
@@ -631,10 +631,10 @@ impl DecoyScanner {
             (IpAddr::V4(src_v4), IpAddr::V4(dst_v4)) => {
                 builder = builder.source_ip(src_v4).dest_ip(dst_v4);
                 builder.build_ip_packet()?
-            },
+            }
             (IpAddr::V6(src_v6), IpAddr::V6(dst_v6)) => {
                 builder.build_ipv6_packet(src_v6, dst_v6)?
-            },
+            }
             _ => unreachable!("IP version mismatch already checked"),
         };
 
@@ -725,7 +725,7 @@ impl DecoyScanner {
                     version: None,
                     raw_response: None,
                 });
-            },
+            }
         };
 
         // Receive batch responses with timeout
@@ -853,7 +853,7 @@ impl DecoyScanner {
                 };
 
                 Ok(Some(state))
-            },
+            }
             EtherTypes::Ipv6 => {
                 let ipv6 = match Ipv6Packet::new(eth_packet.payload()) {
                     Some(p) => p,
@@ -899,7 +899,7 @@ impl DecoyScanner {
                 };
 
                 Ok(Some(state))
-            },
+            }
             _ => Ok(None), // Unknown ethertype
         }
     }

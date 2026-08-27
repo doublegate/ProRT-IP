@@ -248,7 +248,7 @@ impl IcmpMonitor {
 
                             let _ = tx.send(error); // Ignore if no subscribers
                         }
-                    },
+                    }
                     Ok(None) => {
                         // Timeout - normal, allows checking running flag
                         #[cfg(windows)]
@@ -256,11 +256,11 @@ impl IcmpMonitor {
                             // On Windows, sleep briefly since we don't have timeouts
                             std::thread::sleep(Duration::from_millis(100));
                         }
-                    },
+                    }
                     Err(e) => {
                         warn!("ICMP receive error: {}", e);
                         std::thread::sleep(Duration::from_millis(10));
-                    },
+                    }
                 }
 
                 // Prevent infinite loops in tests - exit after 10s if no running flag changes

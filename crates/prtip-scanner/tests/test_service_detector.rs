@@ -433,9 +433,9 @@ async fn test_detect_service_timeout() {
         Ok(info) => {
             // If it succeeds, should have some service info
             assert!(!info.service.is_empty());
-        },
+        }
         Err(_) => {
             // Timeout or connection error is acceptable
-        },
+        }
     }
 }

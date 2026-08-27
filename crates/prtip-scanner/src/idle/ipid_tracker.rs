@@ -306,7 +306,7 @@ impl IPIDTracker {
                     .map_err(|e| Error::Network(format!("Failed to send probe: {}", e)))?;
 
                 Ok(())
-            },
+            }
             IpAddr::V6(_target_ipv6) => {
                 // IPv6 doesn't have IPID in main header (only in Fragment extension)
                 // For now, return error indicating IPv6 not fully supported
@@ -314,7 +314,7 @@ impl IPIDTracker {
                     "IPv6 IPID tracking not fully supported (IPID only in Fragment extension)"
                         .into(),
                 ))
-            },
+            }
         }
     }
 
@@ -367,10 +367,10 @@ impl IPIDTracker {
                             return Ok(ipid);
                         }
                     }
-                },
+                }
                 Err(e) => {
                     return Err(Error::Network(format!("Failed to receive response: {}", e)));
-                },
+                }
             }
         }
     }
@@ -740,11 +740,11 @@ mod tests {
                 // Real IPID should not be stub value 0 (unless coincidence)
                 println!("Measured IPID: {}", measurement.ipid);
                 assert!(measurement.timestamp.elapsed().as_secs() < 10);
-            },
+            }
             Err(e) => {
                 // May fail if no host at that IP or insufficient privileges
                 println!("Probe failed (expected if no host): {}", e);
-            },
+            }
         }
     }
 
@@ -768,11 +768,11 @@ mod tests {
                         | IPIDPattern::PerHost
                         | IPIDPattern::Broken256
                 ));
-            },
+            }
             Err(e) => {
                 println!("Classification failed: {}", e);
                 // Expected if host not available or insufficient privileges
-            },
+            }
         }
     }
 

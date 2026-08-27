@@ -134,7 +134,7 @@ impl FsEntry {
                 } else {
                     format!("{:.1} MB", size as f64 / (1024.0 * 1024.0))
                 }
-            },
+            }
             None => "".to_string(),
         }
     }
@@ -225,17 +225,17 @@ impl FileBrowserWidget {
                             if fs_entry.is_dir || self.file_filter.matches(&fs_entry.name) {
                                 self.entries.push(fs_entry);
                             }
-                        },
+                        }
                         Err(_) => {
                             // Skip entries we can't read (permission issues, etc.)
                             continue;
-                        },
+                        }
                     }
-                },
+                }
                 Err(_) => {
                     // Skip invalid entries
                     continue;
-                },
+                }
             }
         }
 
@@ -495,19 +495,19 @@ impl FileBrowserWidget {
                 KeyCode::Up => {
                     self.move_up();
                     None
-                },
+                }
                 KeyCode::Down => {
                     self.move_down();
                     None
-                },
+                }
                 KeyCode::Home => {
                     self.move_to_first();
                     None
-                },
+                }
                 KeyCode::End => {
                     self.move_to_last();
                     None
-                },
+                }
                 KeyCode::Enter => {
                     // Select current (enter dir or select file)
                     let result = self.select_current();
@@ -515,31 +515,31 @@ impl FileBrowserWidget {
                         self.hide();
                     }
                     result
-                },
+                }
                 KeyCode::Backspace => {
                     let _ = self.navigate_up();
                     None
-                },
+                }
                 KeyCode::Char('1') => {
                     self.set_filter(FileFilter::TextFiles);
                     None
-                },
+                }
                 KeyCode::Char('2') => {
                     self.set_filter(FileFilter::CsvFiles);
                     None
-                },
+                }
                 KeyCode::Char('3') => {
                     self.set_filter(FileFilter::JsonFiles);
                     None
-                },
+                }
                 KeyCode::Char('4') => {
                     self.set_filter(FileFilter::All);
                     None
-                },
+                }
                 KeyCode::Esc => {
                     self.hide();
                     None
-                },
+                }
                 _ => None,
             }
         } else {

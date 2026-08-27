@@ -1327,20 +1327,20 @@ impl Args {
                         Hint: Remove -6 flag to scan IPv4 targets, or use --dual-stack for mixed scanning",
                         addr
                     );
-                },
+                }
                 (IpAddr::V6(addr), IpVersion::V4Only) => {
                     anyhow::bail!(
                         "Error: IPv6 target '{}' specified with -4 (IPv4-only mode)\n\
                         Hint: Remove -4 flag to scan IPv6 targets, or use --dual-stack for mixed scanning",
                         addr
                     );
-                },
+                }
                 (_, IpVersion::DualStack) => {
                     // Accept all targets in dual-stack mode
-                },
+                }
                 _ => {
                     // Correct protocol for mode
-                },
+                }
             }
         }
 
@@ -1592,7 +1592,7 @@ impl Args {
                         ));
                     }
                     ScanType::Idle
-                },
+                }
             }
         };
 
@@ -2404,7 +2404,7 @@ mod tests {
             DecoyConfig::Random { count, me_position } => {
                 assert_eq!(count, 5);
                 assert_eq!(me_position, None); // ME appended by default
-            },
+            }
             _ => panic!("Expected Random variant"),
         }
     }
@@ -2430,7 +2430,7 @@ mod tests {
                 assert_eq!(ips.len(), 1);
                 assert_eq!(ips[0], Ipv4Addr::new(192, 168, 1, 5));
                 assert_eq!(me_position, None);
-            },
+            }
             _ => panic!("Expected Manual variant"),
         }
     }
@@ -2452,7 +2452,7 @@ mod tests {
                 assert_eq!(ips[0], Ipv4Addr::new(192, 168, 1, 5));
                 assert_eq!(ips[1], Ipv4Addr::new(192, 168, 1, 10));
                 assert_eq!(ips[2], Ipv4Addr::new(192, 168, 1, 15));
-            },
+            }
             _ => panic!("Expected Manual variant"),
         }
     }
@@ -2472,7 +2472,7 @@ mod tests {
             DecoyConfig::Manual { ips, me_position } => {
                 assert_eq!(ips.len(), 2);
                 assert_eq!(me_position, Some(0)); // ME at position 0
-            },
+            }
             _ => panic!("Expected Manual variant"),
         }
     }
@@ -2492,7 +2492,7 @@ mod tests {
             DecoyConfig::Manual { ips, me_position } => {
                 assert_eq!(ips.len(), 2);
                 assert_eq!(me_position, Some(1)); // ME at position 1 (middle)
-            },
+            }
             _ => panic!("Expected Manual variant"),
         }
     }
@@ -2512,7 +2512,7 @@ mod tests {
             DecoyConfig::Manual { ips, me_position } => {
                 assert_eq!(ips.len(), 2);
                 assert_eq!(me_position, Some(2)); // ME at position 2 (last)
-            },
+            }
             _ => panic!("Expected Manual variant"),
         }
     }

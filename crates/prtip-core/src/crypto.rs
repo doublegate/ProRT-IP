@@ -157,7 +157,7 @@ impl BlackRock {
                 }
 
                 (a, b)
-            },
+            }
         };
 
         Self {

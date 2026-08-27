@@ -85,7 +85,7 @@ impl EventAggregator {
                 // to create PortDiscovery entries for the TUI port table display.
                 self.event_buffer.push(event);
                 true
-            },
+            }
 
             ScanEvent::HostDiscovered { ip, .. } => {
                 *self.stats.discovered_ips.entry(*ip).or_insert(0) += 1;
@@ -93,14 +93,14 @@ impl EventAggregator {
                 // Buffer to pass to handler for discovered_hosts list management
                 self.event_buffer.push(event);
                 true
-            },
+            }
 
             ScanEvent::ServiceDetected { .. } => {
                 self.stats.services_detected += 1;
                 // Buffer to pass to handler for service_detections VecDeque
                 self.event_buffer.push(event);
                 true
-            },
+            }
 
             // For important events (lifecycle, errors, warnings), buffer them
             ScanEvent::ScanStarted { .. }
@@ -111,13 +111,13 @@ impl EventAggregator {
             | ScanEvent::StageChanged { .. } => {
                 self.event_buffer.push(event);
                 true
-            },
+            }
 
             // For other events, buffer them
             _ => {
                 self.event_buffer.push(event);
                 true
-            },
+            }
         }
     }
 

@@ -342,7 +342,7 @@ impl EventBus {
                     Err(_) => {
                         // Subscriber channel closed, mark for removal
                         to_remove.push(idx);
-                    },
+                    }
                 }
             }
         }

@@ -76,19 +76,19 @@ pub fn render(frame: &mut Frame, scan_state: Arc<RwLock<ScanState>>, ui_state: &
         DashboardTab::PortTable => {
             let port_table = PortTableWidget::new(Arc::clone(&scan_state));
             port_table.render(frame, main_chunks[1], ui_state);
-        },
+        }
         DashboardTab::ServiceTable => {
             let service_table = ServiceTableWidget::new(Arc::clone(&scan_state));
             service_table.render(frame, main_chunks[1], ui_state);
-        },
+        }
         DashboardTab::Metrics => {
             let metrics_dashboard = MetricsDashboardWidget::new(Arc::clone(&scan_state));
             metrics_dashboard.render(frame, main_chunks[1], ui_state);
-        },
+        }
         DashboardTab::NetworkGraph => {
             let network_graph = NetworkGraphWidget::new(Arc::clone(&scan_state));
             network_graph.render(frame, main_chunks[1], ui_state);
-        },
+        }
     }
 
     // Render footer with help text

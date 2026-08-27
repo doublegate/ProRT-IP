@@ -150,7 +150,7 @@ impl BannerGrabber {
                     .join("\n");
 
                 Ok(response)
-            },
+            }
             Ok(Err(e)) => Err(Error::Network(format!("Read error: {}", e))),
             Err(_) => Err(Error::Network("Read timeout".to_string())),
         }
@@ -242,7 +242,7 @@ impl BannerGrabber {
             Ok(Ok(n)) if n > 0 => {
                 let banner = String::from_utf8_lossy(&buffer[..n]);
                 Ok(banner.trim().to_string())
-            },
+            }
             Ok(Ok(_)) => Err(Error::Network("Empty response".to_string())),
             Ok(Err(e)) => Err(Error::Network(format!("Read error: {}", e))),
             Err(_) => Err(Error::Network("Read timeout".to_string())),

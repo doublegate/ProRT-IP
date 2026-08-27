@@ -110,10 +110,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "{:5} | {:20} | {:30} | {}",
                     port, service_info.service, version, cpe
                 );
-            },
+            }
             Err(e) => {
                 println!("{:5} | {:20} | {:30} | N/A", port, "error", e,);
-            },
+            }
         }
     }
 

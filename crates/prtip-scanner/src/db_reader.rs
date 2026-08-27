@@ -448,8 +448,8 @@ impl DbReader {
                 None => new_open_ports.push(result.clone()),
                 Some(old_result) if old_result.state != PortState::Open => {
                     new_open_ports.push(result.clone())
-                },
-                _ => {},
+                }
+                _ => {}
             }
         }
 
@@ -465,8 +465,8 @@ impl DbReader {
                 None => closed_ports.push(result.clone()),
                 Some(new_result) if new_result.state != PortState::Open => {
                     closed_ports.push(result.clone())
-                },
-                _ => {},
+                }
+                _ => {}
             }
         }
 

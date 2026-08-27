@@ -108,7 +108,7 @@ impl MmapResultReader {
                     index, len, e
                 );
                 None
-            },
+            }
         }
     }
 

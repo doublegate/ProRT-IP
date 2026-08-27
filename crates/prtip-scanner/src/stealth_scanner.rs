@@ -361,7 +361,7 @@ impl StealthScanner {
                 Err(e) => {
                     debug!("Error scanning {}:{} - {}", target, port, e);
                     writer.write(&ScanResult::new(target, port, PortState::Filtered))?;
-                },
+                }
             }
         }
 
@@ -466,7 +466,7 @@ impl StealthScanner {
                 }
 
                 Ok(ScanResult::new(target, port, state).with_response_time(response_time))
-            },
+            }
             Ok(Err(e)) => {
                 warn!("Error waiting for response: {}", e);
 
@@ -487,7 +487,7 @@ impl StealthScanner {
                 let response_time = start_time.elapsed();
                 Ok(ScanResult::new(target, port, PortState::Unknown)
                     .with_response_time(response_time))
-            },
+            }
             Err(_) => {
                 // Timeout - interpretation depends on scan type
                 let state = match scan_type {
@@ -495,7 +495,7 @@ impl StealthScanner {
                         // For ACK scan, no response = filtered
                         debug!("No response from {}:{} (ACK scan) - FILTERED", target, port);
                         PortState::Filtered
-                    },
+                    }
                     _ => {
                         // For FIN/NULL/Xmas, no response = open|filtered
                         debug!(
@@ -505,12 +505,12 @@ impl StealthScanner {
                             scan_type.name()
                         );
                         PortState::Filtered // Could also be open
-                    },
+                    }
                 };
 
                 let response_time = start_time.elapsed();
                 Ok(ScanResult::new(target, port, state).with_response_time(response_time))
-            },
+            }
         };
 
         result
@@ -547,7 +547,7 @@ impl StealthScanner {
                     pcapng_writer,
                 )
                 .await
-            },
+            }
             (IpAddr::V6(src_ipv6), IpAddr::V6(dst_ipv6)) => {
                 // IPv6 stealth packet
                 self.send_probe_ipv6(
@@ -560,7 +560,7 @@ impl StealthScanner {
                     pcapng_writer,
                 )
                 .await
-            },
+            }
             _ => Err(prtip_core::Error::Config(format!(
                 "IP version mismatch: local {} vs target {}",
                 local_ip, target
@@ -861,7 +861,7 @@ impl StealthScanner {
                                     target, port
                                 );
                                 return Ok(Some(PortState::Open)); // Using "Open" to mean "Unfiltered"
-                            },
+                            }
                             _ => {
                                 // For FIN/NULL/Xmas, RST = closed
                                 debug!(
@@ -871,11 +871,11 @@ impl StealthScanner {
                                     scan_type.name()
                                 );
                                 return Ok(Some(PortState::Closed));
-                            },
+                            }
                         }
                     }
                 }
-            },
+            }
             1 => {
                 // ICMP response
                 if let Some(icmp_packet) = IcmpPacket::new(ipv4_packet.payload()) {
@@ -893,8 +893,8 @@ impl StealthScanner {
                         return Ok(Some(PortState::Filtered));
                     }
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         Ok(None)
@@ -960,7 +960,7 @@ impl StealthScanner {
                         target, port
                     );
                     return Ok(Some(PortState::Open)); // Using "Open" to mean "Unfiltered"
-                },
+                }
                 _ => {
                     // For FIN/NULL/Xmas, RST = closed
                     debug!(
@@ -970,7 +970,7 @@ impl StealthScanner {
                         scan_type.name()
                     );
                     return Ok(Some(PortState::Closed));
-                },
+                }
             }
         }
 
@@ -1010,7 +1010,7 @@ impl StealthScanner {
                         )
                     })?;
                     self.build_stealth_ipv6_packet(src_ipv6, dst_ipv6, src_port, port, scan_type)?
-                },
+                }
             };
 
             // Track connection state
@@ -1186,7 +1186,7 @@ impl StealthScanner {
                 let dst_port = u16::from_be_bytes([data[tcp_offset + 2], data[tcp_offset + 3]]);
 
                 Some((IpAddr::V4(src_ip), dst_port, src_port))
-            },
+            }
             6 => {
                 // IPv6: Extract source IP, source port, dest port
                 let src_ip = Ipv6Addr::new(
@@ -1204,7 +1204,7 @@ impl StealthScanner {
                 let dst_port = u16::from_be_bytes([data[tcp_offset + 2], data[tcp_offset + 3]]);
 
                 Some((IpAddr::V6(src_ip), dst_port, src_port))
-            },
+            }
             _ => None,
         }
     }

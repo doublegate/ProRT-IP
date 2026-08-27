@@ -216,11 +216,11 @@ fn test_multiple_packets_without_reset() {
             match builder.build_with_buffer(pool) {
                 Ok(_packet) => {
                     count += 1;
-                },
+                }
                 Err(_) => {
                     // Buffer exhausted, this is expected
                     break;
-                },
+                }
             }
         }
 

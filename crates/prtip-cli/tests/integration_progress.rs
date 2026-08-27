@@ -500,11 +500,11 @@ async fn test_event_bus_lifecycle_events() {
             match event {
                 ScanEvent::ScanStarted { .. } => {
                     received_clone.lock().await.push("started".to_string())
-                },
+                }
                 ScanEvent::ScanCompleted { .. } => {
                     received_clone.lock().await.push("completed".to_string())
-                },
-                _ => {},
+                }
+                _ => {}
             }
         }
     });

@@ -142,7 +142,7 @@ impl TcpOption {
                 bytes.extend_from_slice(&tsval.to_be_bytes());
                 bytes.extend_from_slice(&tsecr.to_be_bytes());
                 bytes
-            },
+            }
         }
     }
 }
@@ -334,36 +334,36 @@ impl TcpPacketBuilder {
                 TcpOption::Eol => {
                     buffer[offset] = 0;
                     offset += 1;
-                },
+                }
                 TcpOption::Nop => {
                     buffer[offset] = 1;
                     offset += 1;
-                },
+                }
                 TcpOption::Mss(mss) => {
                     buffer[offset] = 2; // Kind
                     buffer[offset + 1] = 4; // Length
                     buffer[offset + 2] = (*mss >> 8) as u8; // MSS high byte
                     buffer[offset + 3] = *mss as u8; // MSS low byte
                     offset += 4;
-                },
+                }
                 TcpOption::WindowScale(scale) => {
                     buffer[offset] = 3; // Kind
                     buffer[offset + 1] = 3; // Length
                     buffer[offset + 2] = *scale; // Scale value
                     offset += 3;
-                },
+                }
                 TcpOption::SackPermitted => {
                     buffer[offset] = 4; // Kind
                     buffer[offset + 1] = 2; // Length
                     offset += 2;
-                },
+                }
                 TcpOption::Timestamp { tsval, tsecr } => {
                     buffer[offset] = 8; // Kind
                     buffer[offset + 1] = 10; // Length
                     buffer[offset + 2..offset + 6].copy_from_slice(&tsval.to_be_bytes());
                     buffer[offset + 6..offset + 10].copy_from_slice(&tsecr.to_be_bytes());
                     offset += 10;
-                },
+                }
             }
         }
 

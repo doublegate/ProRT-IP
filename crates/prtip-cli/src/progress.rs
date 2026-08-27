@@ -816,19 +816,19 @@ impl ProgressDisplay {
                 match event {
                     ScanEvent::ScanStarted { .. } => {
                         Self::display_started(&aggregator, &style, is_tty).await;
-                    },
+                    }
                     ScanEvent::ProgressUpdate { .. }
                     | ScanEvent::PortFound { .. }
                     | ScanEvent::ServiceDetected { .. } => {
                         Self::display_progress(&aggregator, &style, &progress_bar, is_tty).await;
-                    },
+                    }
                     ScanEvent::ScanCompleted { .. } => {
                         Self::display_completed(&aggregator, &style, &progress_bar, is_tty).await;
-                    },
+                    }
                     ScanEvent::ScanError { error, .. } => {
                         Self::display_error(&error, is_tty);
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
             }
         })
@@ -851,17 +851,17 @@ impl ProgressDisplay {
         match style {
             ProgressStyle::Compact => {
                 println!("Scan started: {} targets", total);
-            },
+            }
             ProgressStyle::Detailed => {
                 println!("╔════════════════════════════════════════╗");
                 println!("║          Scan Started                  ║");
                 println!("╠════════════════════════════════════════╣");
                 println!("║ Targets:  {:>28} ║", format_number(total as u64));
                 println!("╚════════════════════════════════════════╝");
-            },
+            }
             ProgressStyle::Bars => {
                 println!("Starting scan: {} targets...", total);
-            },
+            }
         }
     }
 
@@ -891,7 +891,7 @@ impl ProgressDisplay {
                         state.overall_progress, state.open_ports
                     );
                 }
-            },
+            }
             ProgressStyle::Detailed => {
                 if is_tty {
                     print!("\x1b[4A\x1b[J"); // Clear 4 lines
@@ -908,7 +908,7 @@ impl ProgressDisplay {
                     println!("ETA:      Calculating...");
                 }
                 let _ = io::stdout().flush();
-            },
+            }
             ProgressStyle::Bars => {
                 if is_tty {
                     print!("\x1b[2A\x1b[J"); // Clear 2 lines
@@ -924,7 +924,7 @@ impl ProgressDisplay {
                     Self::format_eta(state.eta)
                 );
                 let _ = io::stdout().flush();
-            },
+            }
         }
     }
 

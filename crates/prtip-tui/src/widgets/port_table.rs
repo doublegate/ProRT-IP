@@ -278,14 +278,14 @@ impl PortTableWidget {
                         PortState::Closed => 2,
                     };
                     a_val.cmp(&b_val)
-                },
+                }
                 Protocol => a.protocol.cmp(&b.protocol),
                 ScanType => {
                     // Sort alphabetically by scan type name
                     let a_str = format!("{:?}", a.scan_type);
                     let b_str = format!("{:?}", b.scan_type);
                     a_str.cmp(&b_str)
-                },
+                }
             };
 
             match port_table_state.sort_order {
@@ -402,59 +402,59 @@ pub fn handle_port_table_event(
             KeyCode::Up => {
                 port_table_state.select_previous();
                 true
-            },
+            }
             KeyCode::Down => {
                 port_table_state.select_next(total_rows);
                 true
-            },
+            }
             KeyCode::PageUp => {
                 port_table_state.page_up();
                 true
-            },
+            }
             KeyCode::PageDown => {
                 port_table_state.page_down(total_rows);
                 true
-            },
+            }
             KeyCode::Home => {
                 port_table_state.select_first();
                 true
-            },
+            }
             KeyCode::End => {
                 port_table_state.select_last(total_rows);
                 true
-            },
+            }
 
             // Sorting
             KeyCode::Char('t') => {
                 port_table_state.toggle_sort(PortTableColumn::Timestamp);
                 true
-            },
+            }
             KeyCode::Char('i') => {
                 port_table_state.toggle_sort(PortTableColumn::Ip);
                 true
-            },
+            }
             KeyCode::Char('p') => {
                 port_table_state.toggle_sort(PortTableColumn::Port);
                 true
-            },
+            }
             KeyCode::Char('s') => {
                 port_table_state.toggle_sort(PortTableColumn::State);
                 true
-            },
+            }
             KeyCode::Char('r') => {
                 port_table_state.toggle_sort(PortTableColumn::Protocol);
                 true
-            },
+            }
             KeyCode::Char('c') => {
                 port_table_state.toggle_sort(PortTableColumn::ScanType);
                 true
-            },
+            }
 
             // Auto-scroll toggle
             KeyCode::Char('a') => {
                 port_table_state.toggle_auto_scroll();
                 true
-            },
+            }
 
             _ => false,
         }

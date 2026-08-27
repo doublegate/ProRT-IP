@@ -270,13 +270,13 @@ impl ServiceTableWidget {
                         (None, Some(_)) => std::cmp::Ordering::Greater,
                         (None, None) => std::cmp::Ordering::Equal,
                     }
-                },
+                }
                 Confidence => {
                     // Sort by confidence (floating point)
                     a.confidence
                         .partial_cmp(&b.confidence)
                         .unwrap_or(std::cmp::Ordering::Equal)
-                },
+                }
             };
 
             match service_table_state.sort_order {
@@ -400,65 +400,65 @@ pub fn handle_service_table_event(
             KeyCode::Up => {
                 service_table_state.select_previous();
                 true
-            },
+            }
             KeyCode::Down => {
                 service_table_state.select_next(total_rows);
                 true
-            },
+            }
             KeyCode::PageUp => {
                 service_table_state.page_up();
                 true
-            },
+            }
             KeyCode::PageDown => {
                 service_table_state.page_down(total_rows);
                 true
-            },
+            }
             KeyCode::Home => {
                 service_table_state.select_first();
                 true
-            },
+            }
             KeyCode::End => {
                 service_table_state.select_last(total_rows);
                 true
-            },
+            }
 
             // Sorting
             KeyCode::Char('t') => {
                 service_table_state.toggle_sort(ServiceTableColumn::Timestamp);
                 true
-            },
+            }
             KeyCode::Char('i') => {
                 service_table_state.toggle_sort(ServiceTableColumn::Ip);
                 true
-            },
+            }
             KeyCode::Char('p') => {
                 service_table_state.toggle_sort(ServiceTableColumn::Port);
                 true
-            },
+            }
             KeyCode::Char('n') => {
                 service_table_state.toggle_sort(ServiceTableColumn::ServiceName);
                 true
-            },
+            }
             KeyCode::Char('v') => {
                 service_table_state.toggle_sort(ServiceTableColumn::Version);
                 true
-            },
+            }
             KeyCode::Char('c') => {
                 service_table_state.toggle_sort(ServiceTableColumn::Confidence);
                 true
-            },
+            }
 
             // Filtering
             KeyCode::Char('f') => {
                 service_table_state.cycle_confidence_filter();
                 true
-            },
+            }
 
             // Auto-scroll toggle
             KeyCode::Char('a') => {
                 service_table_state.toggle_auto_scroll();
                 true
-            },
+            }
 
             _ => false,
         }

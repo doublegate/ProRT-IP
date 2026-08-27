@@ -149,7 +149,7 @@ impl OsProbeEngine {
                         df: result.df,
                         timestamp,
                     });
-                },
+                }
                 Err(e) => {
                     debug!("SEQ probe {} failed: {}", i, e);
                     // Add placeholder result on error
@@ -163,7 +163,7 @@ impl OsProbeEngine {
                         df: false,
                         timestamp,
                     });
-                },
+                }
             }
         }
 
@@ -184,10 +184,10 @@ impl OsProbeEngine {
                     "IE1_DF".to_string(),
                     if result.df { "Y" } else { "N" }.to_string(),
                 );
-            },
+            }
             Err(e) => {
                 debug!("IE1 probe failed: {}", e);
-            },
+            }
         }
 
         // Send IE2 probe
@@ -199,10 +199,10 @@ impl OsProbeEngine {
                     "IE2_DF".to_string(),
                     if result.df { "Y" } else { "N" }.to_string(),
                 );
-            },
+            }
             Err(e) => {
                 debug!("IE2 probe failed: {}", e);
-            },
+            }
         }
 
         results.ie = Some(ie_data);
@@ -216,10 +216,10 @@ impl OsProbeEngine {
                 ecn_data.insert("ECN_FLAGS".to_string(), format!("{:02X}", result.flags));
                 ecn_data.insert("ECN_WIN".to_string(), format!("{:X}", result.window));
                 ecn_data.insert("ECN_TTL".to_string(), format!("{}", result.ttl));
-            },
+            }
             Err(e) => {
                 debug!("ECN probe failed: {}", e);
-            },
+            }
         }
 
         results.ecn = Some(ecn_data);
@@ -238,7 +238,7 @@ impl OsProbeEngine {
             Ok(result) => {
                 t2_data.insert("T2_FLAGS".to_string(), format!("{:02X}", result.flags));
                 t2_data.insert("T2_WIN".to_string(), format!("{:X}", result.window));
-            },
+            }
             Err(e) => debug!("T2 probe failed: {}", e),
         }
         results.t2 = Some(t2_data);
@@ -249,7 +249,7 @@ impl OsProbeEngine {
             Ok(result) => {
                 t3_data.insert("T3_FLAGS".to_string(), format!("{:02X}", result.flags));
                 t3_data.insert("T3_WIN".to_string(), format!("{:X}", result.window));
-            },
+            }
             Err(e) => debug!("T3 probe failed: {}", e),
         }
         results.t3 = Some(t3_data);
@@ -260,7 +260,7 @@ impl OsProbeEngine {
             Ok(result) => {
                 t4_data.insert("T4_FLAGS".to_string(), format!("{:02X}", result.flags));
                 t4_data.insert("T4_WIN".to_string(), format!("{:X}", result.window));
-            },
+            }
             Err(e) => debug!("T4 probe failed: {}", e),
         }
         results.t4 = Some(t4_data);
@@ -271,7 +271,7 @@ impl OsProbeEngine {
             Ok(result) => {
                 t5_data.insert("T5_FLAGS".to_string(), format!("{:02X}", result.flags));
                 t5_data.insert("T5_WIN".to_string(), format!("{:X}", result.window));
-            },
+            }
             Err(e) => debug!("T5 probe failed: {}", e),
         }
         results.t5 = Some(t5_data);
@@ -282,7 +282,7 @@ impl OsProbeEngine {
             Ok(result) => {
                 t6_data.insert("T6_FLAGS".to_string(), format!("{:02X}", result.flags));
                 t6_data.insert("T6_WIN".to_string(), format!("{:X}", result.window));
-            },
+            }
             Err(e) => debug!("T6 probe failed: {}", e),
         }
         results.t6 = Some(t6_data);
@@ -293,7 +293,7 @@ impl OsProbeEngine {
             Ok(result) => {
                 t7_data.insert("T7_FLAGS".to_string(), format!("{:02X}", result.flags));
                 t7_data.insert("T7_WIN".to_string(), format!("{:X}", result.window));
-            },
+            }
             Err(e) => debug!("T7 probe failed: {}", e),
         }
         results.t7 = Some(t7_data);
@@ -310,10 +310,10 @@ impl OsProbeEngine {
                     "U1_DF".to_string(),
                     if result.df { "Y" } else { "N" }.to_string(),
                 );
-            },
+            }
             Err(e) => {
                 debug!("U1 probe failed: {}", e);
-            },
+            }
         }
 
         results.u1 = Some(u1_data);
@@ -526,7 +526,7 @@ impl OsProbeEngine {
                 } else {
                     None
                 }
-            },
+            }
             TcpOptionNumbers::WSCALE => {
                 let payload = bytes.payload();
                 if !payload.is_empty() {
@@ -534,7 +534,7 @@ impl OsProbeEngine {
                 } else {
                     None
                 }
-            },
+            }
             TcpOptionNumbers::SACK_PERMITTED => Some(TcpOption::SackPermitted),
             TcpOptionNumbers::TIMESTAMPS => {
                 let payload = bytes.payload();
@@ -547,7 +547,7 @@ impl OsProbeEngine {
                 } else {
                     None
                 }
-            },
+            }
             TcpOptionNumbers::NOP => Some(TcpOption::Nop),
             TcpOptionNumbers::EOL => Some(TcpOption::Eol),
             _ => None,
@@ -578,10 +578,10 @@ impl OsProbeEngine {
                         tsval: rand::random(),
                         tsecr: 0,
                     });
-            },
+            }
             1 => {
                 builder = builder.add_option(TcpOption::Mss(1400));
-            },
+            }
             2 => {
                 builder = builder
                     .add_option(TcpOption::Nop)
@@ -590,14 +590,14 @@ impl OsProbeEngine {
                         tsval: rand::random(),
                         tsecr: 0,
                     });
-            },
+            }
             3 => {
                 builder = builder.add_option(TcpOption::WindowScale(7));
-            },
+            }
             4 => {
                 builder = builder.add_option(TcpOption::SackPermitted);
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         Ok(builder.build()?)

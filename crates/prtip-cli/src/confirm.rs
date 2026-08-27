@@ -125,7 +125,7 @@ impl ConfirmationManager {
                         || (segments[0] >= 0xfc00 && segments[0] <= 0xfdff) // unique local
                         || ipv6 == std::net::Ipv6Addr::LOCALHOST;
                     !is_private
-                },
+                }
             };
 
             // Or check for large CIDR ranges (> /16 for IPv4, > /48 for IPv6)
@@ -329,7 +329,7 @@ fn estimate_target_count(targets: &[ScanTarget]) -> usize {
                     } else {
                         1 << (32 - prefix)
                     }
-                },
+                }
                 IpAddr::V6(_) => {
                     // IPv6: For /64 and larger, estimate based on typical scan patterns
                     // Full IPv6 ranges are impractically large, so we estimate conservatively
@@ -343,7 +343,7 @@ fn estimate_target_count(targets: &[ScanTarget]) -> usize {
                         // Larger than /48: cap at 1M hosts for estimation
                         1_000_000
                     }
-                },
+                }
             }
         })
         .sum()

@@ -22,13 +22,13 @@ fn test_check_privileges_function() {
     match result {
         Ok(()) => {
             println!("Privilege check passed (running with elevated privileges)");
-        },
+        }
         Err(e) => {
             println!(
                 "Privilege check failed (expected without elevated privileges): {}",
                 e
             );
-        },
+        }
     }
 }
 

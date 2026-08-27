@@ -373,13 +373,13 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
             (KeyCode::Char('/'), KeyModifiers::NONE) => {
                 template_state.filter_focused = true;
                 true
-            },
+            }
 
             // Tab - toggle focus between filter and list
             (KeyCode::Tab, KeyModifiers::NONE) => {
                 template_state.filter_focused = !template_state.filter_focused;
                 true
-            },
+            }
 
             // Escape - cancel or clear filter
             (KeyCode::Esc, KeyModifiers::NONE) => {
@@ -390,51 +390,51 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
                     template_state.filter_focused = false;
                 }
                 true
-            },
+            }
 
             // Filter input handling
             (KeyCode::Char(c), KeyModifiers::NONE) if template_state.filter_focused => {
                 template_state.filter_input.push(c);
                 template_state.apply_filter();
                 true
-            },
+            }
 
             (KeyCode::Backspace, KeyModifiers::NONE) if template_state.filter_focused => {
                 template_state.filter_input.pop();
                 template_state.apply_filter();
                 true
-            },
+            }
 
             // Navigation (when filter not focused)
             (KeyCode::Up, KeyModifiers::NONE) if !template_state.filter_focused => {
                 template_state.move_selection_up();
                 true
-            },
+            }
 
             (KeyCode::Down, KeyModifiers::NONE) if !template_state.filter_focused => {
                 template_state.move_selection_down();
                 true
-            },
+            }
 
             (KeyCode::PageUp, KeyModifiers::NONE) if !template_state.filter_focused => {
                 template_state.page_up();
                 true
-            },
+            }
 
             (KeyCode::PageDown, KeyModifiers::NONE) if !template_state.filter_focused => {
                 template_state.page_down();
                 true
-            },
+            }
 
             (KeyCode::Home, KeyModifiers::NONE) if !template_state.filter_focused => {
                 template_state.move_to_first();
                 true
-            },
+            }
 
             (KeyCode::End, KeyModifiers::NONE) if !template_state.filter_focused => {
                 template_state.move_to_last();
                 true
-            },
+            }
 
             // Enter - select template (apply)
             (KeyCode::Enter, KeyModifiers::NONE) if !template_state.filter_focused => {
@@ -443,7 +443,7 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
                     // Template application to Config would happen in parent widget/app
                 }
                 true
-            },
+            }
 
             // Quick action: Edit (e key)
             (KeyCode::Char('e'), KeyModifiers::NONE) if !template_state.filter_focused => {
@@ -451,7 +451,7 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
                     template_state.action_pending = Some(TemplateAction::Edit(selected.0.clone()));
                 }
                 true
-            },
+            }
 
             // Quick action: Duplicate (d key)
             (KeyCode::Char('d'), KeyModifiers::NONE) if !template_state.filter_focused => {
@@ -460,7 +460,7 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
                         Some(TemplateAction::Duplicate(selected.0.clone()));
                 }
                 true
-            },
+            }
 
             // Quick action: Delete (Delete key)
             (KeyCode::Delete, KeyModifiers::NONE) if !template_state.filter_focused => {
@@ -472,7 +472,7 @@ pub fn handle_template_selection_event(event: &Event, state: &mut UIState) -> bo
                     }
                 }
                 true
-            },
+            }
 
             _ => false,
         }

@@ -376,7 +376,7 @@ impl MainWidgetState {
                         PortState::Closed => 2,
                     };
                     a_val.cmp(&b_val)
-                },
+                }
                 SortColumn::Protocol => a.protocol.cmp(&b.protocol),
                 SortColumn::Service => {
                     // Compare service names (alphabetical, None last)
@@ -386,7 +386,7 @@ impl MainWidgetState {
                         (None, Some(_)) => Ordering::Greater,
                         (None, None) => Ordering::Equal,
                     }
-                },
+                }
             };
 
             // Apply sort order

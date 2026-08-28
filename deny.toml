@@ -70,8 +70,8 @@ feature-depth = 1
 # A list of advisory IDs to ignore. Note that ignored advisories will still
 # output a note when they are encountered.
 ignore = [
-    # Empty on purpose. Every advisory affecting a crate ProRT-IP actually
-    # compiles is fixed rather than ignored.
+    # Empty on purpose. Every advisory affecting a crate ProRT-IP compiles is
+    # fixed rather than ignored.
     #
     # `cargo audit` additionally reports RUSTSEC-2023-0071 (`rsa`), because it
     # reads Cargo.lock literally and `rsa` appears there through the optional,

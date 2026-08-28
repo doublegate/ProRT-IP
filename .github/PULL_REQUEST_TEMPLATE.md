@@ -74,7 +74,7 @@ Performance: [metrics if applicable]
 - [ ] Code follows project style guidelines (`cargo fmt`)
 - [ ] No clippy warnings (`cargo clippy --workspace --all-targets -- -D warnings`)
 - [ ] All tests pass (`cargo test --workspace`)
-- [ ] MSRV compatibility maintained (Rust 1.85+)
+- [ ] MSRV compatibility maintained (Rust 1.88+)
 - [ ] Documentation updated (if needed):
   - [ ] README.md statistics/features updated
   - [ ] CHANGELOG.md entry added

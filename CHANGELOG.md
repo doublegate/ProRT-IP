@@ -35,7 +35,23 @@ private archived repository. Full detail: `docs/36-REPOSITORY-HISTORY.md`.
 
 All nine RustSec advisories affecting crates this project compiles are resolved,
 along with every unmaintained/unsound warning. `cargo audit` and
-`cargo deny check` both exit 0, for the workspace and for the `fuzz` crate.
+`cargo deny check` both exit 0, for the workspace and for the `fuzz` crate, and
+`deny.toml` now carries **no advisory exemptions at all**.
+
+- **BREAKING: the minimum supported Rust version rises from 1.85 to 1.88.**
+  This is forced, not incidental. RUSTSEC-2026-0009 is a denial of service via
+  stack exhaustion in `time`, which ProRT-IP reaches through
+  `x509-parser` when parsing certificates from scanned hosts — so it is
+  reachable with attacker-influenced input. **Every** `time` release that fixes
+  it (>=0.3.47 through 0.3.55) declares `rust-version = "1.88.0"`; there is no
+  version that is both patched and buildable on 1.85. Staying on 1.85 would
+  have meant shipping the advisory.
+  Raising the floor also permits `ratatui` 0.30 (below), which clears three more
+  advisories. Verified afterwards that no crate in the resolved 499-package
+  graph requires more than 1.88 — including `home` 0.5.12, which already needed
+  1.88 and was quietly violating the old floor. Updated in `Cargo.toml`, the
+  README badge and text, `WARP.md`, `CONTRIBUTING.md`, the pull-request
+  template, and the CI MSRV job.
 
 - **Fixed by dependency updates** (no API changes required): `bytes` 1.11.0 to
   1.11.1 (RUSTSEC-2026-0007, integer overflow in `BytesMut::reserve`),
@@ -245,6 +261,10 @@ along with every unmaintained/unsound warning. `cargo audit` and
   third-party-material statement moved there, because `LICENSE` has to be the
   licence text and nothing else for both of the reasons above. Nothing was
   dropped in the move.
+- **`mmap_writer.rs` uses `usize::is_multiple_of`.** Raising the MSRV to 1.88
+  enabled `clippy::manual_is_multiple_of`, which is MSRV-gated because the
+  method stabilised in 1.87. The compile-time alignment assertion now reads
+  `ENTRY_SIZE.is_multiple_of(16)` instead of `ENTRY_SIZE % 16 == 0`.
 - **`cargo fmt --all -- --check` passes again.** CI runs that exact command and the
   repository has no `rustfmt.toml`, so the default style is the only one the gate
   accepts — but commit 87f0bea had introduced match arms terminated with `},` and

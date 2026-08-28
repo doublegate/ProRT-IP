@@ -11,7 +11,7 @@
 [![Tests](https://img.shields.io/badge/tests-2,557%20passing-success)](https://github.com/doublegate/ProRT-IP/actions)
 ![Coverage](https://img.shields.io/badge/coverage-51.40%25-yellow)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-1.88%2B-orange.svg)](https://www.rust-lang.org)
 [![Docker](https://img.shields.io/badge/docker-doublegate%2Fprtip-blue)](https://hub.docker.com/r/doublegate/prtip)
 
 **Modern network scanner combining Masscan/ZMap speed with Nmap detection depth.**
@@ -292,7 +292,7 @@ prtip -T4 target                    # Aggressive (recommended)
 
 ### Build Requirements
 
-- Rust 1.85+ (MSRV for edition 2024)
+- Rust 1.88+ (MSRV; edition 2024 needs 1.85, but the patched `time` release that fixes RUSTSEC-2026-0009 requires 1.88)
 - libpcap (Linux/macOS) or Npcap (Windows)
 - OpenSSL development libraries
 - (Optional) hwloc for NUMA optimization

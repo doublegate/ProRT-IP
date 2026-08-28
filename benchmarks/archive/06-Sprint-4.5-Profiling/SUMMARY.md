@@ -1,5 +1,12 @@
 # Sprint 4.5 P#1: Performance Profiling - Executive Summary
 
+> **Note on the raw captures.** The `perf/` directory this report references
+> (flamegraphs, `perf.data`, folded stacks, ~35 MB) was removed from the
+> repository and from its history to keep clone size reasonable — see
+> `docs/36-REPOSITORY-HISTORY.md`. The captures are regenerable with
+> `benchmarks/profiling/PROFILING-SETUP.md`. The measurements and conclusions
+> below are unchanged; only the raw artefacts are gone.
+
 **Status**: ✅ Complete
 **Date**: 2025-10-10
 **Root Cause Identified**: Yes (95% confidence)

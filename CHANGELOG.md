@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Repository history rewritten
+
+Before this project was first published, its git history was rewritten to remove
+the NPSL-covered material described below from **every** commit, not just from the
+tip. A clone carries every past revision of every file, so publishing the original
+history would have distributed that material regardless of what the tip contained.
+
+Six paths were removed from all 452 commits: the vendored `nmap-service-probes`
+corpus, the three files that carried the `nmap-services`-derived port array
+(`top_ports.rs`, `examples/common_fast_scan.rs`, `widgets/port_selection.rs`), the
+documentation page holding a verbatim copy of Nmap's top ten ports, and — for size
+rather than licensing — 35 MB of regenerable `perf` captures under
+`benchmarks/archive/*/perf/`. All 452 commits and all 28 release tags survive; no
+commit became empty, but every commit hash changed.
+
+Two consequences worth knowing: commits predating the remediation no longer build,
+because they reference a `top_ports.rs` that no longer exists at that point in
+history, so `git bisect` will hit compile failures across that boundary; and the
+recreated files have no `git log --follow` history before the remediation commit.
+The unmodified original, including the NPSL-covered files, is preserved in a
+private archived repository. Full detail: `docs/36-REPOSITORY-HISTORY.md`.
+
 ### Removed
 
 - **`crates/prtip-core/data/nmap-service-probes` (BREAKING for service detection coverage).**

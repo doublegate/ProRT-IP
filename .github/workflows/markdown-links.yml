@@ -36,6 +36,13 @@ jobs:
       - name: Install markdown-link-check
         run: npm install -g markdown-link-check
 
+      # Note on `aliveStatusCodes` below: 429 is included deliberately. A 429
+      # means the host answered and is rate-limiting the checker, which proves
+      # the link resolves -- the opposite of dead. `retryOn429` already retries
+      # three times, but sites such as docs.ansible.com throttle CI runners
+      # harder than that, and failing the build on it reports link rot that does
+      # not exist. It sits alongside 403 and 999, which are the same class of
+      # "server responded, just not with content".
       - name: Create link check configuration
         run: |
           cat > mlc_config.json << 'EOF'
@@ -80,7 +87,7 @@ jobs:
             "retryOn429": true,
             "retryCount": 3,
             "fallbackRetryDelay": "30s",
-            "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 999]
+            "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 429, 999]
           }
           EOF
 

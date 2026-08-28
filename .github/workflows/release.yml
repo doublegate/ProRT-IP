@@ -29,7 +29,7 @@ jobs:
       version: ${{ steps.version.outputs.tag }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Determine version
         id: version
@@ -67,7 +67,7 @@ jobs:
     if: needs.check-release.outputs.release_exists == 'false'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Generate dynamic release notes
         id: release_notes
@@ -270,7 +270,7 @@ jobs:
             cross: true
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -385,7 +385,7 @@ jobs:
           Compress-Archive -Path prtip.exe -DestinationPath $env:GITHUB_WORKSPACE/prtip-${VERSION_NUM}-${{ matrix.target }}.zip
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: prtip-${{ matrix.target }}
           path: prtip-*-${{ matrix.target }}.*
@@ -400,10 +400,10 @@ jobs:
       upload_complete: ${{ steps.upload.outputs.complete }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -461,7 +461,7 @@ jobs:
 
     steps:
       - name: Trigger coverage workflow
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const version = '${{ needs.check-release.outputs.version }}';

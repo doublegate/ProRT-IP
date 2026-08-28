@@ -759,7 +759,7 @@ Hyperfine-based benchmarking framework with 10 scenarios, CI integration, and re
 | [07-PERFORMANCE.md](07-PERFORMANCE.md) | Performance characteristics | Performance Tuners | 815 lines | 2025-10-XX | - |
 | [11-RELEASE-PROCESS.md](11-RELEASE-PROCESS.md) | Release workflow and checklist | Maintainers | 346 lines | 2025-10-XX | - |
 | [DATABASE.md](DATABASE.md) | Database schema and operations | Developers | 628 lines | 2025-10-XX | - |
-| [36-REPOSITORY-HISTORY.md](36-REPOSITORY-HISTORY.md) | What the pre-publication history rewrite removed, and why | Auditors, Maintainers | 77 lines | 2026-08-27 | - |
+| [36-REPOSITORY-HISTORY.md](36-REPOSITORY-HISTORY.md) | What the pre-publication history rewrite removed, and why | Auditors, Maintainers | 85 lines | 2026-08-27 | - |
 
 ### 5.7 Archive Documentation
 

@@ -107,7 +107,7 @@ CMD ["--help"]
 # ==============================================================================
 # Stage 3: Alpine variant (smaller image, musl libc)
 # ==============================================================================
-FROM alpine:3.19 AS alpine
+FROM alpine:3.24 AS alpine
 
 ARG VERSION
 LABEL maintainer="ProRT-IP Contributors <noreply@github.com>"

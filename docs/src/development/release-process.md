@@ -915,7 +915,7 @@ Every release MUST pass these quality gates:
    ```
 
 2. **Create hotfix immediately:**
-   - Follow [Hotfix Procedures](#hotfix-procedures)
+   - Follow [Hotfix Procedures](release-process.md#hotfix-procedures)
    - Bump to vX.Y.Z+1
    - Include fix + regression test
 

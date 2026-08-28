@@ -1,0 +1,98 @@
+version: 2
+
+# Until this file existed, the repository received only Dependabot *security*
+# updates -- the ones GitHub opens without configuration. Routine version
+# updates were never proposed, so ordinary dependencies drifted until an
+# advisory forced the issue. That is how a `quick-xml` five minor versions
+# behind, and a duplicate `ratatui` major, went unnoticed.
+#
+# Grouping matters as much as enabling. Ungrouped, a workspace this size
+# produces a PR per crate per week and the noise gets ignored, which is the
+# same outcome as having no updates at all.
+
+updates:
+  # ---------------------------------------------------------------- Rust ----
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(dev-deps)"
+    labels:
+      - dependencies
+      - rust
+    groups:
+      # Patch and minor bumps carry no API change by semver, so they are safe
+      # to batch and review as one diff.
+      cargo-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+      # Majors change APIs and must be read individually, so they are grouped
+      # only so far as keeping them out of the batch above.
+      cargo-major:
+        applies-to: version-updates
+        update-types:
+          - major
+      # Security fixes travel together and should be merged promptly.
+      cargo-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # The fuzz targets are a separate crate with their own lockfile, excluded
+  # from the workspace, so Dependabot needs to be pointed at them explicitly.
+  # They were previously invisible to it.
+  - package-ecosystem: cargo
+    directory: "/fuzz"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(fuzz-deps)"
+    labels:
+      - dependencies
+      - fuzzing
+    groups:
+      fuzz-deps:
+        patterns:
+          - "*"
+
+  # ------------------------------------------------------- GitHub Actions ----
+  # Action versions are a supply-chain surface: a compromised or abandoned
+  # action runs with the workflow's token. These were not tracked at all.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci(deps)"
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # ---------------------------------------------------------------- Docker ----
+  # The Dockerfile lives in /docker, not the repository root, so the directory
+  # has to say so -- a root-scoped entry would silently match nothing.
+  - package-ecosystem: docker
+    directory: "/docker"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "build(docker)"
+    labels:
+      - dependencies
+      - docker

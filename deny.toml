@@ -70,47 +70,16 @@ feature-depth = 1
 # A list of advisory IDs to ignore. Note that ignored advisories will still
 # output a note when they are encountered.
 ignore = [
-    # RUSTSEC-2024-0436: paste is unmaintained
+    # Empty on purpose. Every advisory affecting a crate ProRT-IP compiles is
+    # fixed rather than ignored.
     #
-    # Context: paste is a proc-macro crate used by ratatui for compile-time code generation.
-    # It's a transitive dependency (ratatui 0.28.1 and 0.29.0 → paste 1.0.15).
-    #
-    # Risk Assessment:
-    # - Very Low: Proc-macro crates run only at compile time (zero runtime risk)
-    # - No known security vulnerabilities (just unmaintained status)
-    # - Transitive dependency from ratatui (critical for TUI functionality)
-    # - Alternative (pastey) not adopted by ratatui upstream yet
-    #
-    # Mitigation:
-    # - No runtime code execution (compile-time only)
-    # - Used via ratatui (trusted, actively maintained crate)
-    # - TUI feature is core to Sprint 6.1-6.2 deliverables
-    # - Will migrate when ratatui updates to pastey or alternative
-    #
-    # Decision: Accept risk for TUI functionality. Proc-macro execution is sandboxed
-    # and paste v1.0.15 has no known CVEs. Monitor ratatui updates for migration.
-    { id = "RUSTSEC-2024-0436", reason = "paste proc-macro crate unmaintained but required by ratatui. Compile-time only, no runtime risk." },
-
-    # RUSTSEC-2025-0119: number_prefix is unmaintained
-    #
-    # Context: number_prefix is used by indicatif for human-readable number formatting.
-    # It's a transitive dependency (indicatif 0.17.11 → number_prefix 0.4.0).
-    #
-    # Risk Assessment:
-    # - Very Low: Pure formatting utility with no security-sensitive operations
-    # - No known security vulnerabilities (just unmaintained status)
-    # - Transitive dependency from indicatif (critical for CLI progress bars)
-    # - Alternative (unit-prefix) not adopted by indicatif upstream yet
-    #
-    # Mitigation:
-    # - Pure data formatting (no network, no file I/O, no unsafe code)
-    # - Used via indicatif (trusted, actively maintained crate with 10M+ downloads)
-    # - Progress bar functionality is core to CLI UX
-    # - Will migrate when indicatif updates to unit-prefix or alternative
-    #
-    # Decision: Accept risk for CLI functionality. number_prefix v0.4.0 has no known CVEs.
-    # Monitor indicatif updates for migration.
-    { id = "RUSTSEC-2025-0119", reason = "number_prefix crate unmaintained but required by indicatif. Pure formatting utility, no security risk." },
+    # `cargo audit` additionally reports RUSTSEC-2023-0071 (`rsa`), because it
+    # reads Cargo.lock literally and `rsa` appears there through the optional,
+    # disabled `sqlx-mysql` feature. `cargo deny` resolves the real
+    # feature-aware graph and never encounters it, so listing it here would
+    # only emit an "advisory-not-detected" warning -- and, worse, would mask
+    # the advisory if a future change ever made `rsa` genuinely reachable.
+    # The exemption for `cargo audit` users lives in `.cargo/audit.toml`.
 ]
 # If this is true, then cargo deny will use the git executable to fetch advisory database.
 # If this is false, then it uses a built-in git library.
@@ -132,11 +101,14 @@ allow = [
     "BSD-2-Clause",
     "BSD-3-Clause",
     "ISC",
-    "Unicode-DFS-2016",
     "Unicode-3.0",  # ICU crates for Unicode normalization
     "Zlib",         # foldhash (hashbrown dependency)
     "MPL-2.0",      # colored crate
-    "GPL-3.0",      # ProRT-IP project license
+    # ProRT-IP's own crates. The manifest declares `GPL-3.0-or-later`, matching
+    # the "or (at your option) any later version" grant in LICENSE. The bare
+    # `GPL-3.0` identifier that used to be listed here is deprecated in SPDX and
+    # is the only-version form, so it no longer matches and the check failed.
+    "GPL-3.0-or-later",
 ]
 # The confidence threshold for detecting a license from license text.
 # The higher the value, the more closely the license text must be to the

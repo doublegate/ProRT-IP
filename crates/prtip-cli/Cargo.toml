@@ -37,7 +37,11 @@ serde_json = { workspace = true }
 toml = { workspace = true }
 
 # Output formats
-quick-xml = { version = "0.31", features = ["serialize"] }
+# NOTE: no XML library here on purpose. ProRT-IP writes its Nmap-compatible
+# `-oX` output by hand (see src/export.rs, src/output.rs), and every dynamic
+# value goes through src/xml.rs. A `quick-xml` dependency was declared here but
+# never imported by any source file, so it contributed nothing but two
+# advisories (RUSTSEC-2026-0194, RUSTSEC-2026-0195).
 csv = "1.3"
 pcap-file = { workspace = true }
 
@@ -57,7 +61,7 @@ colored = { workspace = true }
 
 # Progress bar and terminal handling
 indicatif = { workspace = true }
-console = "0.15"
+console = "0.16"
 
 # Utilities
 num_cpus = { workspace = true }

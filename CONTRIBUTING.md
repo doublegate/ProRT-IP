@@ -87,7 +87,7 @@ Complete development setup instructions are available in **[docs/03-DEV-SETUP.md
 
 ### Quick Start
 
-1. **Install Rust** (1.85+ required, MSRV for edition 2024):
+1. **Install Rust** (1.88+ required; edition 2024 needs 1.85, raised for the patched `time`):
 
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -344,7 +344,7 @@ CI runs automatically on every push and PR. Check the [Actions tab](https://gith
 - `clippy`: ~2-3 minutes - Lint checks with caching
 - `test`: ~3-5 minutes per platform (parallel) - Build and test (789 tests)
 - `security_audit`: ~1-2 minutes - Vulnerability scanning
-- `msrv`: ~2-3 minutes - Minimum version verification (Rust 1.85+)
+- `msrv`: ~2-3 minutes - Minimum version verification (Rust 1.88+)
 
 **Total CI time:** ~5-10 minutes (with caching and parallel execution)
 **Current Status:** 7/7 jobs passing (100%)

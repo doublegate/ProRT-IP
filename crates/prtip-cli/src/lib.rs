@@ -13,6 +13,7 @@ pub mod help;
 pub mod history;
 pub mod output;
 pub mod progress;
+pub mod xml;
 
 pub use confirm::{ConfirmConfig, ConfirmationManager};
 pub use error::{exit_codes, CliError};

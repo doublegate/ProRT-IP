@@ -1,8 +1,25 @@
 name: Markdown Link Check
 
-# Purpose: Automated link validation for all markdown documentation
-# Prevents broken links in docs/, to-dos/, and README.md from merging to main
-# Runs on documentation changes and can be triggered manually
+# Validates links in the documentation.
+#
+# The job runs in two modes, because internal and external links fail for
+# completely different reasons and only one of them is the repository's fault.
+#
+#   Pull requests and pushes -> INTERNAL links only.
+#     Relative paths and heading anchors are entirely within the repository's
+#     control, so a failure is always a real defect the author can fix, and the
+#     result is deterministic. This is what gates a merge.
+#
+#   Weekly schedule and manual runs -> INTERNAL + EXTERNAL.
+#     External link rot is real and worth catching, but a third party being
+#     down, rate-limiting a CI runner, or refusing a HEAD request is not a
+#     defect in this pull request. Gating merges on other people's uptime makes
+#     the check non-deterministic and trains everyone to ignore it.
+#
+# This split was introduced after three consecutive PR runs failed on three
+# different external hosts (a 429 from docs.ansible.com, a connection failure
+# to bgp.tools) while a genuinely broken internal link sat undetected behind
+# them, in a directory whose step ended with `|| true`.
 
 on:
   push:
@@ -14,9 +31,10 @@ on:
     branches: [ main ]
     paths:
       - '**.md'
-  workflow_dispatch: # Allow manual triggers
+      - '.github/workflows/markdown-links.yml'
+  workflow_dispatch: # Manual trigger; also checks external links
   schedule:
-    # Run weekly on Mondays at 00:00 UTC to catch external link rot
+    # Weekly on Mondays at 00:00 UTC to catch external link rot
     - cron: '0 0 * * 1'
 
 # Cancel outdated workflow runs
@@ -28,7 +46,11 @@ jobs:
   markdown-link-check:
     name: Check Markdown Links
     runs-on: ubuntu-latest
-    
+
+    env:
+      # Only the scheduled and manual runs reach out to the network.
+      CHECK_EXTERNAL: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '1' || '0' }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,130 +58,103 @@ jobs:
       - name: Install markdown-link-check
         run: npm install -g markdown-link-check
 
-      - name: Create link check configuration
+      # `mlc_config.json` at the repository root is the single source of truth.
+      # The only thing added here is the PR-mode ignore, so that editing the
+      # committed file actually changes behaviour -- previously this step wrote
+      # its own config over the top and the committed one was inert.
+      - name: Build effective link check configuration
         run: |
-          cat > mlc_config.json << 'EOF'
-          {
-            "ignorePatterns": [
-              {
-                "pattern": "^http://localhost"
-              },
-              {
-                "pattern": "^https://localhost"
-              },
-              {
-                "pattern": "^http://127.0.0.1"
-              },
-              {
-                "pattern": "^https://127.0.0.1"
-              },
-              {
-                "pattern": "^https://nvd\\.nist\\.gov",
-                "comment": "NIST NVD site blocks automated requests with Cloudflare"
-              },
-              {
-                "pattern": "^https://hub\\.docker\\.com/r/doublegate/prtip",
-                "comment": "Docker Hub image not yet published - pending first release"
-              }
-            ],
-            "replacementPatterns": [
-              {
-                "pattern": "^/",
-                "replacement": "{{BASEURL}}/"
-              }
-            ],
-            "httpHeaders": [
-              {
-                "urls": ["https://github.com"],
-                "headers": {
-                  "Accept": "text/html"
-                }
-              }
-            ],
-            "timeout": "20s",
-            "retryOn429": true,
-            "retryCount": 3,
-            "fallbackRetryDelay": "30s",
-            "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 999]
-          }
-          EOF
+          python3 - <<'PY'
+          import json, os
 
-      - name: Check links in README.md
-        run: |
-          echo "::group::Checking README.md"
-          markdown-link-check README.md --config mlc_config.json
-          echo "::endgroup::"
+          with open("mlc_config.json") as fh:
+              config = json.load(fh)
 
-      - name: Check links in docs/ directory
-        run: |
-          echo "::group::Checking docs/ directory"
-          find docs/ -name "*.md" -type f | while read file; do
-            echo "Checking: $file"
-            markdown-link-check "$file" --config mlc_config.json || exit 1
-          done
-          echo "::endgroup::"
+          if os.environ["CHECK_EXTERNAL"] != "1":
+              config["ignorePatterns"].append({
+                  "pattern": "^https?://",
+                  "comment": "PR mode: external links are checked by the weekly scheduled run",
+              })
+              print("external link checking: disabled (PR mode)")
+          else:
+              print("external link checking: ENABLED")
 
-      - name: Check links in to-dos/ directory
-        run: |
-          echo "::group::Checking to-dos/ directory"
-          find to-dos/ -name "*.md" -type f 2>/dev/null | while read file; do
-            echo "Checking: $file"
-            markdown-link-check "$file" --config mlc_config.json || exit 1
-          done || true
-          echo "::endgroup::"
+          with open("mlc_effective.json", "w") as fh:
+              json.dump(config, fh, indent=2)
+          PY
 
-      - name: Check links in root markdown files
+      - name: Check links
+        id: check
         run: |
-          echo "::group::Checking root markdown files"
-          for file in CHANGELOG.md CONTRIBUTING.md SECURITY.md AUTHORS.md SUPPORT.md; do
-            if [ -f "$file" ]; then
-              echo "Checking: $file"
-              markdown-link-check "$file" --config mlc_config.json || exit 1
+          if [ "$CHECK_EXTERNAL" = "1" ]; then
+            echo "Mode: internal + external links"
+          else
+            echo "Mode: internal links only (external links run on the weekly schedule)"
+          fi
+          echo ""
+
+          # Collect the file list first so the loop is not inside a pipeline --
+          # a `while read` fed by a pipe runs in a subshell, where a failure
+          # count cannot escape.
+          find README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md AUTHORS.md \
+               SUPPORT.md docs/ to-dos/ -name '*.md' -type f 2>/dev/null \
+            | sort > files.txt
+
+          total=$(wc -l < files.txt)
+          echo "Checking $total files"
+          echo ""
+
+          failed=0
+          failed_files=""
+
+          while read -r file; do
+            if ! output=$(markdown-link-check "$file" --config mlc_effective.json 2>&1); then
+              failed=$((failed + 1))
+              failed_files="${failed_files}${file}"$'\n'
+              echo "::group::FAILED: $file"
+              echo "$output" | grep -E '\[✖\]|ERROR' || echo "$output"
+              echo "::endgroup::"
             fi
-          done
-          echo "::endgroup::"
+          done < files.txt
 
-      - name: Generate link check report
+          # Every file is checked before the job fails, so one broken link does
+          # not hide the rest. The previous version exited on the first failure
+          # and swallowed to-dos/ failures entirely with `|| true`.
+          {
+            echo "files_checked=$total"
+            echo "files_failed=$failed"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$failed" -gt 0 ]; then
+            echo ""
+            echo "$failed of $total files contain broken links:"
+            printf '%s' "$failed_files"
+            exit 1
+          fi
+
+          echo ""
+          echo "All $total files passed."
+
+      - name: Report
         if: always()
         run: |
-          echo "# Markdown Link Check Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ All markdown links validated successfully" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Files Checked:**" >> $GITHUB_STEP_SUMMARY
-          echo "- README.md" >> $GITHUB_STEP_SUMMARY
-          echo "- docs/ directory ($(find docs/ -name "*.md" -type f | wc -l) files)" >> $GITHUB_STEP_SUMMARY
-          echo "- to-dos/ directory ($(find to-dos/ -name "*.md" -type f 2>/dev/null | wc -l) files)" >> $GITHUB_STEP_SUMMARY
-          echo "- Root markdown files" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Configuration:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Timeout: 20s per link" >> $GITHUB_STEP_SUMMARY
-          echo "- Retry on 429: Yes (3 attempts, 30s delay)" >> $GITHUB_STEP_SUMMARY
-          echo "- Ignored: localhost, 127.0.0.1" >> $GITHUB_STEP_SUMMARY
-
-  # Optional: Report broken links as issues
-  # Uncomment to enable automatic issue creation for broken links
-  # create-issue-on-failure:
-  #   name: Create Issue for Broken Links
-  #   runs-on: ubuntu-latest
-  #   needs: markdown-link-check
-  #   if: failure()
-  #   
-  #   steps:
-  #     - name: Create issue for broken links
-  #       uses: actions/github-script@v7
-  #       with:
-  #         script: |
-  #           const issue = await github.rest.issues.create({
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             title: '🔗 Broken Links Detected in Documentation',
-  #             body: `Automated link check failed on ${context.ref}.\n\n` +
-  #                   `Check the [workflow run](${context.payload.workflow_run.html_url}) for details.\n\n` +
-  #                   `**Action Required:** Fix broken links before merging.\n\n` +
-  #                   `**Files to Check:**\n` +
-  #                   `- README.md\n` +
-  #                   `- docs/ directory\n` +
-  #                   `- to-dos/ directory\n`,
-  #             labels: ['documentation', 'automated']
-  #           });
+          {
+            echo "# Markdown Link Check"
+            echo ""
+            if [ "$CHECK_EXTERNAL" = "1" ]; then
+              echo "**Mode:** internal + external links (scheduled/manual run)"
+            else
+              echo "**Mode:** internal links only — relative paths and heading anchors."
+              echo "External links are validated by the weekly scheduled run, so that a"
+              echo "third party being down cannot block a merge."
+            fi
+            echo ""
+            echo "- Files checked: ${{ steps.check.outputs.files_checked || 'n/a' }}"
+            echo "- Files with broken links: ${{ steps.check.outputs.files_failed || 'n/a' }}"
+            echo ""
+            if [ "${{ steps.check.outcome }}" = "success" ]; then
+              echo "Result: **passed**"
+            else
+              echo "Result: **failed** — see the job log for the offending links."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

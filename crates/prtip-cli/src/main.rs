@@ -11,6 +11,7 @@ mod help;
 mod history;
 mod output;
 mod progress;
+mod xml;
 
 use anyhow::{bail, Context, Result};
 use args::Args;

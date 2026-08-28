@@ -19,7 +19,6 @@ prtip-core = { path = "../prtip-core" }
 # TUI framework
 ratatui = { workspace = true }
 crossterm = { workspace = true }
-tui-input = { workspace = true }
 futures = { workspace = true }
 
 # Async runtime

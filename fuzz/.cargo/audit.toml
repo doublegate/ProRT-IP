@@ -1,0 +1,19 @@
+# `cargo audit` configuration for the fuzz crate.
+#
+# The fuzz targets are excluded from the workspace and carry their own
+# Cargo.lock, so `cargo audit` run from here does not read the root
+# `.cargo/audit.toml`. This file mirrors it.
+
+[advisories]
+ignore = [
+    # RUSTSEC-2023-0071 -- Marvin Attack in `rsa`. Same situation as the root
+    # workspace: `rsa` is present in this lockfile only via the optional,
+    # disabled `sqlx-mysql` feature and is never compiled.
+    #
+    # Verified from this directory:
+    #     cargo tree -i rsa --target all   -> nothing to print
+    #
+    # See the root `.cargo/audit.toml` for the full rationale, and remove this
+    # entry if a MySQL backend is ever enabled.
+    "RUSTSEC-2023-0071",
+]

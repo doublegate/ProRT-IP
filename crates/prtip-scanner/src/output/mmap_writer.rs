@@ -23,7 +23,7 @@ const LENGTH_PREFIX_SIZE: usize = 8; // u64 length prefix for each entry
 
 // Compile-time assertion to verify ENTRY_SIZE alignment
 const _: () = assert!(
-    ENTRY_SIZE % 16 == 0,
+    ENTRY_SIZE.is_multiple_of(16),
     "ENTRY_SIZE must be a multiple of 16 bytes for rkyv alignment"
 );
 

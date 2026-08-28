@@ -9,7 +9,10 @@
 #   docker run --rm --net=host --cap-add=NET_RAW prtip -sS -p 80,443 192.168.1.1
 #   docker run -it --rm --net=host --cap-add=NET_RAW prtip --tui
 
-ARG RUST_VERSION=1.85
+# Must be >= the workspace `rust-version` in Cargo.toml (1.88). A pin below
+# the MSRV fails the build with "requires rustc 1.88 or newer"; nothing in CI
+# caught the drift because packages.yml only runs on releases.
+ARG RUST_VERSION=1.88
 ARG VERSION=1.0.0
 
 # ==============================================================================
@@ -105,6 +108,34 @@ ENTRYPOINT ["prtip"]
 CMD ["--help"]
 
 # ==============================================================================
+# Stage 2b: musl builder (for the Alpine variant)
+# ==============================================================================
+# Built inside Alpine rather than cross-compiled from Debian. `pcap` links
+# against libpcap, and `mlua` builds a vendored Lua, so both need a C toolchain
+# and headers that match the target libc. Building natively on Alpine gets musl
+# versions of both from apk, which is far simpler than assembling a musl
+# sysroot on Debian.
+FROM rust:${RUST_VERSION}-alpine AS musl-builder
+
+WORKDIR /build
+
+RUN apk add --no-cache \
+    libpcap-dev \
+    musl-dev \
+    pkgconfig \
+    build-base \
+    linux-headers \
+    openssl-dev \
+    openssl-libs-static
+
+COPY Cargo.toml Cargo.lock ./
+COPY crates/ crates/
+
+RUN cargo build --release --locked
+
+RUN strip /build/target/release/prtip
+
+# ==============================================================================
 # Stage 3: Alpine variant (smaller image, musl libc)
 # ==============================================================================
 FROM alpine:3.24 AS alpine
@@ -123,12 +154,13 @@ RUN apk add --no-cache \
 # Create non-root user
 RUN adduser -D -s /bin/sh prtip
 
-# Note: For Alpine, you need to build with musl target
-# This stage expects a pre-built musl binary
-# COPY --from=builder /build/target/x86_64-unknown-linux-musl/release/prtip /usr/local/bin/prtip
-
-# For now, use the glibc binary (requires compatibility layer or rebuild)
-COPY --from=builder /build/target/release/prtip /usr/local/bin/prtip
+# Binary comes from the musl builder stage above, not from `builder`.
+# Copying the Debian-built glibc binary here produced an image in which
+# `prtip` could not execute at all -- musl provides no
+# /lib64/ld-linux-x86-64.so.2, so the kernel fails the exec with a bare
+# "no such file or directory". The HEALTHCHECK below would have caught it
+# on every run of this image.
+COPY --from=musl-builder /build/target/release/prtip /usr/local/bin/prtip
 
 COPY README.md /usr/share/doc/prtip/
 COPY LICENSE /usr/share/doc/prtip/

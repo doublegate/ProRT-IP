@@ -261,6 +261,28 @@ along with every unmaintained/unsound warning. `cargo audit` and
   third-party-material statement moved there, because `LICENSE` has to be the
   licence text and nothing else for both of the reasons above. Nothing was
   dropped in the move.
+- **The Docker build was broken by the MSRV raise.** `docker/Dockerfile` pinned
+  `ARG RUST_VERSION=1.85`, below the workspace's new 1.88 floor, so the builder
+  stage could no longer compile the project at all. Nothing caught it because
+  `packages.yml` — the only workflow that touches the Dockerfile — runs solely on
+  a published release or a manual dispatch.
+- **The Alpine image never worked.** Its stage copied the Debian-built **glibc**
+  binary into a **musl** image. Alpine ships no `/lib64/ld-linux-x86-64.so.2`, so
+  the kernel failed the exec with a bare "no such file or directory" — the image
+  built cleanly and `prtip` could not run in it, which the stage's own
+  `HEALTHCHECK` would have failed on every start. The comment in place
+  ("For now, use the glibc binary (requires compatibility layer or rebuild)")
+  acknowledged it. There is now a real `musl-builder` stage building natively on
+  `rust:1.88-alpine` with `libpcap-dev`, `openssl-dev` and a C toolchain from
+  apk, which is far simpler than assembling a musl sysroot on Debian. Verified:
+  the binary reports `prtip 1.0.0` inside the image and links
+  `/lib/ld-musl-x86_64.so.1`; the image is 26.9 MB against the Debian variant's
+  97 MB.
+- **CI now builds both container images and runs the binary in each.** A
+  glibc/musl mismatch produces a perfectly good-looking image that only fails
+  when something tries to execute it, so the gate asserts `--version` succeeds
+  and that the Alpine binary's interpreter is musl. `ci.yml` path filters now
+  include `docker/**`.
 - **Seven broken internal documentation links** in
   `to-dos/PHASE-5/SPRINT-5.5.5-TODO.md` and `SPRINT-5.5.6-TODO.md`. They pointed
   at `../docs/...` and `../benchmarks/...` from `to-dos/PHASE-5/`, which resolves

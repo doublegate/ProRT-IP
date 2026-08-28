@@ -80,7 +80,7 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.7", features = ["v4", "serde"] }
 num_cpus = "1.16"
 rlimit = "0.10"
-indicatif = "0.17"
+indicatif = "0.18"
 regex = "1.11"
 sysinfo = "0.30"
 
@@ -88,9 +88,8 @@ sysinfo = "0.30"
 mlua = { version = "0.11", features = ["lua54", "vendored", "send"] }
 
 # TUI (Terminal User Interface)
-ratatui = "0.29"
-crossterm = { version = "0.28", features = ["event-stream"] }
-tui-input = "0.10"
+ratatui = "0.30"
+crossterm = { version = "0.29", features = ["event-stream"] }
 futures = "0.3"
 
 # Platform-specific (shared definitions)

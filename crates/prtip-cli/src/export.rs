@@ -6,6 +6,7 @@
 //! - XML: Nmap-compatible output
 //! - Text: Human-readable summary
 
+use crate::xml::escape_xml;
 use prtip_core::{PortState, ScanResult};
 use std::collections::HashMap;
 
@@ -224,15 +225,6 @@ pub fn export_text(results: &[ScanResult]) -> Result<String, Box<dyn std::error:
     output.push_str(&format!("Open ports: {}\n", open_count));
 
     Ok(output)
-}
-
-/// Escape XML special characters
-fn escape_xml(s: &str) -> String {
-    s.replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&apos;")
 }
 
 #[cfg(test)]

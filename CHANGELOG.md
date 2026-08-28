@@ -31,6 +31,87 @@ recreated files have no `git log --follow` history before the remediation commit
 The unmodified original, including the NPSL-covered files, is preserved in a
 private archived repository. Full detail: `docs/36-REPOSITORY-HISTORY.md`.
 
+### Security
+
+All nine RustSec advisories affecting crates this project compiles are resolved,
+along with every unmaintained/unsound warning. `cargo audit` and
+`cargo deny check` both exit 0, for the workspace and for the `fuzz` crate.
+
+- **Fixed by dependency updates** (no API changes required): `bytes` 1.11.0 to
+  1.11.1 (RUSTSEC-2026-0007, integer overflow in `BytesMut::reserve`),
+  `crossbeam-epoch` to >=0.9.20 (RUSTSEC-2026-0204), `rkyv` to >=0.8.17
+  (RUSTSEC-2026-0233/0234/0235, use-after-free and out-of-bounds reads during
+  deserialisation of crafted archives), `time` to >=0.3.47 (RUSTSEC-2026-0009,
+  DoS via stack exhaustion), plus the unsound-flagged `memmap2` (>=0.9.11),
+  `anyhow` (>=1.0.103), `rand` (>=0.8.6) and `event-listener`. All were
+  semver-compatible; none needed a manifest change.
+- **`quick-xml` removed entirely**, resolving RUSTSEC-2026-0194 and
+  RUSTSEC-2026-0195 (both 7.5 high: quadratic parse time on duplicate attribute
+  names, and unbounded namespace-declaration allocation). The crate was declared
+  in `crates/prtip-cli/Cargo.toml` but **never imported by any source file** —
+  ProRT-IP writes its Nmap-compatible XML by hand. The two highest-severity
+  advisories in the project came from a dependency that contributed nothing.
+- **`tui-input` removed**, likewise never imported. It was the only thing
+  holding a second copy of `ratatui` (0.28.1 alongside 0.29.0) in the build.
+- **`ratatui` 0.29 to 0.30**, which drops `paste` (RUSTSEC-2024-0436,
+  unmaintained) and moves to `lru` >=0.18.2, fixing RUSTSEC-2026-0002 and
+  RUSTSEC-2026-0253. ProRT-IP used none of the 0.30 breaking-change surface, so
+  the upgrade required no code edits.
+- **`indicatif` 0.17 to 0.18**, which replaces `number_prefix`
+  (RUSTSEC-2025-0119, unmaintained) with `unit-prefix`. `crates/prtip-scanner`
+  had pinned its own `indicatif = "0.17"` outside the workspace table; it now
+  uses the workspace version, so only one copy is built.
+- **The `fuzz` crate is now audited.** It is excluded from the workspace and
+  keeps its own `Cargo.lock`, so no existing check ever read it. It carried
+  three unfixed `rustls-webpki` advisories (RUSTSEC-2026-0098/0099/0104:
+  incorrect name-constraint acceptance for URI and wildcard names, and a
+  reachable panic parsing certificate revocation lists) plus `bytes`,
+  `crossbeam-epoch` and `time`. All are now fixed, and CI audits that lockfile.
+- **`RUSTSEC-2023-0071` (`rsa`, Marvin Attack) is exempted, not fixed** — no
+  fixed version exists. `rsa` is never compiled: it reaches the lockfile only
+  through `sqlx-mysql`, an optional dependency of `sqlx`, and this project
+  enables only `["runtime-tokio", "sqlite", "chrono"]`. Verified with
+  `cargo tree -i rsa --workspace --target all`, which returns nothing on every
+  target. The exemption lives in `.cargo/audit.toml` (and `fuzz/.cargo/`), with
+  the condition under which it must be removed.
+
+### Fixed (XML output)
+
+- **Service names were written unescaped into `-oX` output.**
+  `crates/prtip-cli/src/output.rs` escaped the banner but interpolated
+  `result.service` directly into the `name="..."` attribute. Both values are
+  chosen by the host being scanned, so a hostile target could close the
+  attribute and inject arbitrary elements into a scan report — a forgery against
+  whatever consumes it. `crates/prtip-cli/src/export.rs` escaped both correctly,
+  which is exactly the inconsistency that having two hand-rolled copies invites.
+- **XML escaping is now one shared, hardened implementation** in
+  `crates/prtip-cli/src/xml.rs`. Beyond the five metacharacters it handles
+  characters XML 1.0 forbids outright — control bytes are illegal even as
+  numeric references, so a banner containing a NUL, which is unremarkable from a
+  binary protocol, previously produced a document conforming parsers reject.
+  Those are now rendered as visible `\xNN`, matching how Nmap presents
+  non-printable banner bytes, so the evidence survives and the document stays
+  valid. Nine tests cover it, including a negative control that walks every byte
+  value and asserts the output contains no illegal code point.
+
+### Changed (supply chain)
+
+- **`.github/dependabot.yml` added.** The repository previously had no
+  Dependabot configuration at all, so it received only the security updates
+  GitHub opens unprompted; routine version updates were never proposed, which is
+  how a `quick-xml` five minor versions behind and a duplicate `ratatui` major
+  went unnoticed. Updates are grouped (minor/patch batched, majors separate,
+  security together) because an ungrouped workspace this size generates enough
+  PRs to be ignored. Covers cargo (root and `fuzz`), GitHub Actions, and
+  `docker/`.
+- **CI runs all four cargo-deny checks**, not just `advisories`. The licence
+  check had never run, so `deny.toml` allowing the deprecated `GPL-3.0`
+  identifier while the workspace declares `GPL-3.0-or-later` would have gone
+  undetected — `cargo deny check licenses` failed locally until this was fixed.
+- **`console` 0.15 to 0.16 and `crossterm` 0.28 to 0.29**, deduplicating two
+  crates that were each being built twice after the `indicatif` and `ratatui`
+  upgrades.
+
 ### Removed
 
 - **`crates/prtip-core/data/nmap-service-probes` (BREAKING for service detection coverage).**

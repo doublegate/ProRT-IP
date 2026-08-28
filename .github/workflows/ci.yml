@@ -277,12 +277,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run cargo-deny
+      # `check advisories` alone left three of cargo-deny's four checks
+      # unenforced. The licence check in particular went unrun, so a
+      # `deny.toml` allow-list that no longer matched the workspace's declared
+      # licence could sit broken indefinitely. `bans` and `sources` are
+      # configured at "warn", so they report without failing the build.
+      - name: Run cargo-deny (advisories, licenses, bans, sources)
         uses: EmbarkStudios/cargo-deny-action@v2
         with:
           log-level: warn
-          command: check advisories
+          command: check
           arguments: --all-features
+
+      # The fuzz targets are excluded from the workspace and keep their own
+      # Cargo.lock, so nothing above reads them -- they carried unfixed
+      # advisories unnoticed. cargo-audit is used here rather than cargo-deny
+      # because it audits a lockfile directly, which is exactly what is needed
+      # for a crate outside the workspace graph.
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Audit fuzz lockfile
+        working-directory: fuzz
+        run: cargo audit
 
   # Job 6: MSRV (Minimum Supported Rust Version) check
   msrv:

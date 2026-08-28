@@ -1,0 +1,37 @@
+# Configuration for `cargo audit` (RustSec).
+#
+# NOTE ON SCOPE: CI enforces advisories through `cargo deny`, configured in
+# `deny.toml`. This file exists for developers running `cargo audit` locally,
+# which is a different tool with a different view of the dependency graph --
+# see the entry below for why that difference matters.
+
+[advisories]
+ignore = [
+    # RUSTSEC-2023-0071 -- Marvin Attack in `rsa` (5.9 medium, no fix exists).
+    #
+    # `rsa` is never compiled into any ProRT-IP artifact. It reaches
+    # Cargo.lock only through `sqlx-mysql`, an *optional* dependency of `sqlx`.
+    # Cargo records every optional dependency in the lockfile regardless of
+    # whether its feature is enabled, and this workspace enables only
+    # `["runtime-tokio", "sqlite", "chrono"]` -- there is no MySQL backend.
+    #
+    # This is precisely where the two tools disagree, and the disagreement is
+    # the point:
+    #   * `cargo audit` parses Cargo.lock literally, so it sees `rsa` and
+    #     reports it. Hence this ignore.
+    #   * `cargo deny` resolves the real feature-aware graph, never encounters
+    #     `rsa`, and needs no ignore -- adding one there just produces an
+    #     "advisory-not-detected" warning.
+    #
+    # Verified rather than assumed:
+    #     cargo tree -i rsa        --workspace --target all   -> nothing to print
+    #     cargo tree -i sqlx-mysql --workspace --target all   -> nothing to print
+    #
+    # ProRT-IP performs no RSA operations and links no RSA code, so a timing
+    # sidechannel in RSA decryption is unreachable. There is no fixed version
+    # to upgrade to.
+    #
+    # REMOVE THIS ENTRY IF: a MySQL backend is ever enabled, or `cargo tree -i
+    # rsa` starts returning edges. Then the risk is real and must be reassessed.
+    "RUSTSEC-2023-0071",
+]

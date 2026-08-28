@@ -4,7 +4,13 @@
 *.pdb
 Cargo.lock.bak
 audit.toml.lock
-.cargo/
+# Ignore .cargo contents (local config.toml, credentials, registry caches) but
+# keep audit.toml tracked -- it carries the reviewed advisory exemptions and CI
+# needs it. Note the pattern must be `.cargo/*`, not `.cargo/`: git does not
+# descend into an excluded *directory*, so a `!.cargo/audit.toml` negation
+# under `.cargo/` would never be consulted.
+.cargo/*
+!.cargo/audit.toml
 rust-project.json
 .rust-analyzer/
 

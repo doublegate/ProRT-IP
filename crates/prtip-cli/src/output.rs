@@ -1,5 +1,6 @@
 //! Output formatters for scan results
 
+use crate::xml::escape_xml;
 use anyhow::Result;
 use chrono::Utc;
 use colored::*;
@@ -392,17 +393,15 @@ impl OutputFormatter for XmlFormatter {
                 ));
 
                 // Service info if available
+                // Both the service name and the banner are chosen by the host
+                // being scanned, so both must be escaped. See crate::xml.
                 if let Some(service) = &result.service {
-                    output.push_str(&format!("        <service name=\"{}\"", service));
+                    output.push_str(&format!(
+                        "        <service name=\"{}\"",
+                        escape_xml(service)
+                    ));
                     if let Some(banner) = &result.banner {
-                        // Escape XML special characters
-                        let escaped_banner = banner
-                            .replace('&', "&amp;")
-                            .replace('<', "&lt;")
-                            .replace('>', "&gt;")
-                            .replace('"', "&quot;")
-                            .replace('\'', "&apos;");
-                        output.push_str(&format!(" product=\"{}\"", escaped_banner));
+                        output.push_str(&format!(" product=\"{}\"", escape_xml(banner)));
                     }
                     output.push_str(" />\n");
                 }

@@ -178,3 +178,7 @@ gha-creds-*.json
 # Benchmark artifacts
 benchmarks/*/Cargo.lock
 benchmarks/*/target/
+
+# markdown-link-check working files (mlc_config.json IS tracked; these are generated)
+mlc_effective.json
+files.txt

@@ -261,6 +261,31 @@ along with every unmaintained/unsound warning. `cargo audit` and
   third-party-material statement moved there, because `LICENSE` has to be the
   licence text and nothing else for both of the reasons above. Nothing was
   dropped in the move.
+- **Seven broken internal documentation links** in
+  `to-dos/PHASE-5/SPRINT-5.5.5-TODO.md` and `SPRINT-5.5.6-TODO.md`. They pointed
+  at `../docs/...` and `../benchmarks/...` from `to-dos/PHASE-5/`, which resolves
+  one directory short; all four targets exist and are now reached via `../../`.
+  They went undetected because the link checker's `to-dos/` step ended with
+  `|| true`, discarding every failure in that directory.
+- **The markdown link check no longer gates merges on third-party uptime.** It
+  validated external links on every pull request, so mergeability depended on
+  whether unrelated websites answered a CI runner. Three consecutive runs failed
+  on three different hosts — a 429 from `docs.ansible.com`, then a connection
+  failure to `bgp.tools` — while the genuinely broken internal links above sat
+  hidden behind them. Pull requests and pushes now check **internal links only**
+  (relative paths and heading anchors), which is deterministic and entirely
+  within the repository's control; the weekly scheduled run and manual dispatches
+  check external links as well. Verified across all 232 markdown files: zero
+  broken internal links.
+- **`mlc_config.json` is now actually used.** The workflow generated its own
+  configuration over the top of the committed file, so editing it had no effect.
+  The committed file is the single source of truth, with the workflow layering
+  only the pull-request-mode ignore on top.
+- **The link check reports its real result.** The summary step ran with
+  `if: always()` and unconditionally printed "✅ All markdown links validated
+  successfully", including on failure. It now reports the file counts and the
+  actual outcome. The check loop also visits every file before failing, instead
+  of exiting at the first broken link and hiding the rest.
 - **`mmap_writer.rs` uses `usize::is_multiple_of`.** Raising the MSRV to 1.88
   enabled `clippy::manual_is_multiple_of`, which is MSRV-gated because the
   method stabilised in 1.87. The compile-time alignment assertion now reads

@@ -1801,9 +1801,9 @@ Track progress in `/tmp/ProRT-IP/SPRINT-5.5.5-PROGRESS.md`:
 
 ### Internal Documentation
 
-- [Performance Characteristics Guide](../docs/34-PERFORMANCE-CHARACTERISTICS.md) - Baseline metrics
-- [Benchmarking Guide](../docs/31-BENCHMARKING-GUIDE.md) - Framework usage
-- [Architecture](../docs/00-ARCHITECTURE.md) - System design
+- [Performance Characteristics Guide](../../docs/34-PERFORMANCE-CHARACTERISTICS.md) - Baseline metrics
+- [Benchmarking Guide](../../docs/31-BENCHMARKING-GUIDE.md) - Framework usage
+- [Architecture](../../docs/00-ARCHITECTURE.md) - System design
 - [Sprint 5.5.4 TODO](SPRINT-5.5.4-TODO.md) - Previous sprint (benchmarking)
 - [Phase 5.5 Master Plan](PHASE-5.5-PRE-TUI-ENHANCEMENTS.md) - Overall roadmap
 

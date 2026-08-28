@@ -1,4 +1,5 @@
 {
+  "_comment": "Base configuration for markdown-link-check. This file is the single source of truth and is used directly by .github/workflows/markdown-links.yml. On pull requests and pushes the workflow layers one extra ignorePattern on top of it, '^https?://', so that only internal links (relative paths and heading anchors) gate a merge; the weekly scheduled run and manual dispatches use this file as-is and do check external links. Edit this file to change link-checking behaviour -- it previously had no effect, because the workflow generated its own copy over the top.",
   "ignorePatterns": [
     {
       "pattern": "^http://localhost"
@@ -7,10 +8,18 @@
       "pattern": "^https://localhost"
     },
     {
-      "pattern": "^http://127.0.0.1"
+      "pattern": "^http://127\\.0\\.0\\.1"
     },
     {
-      "pattern": "^https://127.0.0.1"
+      "pattern": "^https://127\\.0\\.0\\.1"
+    },
+    {
+      "pattern": "^mailto:",
+      "comment": "Not a fetchable URL"
+    },
+    {
+      "pattern": "^https://nvd\\.nist\\.gov",
+      "comment": "NIST NVD blocks automated requests via Cloudflare"
     },
     {
       "pattern": "^https://hub\\.docker\\.com/r/doublegate/prtip",
@@ -35,5 +44,6 @@
   "retryOn429": true,
   "retryCount": 3,
   "fallbackRetryDelay": "30s",
-  "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 999]
+  "_comment_aliveStatusCodes": "403, 429 and 999 all mean the server answered and declined this particular request. That proves the host resolves and is serving, which is the opposite of a dead link. 429 in particular was failing builds on docs.ansible.com despite retryOn429 above.",
+  "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 429, 999]
 }

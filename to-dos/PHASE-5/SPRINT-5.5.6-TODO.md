@@ -2142,10 +2142,10 @@ Track progress in `/tmp/ProRT-IP/SPRINT-5.5.6-PROGRESS.md`:
 
 ### Internal Documentation
 
-- [Profiling Analysis](../benchmarks/profiling/PROFILING-ANALYSIS.md) - Sprint 5.5.5 findings
-- [Performance Characteristics Guide](../docs/34-PERFORMANCE-CHARACTERISTICS.md) - Baseline metrics
-- [Benchmarking Guide](../docs/31-BENCHMARKING-GUIDE.md) - Framework usage
-- [Architecture](../docs/00-ARCHITECTURE.md) - System design
+- [Profiling Analysis](../../benchmarks/profiling/PROFILING-ANALYSIS.md) - Sprint 5.5.5 findings
+- [Performance Characteristics Guide](../../docs/34-PERFORMANCE-CHARACTERISTICS.md) - Baseline metrics
+- [Benchmarking Guide](../../docs/31-BENCHMARKING-GUIDE.md) - Framework usage
+- [Architecture](../../docs/00-ARCHITECTURE.md) - System design
 - [Sprint 5.5.5 TODO](SPRINT-5.5.5-TODO.md) - Previous sprint (profiling)
 - [Phase 5.5 Master Plan](PHASE-5.5-PRE-TUI-ENHANCEMENTS.md) - Overall roadmap
 

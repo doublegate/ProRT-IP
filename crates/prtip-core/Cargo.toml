@@ -29,12 +29,12 @@ tokio = { workspace = true }
 rand = { workspace = true }
 sysinfo = { workspace = true }
 flate2 = "1.0"
-dirs = "5.0"
+dirs = "6.0"
 rkyv = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
-criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
 tempfile = "3.8"
 filetime = "0.2"
 

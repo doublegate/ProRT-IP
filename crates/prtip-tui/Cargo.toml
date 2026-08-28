@@ -32,7 +32,7 @@ anyhow = { workspace = true }
 thiserror = { workspace = true }
 
 # Networking
-ipnetwork = "0.20"
+ipnetwork = "0.21"
 
 # Date/time handling
 chrono = { workspace = true }

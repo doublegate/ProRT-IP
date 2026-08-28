@@ -14,13 +14,15 @@ the NPSL-covered material described below from **every** commit, not just from t
 tip. A clone carries every past revision of every file, so publishing the original
 history would have distributed that material regardless of what the tip contained.
 
-Six paths were removed from all 452 commits: the vendored `nmap-service-probes`
-corpus, the three files that carried the `nmap-services`-derived port array
-(`top_ports.rs`, `examples/common_fast_scan.rs`, `widgets/port_selection.rs`), the
-documentation page holding a verbatim copy of Nmap's top ten ports, and — for size
-rather than licensing — 35 MB of regenerable `perf` captures under
-`benchmarks/archive/*/perf/`. All 452 commits and all 28 release tags survive; no
-commit became empty, but every commit hash changed.
+Five paths were removed for licensing: the vendored `nmap-service-probes` corpus,
+the three files that carried the `nmap-services`-derived port array
+(`top_ports.rs`, `examples/common_fast_scan.rs`, `widgets/port_selection.rs`), and
+the documentation page holding a verbatim copy of Nmap's top ten ports. Separately,
+for size rather than licensing, roughly 35 MB of regenerable `perf` captures were
+removed from both the path they occupy now (`benchmarks/archive/*/perf/`) and the
+path they occupied before being moved there (`benchmarks/06-sprint4.5-profiling/`);
+stripping only the first left a 24 MB blob still reachable. All 453 commits and all
+28 release tags survive; no commit became empty, but every commit hash changed.
 
 Two consequences worth knowing: commits predating the remediation no longer build,
 because they reference a `top_ports.rs` that no longer exists at that point in

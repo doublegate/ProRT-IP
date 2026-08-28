@@ -26,7 +26,8 @@ have distributed it just as surely as shipping it at the tip.
 | `crates/prtip-scanner/examples/common_fast_scan.rs` | Carried a hand-copied duplicate of that 100-port array. |
 | `crates/prtip-tui/src/widgets/port_selection.rs` | Carried a third copy of the same array. |
 | `docs/src/reference/port-specification.md` | Documented a `--top-ports 10` example that was verbatim Nmap's top ten. |
-| `benchmarks/archive/*/perf/*` | Not a licensing matter. 35 MB of regenerable `perf` captures, including a single 24 MB `.data` file, removed to keep clone size reasonable. |
+| `benchmarks/archive/*/perf/*` | Not a licensing matter. Regenerable `perf` captures, removed to keep clone size reasonable. |
+| `benchmarks/06-sprint4.5-profiling/` — `*.data`, `*-perf-script.txt`, `*-report.txt`, `*-collapsed.txt`, `*-flamegraph.svg` | The same captures at the path they occupied before being moved under `archive/`. Stripping only the post-move path left a 24 MB `.data` blob reachable, so both paths had to go. The Markdown and JSON summaries at that path were kept. |
 
 All five of the first group have been recreated from clean-room work and are
 present at the tip. Their pre-rewrite history lives only in the private archive
@@ -34,10 +35,17 @@ described below.
 
 ## What was kept
 
-Everything else, including all 452 commits and all 28 release tags. The rewrite
+Everything else, including all 453 commits and all 28 release tags. The rewrite
 removed paths, not commits: no commit became empty, and the commit graph's shape
 is unchanged. Commit hashes did change, because removing a blob changes every
 tree and therefore every commit that contains it.
+
+The size saving was smaller than the raw figures suggest: roughly 35 MB of
+capture files reduced the packed repository from about 20 MB to 17 MB, because
+`perf.data` compresses very well inside a pack. The reason to remove them was
+that a 24 MB blob is paid for on every clone regardless of how well it packs,
+and the captures are reproducible from
+`benchmarks/profiling/PROFILING-SETUP.md`.
 
 Some Nmap-shaped material was deliberately **not** treated as Covered Software.
 A truncated TLS ClientHello (`\x16\x03\x00\x00S\x01\x00\x00O\x03\x00`) appeared

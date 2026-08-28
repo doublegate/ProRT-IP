@@ -450,9 +450,20 @@ See [SECURITY.md](SECURITY.md) for full policy.
 
 ## License
 
-This project is licensed under the **GNU General Public License v3.0** - see [LICENSE](LICENSE) for details.
+**GPL-3.0-or-later.** The complete licence text is in [LICENSE](LICENSE); the
+copyright notice, acceptable-use terms and third-party statement are in
+[NOTICE.md](NOTICE.md).
 
-GPLv3 allows you to use, study, modify, and distribute the software, provided that derivative works are also licensed under GPLv3.
+GPLv3 lets you use, study, modify and distribute this software, provided
+derivative works are licensed under GPLv3 as well.
+
+ProRT-IP vendors no third-party data files. Its service-detection corpus and its
+`-F` / `--top-ports` ordering are generated from the IANA port registry and
+published protocol specifications — see
+[ATTRIBUTION.md](crates/prtip-core/data/ATTRIBUTION.md) for per-source provenance,
+and [docs/36-REPOSITORY-HISTORY.md](docs/36-REPOSITORY-HISTORY.md) for the record
+of the pre-publication history rewrite that removed previously-vendored
+NPSL-covered material.
 
 ---
 

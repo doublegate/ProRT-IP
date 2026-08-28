@@ -150,6 +150,20 @@ private archived repository. Full detail: `docs/36-REPOSITORY-HISTORY.md`.
 
 ### Fixed
 
+- **`LICENSE` now contains the GNU General Public License.** It previously held
+  only the short notice — the "This program is free software..." paragraphs, the
+  acceptable-use warning, and a line reading "For the full text of the GNU General
+  Public License v3.0, visit https://www.gnu.org/licenses/gpl-3.0.txt". A URL is
+  not a copy: GPLv3 section 4 requires conveying a verbatim copy of the License
+  with the work, and the notice's own "You should have received a copy" sentence
+  was not true for anyone who cloned this repository. The file is now the
+  unmodified 674-line FSF text (SHA-256 `8ceb4b9e…`, cross-checked against two
+  independent copies). Licence scanners could not identify the old file either, so
+  the repository advertised its licence as "Other".
+- **`NOTICE.md` added.** The copyright notice, the acceptable-use terms and a
+  third-party-material statement moved there, because `LICENSE` has to be the
+  licence text and nothing else for both of the reasons above. Nothing was
+  dropped in the move.
 - **`cargo fmt --all -- --check` passes again.** CI runs that exact command and the
   repository has no `rustfmt.toml`, so the default style is the only one the gate
   accepts — but commit 87f0bea had introduced match arms terminated with `},` and

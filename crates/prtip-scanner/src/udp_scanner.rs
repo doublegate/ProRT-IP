@@ -411,7 +411,7 @@ impl UdpScanner {
             .config
             .network
             .source_port
-            .unwrap_or_else(|| rand::thread_rng().gen_range(1024..65535));
+            .unwrap_or_else(|| rand::rng().random_range(1024..65535));
 
         // Get protocol-specific payload if available
         let payload = get_udp_payload(port).unwrap_or_default();
@@ -924,7 +924,7 @@ impl UdpScanner {
                 .config
                 .network
                 .source_port
-                .unwrap_or_else(|| rand::thread_rng().gen_range(1024..65535));
+                .unwrap_or_else(|| rand::rng().random_range(1024..65535));
 
             // Get protocol-specific payload
             let payload = get_udp_payload(port).unwrap_or_default();

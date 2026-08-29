@@ -65,7 +65,7 @@ console = "0.16"
 
 # Utilities
 num_cpus = { workspace = true }
-dirs = "5.0"
+dirs = { workspace = true }
 parking_lot = { workspace = true }
 
 # Platform-specific

@@ -155,10 +155,12 @@ impl ResourceMonitor {
 
         // Refresh system information
         self.system.refresh_memory();
-        self.system.refresh_cpu();
+        // sysinfo 0.39 split `refresh_cpu()` into targeted refreshes; only
+        // usage is read here, so the frequency probe is not paid for.
+        self.system.refresh_cpu_usage();
 
         let available_memory = self.system.available_memory();
-        let cpu_usage = self.system.global_cpu_info().cpu_usage();
+        let cpu_usage = self.system.global_cpu_usage();
 
         let memory_ok = available_memory >= self.config.memory_threshold;
         let cpu_ok = cpu_usage <= self.config.cpu_threshold;
@@ -183,7 +185,7 @@ impl ResourceMonitor {
 
     /// Get CPU usage percentage (0-100)
     pub fn cpu_usage(&self) -> f32 {
-        self.system.global_cpu_info().cpu_usage()
+        self.system.global_cpu_usage()
     }
 
     /// Get the last checked status without refreshing

@@ -21,8 +21,6 @@ tokio = { workspace = true }
 pnet = { workspace = true }
 pnet_datalink = { workspace = true }
 pnet_packet = { workspace = true }
-socket2 = { workspace = true }
-etherparse = { workspace = true }
 bytes = "1.9"
 thiserror = { workspace = true }
 anyhow = { workspace = true }

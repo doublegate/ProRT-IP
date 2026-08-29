@@ -187,7 +187,7 @@ impl TcpPacketBuilder {
     /// Create a new TCP packet builder with default values
     pub fn new() -> Self {
         use rand::Rng;
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         Self {
             src_mac: None,
@@ -195,10 +195,10 @@ impl TcpPacketBuilder {
             src_ip: None,
             dst_ip: None,
             ttl: 64, // Standard Linux default
-            ip_id: rng.gen(),
+            ip_id: rng.random(),
             src_port: None,
             dst_port: None,
-            seq: rng.gen(),
+            seq: rng.random(),
             ack: 0,
             flags: TcpFlags::empty(),
             window: 65535,
@@ -898,7 +898,7 @@ impl UdpPacketBuilder {
     /// Create a new UDP packet builder with default values
     pub fn new() -> Self {
         use rand::Rng;
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         Self {
             src_mac: None,
@@ -906,7 +906,7 @@ impl UdpPacketBuilder {
             src_ip: None,
             dst_ip: None,
             ttl: 64,
-            ip_id: rng.gen(),
+            ip_id: rng.random(),
             src_port: None,
             dst_port: None,
             payload: Vec::new(),

@@ -350,7 +350,9 @@ fn test_security_capability_detection() {
         #[cfg(target_os = "windows")]
         {
             unsafe {
-                use windows::Win32::Foundation::BOOL;
+                // `windows` 0.62 moved BOOL out of Win32::Foundation into the
+                // windows-core re-export.
+                use windows::core::BOOL;
                 let is_admin: BOOL = IsUserAnAdmin();
                 if is_admin.as_bool() {
                     assert!(

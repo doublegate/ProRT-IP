@@ -519,7 +519,7 @@ impl TcpConnectScanner {
         ports: Vec<u16>,
         max_concurrent: usize,
     ) -> Result<Vec<ScanResult>> {
-        let hosts = target.expand_hosts();
+        let hosts = target.expand_hosts()?;
         let mut all_results = Vec::new();
 
         for host in hosts {

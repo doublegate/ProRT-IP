@@ -423,7 +423,7 @@ impl StealthScanner {
             .config
             .network
             .source_port
-            .unwrap_or_else(|| rand::thread_rng().gen_range(1024..65535));
+            .unwrap_or_else(|| rand::rng().random_range(1024..65535));
 
         // Send probe
         self.send_probe(target, port, src_port, scan_type, pcapng_writer.clone())
@@ -527,8 +527,8 @@ impl StealthScanner {
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<()> {
         use rand::Rng;
-        let mut rng = rand::thread_rng();
-        let sequence: u32 = rng.gen();
+        let mut rng = rand::rng();
+        let sequence: u32 = rng.random();
 
         // Get appropriate local IP for target
         let local_ip = self.get_local_ip_for_target(target)?;
@@ -991,7 +991,7 @@ impl StealthScanner {
             // Generate random source port
             let src_port = {
                 use rand::Rng;
-                rand::thread_rng().gen_range(32768..=61000)
+                rand::rng().random_range(32768..=61000)
             };
 
             // Build packet based on target IP version

@@ -80,18 +80,16 @@ impl ScanTarget {
         }
     }
 
-    /// Get the number of hosts in this target
-    pub fn host_count(&self) -> u64 {
+    /// Total addresses in this target, including network and broadcast.
+    ///
+    /// This is what [`Self::expand_hosts`] yields, so it is the number to size
+    /// buffers and queues from. Distinct from [`Self::host_count`], which
+    /// reports *usable* hosts and is therefore smaller for most prefixes --
+    /// conflating the two sized a result queue at 2 for a /30 that then scanned
+    /// 4 addresses.
+    pub fn address_count(&self) -> u64 {
         match self.network {
-            IpNetwork::V4(net) => {
-                let size = 2u64.pow((32 - net.prefix()) as u32);
-                // Subtract network and broadcast addresses for non-/32
-                if net.prefix() < 32 {
-                    size.saturating_sub(2)
-                } else {
-                    size
-                }
-            }
+            IpNetwork::V4(net) => 2u64.pow((32 - net.prefix()) as u32),
             IpNetwork::V6(net) => {
                 let prefix = net.prefix();
                 if prefix >= 64 {
@@ -103,9 +101,77 @@ impl ScanTarget {
         }
     }
 
-    /// Expand into individual host IPs
-    pub fn expand_hosts(&self) -> Vec<IpAddr> {
-        self.network.iter().collect()
+    /// Number of *usable* hosts in this target.
+    ///
+    /// Excludes the network and broadcast addresses where they exist, so this
+    /// is the figure to show a user. For anything that must match what is
+    /// actually scanned, use [`Self::address_count`].
+    pub fn host_count(&self) -> u64 {
+        match self.network {
+            IpNetwork::V4(net) => {
+                let size = self.address_count();
+                match net.prefix() {
+                    // A /32 is a single host: no network or broadcast address.
+                    32 => size,
+                    // A /31 likewise -- RFC 3021 makes both addresses usable on
+                    // a point-to-point link. Subtracting 2 here returned 0
+                    // usable hosts, which surfaced as "Result queue full (0/0)".
+                    31 => size,
+                    _ => size.saturating_sub(2),
+                }
+            }
+            IpNetwork::V6(_) => self.address_count(),
+        }
+    }
+
+    /// First address in the target, without expanding it.
+    ///
+    /// `network.iter().next()` is O(1). Several callers need only the first
+    /// host -- to pick an IP version, or to key a backoff table -- and were
+    /// materialising the entire address list to index `[0]`, which meant a /8
+    /// allocated 268 MB to read one address.
+    ///
+    /// Returns `None` only for a network that yields no addresses.
+    pub fn first_host(&self) -> Option<IpAddr> {
+        self.network.iter().next()
+    }
+
+    /// Largest target set this will materialise into a `Vec<IpAddr>`.
+    ///
+    /// 16.7 million is a /8 -- larger than any legitimate single target, and
+    /// about 268 MB of `IpAddr` before any per-host scan state. Above this,
+    /// expansion is refused rather than attempted.
+    pub const MAX_EXPANDABLE_HOSTS: u64 = 1 << 24;
+
+    /// Expand into individual host IPs.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::InvalidTarget`] if the target contains more than
+    /// [`Self::MAX_EXPANDABLE_HOSTS`] addresses.
+    ///
+    /// This is fallible on purpose. The address count comes from user input and
+    /// grows as `2^(32 - prefix)`, so an unbounded `iter().collect()` turns
+    /// `0.0.0.0/0` into an attempt to allocate 4.3 billion addresses -- roughly
+    /// 68 GB. That is a self-inflicted denial of service on the machine running
+    /// the scan, triggered by eight characters of input.
+    ///
+    /// Earlier versions were saved from this by accident: expanding a `/0`
+    /// overflowed an integer and panicked quickly. `ipnetwork` 0.21 removed the
+    /// overflow, which turned a fast, loud failure into a slow hang ending in
+    /// the OOM killer. The bound is the fix the panic was standing in for.
+    pub fn expand_hosts(&self) -> Result<Vec<IpAddr>> {
+        let count = self.address_count();
+        if count > Self::MAX_EXPANDABLE_HOSTS {
+            return Err(Error::InvalidTarget(format!(
+                "{} contains {} addresses, above the {} limit for host expansion. \
+                 Narrow the prefix (a /8 is the widest accepted) or split the scan.",
+                self.network,
+                count,
+                Self::MAX_EXPANDABLE_HOSTS
+            )));
+        }
+        Ok(self.network.iter().collect())
     }
 }
 
@@ -942,6 +1008,96 @@ mod tests {
         assert!(PortRange::parse("abc").is_err());
         assert!(PortRange::parse("100-50").is_err());
         assert!(PortRange::parse("").is_err());
+    }
+
+    #[test]
+    fn test_host_count_matches_expansion() {
+        // These two must never disagree: the scheduler sizes its result queue
+        // from host_count() and then scans expand_hosts(). They diverged for
+        // /31, where host_count() returned 0 while expansion produced 2.
+        for cidr in [
+            "192.168.1.1/32",
+            "192.168.1.0/31",
+            "192.168.1.0/30",
+            "192.168.1.0/29",
+            "192.168.1.0/24",
+        ] {
+            let t = ScanTarget::parse(cidr).unwrap();
+            let expanded = t.expand_hosts().unwrap().len() as u64;
+            assert_eq!(
+                t.address_count(),
+                expanded,
+                "{cidr}: address_count() must equal what expand_hosts() yields"
+            );
+            assert!(
+                t.host_count() <= t.address_count(),
+                "{cidr}: usable hosts cannot exceed total addresses"
+            );
+        }
+    }
+
+    #[test]
+    fn test_host_count_slash_31_is_two() {
+        // RFC 3021: both addresses of a /31 are usable on a point-to-point
+        // link, so there is nothing to subtract.
+        let t = ScanTarget::parse("192.168.1.0/31").unwrap();
+        assert_eq!(t.host_count(), 2);
+        assert_eq!(t.expand_hosts().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn test_expand_hosts_within_limit() {
+        let target = ScanTarget::parse("192.168.1.0/30").unwrap();
+        let hosts = target
+            .expand_hosts()
+            .expect("a /30 is well within the limit");
+        assert_eq!(hosts.len(), 4);
+    }
+
+    #[test]
+    fn test_expand_hosts_refuses_entire_internet() {
+        // The regression this guards: `ipnetwork` 0.21 stopped overflowing on a
+        // /0, so `iter().collect()` went from a fast panic to an attempt to
+        // allocate 4.3 billion addresses -- a hang ending in the OOM killer,
+        // reachable from eight characters of user input.
+        let target = ScanTarget::parse("0.0.0.0/0").unwrap();
+        let err = target
+            .expand_hosts()
+            .expect_err("/0 must be refused, not attempted");
+
+        let msg = err.to_string();
+        // 2^32 -- every address, which is what expansion would allocate. Not
+        // 4294967294 (host_count), because the cap measures the allocation.
+        assert!(
+            msg.contains("4294967296"),
+            "should state the real size: {msg}"
+        );
+        assert!(msg.contains("limit"), "should name the limit: {msg}");
+    }
+
+    #[test]
+    fn test_expand_hosts_limit_boundary() {
+        // A /8 is exactly at the cap and must still be permitted; a /7 is over.
+        let at_limit = ScanTarget::parse("10.0.0.0/8").unwrap();
+        assert!(at_limit.host_count() <= ScanTarget::MAX_EXPANDABLE_HOSTS);
+
+        let over_limit = ScanTarget::parse("10.0.0.0/7").unwrap();
+        assert!(over_limit.host_count() > ScanTarget::MAX_EXPANDABLE_HOSTS);
+        assert!(over_limit.expand_hosts().is_err());
+    }
+
+    #[test]
+    fn test_first_host_does_not_require_expansion() {
+        // Must work for a target far too large to expand -- that is the point.
+        let huge = ScanTarget::parse("0.0.0.0/0").unwrap();
+        assert!(huge.expand_hosts().is_err());
+        assert!(huge.first_host().is_some());
+
+        let small = ScanTarget::parse("192.168.1.0/30").unwrap();
+        assert_eq!(
+            small.first_host(),
+            small.expand_hosts().unwrap().first().copied()
+        );
     }
 
     #[test]

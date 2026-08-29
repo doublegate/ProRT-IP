@@ -33,6 +33,22 @@ private archived repository. Full detail: `docs/36-REPOSITORY-HISTORY.md`.
 
 ### Security
 
+- **`ScanTarget::expand_hosts` is bounded and fallible.** It was
+  `network.iter().collect()` with no limit, so `prtip -sT -p 80 0.0.0.0/0` --
+  eight characters of user input -- attempted to allocate 4.3 billion addresses,
+  roughly 68 GB. Verified before and after: the old build banner-printed and then
+  hung until SIGKILL (exit 137); it now exits 1 immediately with
+  `Invalid target: 0.0.0.0/0 contains 4294967296 addresses, above the 16777216
+  limit for host expansion`. A self-inflicted denial of service on the machine
+  running the scan.
+  Earlier releases were saved from this only by accident -- expanding a `/0`
+  overflowed an integer and panicked fast. `ipnetwork` 0.21 removed the overflow,
+  converting a loud failure into a silent hang, which is how this surfaced. The
+  limit is the check that panic was standing in for, and is what the existing
+  test's own "Future enhancement: should validate CIDR size before expansion"
+  note had been asking for.
+
+
 All nine RustSec advisories affecting crates this project compiles are resolved,
 along with every unmaintained/unsound warning. `cargo audit` and
 `cargo deny check` both exit 0, for the workspace and for the `fuzz` crate, and
@@ -91,6 +107,26 @@ along with every unmaintained/unsound warning. `cargo audit` and
   target. The exemption lives in `.cargo/audit.toml` (and `fuzz/.cargo/`), with
   the condition under which it must be removed.
 
+### Fixed (target counting)
+
+- **`host_count()` reported 0 usable hosts for a `/31`.** RFC 3021 makes both
+  addresses of a point-to-point `/31` usable, but the code subtracted a network
+  and broadcast address unconditionally below `/32`. Harmless while nothing
+  trusted the number; it became `Scanner error: Result queue full (0/0)` the
+  moment the scheduler sized its queue from it.
+- **`address_count()` split from `host_count()`.** They answer different
+  questions -- every address versus usable hosts -- and conflating them sized a
+  result queue at 2 for a `/30` that then scanned 4 addresses. The scheduler now
+  uses `address_count()`, which is pinned by test to equal exactly what
+  `expand_hosts()` yields; `host_count()` remains the figure to show a user.
+- **Counting no longer allocates.** `scheduler.rs` computed
+  `targets.iter().map(|t| t.expand_hosts().len()).sum()` -- materialising every
+  address purely to count it. Now O(1) arithmetic.
+- **`ScanTarget::first_host()` added.** Four call sites in `decoy_scanner.rs`
+  expanded an entire target to read `hosts[0]`, so a `/8` allocated 268 MB to
+  obtain one address. `first_host()` is `iter().next()`, and works even on
+  targets too large to expand.
+
 ### Fixed (XML output)
 
 - **Service names were written unescaped into `-oX` output.**
@@ -109,6 +145,45 @@ along with every unmaintained/unsound warning. `cargo audit` and
   non-printable banner bytes, so the evidence survives and the document stays
   valid. Nine tests cover it, including a negative control that walks every byte
   value and asserts the output contains no illegal code point.
+
+### Changed (dependency majors)
+
+Supersedes Dependabot #3 and #4, which proposed the same wave from two
+directions -- the "fuzz-deps" group turned out to rewrite the root workspace
+manifest, because `fuzz/` depends on the workspace by path.
+
+- **`etherparse` and `socket2` removed.** Declared in three manifests each,
+  imported by **zero** source files -- the same pattern as `quick-xml` and
+  `tui-input`. The two riskiest majors in the group (`etherparse` 0.15 -> 0.21,
+  `socket2` 0.5 -> 0.6) needed deleting, not migrating.
+- **`rand` 0.8 -> 0.9**, the only bump needing real code work: 24 `thread_rng`,
+  17 `gen`/`gen::<T>`, and 16 `gen_range` call sites across 10 files, renamed to
+  `rng`, `random`, and `random_range`. All were deprecations rather than
+  removals, so the build stayed green and only `-D warnings` caught them.
+- **`sysinfo` 0.30 -> 0.38, not 0.39.** 0.39 requires Rust 1.95, well above this
+  workspace's 1.88 floor, and it is directly reachable from `prtip-core`. A local
+  toolchain newer than the MSRV builds it happily; only a metadata check against
+  the declared floor catches it. `refresh_cpu()` and `global_cpu_info()` became
+  `refresh_cpu_usage()` and `global_cpu_usage()`.
+- **`ipnetwork` 0.20 -> 0.21** moved serde support behind a feature; `ScanTarget`
+  derives `Serialize`/`Deserialize` over `IpNetwork`, so `features = ["serde"]`
+  is now explicit.
+- Also `colored` 3.1, `dirs` 6.0, `governor` 0.10, `mlua` 0.12, `nix` 0.31,
+  `rlimit` 0.11, `thiserror` 2.0, `toml` 1.1, `windows` 0.62, `x509-parser` 0.18
+  -- all drop-in.
+- **Crate-local pins folded into the workspace table.** `dirs`, `toml` and
+  `ipnetwork` were pinned separately inside member crates, so each was built
+  twice at two versions.
+- Verified afterwards: 0 of 502 resolved packages require more than Rust 1.88.
+
+### Fixed (test harness)
+
+- **The CLI test helper treated a directory as a binary.** It selected the
+  release binary with `release_path.exists()`, which is true for a *directory*.
+  A `docker run -v "$PWD/target/release/prtip:/prtip"` with no release build
+  present makes Docker create the mount source as a root-owned directory, after
+  which all 52 CLI integration tests failed with a baffling `PermissionDenied`
+  instead of falling back to the perfectly good debug binary. Now `is_file()`.
 
 ### Changed (supply chain)
 

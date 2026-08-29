@@ -40,7 +40,9 @@ fn test_scan_result_serialization() {
 #[test]
 fn test_scan_target_expansion() {
     let target = ScanTarget::parse("192.168.1.0/30").unwrap();
-    let hosts = target.expand_hosts();
+    let hosts = target
+        .expand_hosts()
+        .expect("target is small enough to expand");
     assert_eq!(hosts.len(), 4); // /30 = 4 addresses
 }
 

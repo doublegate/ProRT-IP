@@ -361,7 +361,7 @@ impl ScanScheduler {
         pcapng_writer: Option<Arc<std::sync::Mutex<crate::pcapng::PcapngWriter>>>,
     ) -> Result<Vec<ScanResult>> {
         // Expand target into individual IPs
-        let original_hosts = target.expand_hosts();
+        let original_hosts = target.expand_hosts()?;
         debug!("Target expanded to {} hosts", original_hosts.len());
 
         // Filter CDN IPs if enabled
@@ -654,7 +654,7 @@ impl ScanScheduler {
         // Expand all targets to individual IPs
         let mut original_ips = Vec::new();
         for target in &targets {
-            original_ips.extend(target.expand_hosts());
+            original_ips.extend(target.expand_hosts()?);
         }
 
         // Filter CDN IPs if enabled
@@ -830,7 +830,13 @@ impl ScanScheduler {
         let ports_vec: Vec<u16> = ports.iter().collect();
 
         // Calculate estimated hosts for progress bar and buffer sizing
-        let estimated_hosts: usize = targets.iter().map(|t| t.expand_hosts().len()).sum();
+        // host_count() is O(1) arithmetic; expand_hosts().len() allocated the
+        // entire address list purely to count it.
+        // address_count(), not host_count(): this sizes a queue for what
+        // expand_hosts() actually yields, which includes the network and
+        // broadcast addresses. host_count() reports usable hosts and would
+        // undersize the queue by 2 per target.
+        let estimated_hosts: usize = targets.iter().map(|t| t.address_count() as usize).sum();
 
         // Create progress bar for real-time feedback
         let total_ports = (estimated_hosts * ports_vec.len()) as u64;
@@ -873,7 +879,7 @@ impl ScanScheduler {
         let mut progress_tracker = ProgressTracker::new(scan_id, total_ports);
 
         for target in targets {
-            let original_hosts = target.expand_hosts();
+            let original_hosts = target.expand_hosts()?;
 
             // Filter CDN IPs if enabled
             let hosts = if let Some(ref detector) = self.cdn_detector {

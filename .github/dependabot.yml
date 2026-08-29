@@ -78,6 +78,14 @@ updates:
     labels:
       - dependencies
       - github-actions
+    ignore:
+      # `dtolnay/rust-toolchain@<version>` is not an action version -- the ref
+      # selects which Rust toolchain to install. The MSRV job pins it to the
+      # workspace `rust-version`, so a "version bump" there silently retargets
+      # the check at a newer compiler and the gate stops testing the floor it
+      # exists to enforce. Dependabot proposed 1.88 -> 1.100 exactly once; this
+      # stops it recurring. Update this pin by hand, with Cargo.toml.
+      - dependency-name: "dtolnay/rust-toolchain"
     groups:
       actions:
         patterns:

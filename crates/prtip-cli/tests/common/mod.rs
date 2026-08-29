@@ -46,10 +46,17 @@ pub fn get_binary_path() -> PathBuf {
     release_path.push("release");
     release_path.push(binary_name);
 
-    // Try release first (faster), then debug
-    if release_path.exists() {
+    // Try release first (faster), then debug.
+    //
+    // `is_file()` rather than `exists()`: a *directory* at either path is not a
+    // usable binary, and `exists()` returns true for one. That is not
+    // hypothetical -- `docker run -v "$PWD/target/release/prtip:/prtip"` with
+    // no release build present makes Docker create the mount source as a
+    // root-owned directory, after which every test here fails with a baffling
+    // `PermissionDenied` instead of falling back to the debug binary.
+    if release_path.is_file() {
         release_path
-    } else if debug_path.exists() {
+    } else if debug_path.is_file() {
         debug_path
     } else {
         panic!(

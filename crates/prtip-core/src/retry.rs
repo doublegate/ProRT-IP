@@ -229,7 +229,8 @@ where
 /// The jitter factor is randomly chosen between 0.75 and 1.25, giving a ±25% variation.
 fn add_jitter(delay: Duration) -> Duration {
     use rand::Rng;
-    let jitter_factor = rand::thread_rng().gen_range(0.75..=1.25);
+    // rand 0.9 renamed `thread_rng` to `rng` and `gen_range` to `random_range`.
+    let jitter_factor = rand::rng().random_range(0.75..=1.25);
     Duration::from_secs_f64(delay.as_secs_f64() * jitter_factor)
 }
 

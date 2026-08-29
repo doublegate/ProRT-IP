@@ -272,7 +272,9 @@ async fn test_storage_multiple_scans() {
 async fn test_target_expansion() {
     // Test CIDR expansion
     let target = ScanTarget::parse("192.168.1.0/30").unwrap();
-    let hosts = target.expand_hosts();
+    let hosts = target
+        .expand_hosts()
+        .expect("target is small enough to expand");
 
     // /30 = 4 addresses - 2 (network/broadcast) = 2 usable
     assert_eq!(hosts.len(), 4); // pnet includes network/broadcast

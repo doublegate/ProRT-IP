@@ -277,17 +277,17 @@ impl DecoyScanner {
 
     /// Generate random IPv4 decoy IPs
     fn generate_random_decoys_ipv4(count: usize, exclude: &[Ipv4Addr]) -> Vec<Ipv4Addr> {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let mut decoys = Vec::with_capacity(count);
         let exclude_set: HashSet<Ipv4Addr> = exclude.iter().copied().collect();
 
         // Generate random IPs avoiding reserved ranges
         while decoys.len() < count {
             let ip = Ipv4Addr::new(
-                rng.gen_range(1..224), // Avoid 0.x and 224+ (multicast)
-                rng.gen_range(0..=255),
-                rng.gen_range(0..=255),
-                rng.gen_range(1..255), // Avoid .0 and .255
+                rng.random_range(1..224), // Avoid 0.x and 224+ (multicast)
+                rng.random_range(0..=255),
+                rng.random_range(0..=255),
+                rng.random_range(1..255), // Avoid .0 and .255
             );
 
             // Skip reserved ranges and duplicates
@@ -317,7 +317,7 @@ impl DecoyScanner {
         ]; // First 4 u16 segments = 64 bits
 
         let mut decoys = Vec::with_capacity(count);
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 10000; // Prevent infinite loops
 
@@ -326,10 +326,10 @@ impl DecoyScanner {
 
             // Generate random interface identifier (last 64 bits)
             let iid = [
-                rng.gen::<u16>(),
-                rng.gen::<u16>(),
-                rng.gen::<u16>(),
-                rng.gen::<u16>(),
+                rng.random::<u16>(),
+                rng.random::<u16>(),
+                rng.random::<u16>(),
+                rng.random::<u16>(),
             ];
 
             // Combine prefix + interface identifier
@@ -429,7 +429,7 @@ impl DecoyScanner {
                 if all_decoys.is_empty() {
                     0
                 } else {
-                    rand::thread_rng().gen_range(0..=all_decoys.len())
+                    rand::rng().random_range(0..=all_decoys.len())
                 }
             }
         };
@@ -468,10 +468,10 @@ impl DecoyScanner {
         // Get real source IP (from network interface)
         let real_source = self.get_source_ip(&target)?;
 
-        // Get target IP for backoff check
-        let hosts = target.expand_hosts();
-        let target_ip = if !hosts.is_empty() {
-            hosts[0]
+        // Get target IP for backoff check. Only the first host is needed, so
+        // this must not expand the whole target.
+        let target_ip = if let Some(first) = target.first_host() {
+            first
         } else {
             return Err(Error::Network("No hosts in target".to_string()));
         };
@@ -523,7 +523,7 @@ impl DecoyScanner {
                     .config
                     .network
                     .source_port
-                    .unwrap_or_else(|| rand::thread_rng().gen_range(10000..60000));
+                    .unwrap_or_else(|| rand::rng().random_range(10000..60000));
 
                 let key = ConnectionKey {
                     src_ip: real_source,
@@ -546,8 +546,7 @@ impl DecoyScanner {
 
             // Small random delay between decoys to appear more natural
             if i < send_order.len() - 1 {
-                let delay_us =
-                    rand::thread_rng().gen_range(MIN_DECOY_DELAY_US..=MAX_DECOY_DELAY_US);
+                let delay_us = rand::rng().random_range(MIN_DECOY_DELAY_US..=MAX_DECOY_DELAY_US);
                 time::sleep(Duration::from_micros(delay_us)).await;
             }
         }
@@ -563,10 +562,9 @@ impl DecoyScanner {
         // For now, use a placeholder - should integrate with interface detection
         // In production, this would query routing table or use configured source IP
 
-        // Determine IP version from target
-        let hosts = target.expand_hosts();
-        if !hosts.is_empty() {
-            match hosts[0] {
+        // Determine IP version from target (first host suffices)
+        if let Some(first) = target.first_host() {
+            match first {
                 IpAddr::V4(_) => Ok(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 10))), // IPv4 placeholder
                 IpAddr::V6(_) => Ok(IpAddr::V6(Ipv6Addr::new(0xfe80, 0, 0, 0, 0, 0, 0, 1))), // IPv6 placeholder (link-local)
             }
@@ -583,13 +581,12 @@ impl DecoyScanner {
         port: u16,
         source_ip: IpAddr,
     ) -> Result<Vec<Vec<u8>>> {
-        // Extract first host from target
-        let hosts = target.expand_hosts();
-        if hosts.is_empty() {
+        // Extract first host from target (no expansion needed)
+        let Some(first_host) = target.first_host() else {
             return Err(Error::Network("No hosts in target".to_string()));
-        }
+        };
 
-        let dest_ip = hosts[0];
+        let dest_ip = first_host;
 
         // Ensure IP versions match
         if (source_ip.is_ipv4() && dest_ip.is_ipv6()) || (source_ip.is_ipv6() && dest_ip.is_ipv4())
@@ -604,14 +601,14 @@ impl DecoyScanner {
             .config
             .network
             .source_port
-            .unwrap_or_else(|| rand::thread_rng().gen_range(10000..60000));
+            .unwrap_or_else(|| rand::rng().random_range(10000..60000));
 
         // Build SYN packet (dual-stack support)
         let mut builder = TcpPacketBuilder::new()
             .source_port(src_port)
             .dest_port(port)
             .flags(TcpFlags::SYN)
-            .sequence(rand::thread_rng().gen())
+            .sequence(rand::rng().random())
             .window(65535);
 
         // Apply evasion features from Sprint 4.20
@@ -702,11 +699,8 @@ impl DecoyScanner {
     ) -> Result<ScanResult> {
         use chrono::Utc;
 
-        // Get first host IP from target
-        let hosts = target.expand_hosts();
-        let target_ip = if !hosts.is_empty() {
-            hosts[0]
-        } else {
+        // Get first host IP from target (no expansion needed)
+        let Some(target_ip) = target.first_host() else {
             return Err(Error::Network("No hosts in target".to_string()));
         };
 
@@ -906,9 +900,9 @@ impl DecoyScanner {
 
     /// Shuffle decoy order using Fisher-Yates (supports IPv4 and IPv6)
     fn shuffle_decoys(&self, decoys: &mut [IpAddr]) {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         for i in (1..decoys.len()).rev() {
-            let j = rng.gen_range(0..=i);
+            let j = rng.random_range(0..=i);
             decoys.swap(i, j);
         }
     }

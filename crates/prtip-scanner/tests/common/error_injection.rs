@@ -136,7 +136,7 @@ impl ErrorInjector {
             }
             FailureMode::Probabilistic { rate } => {
                 use rand::Rng;
-                if rand::thread_rng().gen::<f64>() < *rate {
+                if rand::rng().random::<f64>() < *rate {
                     Err(io::Error::new(io::ErrorKind::ConnectionRefused, "probabilistic failure"))
                 } else {
                     Ok(())

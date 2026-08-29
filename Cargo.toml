@@ -19,9 +19,7 @@ tokio-util = "0.7"
 pnet = "0.35"
 pnet_datalink = "0.35"
 pnet_packet = "0.35"
-socket2 = "0.5"
 pcap = "2.0"
-etherparse = "0.15"
 
 # Concurrency
 crossbeam = "0.8"
@@ -32,11 +30,11 @@ dashmap = "6.1"
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-toml = "0.8"
+toml = "1.1"
 
 # CLI
 clap = { version = "4.5", features = ["derive", "cargo"] }
-colored = "2.1"
+colored = "3.1"
 
 # Database
 rusqlite = { version = "0.31", features = ["bundled"] }
@@ -57,7 +55,7 @@ tera = "1.19"
 printpdf = "0.6"
 
 # Home directory detection
-dirs = "5.0"
+dirs = "6.0"
 
 # Packet capture
 pcap-file = "2.0"
@@ -68,24 +66,29 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Error handling
 anyhow = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 
 # Rate limiting
-governor = "0.6"
+governor = "0.10"
 
 # Utilities
-ipnetwork = "0.20"
-rand = "0.8"
+# serde support moved behind a feature flag in 0.21; ScanTarget derives
+# Serialize/Deserialize over IpNetwork, so it must be enabled explicitly.
+ipnetwork = { version = "0.21", features = ["serde"] }
+rand = "0.9"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.7", features = ["v4", "serde"] }
 num_cpus = "1.16"
-rlimit = "0.10"
+rlimit = "0.11"
 indicatif = "0.18"
 regex = "1.11"
-sysinfo = "0.30"
+# 0.39 requires Rust 1.95, above this workspace's 1.88 MSRV. 0.38 is the
+# newest line that fits the floor and carries the same CPU API
+# (refresh_cpu_usage / global_cpu_usage).
+sysinfo = "0.38"
 
 # Plugin system
-mlua = { version = "0.11", features = ["lua54", "vendored", "send"] }
+mlua = { version = "0.12", features = ["lua54", "vendored", "send"] }
 
 # TUI (Terminal User Interface)
 ratatui = "0.30"
@@ -93,9 +96,9 @@ crossterm = { version = "0.29", features = ["event-stream"] }
 futures = "0.3"
 
 # Platform-specific (shared definitions)
-nix = { version = "0.27", features = ["user", "process"] }
+nix = { version = "0.31", features = ["user", "process"] }
 libc = "0.2"
-windows = { version = "0.52", features = ["Win32_Security", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_UI_Shell"] }
+windows = { version = "0.62", features = ["Win32_Security", "Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_UI_Shell"] }
 
 [workspace.package]
 version = "1.0.0"

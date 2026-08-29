@@ -141,8 +141,12 @@ fn test_cidr_slash_0_entire_internet() {
         stderr
     );
 
-    // NOTE: This test documents current behavior (panic on overflow)
-    // Future enhancement: should validate CIDR size before expansion
+    // The "future enhancement" this note used to describe is now implemented:
+    // ScanTarget::expand_hosts validates the address count against
+    // MAX_EXPANDABLE_HOSTS and returns Error::InvalidTarget, so /0 is refused
+    // with a message rather than panicking on overflow (old behaviour) or
+    // hanging until the OOM killer intervenes (behaviour after ipnetwork 0.21
+    // removed the overflow).
 }
 
 #[test]

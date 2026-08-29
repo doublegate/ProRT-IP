@@ -426,16 +426,16 @@ async fn send_spoofed_syn(zombie_ip: IpAddr, target_ip: IpAddr, target_port: u16
         }
     };
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     // 1. Build TCP SYN packet
     let mut tcp_buffer = vec![0u8; 20]; // TCP header (no options)
     let mut tcp_packet = MutableTcpPacket::new(&mut tcp_buffer)
         .ok_or_else(|| Error::Scanner("Failed to create TCP packet".into()))?;
 
-    tcp_packet.set_source(rng.gen::<u16>()); // Random source port
+    tcp_packet.set_source(rng.random::<u16>()); // Random source port
     tcp_packet.set_destination(target_port);
-    tcp_packet.set_sequence(rng.gen::<u32>()); // Random ISN
+    tcp_packet.set_sequence(rng.random::<u32>()); // Random ISN
     tcp_packet.set_flags(TcpFlags::SYN);
     tcp_packet.set_window(65535);
     tcp_packet.set_data_offset(5); // 20 bytes / 4 = 5

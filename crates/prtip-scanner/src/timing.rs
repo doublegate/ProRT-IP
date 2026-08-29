@@ -149,14 +149,14 @@ impl TimingConfig {
         }
 
         use rand::Rng;
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         // Jitter range: [duration * (1 - factor), duration * (1 + factor)]
         let millis = duration.as_millis() as f64;
         let min_millis = millis * (1.0 - self.jitter_factor);
         let max_millis = millis * (1.0 + self.jitter_factor);
 
-        let jittered_millis = rng.gen_range(min_millis..max_millis);
+        let jittered_millis = rng.random_range(min_millis..max_millis);
         Duration::from_millis(jittered_millis as u64)
     }
 }

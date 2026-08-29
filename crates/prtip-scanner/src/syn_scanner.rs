@@ -218,7 +218,7 @@ impl SynScanner {
             .config
             .network
             .source_port
-            .unwrap_or_else(|| rand::thread_rng().gen_range(1024..65535));
+            .unwrap_or_else(|| rand::rng().random_range(1024..65535));
 
         // Send initial SYN
         let sequence = self
@@ -349,10 +349,10 @@ impl SynScanner {
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<u32> {
         use rand::Rng;
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         // Generate sequence number (for stateless, could use SipHash)
-        let sequence: u32 = rng.gen();
+        let sequence: u32 = rng.random();
 
         // Get appropriate local IP for target
         let local_ip = self.get_local_ip_for_target(target)?;
@@ -562,8 +562,8 @@ impl SynScanner {
     /// ```
     fn build_syn_packet(&self, target: IpAddr, port: u16, src_port: u16) -> Result<Vec<u8>> {
         use rand::Rng;
-        let mut rng = rand::thread_rng();
-        let sequence: u32 = rng.gen();
+        let mut rng = rand::rng();
+        let sequence: u32 = rng.random();
 
         // Get appropriate local IP for target
         let local_ip = self.get_local_ip_for_target(target)?;
@@ -980,7 +980,7 @@ impl SynScanner {
         batch_size: usize,
     ) -> Result<Vec<Vec<u8>>> {
         use rand::Rng;
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let mut packets = Vec::with_capacity(batch_size.min(ports.len()));
 
         for &port in ports.iter().take(batch_size) {
@@ -989,7 +989,7 @@ impl SynScanner {
                 .config
                 .network
                 .source_port
-                .unwrap_or_else(|| rng.gen_range(1024..65535));
+                .unwrap_or_else(|| rng.random_range(1024..65535));
 
             // Build packet using existing method
             let packet = self.build_syn_packet(target, port, src_port)?;
@@ -999,7 +999,7 @@ impl SynScanner {
                 target_ip: target,
                 target_port: port,
                 source_port: src_port,
-                sequence: rng.gen(), // Sequence number embedded in packet
+                sequence: rng.random(), // Sequence number embedded in packet
                 sent_time: Instant::now(),
                 retries: 0,
             };

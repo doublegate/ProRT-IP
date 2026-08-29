@@ -75,7 +75,7 @@ governor = "0.10"
 # serde support moved behind a feature flag in 0.21; ScanTarget derives
 # Serialize/Deserialize over IpNetwork, so it must be enabled explicitly.
 ipnetwork = { version = "0.21", features = ["serde"] }
-rand = "0.9"
+rand = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.7", features = ["v4", "serde"] }
 num_cpus = "1.16"
@@ -85,7 +85,7 @@ regex = "1.11"
 # 0.39 requires Rust 1.95, above this workspace's 1.88 MSRV. 0.38 is the
 # newest line that fits the floor and carries the same CPU API
 # (refresh_cpu_usage / global_cpu_usage).
-sysinfo = "0.38"
+sysinfo = "0.39"
 
 # Plugin system
 mlua = { version = "0.12", features = ["lua54", "vendored", "send"] }

@@ -157,7 +157,9 @@ fn unix_drop_privileges(user: &str, group: &str) -> Result<()> {
 
 #[cfg(target_os = "windows")]
 fn windows_has_capability() -> Result<bool> {
-    use windows::Win32::Foundation::BOOL;
+    // `windows` 0.62 moved BOOL out of Win32::Foundation into the
+    // windows-core re-export.
+    use windows::core::BOOL;
     use windows::Win32::UI::Shell::IsUserAnAdmin;
 
     unsafe {

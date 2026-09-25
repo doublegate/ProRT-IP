@@ -108,9 +108,20 @@ jobs:
           DURATION="$DURATION_INPUT"
           echo "Running ${{ matrix.target }} for ${DURATION} seconds..."
 
+          # libFuzzer refuses to start when the -artifact_prefix directory is
+          # missing ("The required directory ... does not exist"). Before this
+          # mkdir the fuzzer exited 1 at once on every run, and the job still
+          # went green -- see "Fail job if the fuzzer did not run" below.
+          mkdir -p /tmp/fuzzing-artifacts
+
           # Run fuzzer and capture output
           set +e  # Don't fail on fuzzer crashes (we want to capture them)
-          timeout ${DURATION}s cargo +nightly fuzz run --target "$FUZZ_TARGET_TRIPLE" ${{ matrix.target }} -- \
+          # pipefail: without it $? is tee's status, always 0, so the fuzzer's
+          # own exit code was never observed. The outer timeout is a backstop
+          # with headroom over -max_total_time, so it cannot cut a run that
+          # libFuzzer is about to finish on its own.
+          set -o pipefail
+          timeout "$((DURATION + 300))s" cargo +nightly fuzz run --target "$FUZZ_TARGET_TRIPLE" ${{ matrix.target }} -- \
             -max_total_time=${DURATION} \
             -print_final_stats=1 \
             -print_corpus_stats=1 \
@@ -118,7 +129,17 @@ jobs:
             -verbosity=1 \
             2>&1 | tee /tmp/fuzz_output.txt
           EXIT_CODE=$?
+          set +o pipefail
           set -e
+          echo "fuzzer_exit=${EXIT_CODE}" >> "$GITHUB_OUTPUT"
+
+          # -print_final_stats=1 prints these only when libFuzzer ran to
+          # completion (or crashed). Their absence means it never fuzzed.
+          if grep -q "stat::number_of_executed_units" /tmp/fuzz_output.txt; then
+            echo "fuzzer_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fuzzer_ran=false" >> "$GITHUB_OUTPUT"
+          fi
 
           # Parse fuzzing statistics
           echo "## Fuzzing Statistics for ${{ matrix.target }}" > /tmp/fuzz_stats.txt
@@ -185,6 +206,19 @@ jobs:
         if: steps.fuzz_run.outputs.crash_found == 'true'
         run: |
           echo "::error::Fuzzing discovered crashes in ${{ matrix.target }}"
+          exit 1
+
+      # "Run fuzzer" is continue-on-error so that a crash still reaches the
+      # artifact upload above, which also meant a fuzzer that never started
+      # passed silently. A clean run must have printed its final stats and
+      # exited 0; anything else that is not a recorded crash fails here.
+      - name: Fail job if the fuzzer did not run
+        if: steps.fuzz_run.outputs.crash_found != 'true' && (steps.fuzz_run.outputs.fuzzer_ran != 'true' || steps.fuzz_run.outputs.fuzzer_exit != '0')
+        env:
+          FUZZER_RAN: ${{ steps.fuzz_run.outputs.fuzzer_ran }}
+          FUZZER_EXIT: ${{ steps.fuzz_run.outputs.fuzzer_exit }}
+        run: |
+          echo "::error::${{ matrix.target }} did not complete a fuzzing run (stats printed: ${FUZZER_RAN:-unknown}, exit code: ${FUZZER_EXIT:-unknown})"
           exit 1
 
   summary:

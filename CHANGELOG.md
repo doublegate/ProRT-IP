@@ -163,6 +163,17 @@ along with every unmaintained/unsound warning. `cargo audit` and
   address sanitizer cannot link ("sanitizer is incompatible with statically
   linked libc"), so the workflow names `x86_64-unknown-linux-gnu` explicitly.
   Both the failure and the fix were reproduced locally with the release binary.
+- **Even with cargo-fuzz installed, the fuzzers never actually ran, and the job
+  still went green.** libFuzzer refuses to start when the `-artifact_prefix`
+  directory is missing, and `/tmp/fuzzing-artifacts/` was never created, so
+  every target exited 1 immediately. That was invisible because the exit code
+  was read after `| tee` without `pipefail` (always tee's 0), the step is
+  `continue-on-error`, and the only failing gate looked for crash files. The
+  directory is now created, the fuzzer's real exit code and whether it printed
+  its final stats are step outputs, and a new "Fail job if the fuzzer did not
+  run" step fails any target that neither completed cleanly nor recorded a
+  crash. The outer `timeout` gets 300 s of headroom over `-max_total_time` so it
+  cannot cut a run libFuzzer is about to end itself.
 - The `duration` dispatch input reached the fuzz script by template expansion
   into the script text. It now arrives through the environment and is
   validated as a whole number of seconds in a step that is not

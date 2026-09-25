@@ -157,8 +157,9 @@ along with every unmaintained/unsound warning. `cargo audit` and
   rejects (`attributes starting with rustc are reserved`). Reproduced locally
   with nightly 2026-09-23: 0.13.1 unlocked fails exactly so, 0.13.2 `--locked`
   builds. CI now installs the prebuilt cargo-fuzz 0.13.2 release binary through
-  `taiki-e/install-action`, which no compiler change can break; the fuzzing
-  guide's manual install line gains `--locked`. That binary is a static musl
+  `taiki-e/install-action`, which no compiler change can break; every
+  maintained manual install line in `docs/` now reads
+  `cargo install cargo-fuzz --version 0.13.2 --locked`. That binary is a static musl
   build, and cargo-fuzz defaults `--target` to its own build triple, where the
   address sanitizer cannot link ("sanitizer is incompatible with statically
   linked libc"), so the workflow names `x86_64-unknown-linux-gnu` explicitly.
@@ -176,8 +177,8 @@ along with every unmaintained/unsound warning. `cargo audit` and
   cannot cut a run libFuzzer is about to end itself.
 - The `duration` dispatch input reached the fuzz script by template expansion
   into the script text. It now arrives through the environment and is
-  validated as a whole number of seconds in a step that is not
-  `continue-on-error`.
+  validated as a positive whole number of seconds (zero would mean "no
+  limit" to libFuzzer) in a step that is not `continue-on-error`.
 
 ### Changed (dependency consolidation, 2026-09)
 

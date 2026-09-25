@@ -87,9 +87,11 @@ jobs:
         env:
           DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
         run: |
+          # Zero is rejected too: libFuzzer reads -max_total_time=0 as "no
+          # limit", so the run would only end at the outer timeout backstop.
           case "$DURATION_INPUT" in
-            ''|*[!0-9]*)
-              echo "::error::duration must be a whole number of seconds, got: $DURATION_INPUT"
+            ''|*[!0-9]*|0|0*)
+              echo "::error::duration must be a positive whole number of seconds without leading zeros, got: $DURATION_INPUT"
               exit 1 ;;
           esac
 

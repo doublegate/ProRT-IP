@@ -6,12 +6,13 @@
 //! - Concurrent overhead: <5% vs single-threaded
 //! - History query: <100μs for 100 events
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use prtip_core::event_bus::{EventBus, EventFilter};
 use prtip_core::events::{
     DiscoveryMethod, MetricType, ScanEvent, ScanEventType, ScanStage, Throughput,
 };
 use prtip_core::types::ScanType;
+use std::hint::black_box;
 use std::sync::Arc;
 use std::time::SystemTime;
 use tokio::sync::mpsc;

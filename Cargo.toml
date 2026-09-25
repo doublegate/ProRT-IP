@@ -55,7 +55,7 @@ tera = "1.19"
 printpdf = "0.6"
 
 # Home directory detection
-dirs = "6.0"
+dirs = "7.0"
 
 # Packet capture
 pcap-file = "2.0"
@@ -75,7 +75,7 @@ governor = "0.10"
 # serde support moved behind a feature flag in 0.21; ScanTarget derives
 # Serialize/Deserialize over IpNetwork, so it must be enabled explicitly.
 ipnetwork = { version = "0.21", features = ["serde"] }
-rand = "0.9"
+rand = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.7", features = ["v4", "serde"] }
 num_cpus = "1.16"

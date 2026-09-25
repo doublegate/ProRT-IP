@@ -130,7 +130,7 @@ pub fn fragment_tcp_packet(packet: &[u8], mtu: usize) -> Result<Vec<Vec<u8>>> {
     }
 
     // Generate unique fragment ID
-    use rand::Rng;
+    use rand::RngExt;
     let fragment_id = rand::rng().random::<u16>();
 
     let mut fragments = Vec::new();

@@ -34,7 +34,7 @@ rkyv = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
-criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
 tempfile = "3.8"
 filetime = "0.2"
 

@@ -146,6 +146,57 @@ along with every unmaintained/unsound warning. `cargo audit` and
   valid. Nine tests cover it, including a negative control that walks every byte
   value and asserts the output contains no illegal code point.
 
+### Fixed (nightly fuzzing)
+
+- **The scheduled fuzz workflow had failed every night since at least
+  2026-09-21 without fuzzing anything.** All five matrix jobs died about 20 s
+  in, at `cargo install cargo-fuzz --version 0.13.1`. Without `--locked` that
+  resolved a fresh dependency graph on every run and compiled it with the
+  nightly toolchain the job selects; from September it picked up a `rustix`
+  whose nightly-only build path uses `rustc_*` attributes that current nightly
+  rejects (`attributes starting with rustc are reserved`). Reproduced locally
+  with nightly 2026-09-23: 0.13.1 unlocked fails exactly so, 0.13.2 `--locked`
+  builds. CI now installs the prebuilt cargo-fuzz 0.13.2 release binary through
+  `taiki-e/install-action`, which no compiler change can break; the fuzzing
+  guide's manual install line gains `--locked`.
+- The `duration` dispatch input reached the fuzz script by template expansion
+  into the script text. It now arrives through the environment and is
+  validated as a whole number of seconds in a step that is not
+  `continue-on-error`.
+
+### Changed (dependency consolidation, 2026-09)
+
+Supersedes Dependabot #9, #12 and #13.
+
+- **`rustls` 0.23.43 -> 0.23.45** (lockfile) resolves RUSTSEC-2026-0285 (TLS 1.3
+  handshake messages accepted across encryption-level boundaries), which was
+  failing `cargo deny` and the fuzz-lockfile `cargo audit` on `main`.
+- **`rand` 0.9 -> 0.10.** The convenience methods (`random`, `random_range`)
+  moved from `Rng` to the new `RngExt` trait; eleven `use rand::Rng;` imports
+  became `use rand::RngExt;`. No call site changed.
+- **`criterion` 0.5 -> 0.8** (dev-dependency). `criterion::black_box` is
+  deprecated in favour of `std::hint::black_box`; the five benchmark files
+  switch over.
+- **`dirs` 6 -> 7**, drop-in. **`x509-parser` 0.16 -> 0.18 in `fuzz/`**, matching
+  the workspace, which removes a second `asn1-rs`/`der-parser` stack from the
+  fuzz build.
+- Lockfile refresh of both `Cargo.lock` and `fuzz/Cargo.lock` to the newest
+  semver-compatible releases (68 and 52 packages respectively).
+- **Held back: `sysinfo` 0.39 (needs Rust 1.95) and `sqlx` 0.9 (needs Rust
+  1.94).** Both are normal dependencies reachable from the published crates,
+  and the workspace MSRV is 1.88. They move when the MSRV does. Verified
+  afterwards: 0 of 502 resolved workspace packages and 0 of 362 fuzz packages
+  declare a `rust-version` above 1.88.
+- **Container images move from Debian bookworm to trixie** (`rust:1.88-trixie`
+  builder, `debian:trixie-slim` runtime). trixie renamed the runtime library
+  package to `libpcap0.8t64`. The user guide's Docker example had the same
+  bookworm pin and a `rust:1.85` builder below the MSRV; both are corrected.
+- **Actions:** `actions-rust-lang/setup-rust-toolchain` v1 -> v2 (benchmarks),
+  `github/codeql-action` v3 -> v4. The SHA-pinned actions in the Gemini
+  workflows were already at the latest releases; their `ratchet:` comments
+  named older versions (checkout v5, create-github-app-token v2, github-script
+  v7) and now name the versions the SHAs actually are.
+
 ### Changed (dependency majors)
 
 Supersedes Dependabot #3 and #4, which proposed the same wave from two

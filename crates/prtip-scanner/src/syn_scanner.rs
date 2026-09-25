@@ -213,7 +213,7 @@ impl SynScanner {
         let start_time = Instant::now();
 
         // Use configured source port or generate random
-        use rand::Rng;
+        use rand::RngExt;
         let src_port: u16 = self
             .config
             .network
@@ -348,7 +348,7 @@ impl SynScanner {
         retry: u8,
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<u32> {
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
 
         // Generate sequence number (for stateless, could use SipHash)
@@ -561,7 +561,7 @@ impl SynScanner {
     /// # }
     /// ```
     fn build_syn_packet(&self, target: IpAddr, port: u16, src_port: u16) -> Result<Vec<u8>> {
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
         let sequence: u32 = rng.random();
 
@@ -979,7 +979,7 @@ impl SynScanner {
         ports: &[u16],
         batch_size: usize,
     ) -> Result<Vec<Vec<u8>>> {
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
         let mut packets = Vec::with_capacity(batch_size.min(ports.len()));
 

@@ -64,16 +64,43 @@ jobs:
             ${{ runner.os }}-fuzz-target-${{ matrix.target }}-
             ${{ runner.os }}-fuzz-target-
 
+      # Install the prebuilt release binary rather than compiling cargo-fuzz.
+      # `cargo install cargo-fuzz --version 0.13.1` (no --locked) resolved a
+      # fresh dependency graph on every run and compiled it with the nightly
+      # toolchain selected above. From 2026-09 that picked up a `rustix` whose
+      # nightly-only build path uses `rustc_*` attributes current nightly
+      # rejects ("attributes starting with `rustc` are reserved"), so every
+      # scheduled run died in this step before fuzzing anything. A prebuilt
+      # binary cannot be broken by a nightly compiler change. The version is
+      # pinned so a cargo-fuzz release is adopted deliberately.
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --version 0.13.1
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz@0.13.2
+
+      - name: Validate duration input
+        env:
+          DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
+        run: |
+          case "$DURATION_INPUT" in
+            ''|*[!0-9]*)
+              echo "::error::duration must be a whole number of seconds, got: $DURATION_INPUT"
+              exit 1 ;;
+          esac
 
       - name: Build fuzz target
         run: cargo +nightly fuzz build ${{ matrix.target }}
 
       - name: Run fuzzer
         id: fuzz_run
+        # The dispatch input reaches the script through the environment, not
+        # by template expansion into the script text, so it cannot inject
+        # shell. Its format is checked by "Validate duration input" above,
+        # which (unlike this step) is not continue-on-error.
+        env:
+          DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
         run: |
-          DURATION="${{ github.event.inputs.duration || '600' }}"
+          DURATION="$DURATION_INPUT"
           echo "Running ${{ matrix.target }} for ${DURATION} seconds..."
 
           # Run fuzzer and capture output
@@ -163,11 +190,13 @@ jobs:
 
     steps:
       - name: Generate summary
+        env:
+          DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
         run: |
           echo "## Fuzzing Run Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "**Duration:** ${{ github.event.inputs.duration || '600' }} seconds per target" >> $GITHUB_STEP_SUMMARY
+          echo "**Duration:** ${DURATION_INPUT} seconds per target" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "All fuzz targets executed. Check individual job outputs for statistics." >> $GITHUB_STEP_SUMMARY

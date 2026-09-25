@@ -406,7 +406,7 @@ impl UdpScanner {
         let start_time = Instant::now();
 
         // Use configured source port or generate random
-        use rand::Rng;
+        use rand::RngExt;
         let src_port: u16 = self
             .config
             .network
@@ -915,7 +915,7 @@ impl UdpScanner {
         ports: &[u16],
         batch_size: usize,
     ) -> Result<Vec<Vec<u8>>> {
-        use rand::Rng;
+        use rand::RngExt;
         let mut packets = Vec::with_capacity(batch_size.min(ports.len()));
 
         for &port in ports.iter().take(batch_size) {

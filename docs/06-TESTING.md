@@ -367,7 +367,7 @@ cargo bench --bench packet_crafting -- --profile-time=5
 **Setup:**
 
 ```bash
-cargo install cargo-fuzz
+cargo install cargo-fuzz --version 0.13.2 --locked
 cargo fuzz init
 ```
 

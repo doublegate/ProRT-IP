@@ -44,10 +44,10 @@ ProRT-IP project guidance for Claude Code.
 
 ```toml
 tokio = "1.35"     # Async runtime
-pnet = "0.34"      # Packets
-clap = "4.4"       # CLI
-sqlx = "0.7"       # Async SQL
-ratatui = "0.29"   # TUI
+pnet = "0.35"      # Packets
+clap = "4.5"       # CLI
+sqlx = "0.8"       # Async SQL (0.9 needs Rust 1.94, above the 1.88 MSRV)
+ratatui = "0.30"   # TUI
 ```
 
 **System**: Linux 4.15+, Windows 10+, macOS 11.0+ | Memory 4GB min (16GB rec)

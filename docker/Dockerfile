@@ -18,7 +18,7 @@ ARG VERSION=1.0.0
 # ==============================================================================
 # Stage 1: Build (Debian-based for maximum compatibility)
 # ==============================================================================
-FROM rust:${RUST_VERSION}-bookworm AS builder
+FROM rust:${RUST_VERSION}-trixie AS builder
 
 WORKDIR /build
 
@@ -65,7 +65,7 @@ RUN strip /build/target/release/prtip
 # ==============================================================================
 # Stage 2: Runtime (Debian slim for libpcap compatibility)
 # ==============================================================================
-FROM debian:bookworm-slim AS runtime
+FROM debian:trixie-slim AS runtime
 
 ARG VERSION
 LABEL maintainer="ProRT-IP Contributors <noreply@github.com>"
@@ -76,7 +76,7 @@ LABEL org.opencontainers.image.license="GPL-3.0"
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpcap0.8 \
+    libpcap0.8t64 \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean

@@ -19,6 +19,11 @@ on:
 
 env:
   RUST_BACKTRACE: 1
+  # cargo-fuzz defaults `--target` to the triple its own binary was built
+  # for. The prebuilt release binary installed below is a static musl build,
+  # and the address sanitizer cannot link against static musl libc, so the
+  # target is named explicitly on every build and run.
+  FUZZ_TARGET_TRIPLE: x86_64-unknown-linux-gnu
   CARGO_TERM_COLOR: always
 
 jobs:
@@ -64,21 +69,61 @@ jobs:
             ${{ runner.os }}-fuzz-target-${{ matrix.target }}-
             ${{ runner.os }}-fuzz-target-
 
+      # Install the prebuilt release binary rather than compiling cargo-fuzz.
+      # `cargo install cargo-fuzz --version 0.13.1` (no --locked) resolved a
+      # fresh dependency graph on every run and compiled it with the nightly
+      # toolchain selected above. From 2026-09 that picked up a `rustix` whose
+      # nightly-only build path uses `rustc_*` attributes current nightly
+      # rejects ("attributes starting with `rustc` are reserved"), so every
+      # scheduled run died in this step before fuzzing anything. A prebuilt
+      # binary cannot be broken by a nightly compiler change. The version is
+      # pinned so a cargo-fuzz release is adopted deliberately.
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --version 0.13.1
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz@0.13.2
+
+      - name: Validate duration input
+        env:
+          DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
+        run: |
+          # Zero is rejected too: libFuzzer reads -max_total_time=0 as "no
+          # limit", so the run would only end at the outer timeout backstop.
+          case "$DURATION_INPUT" in
+            ''|*[!0-9]*|0|0*)
+              echo "::error::duration must be a positive whole number of seconds without leading zeros, got: $DURATION_INPUT"
+              exit 1 ;;
+          esac
 
       - name: Build fuzz target
-        run: cargo +nightly fuzz build ${{ matrix.target }}
+        run: cargo +nightly fuzz build --target "$FUZZ_TARGET_TRIPLE" ${{ matrix.target }}
 
       - name: Run fuzzer
         id: fuzz_run
+        # The dispatch input reaches the script through the environment, not
+        # by template expansion into the script text, so it cannot inject
+        # shell. Its format is checked by "Validate duration input" above,
+        # which (unlike this step) is not continue-on-error.
+        env:
+          DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
         run: |
-          DURATION="${{ github.event.inputs.duration || '600' }}"
+          DURATION="$DURATION_INPUT"
           echo "Running ${{ matrix.target }} for ${DURATION} seconds..."
+
+          # libFuzzer refuses to start when the -artifact_prefix directory is
+          # missing ("The required directory ... does not exist"). Before this
+          # mkdir the fuzzer exited 1 at once on every run, and the job still
+          # went green -- see "Fail job if the fuzzer did not run" below.
+          mkdir -p /tmp/fuzzing-artifacts
 
           # Run fuzzer and capture output
           set +e  # Don't fail on fuzzer crashes (we want to capture them)
-          timeout ${DURATION}s cargo +nightly fuzz run ${{ matrix.target }} -- \
+          # pipefail: without it $? is tee's status, always 0, so the fuzzer's
+          # own exit code was never observed. The outer timeout is a backstop
+          # with headroom over -max_total_time, so it cannot cut a run that
+          # libFuzzer is about to finish on its own.
+          set -o pipefail
+          timeout "$((DURATION + 300))s" cargo +nightly fuzz run --target "$FUZZ_TARGET_TRIPLE" ${{ matrix.target }} -- \
             -max_total_time=${DURATION} \
             -print_final_stats=1 \
             -print_corpus_stats=1 \
@@ -86,7 +131,17 @@ jobs:
             -verbosity=1 \
             2>&1 | tee /tmp/fuzz_output.txt
           EXIT_CODE=$?
+          set +o pipefail
           set -e
+          echo "fuzzer_exit=${EXIT_CODE}" >> "$GITHUB_OUTPUT"
+
+          # -print_final_stats=1 prints these only when libFuzzer ran to
+          # completion (or crashed). Their absence means it never fuzzed.
+          if grep -q "stat::number_of_executed_units" /tmp/fuzz_output.txt; then
+            echo "fuzzer_ran=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fuzzer_ran=false" >> "$GITHUB_OUTPUT"
+          fi
 
           # Parse fuzzing statistics
           echo "## Fuzzing Statistics for ${{ matrix.target }}" > /tmp/fuzz_stats.txt
@@ -155,6 +210,19 @@ jobs:
           echo "::error::Fuzzing discovered crashes in ${{ matrix.target }}"
           exit 1
 
+      # "Run fuzzer" is continue-on-error so that a crash still reaches the
+      # artifact upload above, which also meant a fuzzer that never started
+      # passed silently. A clean run must have printed its final stats and
+      # exited 0; anything else that is not a recorded crash fails here.
+      - name: Fail job if the fuzzer did not run
+        if: steps.fuzz_run.outputs.crash_found != 'true' && (steps.fuzz_run.outputs.fuzzer_ran != 'true' || steps.fuzz_run.outputs.fuzzer_exit != '0')
+        env:
+          FUZZER_RAN: ${{ steps.fuzz_run.outputs.fuzzer_ran }}
+          FUZZER_EXIT: ${{ steps.fuzz_run.outputs.fuzzer_exit }}
+        run: |
+          echo "::error::${{ matrix.target }} did not complete a fuzzing run (stats printed: ${FUZZER_RAN:-unknown}, exit code: ${FUZZER_EXIT:-unknown})"
+          exit 1
+
   summary:
     name: Fuzzing Summary
     runs-on: ubuntu-latest
@@ -163,11 +231,13 @@ jobs:
 
     steps:
       - name: Generate summary
+        env:
+          DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
         run: |
           echo "## Fuzzing Run Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "**Duration:** ${{ github.event.inputs.duration || '600' }} seconds per target" >> $GITHUB_STEP_SUMMARY
+          echo "**Duration:** ${DURATION_INPUT} seconds per target" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "All fuzz targets executed. Check individual job outputs for statistics." >> $GITHUB_STEP_SUMMARY

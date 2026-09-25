@@ -19,6 +19,11 @@ on:
 
 env:
   RUST_BACKTRACE: 1
+  # cargo-fuzz defaults `--target` to the triple its own binary was built
+  # for. The prebuilt release binary installed below is a static musl build,
+  # and the address sanitizer cannot link against static musl libc, so the
+  # target is named explicitly on every build and run.
+  FUZZ_TARGET_TRIPLE: x86_64-unknown-linux-gnu
   CARGO_TERM_COLOR: always
 
 jobs:
@@ -89,7 +94,7 @@ jobs:
           esac
 
       - name: Build fuzz target
-        run: cargo +nightly fuzz build ${{ matrix.target }}
+        run: cargo +nightly fuzz build --target "$FUZZ_TARGET_TRIPLE" ${{ matrix.target }}
 
       - name: Run fuzzer
         id: fuzz_run
@@ -105,7 +110,7 @@ jobs:
 
           # Run fuzzer and capture output
           set +e  # Don't fail on fuzzer crashes (we want to capture them)
-          timeout ${DURATION}s cargo +nightly fuzz run ${{ matrix.target }} -- \
+          timeout ${DURATION}s cargo +nightly fuzz run --target "$FUZZ_TARGET_TRIPLE" ${{ matrix.target }} -- \
             -max_total_time=${DURATION} \
             -print_final_stats=1 \
             -print_corpus_stats=1 \

@@ -158,7 +158,11 @@ along with every unmaintained/unsound warning. `cargo audit` and
   with nightly 2026-09-23: 0.13.1 unlocked fails exactly so, 0.13.2 `--locked`
   builds. CI now installs the prebuilt cargo-fuzz 0.13.2 release binary through
   `taiki-e/install-action`, which no compiler change can break; the fuzzing
-  guide's manual install line gains `--locked`.
+  guide's manual install line gains `--locked`. That binary is a static musl
+  build, and cargo-fuzz defaults `--target` to its own build triple, where the
+  address sanitizer cannot link ("sanitizer is incompatible with statically
+  linked libc"), so the workflow names `x86_64-unknown-linux-gnu` explicitly.
+  Both the failure and the fix were reproduced locally with the release binary.
 - The `duration` dispatch input reached the fuzz script by template expansion
   into the script text. It now arrives through the environment and is
   validated as a whole number of seconds in a step that is not

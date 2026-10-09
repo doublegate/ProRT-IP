@@ -307,7 +307,7 @@ impl Ipv6PacketBuilder {
         let fragment_payload_size = (mtu - 48) & !7; // Round down to multiple of 8
         let mut fragments = Vec::new();
         let mut offset = 0;
-        use rand::Rng;
+        use rand::RngExt;
         let fragment_id: u32 = rand::rng().random();
 
         while offset < self.payload.len() {

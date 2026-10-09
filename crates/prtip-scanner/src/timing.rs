@@ -148,7 +148,7 @@ impl TimingConfig {
             return duration;
         }
 
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
 
         // Jitter range: [duration * (1 - factor), duration * (1 + factor)]

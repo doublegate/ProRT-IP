@@ -465,7 +465,7 @@ cargo fuzz run fuzz_tls_parser -- -max_total_time=600 -max_len=5000
 
 **Install cargo-fuzz:**
 ```bash
-cargo install cargo-fuzz
+cargo install cargo-fuzz --version 0.13.2 --locked
 ```
 
 **Nightly Rust:**
@@ -790,7 +790,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
 
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz
+        run: cargo install cargo-fuzz --version 0.13.2 --locked
 
       - name: Download corpus
         uses: actions/download-artifact@v4

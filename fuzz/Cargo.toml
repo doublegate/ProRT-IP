@@ -18,7 +18,7 @@ prtip-scanner = { path = "../crates/prtip-scanner" }
 # Additional dependencies for fuzzing
 pnet = "0.35"
 pnet_packet = "0.35"
-x509-parser = "0.16"
+x509-parser = "0.18"
 
 [profile.release]
 opt-level = 3          # Maximum optimization for faster fuzzing

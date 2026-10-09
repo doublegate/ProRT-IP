@@ -135,7 +135,7 @@ impl ErrorInjector {
                 }
             }
             FailureMode::Probabilistic { rate } => {
-                use rand::Rng;
+                use rand::RngExt;
                 if rand::rng().random::<f64>() < *rate {
                     Err(io::Error::new(io::ErrorKind::ConnectionRefused, "probabilistic failure"))
                 } else {

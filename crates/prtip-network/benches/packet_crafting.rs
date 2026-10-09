@@ -21,8 +21,9 @@
 //! cargo bench --bench packet_crafting -- --save-baseline phase3
 //! ```
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use prtip_network::{packet_buffer::with_buffer, TcpFlags, TcpOption, TcpPacketBuilder};
+use std::hint::black_box;
 use std::net::Ipv4Addr;
 
 /// Benchmark OLD API (with allocations)

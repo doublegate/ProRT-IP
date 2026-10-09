@@ -437,7 +437,7 @@ mod proptests {
 
 ```bash
 # Install cargo-fuzz
-cargo install cargo-fuzz
+cargo install cargo-fuzz --version 0.13.2 --locked
 
 # Initialize fuzzing (if not already done)
 cargo fuzz init

@@ -18,7 +18,7 @@ if [ ! -d "fuzz" ]; then
     echo "Run Sprint 5.7 setup to initialize fuzzing."
     echo ""
     echo "Quick setup:"
-    echo "  cargo install cargo-fuzz"
+    echo "  cargo install cargo-fuzz --version 0.13.2 --locked"
     echo "  cargo +nightly fuzz init"
     exit 1
 fi

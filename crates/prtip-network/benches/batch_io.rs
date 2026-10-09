@@ -24,8 +24,9 @@
 //! - **Throughput**: Packets per second at various batch sizes
 //! - **Latency**: Per-packet processing time
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use prtip_network::{BatchSender, PacketBatch};
+use std::hint::black_box;
 use std::time::Duration;
 
 /// Benchmark packet batch creation and management

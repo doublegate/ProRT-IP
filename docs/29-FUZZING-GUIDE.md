@@ -60,8 +60,11 @@ ProRT-IP has **5 fuzzing targets** covering critical parsers:
 rustup install nightly
 rustup default nightly
 
-# Install cargo-fuzz
-cargo install cargo-fuzz --version 0.13.1
+# Install cargo-fuzz. --locked matters: without it cargo resolves fresh
+# dependency versions, and under a nightly default toolchain 0.13.1 pulled a
+# `rustix` that current nightly refuses to compile. CI installs the prebuilt
+# release binary instead (see .github/workflows/fuzz.yml).
+cargo install cargo-fuzz --version 0.13.2 --locked
 
 # Verify installation
 cargo +nightly fuzz --version

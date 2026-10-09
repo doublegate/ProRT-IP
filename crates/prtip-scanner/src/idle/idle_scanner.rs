@@ -30,7 +30,7 @@ use pnet::packet::ipv4::MutableIpv4Packet;
 use pnet::packet::tcp::{MutableTcpPacket, TcpFlags};
 use pnet::transport::{transport_channel, TransportChannelType, TransportProtocol};
 use prtip_core::{Error, EventBus, PortState, Protocol, Result, ScanEvent, ScanType};
-use rand::Rng;
+use rand::RngExt;
 use std::net::IpAddr;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};

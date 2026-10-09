@@ -418,7 +418,7 @@ impl StealthScanner {
         let start_time = Instant::now();
 
         // Use configured source port or generate random
-        use rand::Rng;
+        use rand::RngExt;
         let src_port: u16 = self
             .config
             .network
@@ -526,7 +526,7 @@ impl StealthScanner {
         scan_type: StealthScanType,
         pcapng_writer: Option<Arc<StdMutex<PcapngWriter>>>,
     ) -> Result<()> {
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
         let sequence: u32 = rng.random();
 
@@ -990,7 +990,7 @@ impl StealthScanner {
         for &port in ports {
             // Generate random source port
             let src_port = {
-                use rand::Rng;
+                use rand::RngExt;
                 rand::rng().random_range(32768..=61000)
             };
 

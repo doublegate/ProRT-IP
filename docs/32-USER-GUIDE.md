@@ -315,13 +315,14 @@ cd ProRT-IP
 
 # Create Dockerfile (example)
 cat > Dockerfile <<EOF
-FROM rust:1.85 AS builder
+FROM rust:1.88-trixie AS builder
 WORKDIR /app
+RUN apt-get update && apt-get install -y libpcap-dev && rm -rf /var/lib/apt/lists/*
 COPY . .
-RUN cargo build --release
+RUN cargo build --release --locked
 
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y libpcap0.8 && rm -rf /var/lib/apt/lists/*
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y libpcap0.8t64 && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/prtip /usr/local/bin/
 ENTRYPOINT ["prtip"]
 EOF

@@ -56,7 +56,7 @@ use dashmap::DashMap;
 use pnet::packet::Packet; // For eth_packet.payload()
 use prtip_core::{Config, Error, PortState, Result, ScanResult, ScanTarget};
 use prtip_network::{BatchReceiver, BatchSender, TcpFlags, TcpPacketBuilder};
-use rand::Rng;
+use rand::RngExt;
 use std::collections::HashSet;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
@@ -305,7 +305,7 @@ impl DecoyScanner {
         count: usize,
         exclude: &[Ipv6Addr],
     ) -> Vec<Ipv6Addr> {
-        use rand::Rng;
+        use rand::RngExt;
 
         // Extract /64 prefix (first 64 bits)
         let target_segments = target.segments();

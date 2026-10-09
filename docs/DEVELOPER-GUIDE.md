@@ -322,7 +322,7 @@ cargo install cargo-tarpaulin    # Code coverage
 cargo install cargo-audit        # Security audit
 cargo install cargo-flamegraph   # Performance profiling
 cargo install cargo-mutants      # Mutation testing
-cargo install cargo-fuzz         # Fuzz testing
+cargo install cargo-fuzz --version 0.13.2 --locked         # Fuzz testing
 
 # Install pre-commit hooks
 ./scripts/install-hooks.sh

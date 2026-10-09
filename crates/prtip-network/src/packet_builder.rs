@@ -186,7 +186,7 @@ impl Default for TcpPacketBuilder {
 impl TcpPacketBuilder {
     /// Create a new TCP packet builder with default values
     pub fn new() -> Self {
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
 
         Self {
@@ -897,7 +897,7 @@ impl Default for UdpPacketBuilder {
 impl UdpPacketBuilder {
     /// Create a new UDP packet builder with default values
     pub fn new() -> Self {
-        use rand::Rng;
+        use rand::RngExt;
         let mut rng = rand::rng();
 
         Self {

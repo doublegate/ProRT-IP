@@ -846,7 +846,7 @@ cargo audit --deny warnings
 
 ```bash
 # Install cargo-fuzz
-cargo install cargo-fuzz
+cargo install cargo-fuzz --version 0.13.2 --locked
 
 # Fuzz packet parsers (run for 24+ hours)
 cargo fuzz run tcp_parser -- -max_total_time=86400

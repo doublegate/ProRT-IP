@@ -336,7 +336,7 @@ impl ScanStorage {
                 placeholders.join(", ")
             );
 
-            let mut query = sqlx::query(&query_str);
+            let mut query = sqlx::query(sqlx::AssertSqlSafe(&*query_str));
 
             // Bind all parameters for this chunk
             for result in chunk {

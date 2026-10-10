@@ -315,7 +315,7 @@ cd ProRT-IP
 
 # Create Dockerfile (example)
 cat > Dockerfile <<EOF
-FROM rust:1.88-trixie AS builder
+FROM rust:1.95-trixie AS builder
 WORKDIR /app
 RUN apt-get update && apt-get install -y libpcap-dev && rm -rf /var/lib/apt/lists/*
 COPY . .

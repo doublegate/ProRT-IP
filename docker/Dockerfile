@@ -9,10 +9,10 @@
 #   docker run --rm --net=host --cap-add=NET_RAW prtip -sS -p 80,443 192.168.1.1
 #   docker run -it --rm --net=host --cap-add=NET_RAW prtip --tui
 
-# Must be >= the workspace `rust-version` in Cargo.toml (1.88). A pin below
-# the MSRV fails the build with "requires rustc 1.88 or newer"; nothing in CI
+# Must be >= the workspace `rust-version` in Cargo.toml (1.95). A pin below
+# the MSRV fails the build with "requires rustc 1.95 or newer"; nothing in CI
 # caught the drift because packages.yml only runs on releases.
-ARG RUST_VERSION=1.88
+ARG RUST_VERSION=1.95
 ARG VERSION=1.0.0
 
 # ==============================================================================

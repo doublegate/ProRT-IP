@@ -82,10 +82,7 @@ num_cpus = "1.16"
 rlimit = "0.11"
 indicatif = "0.18"
 regex = "1.11"
-# 0.39 requires Rust 1.95, above this workspace's 1.88 MSRV. 0.38 is the
-# newest line that fits the floor and carries the same CPU API
-# (refresh_cpu_usage / global_cpu_usage).
-sysinfo = "0.38"
+sysinfo = "0.39"
 
 # Plugin system
 mlua = { version = "0.12", features = ["lua54", "vendored", "send"] }
@@ -103,7 +100,7 @@ windows = { version = "0.62", features = ["Win32_Security", "Win32_Foundation", 
 [workspace.package]
 version = "1.0.0"
 edition = "2021"
-rust-version = "1.88"
+rust-version = "1.95"
 authors = ["ProRT-IP Contributors"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/doublegate/ProRT-IP"

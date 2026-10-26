@@ -86,13 +86,12 @@ jobs:
         env:
           GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
           GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'
-          GOOGLE_GENAI_USE_GCA: '${{ vars.GOOGLE_GENAI_USE_GCA }}'
-          GOOGLE_GENAI_USE_VERTEXAI: '${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}'
+          GCP_WIF_PROVIDER: '${{ vars.GCP_WIF_PROVIDER }}'
         run: |-
-          if [ -n "${GEMINI_API_KEY}${GOOGLE_API_KEY}${GOOGLE_GENAI_USE_GCA}${GOOGLE_GENAI_USE_VERTEXAI}" ]; then
+          if [ -n "${GEMINI_API_KEY}${GOOGLE_API_KEY}${GCP_WIF_PROVIDER}" ]; then
             echo "configured=true" >> "${GITHUB_OUTPUT}"
           else
-            echo "::notice::Skipping Gemini scheduled issue analysis: no GEMINI_API_KEY, GOOGLE_API_KEY, GOOGLE_GENAI_USE_GCA, or GOOGLE_GENAI_USE_VERTEXAI configured."
+            echo "::notice::Skipping Gemini scheduled issue analysis: no GEMINI_API_KEY, GOOGLE_API_KEY, or GCP_WIF_PROVIDER configured."
             echo "configured=false" >> "${GITHUB_OUTPUT}"
           fi
 

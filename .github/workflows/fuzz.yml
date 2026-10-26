@@ -60,7 +60,16 @@ jobs:
                 echo "::error::Unknown fuzz target '$req'. Known targets: ${KNOWN_TARGETS[*]} (or 'all')"
                 exit 1
               fi
-              SELECTED+=("$req")
+              ALREADY_SELECTED=false
+              for sel in "${SELECTED[@]}"; do
+                if [ "$req" = "$sel" ]; then
+                  ALREADY_SELECTED=true
+                  break
+                fi
+              done
+              if [ "$ALREADY_SELECTED" != "true" ]; then
+                SELECTED+=("$req")
+              fi
             done
             if [ "${#SELECTED[@]}" -eq 0 ]; then
               echo "::error::targets input did not specify any valid fuzz targets: $TARGETS_INPUT"

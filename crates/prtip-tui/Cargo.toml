@@ -42,4 +42,4 @@ uuid = { workspace = true, features = ["v4"] }
 dirs.workspace = true
 
 [dev-dependencies]
-tempfile = "3.8"
+tempfile = "3.27"

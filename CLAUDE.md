@@ -43,10 +43,10 @@ ProRT-IP project guidance for Claude Code.
 ## Critical Dependencies
 
 ```toml
-tokio = "1.35"     # Async runtime
+tokio = "1.54"     # Async runtime
 pnet = "0.35"      # Packets
-clap = "4.5"       # CLI
-sqlx = "0.8"       # Async SQL (0.9 needs Rust 1.94, above the 1.88 MSRV)
+clap = "4.6"       # CLI
+sqlx = "0.9"       # Async SQL
 ratatui = "0.30"   # TUI
 ```
 

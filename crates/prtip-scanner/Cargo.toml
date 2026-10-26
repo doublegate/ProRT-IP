@@ -88,7 +88,7 @@ rkyv = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
-tempfile = "3.8"
+tempfile = "3.27"
 criterion = { version = "0.8", features = ["html_reports"] }
 
 [[bench]]

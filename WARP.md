@@ -232,7 +232,7 @@ The scheduler manages target queues, assigns work to workers, handles backpressu
 ### Style and Tooling
 
 - **Edition**: Rust 2021
-- **MSRV**: 1.88+ (edition 2024 needs 1.85; raised to 1.88 for the patched `time`)
+- **MSRV**: 1.99.1+
 - **Formatting**: `rustfmt` defaults (4-space indentation, trailing commas)
 - **Linting**: Zero clippy warnings enforced (`-D warnings`)
 

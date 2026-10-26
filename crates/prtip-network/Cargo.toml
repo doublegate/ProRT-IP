@@ -21,13 +21,13 @@ tokio = { workspace = true }
 pnet = { workspace = true }
 pnet_datalink = { workspace = true }
 pnet_packet = { workspace = true }
-bytes = "1.9"
+bytes = "1.12"
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 tracing = { workspace = true }
 rand = { workspace = true }
 parking_lot = { workspace = true }
-hwlocality = { version = "1.0.0-alpha.11", optional = true }
+hwlocality = { version = "1.0.0-alpha.13", optional = true }
 
 [target.'cfg(unix)'.dependencies]
 nix = { workspace = true, features = ["sched"] }

@@ -179,13 +179,13 @@ jobs:
         run: |
           # Download and extract Npcap SDK (contains Packet.lib for development)
           Write-Host "Downloading Npcap SDK..."
-          curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
+          curl -fL -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
           Write-Host "✓ Npcap SDK extracted"
 
           # Download Npcap installer and extract DLLs without running (avoids hang)
           Write-Host "`nDownloading Npcap 1.79 installer..."
-          curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
+          curl -fL -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
 
           # Extract installer using 7zip (pre-installed on GitHub Actions)
           Write-Host "Extracting DLLs from Npcap installer (no execution)..."
@@ -366,19 +366,19 @@ jobs:
 
   # Job 6: MSRV (Minimum Supported Rust Version) check
   msrv:
-    name: MSRV Check (1.95)
+    name: MSRV Check (1.99.1)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Rust 1.95
+      - name: Install Rust 1.99.1
         # NOT an action version -- this ref selects the Rust toolchain, and it
         # must stay equal to `rust-version` in Cargo.toml. Dependabot proposed
         # bumping it to 1.100, which would have left the job named "Install
-        # Rust 1.95" while installing 1.100, so the MSRV gate would pass
+        # Rust 1.99.1" while installing 1.100, so the MSRV gate would pass
         # without ever testing the floor it claims to enforce. Ignored in
         # .github/dependabot.yml.
-        uses: dtolnay/rust-toolchain@1.95
+        uses: dtolnay/rust-toolchain@1.99.1
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libpcap-dev pkg-config

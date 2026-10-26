@@ -301,11 +301,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           # Download and extract Npcap SDK (contains Packet.lib for development)
-          curl -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
+          curl -fL -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.13.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
 
           # Download Npcap installer and extract DLLs without running (avoids hang)
-          curl -L -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
+          curl -fL -o npcap-installer.exe https://npcap.com/dist/npcap-1.79.exe
 
           # Extract installer using 7zip (pre-installed on GitHub Actions)
           7z x npcap-installer.exe -o"npcap-runtime" -y

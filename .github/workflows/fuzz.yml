@@ -27,19 +27,58 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  resolve-targets:
+    name: Resolve Fuzz Targets
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.resolve.outputs.targets }}
+    steps:
+      - name: Validate and resolve targets
+        id: resolve
+        env:
+          TARGETS_INPUT: ${{ github.event.inputs.targets || 'all' }}
+        run: |
+          KNOWN_TARGETS=("fuzz_tcp_parser" "fuzz_udp_parser" "fuzz_ipv6_parser" "fuzz_icmpv6_parser" "fuzz_tls_parser")
+          INPUT="$(echo "$TARGETS_INPUT" | tr -d '[:space:]')"
+          if [ -z "$INPUT" ] || [ "$INPUT" = "all" ]; then
+            SELECTED=("${KNOWN_TARGETS[@]}")
+          else
+            IFS=',' read -r -a REQUESTED <<< "$INPUT"
+            SELECTED=()
+            for req in "${REQUESTED[@]}"; do
+              if [ -z "$req" ]; then
+                continue
+              fi
+              FOUND=false
+              for known in "${KNOWN_TARGETS[@]}"; do
+                if [ "$req" = "$known" ]; then
+                  FOUND=true
+                  break
+                fi
+              done
+              if [ "$FOUND" != "true" ]; then
+                echo "::error::Unknown fuzz target '$req'. Known targets: ${KNOWN_TARGETS[*]} (or 'all')"
+                exit 1
+              fi
+              SELECTED+=("$req")
+            done
+            if [ "${#SELECTED[@]}" -eq 0 ]; then
+              echo "::error::targets input did not specify any valid fuzz targets: $TARGETS_INPUT"
+              exit 1
+            fi
+          fi
+          TARGETS_JSON=$(printf '%s\n' "${SELECTED[@]}" | jq -R . | jq -sc .)
+          echo "targets=$TARGETS_JSON" >> "$GITHUB_OUTPUT"
+
   fuzz:
     name: Fuzz ${{ matrix.target }}
     runs-on: ubuntu-latest
+    needs: resolve-targets
 
     strategy:
       fail-fast: false  # Continue fuzzing other targets even if one crashes
       matrix:
-        target:
-          - fuzz_tcp_parser
-          - fuzz_udp_parser
-          - fuzz_ipv6_parser
-          - fuzz_icmpv6_parser
-          - fuzz_tls_parser
+        target: ${{ fromJSON(needs.resolve-targets.outputs.targets) }}
 
     steps:
       - name: Checkout repository
@@ -63,7 +102,7 @@ jobs:
       - name: Cache target directory
         uses: actions/cache@v6
         with:
-          path: target
+          path: fuzz/target
           key: ${{ runner.os }}-fuzz-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-fuzz-target-${{ matrix.target }}-
@@ -226,18 +265,22 @@ jobs:
   summary:
     name: Fuzzing Summary
     runs-on: ubuntu-latest
-    needs: fuzz
+    needs:
+      - resolve-targets
+      - fuzz
     if: always()
 
     steps:
       - name: Generate summary
         env:
           DURATION_INPUT: ${{ github.event.inputs.duration || '600' }}
+          TARGETS_INPUT: ${{ github.event.inputs.targets || 'all' }}
         run: |
           echo "## Fuzzing Run Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
           echo "**Duration:** ${DURATION_INPUT} seconds per target" >> $GITHUB_STEP_SUMMARY
+          echo "**Targets:** ${TARGETS_INPUT}" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "All fuzz targets executed. Check individual job outputs for statistics." >> $GITHUB_STEP_SUMMARY

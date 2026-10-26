@@ -28,14 +28,14 @@ regex = { workspace = true }
 tokio = { workspace = true }
 rand = { workspace = true }
 sysinfo = { workspace = true }
-flate2 = "1.0"
+flate2 = "1.1"
 dirs = { workspace = true }
 rkyv = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
 criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
-tempfile = "3.8"
+tempfile = "3.27"
 filetime = "0.2"
 
 [[bench]]

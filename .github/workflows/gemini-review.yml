@@ -30,7 +30,7 @@ jobs:
         id: 'mint_identity_token'
         if: |-
           ${{ vars.APP_ID }}
-        uses: 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1' # ratchet:actions/create-github-app-token@v3.2.0
+        uses: 'actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510' # ratchet:actions/create-github-app-token@v3.3.0
         with:
           app-id: '${{ vars.APP_ID }}'
           private-key: '${{ secrets.APP_PRIVATE_KEY }}'
@@ -38,10 +38,29 @@ jobs:
           permission-issues: 'write'
           permission-pull-requests: 'write'
 
+      - name: 'Check Gemini credentials'
+        id: 'check_credentials'
+        env:
+          GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
+          GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'
+          GOOGLE_GENAI_USE_GCA: '${{ vars.GOOGLE_GENAI_USE_GCA }}'
+          GOOGLE_GENAI_USE_VERTEXAI: '${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}'
+        run: |-
+          if [ -n "${GEMINI_API_KEY}${GOOGLE_API_KEY}${GOOGLE_GENAI_USE_GCA}${GOOGLE_GENAI_USE_VERTEXAI}" ]; then
+            echo "configured=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "::notice::Skipping Gemini PR review: no GEMINI_API_KEY, GOOGLE_API_KEY, GOOGLE_GENAI_USE_GCA, or GOOGLE_GENAI_USE_VERTEXAI configured."
+            echo "configured=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: 'Checkout repository'
+        if: |-
+          ${{ steps.check_credentials.outputs.configured == 'true' }}
         uses: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' # ratchet:actions/checkout@v7.0.1
 
       - name: 'Run Gemini pull request review'
+        if: |-
+          ${{ steps.check_credentials.outputs.configured == 'true' }}
         uses: 'google-github-actions/run-gemini-cli@v0' # ratchet:exclude
         id: 'gemini_pr_review'
         env:

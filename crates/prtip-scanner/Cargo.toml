@@ -80,7 +80,7 @@ regex = { workspace = true }
 mlua = { workspace = true }
 
 # PCAPNG packet capture
-pcap-file = "2.0"
+pcap-file = "3.0"
 
 # Memory-mapped I/O
 memmap2 = { workspace = true }
